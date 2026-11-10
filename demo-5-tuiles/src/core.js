@@ -176,7 +176,7 @@ function stepAtmo(Z,dt,t,px,py,pz){
   if(Z)Z.atm(Z.lv,AT);const k=Afirst?1:1-Math.exp(-dt*1.8);Afirst=false;
   for(const n of AC)mix3(A[n],A[n],AT[n],k);for(const n of AK)A[n]=lerp(A[n],AT[n],k);A.az=lerp(A.az,AT.az,k);
   skyU.top.value.setRGB(...A.top);skyU.hor.value.setRGB(...A.hor);skyU.clC.value.setRGB(...A.clc);skyU.cl.value=A.cl;skyU.time.value=t;
-  scene.fog.color.setRGB(...A.hor);scene.fog.density=A.fog*(A.fh>.5?lerp(1,.1,sst(A.fh-5,A.fh+7,camera.position.y)):1);
+  scene.fog.color.setRGB(...A.hor);scene.fog.density=A.fog*(A.fh>.5?(camera.position.y<-1.5?.1:lerp(1,.1,sst(A.fh-5,A.fh+7,camera.position.y))):1);
   const el=A.el*D2R,az=A.az*D2R;v3.set(Math.cos(el)*Math.cos(az),Math.sin(el),Math.cos(el)*Math.sin(az));
   skyU.sunD.value.copy(v3);skyU.sunC.value.setRGB(A.sun[0]*A.sunI,A.sun[1]*A.sunI,A.sun[2]*A.sunI);
   sun.color.setRGB(...A.sun);sun.intensity=A.sunI;sun.target.position.set(px,py,pz);sun.position.set(px+v3.x*260,py+v3.y*260,pz+v3.z*260);

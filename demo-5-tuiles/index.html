@@ -108,7 +108,7 @@ body.nohud .hud{opacity:0}
   <div class="seuil-in">
     <div class="sur">MozaWorld · démo de direction artistique</div>
     <h1>Cinq Tuiles</h1>
-    <p>Une tuile Girih de chaque forme, une zone par tuile, chacune tirée de son récit. Faites monter ou descendre le niveau d'une zone de −7 à +7 et regardez-la changer. On grimpe, on descend, et quinze secrets attendent.</p>
+    <p>Une tuile Girih de chaque forme, une zone par tuile, chacune tirée de son récit. Faites monter ou descendre le niveau d'une zone de −7 à +7 et regardez-la changer. On grimpe, on descend, on entre, et chaque zone cache ses secrets : certains n'existent qu'à un niveau précis.</p>
     <ul><li>Souris : regarder</li><li>W A S D : marcher</li><li>Espace : sauter</li><li>Q / E : niveau</li><li>1 à 5 : zones</li></ul>
     <button id="entrer">Entrer</button>
   </div>
@@ -293,7 +293,7 @@ function stepAtmo(Z,dt,t,px,py,pz){
   if(Z)Z.atm(Z.lv,AT);const k=Afirst?1:1-Math.exp(-dt*1.8);Afirst=false;
   for(const n of AC)mix3(A[n],A[n],AT[n],k);for(const n of AK)A[n]=lerp(A[n],AT[n],k);A.az=lerp(A.az,AT.az,k);
   skyU.top.value.setRGB(...A.top);skyU.hor.value.setRGB(...A.hor);skyU.clC.value.setRGB(...A.clc);skyU.cl.value=A.cl;skyU.time.value=t;
-  scene.fog.color.setRGB(...A.hor);scene.fog.density=A.fog*(A.fh>.5?lerp(1,.1,sst(A.fh-5,A.fh+7,camera.position.y)):1);
+  scene.fog.color.setRGB(...A.hor);scene.fog.density=A.fog*(A.fh>.5?(camera.position.y<-1.5?.1:lerp(1,.1,sst(A.fh-5,A.fh+7,camera.position.y))):1);
   const el=A.el*D2R,az=A.az*D2R;v3.set(Math.cos(el)*Math.cos(az),Math.sin(el),Math.cos(el)*Math.sin(az));
   skyU.sunD.value.copy(v3);skyU.sunC.value.setRGB(A.sun[0]*A.sunI,A.sun[1]*A.sunI,A.sun[2]*A.sunI);
   sun.color.setRGB(...A.sun);sun.intensity=A.sunI;sun.target.position.set(px,py,pz);sun.position.set(px+v3.x*260,py+v3.y*260,pz+v3.z*260);
@@ -376,7 +376,7 @@ Z.build=()=>{const gy=x=>groundZ(Z,x[0],x[1],0);
   for(let k=0;k<10;k++){const a0=(-108+36*k)*D2R,a1=a0+36*D2R,ax=[KR*Math.cos(a0),KR*Math.sin(a0)],bx=[KR*Math.cos(a1),KR*Math.sin(a1)],len=Math.hypot(bx[0]-ax[0],bx[1]-ax[1]),
       rot=Math.atan2(bx[1]-ax[1],bx[0]-ax[0]),n=30,gate=gates.includes(k),mx=(ax[0]+bx[0])/2,mz=(ax[1]+bx[1])/2,am=(a0+a1)/2;
     for(let i=0;i<n;i++){if(gate&&i>=12&&i<18)continue;const t=(i+.5)/n,x=lerp(ax[0],bx[0],t),z=lerp(ax[1],bx[1],t);
-      logs.add(x,gy([x,z])-.4,z,1,rr(.92,1.16),1,rnd()*6,0,0,{k:(k*30+i)%3,band:Math.floor(i/3)%3});
+      logs.add(x,gy([x,z])-.4,z,1,rr(.92,1.16),1,rnd()*6,0,0,{k:(k*30+i)%3,band:Math.floor(i/3)%3,side:k});
       for(let q=0;q<2;q++)letters.add(x+Math.cos(am)*.75,gy([x,z])+rr(1.2,7.5),z+Math.sin(am)*.75,1,1,1,PI/2-am+rr(-.2,.2),0,rr(-.3,.3))}
     if(gate){const g=len*.2;for(const s of[-1,1]){const c=s*(g/2+(len-g)/4);sBox(Z,mx+Math.cos(rot)*c,mz+Math.sin(rot)*c,(len-g)/4,.8,rot,-6,9.4)}
       /* linteau de la porte */
@@ -407,7 +407,7 @@ Z.build=()=>{const gy=x=>groundZ(Z,x[0],x[1],0);
     else{const s=rr(.8,1.3);birch.add(x,gy([x,z])-.3,z,s,s,s,0,rr(-.06,.06),rr(-.06,.06));crown.add(x,gy([x,z])+8.2*s,z,s,s,s,rnd()*6)}}
   for(let i=0;i<26;i++){const a=rnd()*TAU,r=rr(8,52),x=Math.cos(a)*r,z=Math.sin(a)*r;shav.add(x,gy([x,z])-.2,z,rr(.5,1.2),rr(.5,1.3),rr(.5,1.2),rnd()*6)}
   for(let i=0;i<9;i++){const x=-96+rr(-7,7),z=-58+rr(-7,7);shav.add(x,gy([x,z])-.2,z,rr(.6,1.3),rr(.6,1.4),rr(.6,1.3))}
-  for(const o of[logs,towers,troofs,walk_,bodies,domes,letters,wins,spruce,birch,crown,shav])o.make();
+  for(const o of[logs,towers,troofs,walk_,bodies,domes,letters,wins,spruce,birch,crown,shav])o.make();Z.logs=logs;Z.cLog=cLog;Z.P7=P7;
   Z.flies=points(240,.9);Z.fseed=[];for(let i=0;i<240;i++)Z.fseed.push([rnd()*TAU,rr(6,74),rr(1,20),rnd()*9]);
   Z.fires=points(6,5);Z.firePos=[[20,22],[-24,12],[8,-30],[-38,-34],[40,-8],[-6,44]];
   secret(Z,Z.top,'L\'écorce pliée en huit','Tout en haut, au pied du bulbe. Personne ne l\'a jamais dépliée, et vous non plus.');
@@ -435,10 +435,10 @@ Z.tick=(t)=>{const F=Z.flies,k=Z.flyK,fk=fogK(0,8,0);F.visible=k>0;if(k>0)for(le
 Z.info={nom:'Le Puits des Neuf Édits',sur:'Donjon · Pentagone · Volcan · Inspiration chinoise impériale',pm:'Tyrannie',pp:'Liberté',conteur:'Conteur C, le Maître du jeu sournois',
   recit:'Il était une fois un empereur qui voulait des lois auxquelles la lave elle-même obéirait. Il fit creuser au fond du cratère un puits de neuf étages et grava un Édit à chacun. Le neuvième, il le fit tailler dans un sceau de jade céladon, à l\'envers, comme tous les sceaux. La lave obéit et durcit en croûte. L\'empereur, lui, ne remonta jamais. Le puits a sa morale, gravée sous la margelle : un ordre s\'applique d\'abord à la main qui le grave.',
   pal:['Croûte brun-violet laquée d\'empreintes vermillon. Dalles céladon et dalles de jade fondu, presque du même vert. Pluie tiède de lapilli.','Fumerolles rabattues en voiles jaune soufre, auvents de laque rouge, une tablette clouée à chaque palier.','Cratère de basalte brun, pagodes de tuf à demi fondues, lueurs orange, fumerolles libres.','La croûte se fend, la lave coule en rigoles. Les tablettes sont retournées face contre terre.','Le puits est ouvert sur le ciel. Fontaines de lave vermillon, panaches jaune soufre, et une passerelle de dominos que nulle règle ne prévoit.']};
-Z.atm=atmo({top:['#24161f','#4a3a20','#3d3029','#5f86ac','#2f6fd0'],hor:['#48282f','#8f7f30','#7a4a2a','#d8cfc6','#ffcf4a'],sun:['#a06a5a','#d9b860','#ffb070','#fff0dd','#fff1c0'],
+Z.atm=atmo({top:['#24161f','#4a3a20','#3d3029','#5f86ac','#1c4a9c'],hor:['#48282f','#8f7f30','#7a4a2a','#d8cfc6','#d88a36'],sun:['#a06a5a','#d9b860','#ffb070','#fff0dd','#fff1c0'],
   hs:['#8a6a74','#8a7a40','#806050','#b0c0d0','#ffd070'],hg:['#2a1a20','#3a3018','#40241a','#6a3a2a','#ff5a2a'],clc:['#2a1c22','#a89a3a','#5a4a40','#f2efe8','#f6e27a'],wc:['#2a2024','#d9c860','#ff8a3a','#ff9a4a','#ff5a1e'],
-  sunI:[.6,.7,.9,1.25,1.7],hI:[1.15,.85,.7,.7,.8],fog:[.012,.011,.006,.0045,.003],el:[55,45,35,45,50],cl:[1,1,.8,.6,.5],wn:[.8,.4,.2,.4,.9],wv:[14,3,-3,-4,-6],wd:[1,3,2,2,3],ws:[.3,.3,.22,.25,.3],wI:[1,1,3,3.5,4.5],
-  exp:[1.55,1.15,1.1,1,1],bl:[.9,.8,1.1,1.2,1.3],az:-120});
+  sunI:[.6,.7,1,1.25,1.7],hI:[1.15,.9,1,.8,.8],fog:[.012,.011,.006,.0045,.0022],el:[55,45,35,45,50],cl:[1,1,.8,.6,.5],wn:[.8,.4,.2,.4,.9],wv:[14,3,-3,-4,-6],wd:[1,3,2,2,3],ws:[.3,.3,.22,.25,.3],wI:[1,1,3,3.5,4.5],
+  exp:[1.55,1.2,1.35,1.05,1],bl:[.9,.8,1.1,1.2,1.3],az:-120});
 const lavaY=lv=>lv>=0?-25+wpos(lv)*11:-25-wneg(lv)*7;Z.lavaY=lavaY;
 Z.h=(u,v,lv,n1,n2)=>{const r=Math.hypot(u,v),t=wpos(lv),crest=12*(.8+.5*n1);
   if(r>=47)return crest*Math.exp(-((r-47)/10)*((r-47)/10))+(n2-.5)*1.4;
@@ -448,8 +448,8 @@ Z.h=(u,v,lv,n1,n2)=>{const r=Math.hypot(u,v),t=wpos(lv),crest=12*(.8+.5*n1);
   return Math.max(lerp(st,cone,t*.85),lavaY(lv))};
 const cCrust=ramp('#3a2630','#3f3326','#3b2d26','#2e211d','#241815'),cCel=LIN('#a9c9b0'),cJade=LIN('#86b392'),cSeal=LIN('#c8321e'),cSul=LIN('#d9c23a'),
   cLava=ramp('#7a2a10','#c85a14','#ff7a1e','#ff5a1a','#ff3a14');
-Z.col=(u,v,lv,h,n1,n2,n3,x,z,o)=>{const r=Math.hypot(u,v),n=wneg(lv),t=wpos(lv);cCrust(lv,o);const s=.75+.5*n2;o[0]*=s;o[1]*=s;o[2]*=s;
-  if(r<47&&h<=lavaY(lv)+.06){cLava(lv,o);return 2.5+2.5*t+(n2-.5)*2}
+Z.col=(u,v,lv,h,n1,n2,n3,x,z,o)=>{const r=Math.hypot(u,v),n=wneg(lv),t=wpos(lv);cCrust(lv,o);let s=.75+.5*n2;if(r<41&&r>5.9){const q=(41-r)/3.9,f=q-Math.floor(q);s*=f>.6?.55:f>.4?1.7:1}o[0]*=s;o[1]*=s;o[2]*=s;
+  if(r<47&&h<=lavaY(lv)+.06){cLava(lv,o);return 1.5+.1*t+(n2-.5)*2}
   if(n>0&&r<47.5){const qx=x/6,qz=z/6,ix=Math.floor(qx),iz=Math.floor(qz),fx=qx-ix,fz=qz-iz,ed=Math.min(fx,1-fx,fz,1-fz),hh=hash(ix,iz);
     if(ed>.1){if(hh<.45)mix3(o,o,cCel,n*.92);else if(hh<.8)mix3(o,o,cJade,n*.92);if(ed>.27&&hash(ix+9,iz)<.2)mix3(o,o,cSeal,n)}}
   const sul=sst(.55,.7,n1+ (n2-.5)*.3)*(1-Math.abs(lv+2)/6);if(sul>0)mix3(o,o,cSul,clamp(sul,0,1)*.8);
@@ -490,12 +490,12 @@ Z.build=()=>{const gh=(u,v,lv)=>Z.gh(u,v,lv===undefined?0:lv);
 };
 Z.update=lv=>{const n=wneg(lv),p=wpos(lv);
   walls.set(null,(o,i,c)=>cTuf(lv,c));for(const q of[walls,roofs])q.a.forEach(o=>{o.rz=o.e.t*p*.22;o.dy=-p*1.6});walls.set(null,(o,i,c)=>cTuf(lv,c));roofs.set(null,(o,i,c)=>cRoofD(lv,c));
-  tabs.a.forEach(o=>{o.y=Z.gh(o.e.u,o.e.v,lv)-.1+p*.5;o.rx=-sst(.5,3.5,lv)*PI/2*.96});tabs.set(()=>[1,1+n*.6,1]);
+  tabs.a.forEach(o=>{o.y=Z.gh(o.e.u,o.e.v,lv)-.1+p*.5;o.rx=-sst(.5,3.5,lv)*PI/2*.96});tabs.set(()=>[1.5,1.5+n*.6,1.5]);
   aw.set(()=>sst(-.5,-2.5,lv)*sst(-7.5,-5,lv)*.6+sst(-.5,-2.5,lv)*.4);cang.set(()=>sst(1.5,4,lv));
   dom.a.forEach(o=>{const e=o.e,a=lv<0?e.n:e.p,k=lv<0?n:sst(0,.75,p),u=lerp(e.z[0],a[0],k),v=lerp(e.z[1],a[1],k),w=Z.w(u,v);o.x=w[0];o.z=w[1];
     o.rx=lerp(e.z[2],a[2],k);o.ry=lerp(e.z[3],a[3],k)-Z.ax;o.rz=lerp(e.z[4],0,k);const g=Z.gh(u,v,lv)+lerp(.2,1.1,1-Math.abs(o.rx)/(PI/2));o.y=(lv>0&&e.by!==undefined)?lerp(g,e.by,k):g});
   dom.set();for(const s of Z.bs)s.on=lv>=3.6;
-  Z.fk=lv>=0?.12+.88*sst(1.5,7,lv):.12*sst(-5,0,lv);Z.light.intensity=.25+2.2*Z.fk+(lv>=0?.8:.8*(1-n));const c=Z.w(0,0);Z.light.position.set(c[0],lavaY(lv)+10+p*22,c[1]);
+  Z.fk=lv>=0?.12+.88*sst(1.5,7,lv):.12*sst(-5,0,lv);Z.light.intensity=.25+(2.2-1.3*wpos(lv))*Z.fk+(lv>=0?.8-.4*wpos(lv):.8*(1-n));const c=Z.w(0,0);Z.light.position.set(c[0],lavaY(lv)+10+p*22,c[1]);
   cSul_(lv)};
 const sm=ramp('#1a1216','#b8a838','#5a4a44','#e8e4dc','#e6d040'),sI=nramp(.5,.9,.5,.7,1);let smC=[0,0,0];function cSul_(lv){sm(lv,smC);Z.smoke.material.opacity=.12+.14*sI(lv);Z.sH=nramp(26,14,30,44,70)(lv)}
 Z.tick=(t,dt)=>{const F=Z.fount,lv=Z.lv,c=Z.w(0,0),ly=lavaY(lv),k=Z.fk,P=F.P,C=F.C,fk=fogK(c[0],10,c[1]);
@@ -526,16 +526,16 @@ Z.info={nom:'Les Chinampas Dérivantes de Tezcamixtli',sur:'Ressource · Hexagon
   pal:['Îles qui s\'entrechoquent sous un ciel vert de bile. Épis couverts de galles gonflées, ponts d\'agave pourris qui pendent dans le vide.','Nuages en lambeaux jaunâtres, premières galles, la terre des îles s\'émiette et tombe en pluie fine.','Jardins flottants vert et bleu, temples à degrés de tuf rose, canaux qui débordent en cascades dans le vide.','Maïs vert vif plus haut que les hommes. Chaque matin, une île bourgeonne au flanc d\'une autre.','L\'archipel a doublé. Vert acide du jeune maïs, rouge d\'amarante, nuées de pollen jaune pâle. Les bourgeons montent jusqu\'à l\'Île-Mère.']};
 Z.atm=atmo({top:['#56641c','#84864c','#1c58bc','#3484d8','#a8cc80'],hor:['#98a238','#c9c080','#bfe0ff','#e8f3d0','#f6f0b0'],sun:['#d9d67a','#e8dca0','#ffffff','#fff8e0','#fff6c0'],
   hs:['#a8b050','#b0aa70','#a0c8ff','#b8d8f0','#f0f0a0'],hg:['#4a3a20','#5a4a30','#6a8a50','#6a9a40','#6aa030'],clc:['#8a9238','#d0c890','#ffffff','#ffffff','#fbf6c8'],wc:['#f0ecd8','#a08a60','#ffffff','#f6f0a0','#f6f0a0'],
-  sunI:[.7,.9,1.8,1.9,1.6],hI:[.75,.7,.8,.85,1],fog:[.0105,.006,.0021,.002,.0045],el:[35,40,55,45,40],cl:[1,.85,.5,.45,.7],wn:[.9,.45,.04,.3,1],wv:[.5,3,.5,.3,2.2],wd:[4,2,2,3,3],ws:[.42,.2,.2,.24,.2],wI:[1.1,1,1,1.6,1.8],
+  sunI:[.7,.9,1.8,1.9,1.6],hI:[.75,.7,.8,.85,1],fog:[.0062,.005,.0021,.002,.0045],el:[35,40,55,45,40],cl:[1,.85,.5,.45,.7],wn:[.9,.45,.04,.3,1],wv:[.5,3,.5,.3,2.2],wd:[4,2,2,3,3],ws:[.42,.2,.2,.24,.2],wI:[1.1,1,1,1.6,1.8],
   exp:[1,1,1,1,1],bl:[.7,.6,.6,.7,.9],az:-35});
 const canal=v=>{const m=((v%26)+26)%26;return sst(3.4,1.6,Math.abs(m-13))};
 Z.h=(u,v,lv,n1,n2)=>1.4+(n1-.5)*3-2.5*canal(v)+(n2-.5)*3.2*wneg(lv)+wpos(lv)*sst(.56,.8,n1)*4;
-const rA=ramp('#4f3c24','#5c4a2a','#3f6a30','#4f8a30','#84bc2c'),rB=ramp('#6a5a34','#6a5a3a','#30508c','#3a6a9a','#96203c'),rW=ramp('#66762a','#6a8a5a','#2a9ac0','#3ab0c8','#74d4c0'),spore=LIN('#e8e4d0'),pollen=LIN('#f0e890');
+const rA=ramp('#33281a','#5c4a2a','#3f6a30','#4f8a30','#84bc2c'),rB=ramp('#52462a','#6a5a3a','#30508c','#3a6a9a','#96203c'),rW=ramp('#66762a','#6a8a5a','#2a9ac0','#3ab0c8','#74d4c0'),spore=LIN('#e8e4d0'),pollen=LIN('#f0e890');
 Z.col=(u,v,lv,h,n1,n2,n3,x,z,o)=>{const c=canal(v);if(c>.55){rW(lv,o);return .25*(1-wneg(lv))}
   const m=((v%26)+26)%26,row=Math.floor(m/4.34)%2;(row?rB:rA)(lv,o);const s=.8+.4*n2;o[0]*=s;o[1]*=s;o[2]*=s;
   const n=wneg(lv),p=wpos(lv);if(n>0&&hash(Math.floor(x/2),Math.floor(z/2)+5)<.2*n)mix3(o,o,spore,.75);if(p>0)mix3(o,o,pollen,p*.35*sst(.4,.7,n2));return 0};
 const isl=[],I=(u,v,y,r,birth,step)=>{isl.push({u,v,y,r,birth:birth||0,step:!!step,ph:rnd()*TAU,cx:0,cy:0,cz:0,sc:1});return isl.length-1};
-const cTop=ramp('#6a5a2a','#7a7a3a','#5a9a3a','#5aaa30','#a8e03a'),cBot=ramp('#5a4630','#6a5238','#7a5a3c','#80603e','#86623c'),
+const cTop=ramp('#33301a','#7a7a3a','#5a9a3a','#5aaa30','#a8e03a'),cBot=ramp('#2c2118','#6a5238','#7a5a3c','#80603e','#86623c'),
   cCrA=ramp('#6a4a2a','#7a6a3a','#4f8a3a','#4fa030','#a8e03a'),cCrB=ramp('#8a7a5a','#6a5a3a','#3a5fa8','#4a7ab8','#b01a3a'),cTuf=ramp('#8a7a5a','#b09080','#d9a09a','#e0a8a0','#e8b0a8');
 const top=inst(cyl(1,.93,.3,11,0,-.15,0),M(0xffffff)),bot=inst(new THREE.ConeGeometry(.96,1,9).rotateX(PI).translate(0,-.8,0),M(0xffffff)),
   crops=inst(merge([[new THREE.ConeGeometry(.2,3.4,4).translate(0,1.7,0)],[new THREE.ConeGeometry(.5,1.5,3).translate(0,1.5,0).scale(1,1,.25)],[new THREE.ConeGeometry(.5,1.4,3).translate(0,2.2,0).scale(.25,1,1)]]),M(0xffffff)),galls=inst(new THREE.IcosahedronGeometry(1,1),M(0xffffff,{roughness:.6})),
@@ -547,6 +547,8 @@ Z.build=()=>{
   const births=[2,3,4,5,5,6];for(let i=0;i<6;i++)I(30+Math.cos(i*1.1)*4+i*.6,25-i*3.4,45.8+i*1.9,2.8,births[i],true);
   for(let i=0;i<22;i++){const pr=isl[i%9],a=rnd()*TAU,r=rr(2.5,6);I(pr.u+Math.cos(a)*(pr.r+r*.5),pr.v+Math.sin(a)*(pr.r+r*.5),pr.y+rr(-6,5),r,1+i%7)}
   for(let i=0;i<9;i++){const u=rr(-50,50),v=rr(-115,115);if(Z.inside(u,v,4))I(u,v,rr(48,82),rr(4,9))}
+  Z.iV=I(12,-14,19,4.2);isl[Z.iV].flat=true;pairs.push([0,Z.iV]);Z.iX=I(-37,37,21,7.5);Z.iF=I(-30,12,18,3.4,0,true);isl[Z.iF].ferry=true;
+  Z.iC=I(34,36,24,4.5);isl[Z.iC].flat=true;Z.iR=I(14,52,17,3.5);isl[Z.iR].flat=true;pairs.push([1,Z.iC],[Z.iC,3],[Z.iC,Z.iR]);
   Z.NI=isl.length;Z.isl=isl;for(const s of isl){top.add(0,0,0);bot.add(0,0,0);s.sol=sCyl(Z,0,0,s.r,0,0)}
   for(let i=0;i<isl.length;i++){const s=isl[i],k=s.step?0:Math.round(s.r*.9);for(let j=0;j<k;j++){const a=rnd()*TAU,r=Math.sqrt(rnd())*s.r*.8;crops.add(0,0,0,rr(.8,1.3),rr(.6,1.2),rr(.8,1.3),0,0,0,{isl:i,du:Math.cos(a)*r,dv:Math.sin(a)*r,row:j%2})}}
   Z.cropIsl=crops.a.length;
@@ -579,15 +581,17 @@ Z.update=lv=>{const n=wneg(lv),p=wpos(lv);
   crops.a.forEach((o,i)=>{if(i>=Z.cropIsl){o.y=Z.gh(o.e.u,o.e.v,lv)-.2;o.rz=o.e.t*n*.5}});
   const hk=nramp(.85,.9,1,1.8,1.35)(lv);crops.set(()=>[1,hk,1],(o,i,c)=>{(o.e.row?cCrB:cCrA)(lv,c);const s=.8+.4*o.r;c[0]*=s;c[1]*=s;c[2]*=s});
   galls.a.forEach(o=>{if(!o.e.big)o.y=Z.gh(o.e.u,o.e.v,lv)+1.2});
-  galls.set(o=>o.e.big?sst(-3.5,-6.5,lv):sst(-.5-o.r*3,-3-o.r*4,lv),(o,i,c)=>{const b=o.e.w||(o.e.big&&0);c[0]=b?.82:.2;c[1]=b?.78:.11;c[2]=b?.62:.05});
+  galls.set(o=>o.e.big?sst(-3.5,-6.5,lv):sst(-.5-o.r*3,-3-o.r*4,lv),(o,i,c)=>{const b=o.e.w||(o.e.big&&0);c[0]=b?1:.14;c[1]=b?.98:.07;c[2]=b?.82:.03});
   amar.a.forEach(o=>{o.y=Z.gh(o.e.u,o.e.v,lv)-.2});amar.set(o=>sst(1+o.r*3,3.5+o.r*3.5,lv));
   cTuf(lv,tc);Z.pyrM.material.color.setRGB(tc[0],tc[1],tc[2]);
   for(const s of Z.psol)s.on=lv>-3.5;Z.ropes.material.color.setRGB(...ramp('#3a3020','#c8b078','#e0d0a0')(lv,tc));
   ramp('#5a4630','#7a6040','#cfeaff','#d8f0ff','#e0f6f0')(lv,Z.fc)};
 Z.tick=(t)=>{const lv=Z.lv,n=wneg(lv);
   for(let i=0;i<isl.length;i++){const s=isl[i],am=s.step?.12:.35,u=s.u+n*Math.sin(t*.9+s.ph*3)*(s.step?1.2:4.5),v=s.v+n*Math.cos(t*.7+s.ph*2)*(s.step?1.2:4.5),w=Z.w(u,v);
-    s.cx=w[0];s.cz=w[1];s.cy=s.y+Math.sin(t*.35+s.ph)*am+n*Math.sin(t*2.1+s.ph*5)*2*am;s.rz=n*.2*Math.sin(t*1.3+s.ph);
-    const R=s.r*s.sc;put(top.m,i,s.cx,s.cy,s.cz,R,1+s.r*.12,R,s.ph,0,s.rz);put(bot.m,i,s.cx,s.cy,s.cz,R,s.r*1.25*s.sc,R,s.ph,0,s.rz);
+    const px=s.cx,pz=s.cz;s.cx=w[0];s.cz=w[1];s.cy=s.y+Math.sin(t*.35+s.ph)*am+n*Math.sin(t*2.1+s.ph*5)*2*am;s.rz=n*.2*Math.sin(t*1.3+s.ph);
+    if(s.ferry){const A_=isl[0],B_=isl[Z.iX],d=Math.hypot(B_.cx-A_.cx,B_.cz-A_.cz),ux=(B_.cx-A_.cx)/d,uz=(B_.cz-A_.cz)/d,k=.5-.5*Math.cos(t*.45),a0=A_.r+2.6,a1=d-B_.r-2.6;s.cx=A_.cx+ux*lerp(a0,a1,k);s.cz=A_.cz+uz*lerp(a0,a1,k);s.cy=lerp(A_.cy,B_.cy,k)+.4;s.rz=0;s.sc=sst(-2.5,-3.5,lv)}
+    s.sol.dx=s.cx-px;s.sol.dz=s.cz-pz;if(Math.abs(s.sol.dx)>3||Math.abs(s.sol.dz)>3)s.sol.dx=s.sol.dz=0;
+    const R=s.r*s.sc;put(top.m,i,s.cx,s.cy,s.cz,R,1+s.r*.12,R,s.ph,0,s.rz);put(bot.m,i,s.cx,s.cy,s.cz,R,(s.flat||s.ferry?.3:s.r*1.25)*s.sc,R,s.ph,0,s.rz);
     const q=s.sol;q.x=s.cx;q.z=s.cz;q.r=R*.95;q.y1=s.cy;q.y0=s.cy-1.6;q.on=s.sc>.75}
   top.m.instanceMatrix.needsUpdate=bot.m.instanceMatrix.needsUpdate=true;
   const hk=nramp(.85,.9,1,1.8,1.35)(lv);
@@ -614,8 +618,8 @@ Z.info={nom:'L\'Exarchat des Lucioles',sur:'Antre · Nœud papillon · Mangrove 
   recit:'Le panier de Zoé Kalliganis se remplit à marée basse, entre les racines des palétuviers : des murex, ces coquillages à épines qui saignent la pourpre. La chair descend dans des nasses suspendues sous la ruche de la reine Vespérine. C\'est le contrat, peint au minium sur le pilotis du péage : la ruche éclaire le chenal de nuit, l\'Exarchat nourrit les larves. Puis un exarque a vendu la chair aux saleurs. La reine a fermé sa lumière. Zoé a gardé ses nasses. Elle attend qu\'on rouvre le contrat.',
   pal:['Nuit close sur des chenaux couleur de goudron, sans une étoile. Seules luisent les larves affamées, bleu-vert, à travers les ballots de contrebande.','Crépuscule figé couleur de prune, pluie tiède. La ruche ne s\'allume plus qu\'une seconde, en éclats brefs.','Mangrove à marée basse, vase brune, racines-échasses vert sombre, lumière d\'après-midi tamisée.','Pré-aube rose de garance, brume basse. Les premières pièces de pourpre sèchent sur les racines.','Aurore tenue en permanence par la reine. Des lieues d\'étoffes pourpres, safran et indigo tendues de racine en racine.']};
 Z.atm=atmo({top:['#020308','#24122c','#64866c','#46467c','#5466c0'],hor:['#05070c','#54284a','#c0c8a0','#f0a09c','#ff9868'],sun:['#223040','#a06a90','#f0e8c0','#ffb0a0','#ffac7c'],
-  hs:['#0c1418','#4a3050','#90a880','#c090a0','#ffb0a0'],hg:['#050608','#1a1018','#3a3020','#4a3040','#5a3050'],clc:['#06080c','#3a2038','#e0e4d0','#f8b8b0','#ffb890'],wc:['#30d0b0','#9080a0','#f0f0c0','#ffd0c0','#ffc080'],
-  sunI:[.04,.35,1,.9,1.9],hI:[.3,.5,.7,.7,.8],fog:[.014,.009,.005,.0075,.003],el:[30,12,45,8,6],cl:[1,1,.5,.55,.5],wn:[0,.85,.05,.2,.3],wv:[1,22,.5,.3,-.4],wd:[1,.5,2,3,3],ws:[.2,.16,.2,.3,.22],wI:[1,.8,1,1.2,3],
+  hs:['#14242c','#4a3050','#90a880','#c090a0','#ffb0a0'],hg:['#050608','#1a1018','#3a3020','#4a3040','#5a3050'],clc:['#06080c','#3a2038','#e0e4d0','#f8b8b0','#ffb890'],wc:['#30d0b0','#9080a0','#f0f0c0','#ffd0c0','#ffc080'],
+  sunI:[.04,.35,1,.9,1.5],hI:[.44,.5,.7,.7,.8],fog:[.014,.009,.005,.0075,.003],el:[30,12,45,8,6],cl:[1,1,.5,.55,.5],wn:[0,.85,.05,.2,.3],wv:[1,22,.5,.3,-.4],wd:[1,.5,2,3,3],ws:[.2,.16,.2,.3,.22],wI:[1,.8,1,1.2,3],
   exp:[1.15,1,1,1,1.05],bl:[1.4,1,.6,1,1.2],az:ANT.ax/D2R});
 const wy=nramp(-.06,-.3,-.95,-.5,-.25);Z.wy=wy;
 Z.h=(u,v,lv,n1,n2)=>-.8+(n2-.5)*1.8-1.5*sst(8,3.5,Math.abs(v));
@@ -722,44 +726,46 @@ Z.atm=atmo({top:['#e4e6e2','#b8c0c4','#5886b8','#2f6fd0','#0a44b4'],hor:['#eceee
   sunI:[.5,.7,1.25,1.5,1.7],hI:[1.15,1,.8,.8,.75],fog:[.04,.017,.005,.0022,.0006],el:[40,30,35,25,68],cl:[1,1,.55,.15,0],wn:[.5,.75,.3,.03,.1],wv:[.5,7,2.5,1,.2],wd:[4,1.5,2,1,2],ws:[.7,.26,.26,.2,.1],wI:[.9,1,1,1,3],
   exp:[1,1,1,.92,.82],bl:[.6,.9,.6,.5,.5],fh:[15,9,0,0,0],az:MAR.ax/D2R+150});
 Z.h=(u,v,lv,n1,n2,n3)=>{const n=wneg(lv),t=wpos(lv),r=Math.hypot(u,v);let h=2+n1*8+(n2-.5)*1.3;
-  h-=sst(.085+.05*n,0,n3)*(3+8*n)*(1-t);const q=h/1.7,qf=q-Math.floor(q);h=lerp(h,1.7*(Math.floor(q)+sst(.36,.64,qf)),t);return lerp(h,1.2,sst(36,26,r))};
+  h-=sst(.085+.05*n,0,n3)*(3+8*n)*(1-t);const q=h/1.7,qf=q-Math.floor(q);h=lerp(h,1.7*(Math.floor(q)+sst(.36,.64,qf)),t);if(Math.abs(u)<21.4&&Math.abs(v)<4.9)return 1.05+sink(lv);return lerp(h,1.2,sst(36,26,r))};
 const cIce=ramp('#e2e6e0','#c8d0d2','#8cc0e2','#bcdcf2','#dcdcd6'),cSnow=ramp('#eceee8','#dfe2e2','#f2f6fa','#eceef0','#e6e6e0'),cCrev=ramp('#9aa8a8','#5a7a90','#1a4a80','#2a6ab8','#3a8ae0');
 Z.col=(u,v,lv,h,n1,n2,n3,x,z,o)=>{cIce(lv,o);cSnow(lv,tc2);mix3(o,o,tc2,sst(.4,.62,n2));const t=wpos(lv);
   const cr=sst(.1,.02,n3)*(1-t);if(cr>0){cCrev(lv,tc2);mix3(o,o,tc2,cr)}
   if(t>0&&Math.hypot(u,v)>30){const q=(2+n1*8+(n2-.5)*1.3)/1.7,f=Math.abs(q-Math.floor(q)-.5);if(f<.16){cCrev(lv,tc2);mix3(o,o,tc2,t*sst(.16,.08,f))}}return 0};
-const cStone=ramp('#d8dcd8','#b0b8bc','#8a94a0','#b8bcc0','#e8e4dc');
+const cStone=ramp('#b4b0a8','#8c8a8a','#6c6e78','#8a8478','#a4967e');
 const stall=inst(merge([[box(3.2,1,1.7,0,.5,0),0x3a2a20],[box(3.8,.25,2.6,0,2.9,0,0,.15),0x5a3a2a],[cyl(.1,.1,2.8,4,-1.6,1.4,-1),0x2a2018],[cyl(.1,.1,2.8,4,1.6,1.4,-1),0x2a2018]]),M(0xffffff,{vertexColors:true})),
   ice=inst(new THREE.BoxGeometry(2.2,2.2,2.2).translate(0,1.1,0),M(0xeef2f0,{roughness:.35})),felt=inst(new THREE.BoxGeometry(5,.16,5),M(0xffffff)),
   sq=inst(new THREE.BoxGeometry(1.1,.1,1.1),M(0x2f7a4a)),hous=inst(new THREE.IcosahedronGeometry(2.3,1),M(0xffffff,{transparent:true,opacity:.7,roughness:1}),false),
   chalk=inst(new THREE.BoxGeometry(1,.06,.16),new THREE.MeshBasicMaterial({color:0xffffff}),false);
 const fG=LIN('#2f7a4a'),fM=LIN('#3d8256'),fW=LIN('#f4f4f0');
-Z.build=()=>{const P=[],W=[],bs=[];Z.cs_=bs;
+Z.build=()=>{const P=[],W=[],bs=[],rampDyn=[];Z.cs_=bs;Z.rampDyn=rampDyn;
   const S=(g,hx,hz,u,v,oy0,oy1,rot)=>{const p=Z.w(u,v),s=sBox(Z,p[0],p[1],hx,hz,Z.ax+(rot||0),0,0);s.oy0=oy0;s.oy1=oy1;bs.push(s)};
-  P.push([box(44,16,12,0,8,0)]);P.push([new THREE.CylinderGeometry(6.93,6.93,44,3,1,false,PI/2).rotateZ(PI/2).translate(0,19.4,0)]);S(0,20,6,2,0,-30,24);
-  for(const s of[-1,1]){P.push([box(40,8,5,0,4,s*8.5)]);S(0,20,2.5,0,s*8.5,-30,8);
+  P.push([box(44,16,1,0,8,-5.5)]);P.push([box(19,16,1,-12.5,8,5.5)]);P.push([box(19,16,1,12.5,8,5.5)]);P.push([new THREE.CylinderGeometry(6.93,6.93,44,3,1,true,PI/2).rotateZ(PI/2).translate(0,19.4,0)]);
+  S(0,22,.6,0,-5.5,-30,16);S(0,9.5,.6,-12.5,5.5,-30,16);S(0,9.5,.6,12.5,5.5,-30,16);
+  for(const s of[-1,1]){if(s<0){P.push([box(40,8,5,0,4,s*8.5)]);S(0,20,2.5,0,s*8.5,-30,8)}else for(const e of[-1,1]){P.push([box(17,8,5,e*11.5,4,s*8.5)]);S(0,8.5,2.5,e*11.5,s*8.5,-30,8)}
     for(let i=0;i<6;i++){const x=-17+i*6.8;P.push([box(1.4,13,1.6,x,6.5,s*13)]);P.push([new THREE.ConeGeometry(1.1,4.4,4).rotateY(PI/4).translate(x,15.2,s*13)]);P.push([box(1,1,8.2,x,13.6,s*9.4,0,s*.52)]);S(0,.7,.8,x,s*13,-30,13);
-      W.push([box(1.7,7,.3,x+3.4,11.5,s*6.06)]);W.push([box(1.5,4.4,.3,x+3.4,4,s*11.06)])}}
+      const wc=[0xd81e3c,0x1e50d8,0xf0a81e,0x1ea85a][i%4];if(!(s>0&&Math.abs(x+3.4)<3.2)){W.push([box(1.7,7,.3,x+3.4,11.5,s*6.06),wc]);W.push([box(1.7,7,.2,x+3.4,11.5,s*4.92),wc]);W.push([box(1.5,4.4,.3,x+3.4,4,s*11.06),wc])}
+      {const p0=Z.w(x,s*13),p1=Z.w(x,s*6.3);rampDyn.push([p0,13,p1,16])}}}
   P.push([box(9,40,9,-26.5,20,0)]);P.push([new THREE.ConeGeometry(6.3,22,4).rotateY(PI/4).translate(-26.5,51,0)]);S(0,4.5,4.5,-26.5,0,-30,40);{const p=Z.w(-26.5,0),s=sCyl(Z,p[0],p[1],2.6,0,0);s.oy0=40;s.oy1=62;bs.push(s)}
-  for(const a of[-1,1])for(const b of[-1,1]){P.push([new THREE.ConeGeometry(1,6,4).rotateY(PI/4).translate(-26.5+a*4,43,b*4)]);W.push([box(.3,6,2.4,-26.5+a*4.56,33,0)]);W.push([box(2.4,6,.3,-26.5,33,b*4.56)])}
-  W.push([new THREE.CylinderGeometry(2.8,2.8,.3,16).rotateZ(PI/2).translate(-31.06,23,0)]);W.push([box(.3,7,3.4,-31.06,3.5,0)]);
+  for(const a of[-1,1])for(const b of[-1,1]){P.push([new THREE.ConeGeometry(1,6,4).rotateY(PI/4).translate(-26.5+a*4,43,b*4)]);W.push([box(.3,6,2.4,-26.5+a*4.56,33,0),0x0c1830]);W.push([box(2.4,6,.3,-26.5,33,b*4.56),0x0c1830])}
+  W.push([new THREE.CylinderGeometry(2.8,2.8,.3,16).rotateZ(PI/2).translate(-31.06,23,0),0xd81e3c]);W.push([new THREE.CylinderGeometry(1.6,1.6,.5,16).rotateZ(PI/2).translate(-31.1,23,0),0xf0a81e]);W.push([box(.3,7,3.4,-31.06,3.5,0),0x0c1830]);
   P.push([cyl(6,6,16,10,22,8,0)]);P.push([new THREE.ConeGeometry(6.6,7,10).translate(22,19.5,0)]);{const p=Z.w(22,0),s=sCyl(Z,p[0],p[1],6,0,0);s.oy0=-30;s.oy1=22;bs.push(s)}
   /* échafaudage en vis autour du clocher, et volée vers le toit du bas-côté */
   const sg=[];vis(Z,-26.5,0,7.1,0,40,PI,1.25,sg,0x6a5040).forEach(s=>bs.push(s));
   for(let i=0;i<16;i++){const u=20.3+(16-i)*.62,y=(i+1)*.5,p=Z.w(u,8.5),s=sBox(Z,p[0],p[1],.45,1.6,Z.ax,0,0);s.oy0=y-.6;s.oy1=y;bs.push(s);sg.push([box(.7,.3,3.2,u,y-.15,8.5),0x6a5040])}
   const G=Z.G=new THREE.Group();G.position.set(Z.c[0],0,Z.c[1]);G.rotation.y=-Z.ax;scene.add(G);
   Z.stone=M(0xffffff);const add=(g,m)=>{const o=new THREE.Mesh(g,m);o.castShadow=o.receiveShadow=true;G.add(o)};
-  add(merge(P),Z.stone);add(merge(W),M(0x1a2438,{roughness:.3}));add(merge(sg),M(0xffffff,{vertexColors:true}));
+  Z.stone.side=THREE.DoubleSide;add(merge(P),Z.stone);Z.glass=new THREE.MeshBasicMaterial({vertexColors:true});add(merge(W),Z.glass);add(merge(sg),M(0xffffff,{vertexColors:true}));
   /* orgue de barbarie sur le parvis */
   const og=[[box(2.2,1.6,1.2,0,1.3,0),0x7a4a2a],[box(2.5,.25,1.5,0,2.2,0),0xb8862e],[new THREE.CylinderGeometry(.55,.55,.12,10).rotateZ(PI/2).translate(1.2,1.3,0),0xb8862e]];
   for(let i=0;i<7;i++)og.push([cyl(.09,.09,1+i*.16,6,-.9+i*.3,2.8+i*.08,0),0xd8b040]);for(const a of[-1,1])og.push([new THREE.CylinderGeometry(.5,.5,.12,10).rotateZ(PI/2).translate(a*.9,.5,.7),0x3a2a20]);
   Z.organ=mesh(merge(og),M(0xffffff,{vertexColors:true,metalness:.3,roughness:.5}));const op=Z.w(-39,7);Z.organ.position.set(op[0],0,op[1]);Z.organ.rotation.y=-Z.ax+.6;Z.op=[-39,7];
   /* étals */
-  let n=0;for(let i=0;i<400&&n<24;i++){const u=rr(-62,58),v=rr(-46,46);if(Math.abs(v)<19&&u>-36&&u<32)continue;if(!Z.inside(u,v,9))continue;let ok=true;for(const o of stall.a)if(Math.hypot(o.e.u-u,o.e.v-v)<9)ok=false;if(!ok)continue;
+  let n=0;for(let i=0;i<900&&n<38;i++){const u=rr(-62,58),v=rr(-46,46);if(Math.abs(v)<19&&u>-36&&u<32)continue;if(!Z.inside(u,v,9))continue;let ok=true;for(const o of stall.a)if(Math.hypot(o.e.u-u,o.e.v-v)<7.5)ok=false;if(!ok)continue;
     const p=Z.w(u,v),ry=rnd()*6,e={u,v,fake:n%4===3};n++;stall.add(p[0],0,p[1],1,1,1,ry,0,0,e);ice.add(p[0],0,p[1],rr(.8,1.2),rr(.7,1.1),rr(.8,1.2),ry,0,0,e);felt.add(p[0],0,p[1],1,1,1,ry,0,0,e);
     sq.add(p[0]+Math.cos(ry)*1.2,0,p[1]-Math.sin(ry)*1.2,1,1,1,ry,0,0,e);hous.add(p[0],0,p[1],rr(.9,1.2),rr(.7,.9),rr(.9,1.2),0,0,0,e);
     for(let k=0;k<4;k++){const a=ry+k*PI/2,cx=Math.cos(a)*3.6,cz=-Math.sin(a)*3.6;chalk.add(p[0]+cx,0,p[1]+cz,7.2,1,1,a+PI/2,0,0,{u:u,v:v,ox:cx,oz:cz})}}
-  for(const o of[stall,ice,felt,sq,hous,chalk])o.make();
-  Z.lant=points(24,2.4);
+  for(const o of[stall,ice,felt,sq,hous,chalk])o.make();Z.stall=stall;
+  Z.lant=points(40,3);
   /* une crevasse pour cacher quelque chose */
   let best=9,bu=0,bv=0;for(let i=0;i<900;i++){const u=rr(-60,60),v=rr(-44,44);if(!Z.inside(u,v,20)||Math.hypot(u,v)<40)continue;const p=Z.w(u,v),q=N3(p[0],p[1]);if(q<best){best=q;bu=u;bv=v}}
   secret(Z,()=>{const p=Z.w(-26.5-3.4,0);return[p[0],Z.base+41.4,p[1]]},'La cloche misée','Au sommet du clocher. L\'abbesse l\'a perdue un soir de brelan. Par temps de brume, on monte ici pour revoir le soleil.');
@@ -767,16 +773,154 @@ Z.build=()=>{const P=[],W=[],bs=[];Z.cs_=bs;
   secret(Z,()=>{const p=Z.w(6,8.5);return[p[0],Z.base+9.4,p[1]]},'Le treizième carton','Sur le toit du bas-côté, derrière un pinacle. Il n\'a aucun trou. Il faut que la cathédrale soit sortie de la glace.',lv=>lv>=5);
 };
 const sink=nramp(-24,-18,-13,-6,0);
-Z.update=lv=>{const n=wneg(lv),p=wpos(lv);Z.base=Z.gh(0,0,lv)+sink(lv)-.2;Z.G.position.y=Z.base;for(const s of Z.cs_){s.y0=Z.base+s.oy0;s.y1=Z.base+s.oy1}
+Z.update=lv=>{const n=wneg(lv),p=wpos(lv);Z.base=1+sink(lv);Z.G.position.y=Z.base;for(const s of Z.cs_){s.y0=Z.base+s.oy0;s.y1=Z.base+s.oy1}
   cStone(lv,tc);Z.stone.color.setRGB(tc[0],tc[1],tc[2]);Z.organ.position.y=Z.gh(Z.op[0],Z.op[1],lv);
   const gy=o=>Z.gh(o.e.u,o.e.v,lv);
-  for(const q of[stall,ice,felt,sq,hous])q.a.forEach(o=>{o.y=gy(o)});felt.a.forEach(o=>{o.y+=.08+p*.9});sq.a.forEach(o=>{o.y+=1.1});hous.a.forEach(o=>{o.y+=1.2});
+  for(const q of[stall,ice,felt,sq,hous])q.a.forEach(o=>{o.y=gy(o)});felt.a.forEach(o=>{o.y+=.08+p*.9-(o.e.fake?.45:0);o.rz=o.e.fake?.16:0});sq.a.forEach(o=>{o.y+=1.1});hous.a.forEach(o=>{o.y+=1.2});
   stall.set(o=>o.e.fake?0:sst(-5.5,-3.5,lv)*sst(5.5,3.5,lv));ice.set(o=>o.e.fake?0:sst(-1,-4.5,lv));
   felt.set(o=>[sst(.5,-2,lv)+p*.75,1+p*2,sst(.5,-2,lv)+p*.55],(o,i,c)=>mix3(c,o.e.fake?fM:fG,fW,sst(0,3,lv)));
   sq.set(o=>o.e.fake?0:sst(3,6,lv));hous.set(o=>o.e.fake?0:sst(-4,-7,lv));hous.m.visible=lv<-4;
-  chalk.a.forEach(o=>{const w=Z.w(o.e.u,o.e.v);o.y=groundZ(Z,w[0]+o.e.ox,w[1]+o.e.oz,lv)+.12});chalk.set(()=>[1,1,sst(2,5,lv)]);chalk.m.visible=lv>2;
-  Z.lk=sst(-.5,-3,lv)*sst(-7.5,-5,lv)*.7+sst(-.5,-3,lv)*.3};
-Z.tick=(t)=>{const Lm=Z.lant;Lm.visible=Z.lk>.02;if(Lm.visible){for(let i=0;i<stall.a.length;i++){const o=stall.a[i],b=Z.lk*(1.4+.3*Math.sin(t*4+i*3))*fogK(o.x,o.y,o.z);Lm.P[i*3]=o.x;Lm.P[i*3+1]=o.y+3.4;Lm.P[i*3+2]=o.z;Lm.C[i*3]=2.6*b;Lm.C[i*3+1]=1.8*b;Lm.C[i*3+2]=.7*b}Lm.up()}};
+  chalk.a.forEach(o=>{const w=Z.w(o.e.u,o.e.v);o.y=groundZ(Z,w[0]+o.e.ox,w[1]+o.e.oz,lv)+.12});chalk.set(()=>[1,1,sst(2,5,lv)+sst(-3,-5,lv)]);chalk.m.visible=lv>2||lv<-3;chalk.m.material.color.setRGB(lv>0?1:.5,lv>0?1:.38,lv>0?1:.22);
+  Z.lk=sst(-.5,-3,lv)};
+Z.tick=(t)=>{const Lm=Z.lant;Lm.visible=Z.lk>.02;if(Lm.visible){for(let i=0;i<stall.a.length;i++){const o=stall.a[i],b=Z.lk*(1.4+.3*Math.sin(t*4+i*3))*fogK(o.x,o.y,o.z);Lm.P[i*3]=o.x;Lm.P[i*3+1]=o.y+3.4;Lm.P[i*3+2]=o.z;const tn=[[2.8,1.7,.6],[2.8,.7,.9],[.7,2.2,1.2]][i%3];Lm.C[i*3]=tn[0]*b;Lm.C[i*3+1]=tn[1]*b;Lm.C[i*3+2]=tn[2]*b}Lm.up()}};
+})();
+/* Retouches après le premier jugement : routes multiples, intérieurs et dessous, secrets à indices, niveaux médians. */
+function ext(Z,o){for(const k of['build','update','tick']){if(!o[k])continue;const f=Z[k];Z[k]=function(a,b){f.call(Z,a,b);o[k](a,b)}}}
+/* Rampe praticable entre deux points (coordonnées monde) */
+function ramp3(Z,ax,ay,az,bx,by,bz,w,geo,hex){const len=Math.hypot(bx-ax,bz-az),rot=Math.atan2(bz-az,bx-ax),n=Math.max(1,Math.ceil(len/4)),k=(by-ay)/len,out=[];
+  for(let i=0;i<n;i++){const t=(i+.5)/n,mx=lerp(ax,bx,t),mz=lerp(az,bz,t),my=lerp(ay,by,t),s=sBox(Z,mx,mz,len/n/2+.2,w/2,rot,my-.5,my);s.k=k;s.oy0=my-.5;s.oy1=my;out.push(s);
+    if(geo)geo.push([box(len/n+.3,.2,w,mx,my-.1,mz,-rot,0,Math.atan(k)),hex])}return out}
+/* Pistes lumineuses : des points qui n'apparaissent qu'à certains niveaux et mènent quelque part */
+const TR=[],trailPts=points(700,1.25);
+function trail(Z,pts,col,cond){TR.push({Z,pts,col,cond})}
+function tickTrails(t){let k=0;const P=trailPts.P,C=trailPts.C;
+  for(const T of TR){if(!T.cond(T.Z.lv))continue;for(const p of T.pts){if(k>=700)break;const q=typeof p==='function'?p():p,b=(.7+.3*Math.sin(t*3+k*1.7))*fogK(q[0],q[1],q[2]);
+      P[k*3]=q[0];P[k*3+1]=q[1];P[k*3+2]=q[2];C[k*3]=T.col[0]*b;C[k*3+1]=T.col[1]*b;C[k*3+2]=T.col[2]*b;k++}}
+  for(;k<700;k++)P[k*3+1]=-999;trailPts.up()}
+const UB=new THREE.BoxGeometry(1,1,1).translate(0,.5,0);
+
+/* ---------- Berestograd : isbas et route des toits, brèche et cave, congère, tour reconstruite ---------- */
+(()=>{const Z=CIT,h0=Z.h,BR=[29.4,-40.5],DA=198*D2R;
+Z.h=(u,v,lv,n1,n2,n3,x,z)=>{let h=h0(u,v,lv,n1,n2,n3,x,z);
+  if(lv<-3.5){const d=Math.hypot(x-BR[0],z-BR[1]);if(d<7)h-=4.6*sst(-3.5,-5.5,lv)*sst(7,3,d)}
+  if(lv<-2.5){const r=Math.hypot(x,z);if(r>58.6&&r<76){const da=Math.atan2(Math.sin(Math.atan2(z,x)-DA),Math.cos(Math.atan2(z,x)-DA));if(Math.abs(da)<.2)h+=8.8*sst(-2.5,-5.5,lv)*sst(76,63,r)*sst(.2,.1,Math.abs(da))}}
+  return h};
+const cab=inst(UB,M(0xffffff)),slab=inst(UB,M(0xffffff)),cRf=ramp('#e6dccb','#d8d2c8','#3a2a20','#8a5a34','#b8482a');
+ext(Z,{build(){const GY=groundZ(Z,0,0,0),geo=[],am=170*D2R,dx=Math.cos(am),dz=Math.sin(am);
+  const R=[[50,9.3],[41,10.9],[32.5,12.5],[24,14.1],[15.5,15.6]];
+  R.forEach((q,i)=>{const x=dx*q[0],z=dz*q[0];cab.add(x,GY-.6,z,6,q[1]-GY+.3,6,-am,0,0,{i});slab.add(x,q[1]-.3,z,6.8,.3,6.8,-am,0,0,{i});sBox(Z,x,z,3,3,am,-6,q[1]);
+    if(i)ramp3(Z,dx*(R[i-1][0]-2.8),R[i-1][1],dz*(R[i-1][0]-2.8),dx*(q[0]+2.8),q[1],dz*(q[0]+2.8),1.8,geo,0x7a5a36)});
+  stairs(Z,dx*54.9,dz*54.9,7.75,dx*53.1,dz*53.1,9.3,2.4,geo,0x7a5a36);
+  ramp3(Z,dx*12.7,15.6,dz*12.7,dx*6.6,GY+13.7,dz*6.6,1.8,geo,0x7a5a36);
+  [[20,40,3.7],[75,44,4.3],[250,40,3.9],[300,45,4.6],[340,38,3.6],[100,46,4.2]].forEach((q,i)=>{const a=q[0]*D2R,x=Math.cos(a)*q[1],z=Math.sin(a)*q[1],top=GY+q[2];
+    cab.add(x,GY-.6,z,5.4,q[2]+.3,5.4,-a,0,0,{i:i+5});slab.add(x,top-.3,z,6,.3,6,-a,0,0,{i:i+5});sBox(Z,x,z,2.7,2.7,a,-6,top);
+    const cx=x+Math.cos(a+1.3)*3.9,cz=z+Math.sin(a+1.3)*3.9;geo.push([box(1.9,1.9,1.9,cx,GY+.9,cz,-a),0x5a4028]);sBox(Z,cx,cz,.95,.95,a,-6,GY+1.85);
+    if(i===2)Z.midRoof=[x,top+1.3,z]});
+  /* tour reconstruite : marches et balcon, seulement quand la mémoire revient */
+  Z.tw=[];const tg=[];for(let i=0;i<9;i++){const a=(205-i*13)*D2R,x=62.6+Math.cos(a)*4.1,z=Math.sin(a)*4.1,y=8.2+i*.47;Z.tw.push(sBox(Z,x,z,.9,1.1,a+PI/2,y-.5,y));tg.push([box(1.7,.3,2.2,x,y-.15,z,-(a+PI/2)),0xd9401e])}
+  Z.tw.push(sCyl(Z,62.6,0,5,11.6,12.2));tg.push([cyl(5,5,.4,10,62.6,12,0),0xe0a82e]);Z.twM=mesh(merge(tg),M(0xffffff,{vertexColors:true}));
+  mesh(merge(geo),M(0xffffff,{vertexColors:true}));cab.make();slab.make();
+  Z.breach=solids.find(s=>s.Z===Z&&!s.t&&s.y1===9.4&&Math.hypot(s.x-33.5,s.z+46.2)<4);
+  secret(Z,()=>[BR[0],groundZ(Z,BR[0],BR[1])+1.3,BR[1]],'La cave sous la palissade','Là où les rondins se sont effacés, la terre s\'est ouverte. On n\'entre par la brèche que lorsque la ville oublie ses murs.',lv=>lv<=-5);
+  secret(Z,[67,13.5,0],'La généalogie d\'origine','Sur le balcon d\'une tour que la mémoire a rebâtie. Les noms y sont dans le bon ordre.',lv=>lv>=4);
+  const a9=234*D2R;secret(Z,[Math.cos(a9)*55,9.1,Math.sin(a9)*55],'La niche aux lettres','Les écorces cousues le long du rempart forment une phrase. Elle s\'arrête ici.',lv=>lv>=6);
+  secret(Z,Z.midRoof,'Une lettre dans la boue','Sur le toit d\'une isba, une écorce blanche que personne n\'a encore ni grattée ni recopiée.',lv=>Math.abs(lv)<=1);
+  const t1=[];for(let i=0;i<=20;i++){const s=i/20,x=lerp(0,-96,s)+Math.sin(s*9)*5,z=lerp(-64,-58,s)-Math.sin(s*PI)*22;if(inPoly(Z.poly,x,z))t1.push([x,groundZ(Z,x,z,-7)+.5,z])}
+  trail(Z,t1,[1.5,1.4,1.1],lv=>lv<=-4);
+  trail(Z,[2,3.5,5,6.5,8].map(y=>[-96,groundZ(Z,-96,-58,6)+y,-58]),[2.6,1.5,.4],lv=>lv>=5);
+  trail(Z,[[33.2,6.4,-45.8]],[.4,2.6,1.4],lv=>lv>=5);
+  const t2=[];for(let i=0;i<=14;i++){const a=lerp(166,232,i/14)*D2R,r=(57.06-1)/Math.cos(((lerp(166,232,i/14)-162+18)%36-18)*D2R);t2.push([Math.cos(a)*r,9.3+Math.sin(i)*.4,Math.sin(a)*r])}
+  trail(Z,t2,[2.6,1.6,.5],lv=>lv>=6)},
+ update(lv){const p=wpos(lv);cab.set(null,(o,i,c)=>{Z.cLog(lv,c);if(p>0)mix3(c,c,Z.P7[o.e.i%3],p*.6)});slab.set(null,(o,i,c)=>{cRf(lv,c);if(p>0)mix3(c,c,Z.P7[(o.e.i+1)%3],p*.5)});
+  if(Z.breach){Z.breach.on=lv>-5;const L=Z.logs;if(lv<=-5){L.a.forEach((o,i)=>{if(o.e.side===1)put(L.m,i,o.x,-99,o.z,.01)});L.m.instanceMatrix.needsUpdate=true}}
+  for(const s of Z.tw)s.on=lv>=4;Z.twM.visible=lv>=4},
+ tick(t){tickTrails(t)}});
+})();
+
+/* ---------- Le Puits : escalier impérial, pagode de guet, dalle de jade, cangue flottante, lanternes ---------- */
+(()=>{const Z=DON;
+ext(Z,{build(){const geo=[],a=-1.2,ca=Math.cos(a),sa=Math.sin(a),p0=Z.w(ca*39.6,sa*39.6),p1=Z.w(ca*12,sa*12);
+  Z.imp=stairs(Z,p0[0],p0[1],5.2,p1[0],p1[1],-18.8,3.6,geo,0xa8281a);
+  for(const s of[-1,1]){const q=Z.w(ca*40.5-sa*s*2.4,sa*40.5+ca*s*2.4);geo.push([cyl(.4,.4,6,6,q[0],8,q[1]),0xa8281a])}{const q=Z.w(ca*40.5,sa*40.5);geo.push([box(6.4,.7,1,q[0],11.2,q[1],-(a+Z.ax+PI/2)),0x3a2a22])}
+  Z.impM=mesh(merge(geo),M(0xffffff,{vertexColors:true}));
+  /* pagode de guet */
+  const pa=2*TAU/5+.3,pu=Math.cos(pa)*48,pv=Math.sin(pa)*48,pw=Z.w(pu,pv),py=Z.gh(pu,pv,0)-1,g2=[];
+  vis(Z,pu,pv,4.9,py-4.6,py+13.4,2,1.1,g2,0x8a7868);sCyl(Z,pw[0],pw[1],5.6,py+12.9,py+13.45);g2.push([cyl(5.6,5.6,.3,8,pu,py+13.3,pv),0x8a7868]);
+  const m2=mesh(merge(g2),M(0xffffff,{vertexColors:true}));m2.position.set(Z.c[0],0,Z.c[1]);m2.rotation.y=-Z.ax;
+  secret(Z,[pw[0],py+15,pw[1]],'Panier de fleurs de soufre','Sur la pagode de guet. Les soufriers ne montent ici que lorsque le puits n\'appartient à personne.',lv=>Math.abs(lv)<=1.5);
+  /* la seule dalle vraiment jade */
+  const ju=Math.cos(4)*20.6,jv=Math.sin(4)*20.6,jw=Z.w(ju,jv);Z.jade=mesh(box(2.6,.3,2.6,jw[0],Z.gh(ju,jv,-7)+.2,jw[1],.4),new THREE.MeshStandardMaterial({color:0x4fd89a,emissive:0x2fd88a,emissiveIntensity:.9,roughness:.3}));
+  secret(Z,[jw[0],Z.gh(ju,jv,-7)+1.6,jw[1]],'La dalle qui ne ment pas','Parmi toutes les dalles presque du même vert, une seule est vraiment de jade. Elle luit un peu plus que les autres.',lv=>lv<=-4);
+  /* cangue ouverte qui flotte sur la lave */
+  const fw=Z.w(Math.cos(1)*9.5,Math.sin(1)*9.5);Z.fw=fw;Z.raft=mesh(merge([[box(4.4,.35,.6,0,0,-1.9)],[box(4.4,.35,.6,0,0,1.9)],[box(.6,.35,4.4,-1.9,0,0)],[box(.6,.35,4.4,1.9,0,0)],[box(3.4,.2,3.4,0,-.1,0)]]),M(0x8a7460));
+  Z.raftS=sCyl(Z,fw[0],fw[1],2.5,0,0);
+  secret(Z,()=>[fw[0],Z.lavaY(Z.lv)+1.7,fw[1]],'La cangue qui flotte','Un évadé s\'en est servi de radeau sur le lac de lave. Elle n\'est là que lorsque le puits est libre.',lv=>lv>=5);
+  const tl=[],tt=[];for(let k=0;k<9;k++)for(let j=0;j<4;j++){const r=41-3.9*k-1.3,an=k*.7+j*TAU/4,u=Math.cos(an)*r,v=Math.sin(an)*r,w=Z.w(u,v);tl.push([w[0],Z.gh(u,v,0)+2.1,w[1]])}
+  for(let i=0;i<9;i++){const r=39.2-i*3.9,an=i*2.1+.5,u=Math.cos(an)*r,v=Math.sin(an)*r,w=Z.w(u,v);tt.push([w[0],Z.gh(u,v,0)+.6,w[1]])}
+  trail(Z,tl,[2.4,1.5,.5],lv=>lv<=1.5);trail(Z,tt,[2.8,.6,.25],lv=>lv<=1.5)},
+ update(lv){for(const s of Z.imp)s.on=lv<=.5;Z.impM.visible=lv<=.5;Z.jade.visible=lv<=-3;const y=Z.lavaY(lv)+.3;Z.raft.position.set(Z.fw[0],y,Z.fw[1]);Z.raft.visible=lv>=4.5;Z.raftS.y1=y+.2;Z.raftS.y0=y-.3;Z.raftS.on=lv>=4.5}});
+})();
+
+/* ---------- Les Chinampas : racines et roseaux, île de la danse, panier sous l'île, halo de la Grande Galle ---------- */
+(()=>{const Z=RES;let rootsM,reedsM;
+ext(Z,{build(){const I=Z.isl,rg=[],eg=[];
+  for(let i=0;i<9;i++){const a=i*2.4,r=.2+.6*hash(i,3),l=1+2.2*hash(i,9);rg.push([cyl(.025,.012,l,4,Math.cos(a)*r,-.6-l/2,Math.sin(a)*r),0x8a7450])}
+  for(let i=0;i<14;i++){const a=i*TAU/14;eg.push([box(.035,.14,.035,Math.cos(a)*.93,.07,Math.sin(a)*.93),0xc8b070])}
+  rootsM=IM(merge(rg),M(0xffffff,{vertexColors:true}),I.length,false);reedsM=IM(merge(eg),M(0xffffff,{vertexColors:true}),I.length,false);
+  Z.tmp.scale.setScalar(1.9);Z.gh_=points(1,38);
+  secret(Z,()=>{const s=I[Z.iX];return[s.cx,s.cy+1.5,s.cz]},'La danse à rebours','Une île où l\'on n\'arrive que porté par une autre. Elle ne fait la navette que lorsque les ponts sont rompus.',lv=>lv<=-4);
+  secret(Z,()=>{const s=I[Z.iV];return[s.cx,s.cy+1.4,s.cz]},'Le panier du cultivateur manquant','Suspendu sous l\'île du nord, là où personne ne le cherche. Il est encore plein.',lv=>Math.abs(lv)<=2);
+  secret(Z,()=>{const s=I[Z.iC];return[s.cx,s.cy+1.4,s.cz]},'Le rang de plus','Sur l\'île-relais, entre le jardin du milieu et le temple. Un rang de maïs que personne n\'a semé, et une lanterne pour le retrouver.');
+  secret(Z,()=>{const s=I[Z.iR];return[s.cx,s.cy+1.4,s.cz]},'La crypte de racines','Sous l\'île du temple, dans ses racines. On y descend par la passerelle qui plonge depuis l\'île-relais. Le cultivateur manquant y a laissé ses sandales.');
+  const col=(i,dy,n)=>Array.from({length:n},(_,j)=>()=>{const s=I[i];return[s.cx,s.cy+dy+j*1.1,s.cz]});
+  trail(Z,col(Z.iC,2.2,3),[2.6,1.7,.5],()=>true);trail(Z,col(Z.iR,1.2,2),[.6,2.6,1.2],()=>true);
+  trail(Z,col(Z.iV,-3.4,3),[.7,1.6,2.8],lv=>Math.abs(lv)<=2);
+  trail(Z,col(Z.iF,2.4,2).concat(col(Z.iX,2.6,3)),[2.8,.7,.4],lv=>lv<=-3);
+  {const pt=[];for(let i=15;i<21;i++)pt.push(...col(i,1.6,1));pt.push(...col(8,2.5,4));trail(Z,pt,[2.6,2.3,.6],lv=>lv>=5)}},
+ update(lv){Z.gk=sst(-3.5,-6.5,lv)},
+ tick(t){const I=Z.isl;for(let i=0;i<I.length;i++){const s=I[i],R=s.r*s.sc,big=!(s.step||s.flat||s.ferry);put(rootsM,i,s.cx,s.cy-(big?s.r*.25:0),s.cz,R,big?s.r*.9*s.sc:.01,R,s.ph,0,s.rz);put(reedsM,i,s.cx,s.cy,s.cz,R,big||s.flat?7*s.sc:.01,R,s.ph,0,s.rz)}
+  rootsM.instanceMatrix.needsUpdate=reedsM.instanceMatrix.needsUpdate=true;
+  const G=Z.gh_,b=Z.gk*fogK(Z.pyr[0],Z.pyr[1]+5,Z.pyr[2])*(.8+.2*Math.sin(t*1.7));G.P[0]=Z.pyr[0];G.P[1]=Z.pyr[1]+5;G.P[2]=Z.pyr[2];G.C[0]=1.5*b;G.C[1]=1.5*b;G.C[2]=.8*b;G.up()}});
+})();
+
+/* ---------- L'Exarchat : route de la canopée, échelle des contrebandiers, nasse immergée, piste de larves ---------- */
+(()=>{const Z=ANT,h0=Z.h,PIT=[58,-5];
+Z.h=(u,v,lv,n1,n2,n3,x,z)=>{const d=Math.hypot(u-PIT[0],v-PIT[1]);return h0(u,v,lv,n1,n2,n3,x,z)-(d<6?2.4*sst(6,2.5,d):0)};
+ext(Z,{build(){const geo=[],W=(u,v)=>Z.w(u,v),C=[[56,16,6],[46,20,7],[36,17,8],[27,19,9],[18,15,10],[9,15.5,11.5],[0,15.5,13]];
+  {const a=W(66,16),b=W(58,16);stairs(Z,a[0],a[1],-.7,b[0],b[1],6,2.2,geo,0x8a6040)}
+  C.forEach((q,i)=>{const p=W(q[0],q[1]);sCyl(Z,p[0],p[1],2.6,q[2]-.5,q[2]);geo.push([cyl(2.6,2.6,.3,9,p[0],q[2]-.15,p[1]),0x8a6040]);geo.push([cyl(.28,.4,q[2]+1.5,5,p[0],q[2]/2-.9,p[1]),0x4a3424]);
+    const n=i<C.length-1?C[i+1]:[-9,13,17],p2=W(n[0],n[1]);ramp3(Z,p[0],q[2],p[1],p2[0],n[2],p2[1],1.7,geo,0xa87850)});
+  mesh(merge(geo),M(0xffffff,{vertexColors:true}));
+  {const p=W(27,19);secret(Z,[p[0],10.5,p[1]],'Le signal des passeurs','Sur une plateforme de la canopée. On n\'y lit les éclats de la ruche que dans le crépuscule prune.',lv=>lv<=-1&&lv>=-5)}
+  /* route des contrebandiers */
+  const g2=[];Z.smu=vis(Z,9,-13,2.3,-.8,15.2,PI,1.1,g2,0x2a2018);{const p=W(9,-13);Z.smu.push(sCyl(Z,p[0],p[1],3.2,14.7,15.2));g2.push([cyl(3.2,3.2,.3,8,9,15.05,-13),0x2a2018])}
+  {const a=W(7.6,-10.6),b=W(3.4,-4.9),gw=[];Z.smu.push(...ramp3(Z,a[0],15.2,a[1],b[0],15.2,b[1],1.6,gw,0x2a2018));Z.smuW=mesh(merge(gw),M(0xffffff,{vertexColors:true}))}
+  Z.smuM=mesh(merge(g2),M(0xffffff,{vertexColors:true}));Z.smuM.position.set(Z.c[0],0,Z.c[1]);Z.smuM.rotation.y=-Z.ax;
+  {const p=W(10.6,-14.6);secret(Z,[p[0],16.6,p[1]],'Le baril de saumure','En haut de l\'échelle des contrebandiers. Elle n\'est accrochée au mât que dans la nuit.',lv=>lv<=-3)}
+  /* nasse immergée */
+  const pp=W(PIT[0],PIT[1]);mesh(merge([[new THREE.CylinderGeometry(3.3,3.5,2,12,1,true).translate(pp[0],-2.4,pp[1]),0x8a4a3a],[cyl(.7,.5,1,7,pp[0],-2.7,pp[1]),0xc8b070]]),M(0xffffff,{vertexColors:true,side:THREE.DoubleSide}));
+  secret(Z,[pp[0],-1.9,pp[1]],'La nasse de Zoé','Dans une cuve noyée du chenal. Elle n\'affleure qu\'à marée basse, quand la mangrove n\'est ni nuit ni aurore.',lv=>Math.abs(lv)<=1);
+  const sc=secrets.find(s=>s.titre==='Larve-de-Cuve').pos(),st=W(-84,13),tl=[];for(let i=1;i<=16;i++){const s=i/16;tl.push([lerp(st[0],sc[0],s)+Math.sin(s*7)*2.5,.25,lerp(st[1],sc[2],s)+Math.cos(s*5)*2.5])}
+  trail(Z,tl,[.5,3.2,2.3],lv=>lv<=-4)},
+ update(lv){const on=lv<=-3;for(const s of Z.smu)s.on=on;Z.smuM.visible=Z.smuW.visible=on}});
+})();
+
+/* ---------- Givrecloche : nef où l'on entre, arcs-boutants praticables, vitraux, foire à auvents ---------- */
+(()=>{const Z=MAR;let awn,dais;const AW=[LIN('#b8282a'),LIN('#1e50c8'),LIN('#e0a020'),LIN('#1e9a5a')];
+ext(Z,{build(){const bs=Z.cs_,G=Z.G,g=[],fl=[];
+  for(const r of Z.rampDyn)for(const s of ramp3(Z,r[0][0],r[1],r[0][1],r[2][0],r[3],r[2][1],1.5))bs.push(s);
+  /* escalier intérieur le long du mur nord, du dallage jusqu'au faîte */
+  for(let i=0;i<50;i++){const u=13.5-i*.68,y=(i+1)*.5,p=Z.w(u,-4);const s=sBox(Z,p[0],p[1],.5,.85,Z.ax,0,0);s.oy0=y-.6;s.oy1=y;bs.push(s);g.push([box(.9,.3,1.7,u,y-.15,-4),0x6a5040])}
+  g.push([box(1.8,1.2,3,15,.6,1.2)],[box(2.2,.15,3.4,15,1.28,1.2),0xb8282a]);
+  [-13.6,-6.8,6.8,13.6].forEach((x,i)=>fl.push([box(2.4,.06,3,x,.12,2.6),[0xd81e3c,0x1e50d8,0xf0a81e,0x1ea85a][i]]));
+  const m1=new THREE.Mesh(merge(g),M(0xffffff,{vertexColors:true}));m1.castShadow=true;G.add(m1);G.add(new THREE.Mesh(merge(fl),new THREE.MeshBasicMaterial({vertexColors:true})));
+  secret(Z,()=>{const p=Z.w(15,1.2);return[p[0],Z.base+2.8,p[1]]},'Le brelan de l\'abbesse','Sur l\'autel, dans la nef. Par temps clair on entre par la baie brisée du mur sud ; dans la brume, on se laisse glisser entre la glace et le toit.');
+  secret(Z,()=>{const p=Z.w(8,-5.5);return[p[0],Z.base+17.4,p[1]]},'La gargouille qui compte','Sur l\'égout du toit de la nef. On n\'y monte par les arcs-boutants que lorsque la glace arrive à leur pied.',lv=>Math.abs(lv)<=1.5);
+  awn=inst(new THREE.ConeGeometry(2.9,1.3,4).rotateY(PI/4).translate(0,3.9,0),M(0xffffff),false);
+  Z.stall.a.forEach((o,i)=>{if(!o.e.fake)awn.add(o.x,0,o.z,1,1,1,o.ry,0,0,o.e)});awn.make();awn.set(null,(o,i,c)=>{const q=AW[i%4];c[0]=q[0];c[1]=q[1];c[2]=q[2]});
+  const op=Z.w(Z.op[0],Z.op[1]);dais=mesh(box(5.5,.7,4.5,op[0],0,op[1],-Z.ax+.6),M(0x5a4636))},
+ update(lv){awn.a.forEach(o=>{o.y=Z.gh(o.e.u,o.e.v,lv)+wpos(lv)*.6});awn.set(()=>sst(-6.5,-4.5,lv));
+  const oy=Z.gh(Z.op[0],Z.op[1],lv);dais.position.y=oy+.3;Z.organ.position.y=oy+.65;Z.glass.color.setScalar(nramp(2.4,1.7,1.1,1.1,1.3)(lv))}});
 })();
 /* Héros, commandes, interface, musique, boucle. */
 const $=id=>document.getElementById(id);
@@ -800,12 +944,12 @@ const SPOTS={CIT:[-65,89,Math.atan2(.59,-.81)],DON:null,RES:null,ANT:null,MAR:nu
  SPOTS.DON=sp(DON,-58,0);SPOTS.RES=sp(RES,-52,-10);SPOTS.ANT=sp(ANT,-84,13);SPOTS.MAR=sp(MAR,-60,0)}
 function tp(id){const s=SPOTS[id];P.x=s[0];P.z=s[1];P.yaw=s[2];P.y=stand(P.x,P.z,1e3).g+.1;P.vy=0}
 /* Où pose-t-on le pied ? Terrain, puis solides. Les dalles minces se traversent par-dessous, les masses arrêtent. */
-function stand(x,z,feet){let g=ground(x,z),blocked=false,ramp=false;const Zz=zoneAt(x,z);
+function stand(x,z,feet){let g=ground(x,z),blocked=false,ramp=false,on=null;const Zz=zoneAt(x,z);
   if(Zz===ANT)g=Math.max(g,ANT.wy(ANT.lv)-1.05);
   for(let i=0;i<solids.length;i++){const s=solids[i];if(!s.on||(Zz&&s.Z!==Zz&&s.Z!==null)||!inSolid(s,x,z))continue;
     let top=s.y1;if(s.k)top+=s.k*((x-s.x)*s.cs+(z-s.z)*s.sn);
-    if(feet>=top-.8){if(top>g)g=top;if(s.ramp)ramp=true}else if(s.y1-s.y0>.85&&feet+1.7>s.y0)blocked=true}
-  return{g,blocked:blocked&&!ramp}}
+    if(feet>=top-.8){if(top>g){g=top;on=s}if(s.ramp)ramp=true}else if(s.y1-s.y0>.85&&feet+1.7>s.y0)blocked=true}
+  return{g,blocked:blocked&&!ramp,on}}
 const keys={};let locked=false,drag=false,lx=0,ly=0,started=false;
 function move(dt){
   let f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
@@ -817,7 +961,7 @@ function move(dt){
     if(P.g)P.walked+=l>0?sp*dt:0}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g&&keys.Space){P.vy=11.5;P.g=false}
-  if(P.g){if(s.g<P.y-.85){P.g=false}else P.y=s.g}
+  if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
   if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true}}
   hero.position.set(P.x,P.y,P.z);hero.rotation.y+=((((P.face-hero.rotation.y)%TAU)+TAU+PI)%TAU-PI)*Math.min(1,dt*10);
   const cp=Math.cos(P.pitch),tx=P.x,ty=P.y+1.9,tz=P.z;let cx=tx-fx*cp*P.dist,cy=ty+Math.sin(P.pitch)*P.dist,cz=tz-fz*cp*P.dist;

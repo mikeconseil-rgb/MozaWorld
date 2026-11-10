@@ -20,12 +20,12 @@ const SPOTS={CIT:[-65,89,Math.atan2(.59,-.81)],DON:null,RES:null,ANT:null,MAR:nu
  SPOTS.DON=sp(DON,-58,0);SPOTS.RES=sp(RES,-52,-10);SPOTS.ANT=sp(ANT,-84,13);SPOTS.MAR=sp(MAR,-60,0)}
 function tp(id){const s=SPOTS[id];P.x=s[0];P.z=s[1];P.yaw=s[2];P.y=stand(P.x,P.z,1e3).g+.1;P.vy=0}
 /* Où pose-t-on le pied ? Terrain, puis solides. Les dalles minces se traversent par-dessous, les masses arrêtent. */
-function stand(x,z,feet){let g=ground(x,z),blocked=false,ramp=false;const Zz=zoneAt(x,z);
+function stand(x,z,feet){let g=ground(x,z),blocked=false,ramp=false,on=null;const Zz=zoneAt(x,z);
   if(Zz===ANT)g=Math.max(g,ANT.wy(ANT.lv)-1.05);
   for(let i=0;i<solids.length;i++){const s=solids[i];if(!s.on||(Zz&&s.Z!==Zz&&s.Z!==null)||!inSolid(s,x,z))continue;
     let top=s.y1;if(s.k)top+=s.k*((x-s.x)*s.cs+(z-s.z)*s.sn);
-    if(feet>=top-.8){if(top>g)g=top;if(s.ramp)ramp=true}else if(s.y1-s.y0>.85&&feet+1.7>s.y0)blocked=true}
-  return{g,blocked:blocked&&!ramp}}
+    if(feet>=top-.8){if(top>g){g=top;on=s}if(s.ramp)ramp=true}else if(s.y1-s.y0>.85&&feet+1.7>s.y0)blocked=true}
+  return{g,blocked:blocked&&!ramp,on}}
 const keys={};let locked=false,drag=false,lx=0,ly=0,started=false;
 function move(dt){
   let f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);
@@ -37,7 +37,7 @@ function move(dt){
     if(P.g)P.walked+=l>0?sp*dt:0}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g&&keys.Space){P.vy=11.5;P.g=false}
-  if(P.g){if(s.g<P.y-.85){P.g=false}else P.y=s.g}
+  if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
   if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true}}
   hero.position.set(P.x,P.y,P.z);hero.rotation.y+=((((P.face-hero.rotation.y)%TAU)+TAU+PI)%TAU-PI)*Math.min(1,dt*10);
   const cp=Math.cos(P.pitch),tx=P.x,ty=P.y+1.9,tz=P.z;let cx=tx-fx*cp*P.dist,cy=ty+Math.sin(P.pitch)*P.dist,cz=tz-fz*cp*P.dist;

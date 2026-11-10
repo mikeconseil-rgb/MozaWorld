@@ -38,7 +38,7 @@ Z.build=()=>{const gy=x=>groundZ(Z,x[0],x[1],0);
   for(let k=0;k<10;k++){const a0=(-108+36*k)*D2R,a1=a0+36*D2R,ax=[KR*Math.cos(a0),KR*Math.sin(a0)],bx=[KR*Math.cos(a1),KR*Math.sin(a1)],len=Math.hypot(bx[0]-ax[0],bx[1]-ax[1]),
       rot=Math.atan2(bx[1]-ax[1],bx[0]-ax[0]),n=30,gate=gates.includes(k),mx=(ax[0]+bx[0])/2,mz=(ax[1]+bx[1])/2,am=(a0+a1)/2;
     for(let i=0;i<n;i++){if(gate&&i>=12&&i<18)continue;const t=(i+.5)/n,x=lerp(ax[0],bx[0],t),z=lerp(ax[1],bx[1],t);
-      logs.add(x,gy([x,z])-.4,z,1,rr(.92,1.16),1,rnd()*6,0,0,{k:(k*30+i)%3,band:Math.floor(i/3)%3});
+      logs.add(x,gy([x,z])-.4,z,1,rr(.92,1.16),1,rnd()*6,0,0,{k:(k*30+i)%3,band:Math.floor(i/3)%3,side:k});
       for(let q=0;q<2;q++)letters.add(x+Math.cos(am)*.75,gy([x,z])+rr(1.2,7.5),z+Math.sin(am)*.75,1,1,1,PI/2-am+rr(-.2,.2),0,rr(-.3,.3))}
     if(gate){const g=len*.2;for(const s of[-1,1]){const c=s*(g/2+(len-g)/4);sBox(Z,mx+Math.cos(rot)*c,mz+Math.sin(rot)*c,(len-g)/4,.8,rot,-6,9.4)}
       /* linteau de la porte */
@@ -69,7 +69,7 @@ Z.build=()=>{const gy=x=>groundZ(Z,x[0],x[1],0);
     else{const s=rr(.8,1.3);birch.add(x,gy([x,z])-.3,z,s,s,s,0,rr(-.06,.06),rr(-.06,.06));crown.add(x,gy([x,z])+8.2*s,z,s,s,s,rnd()*6)}}
   for(let i=0;i<26;i++){const a=rnd()*TAU,r=rr(8,52),x=Math.cos(a)*r,z=Math.sin(a)*r;shav.add(x,gy([x,z])-.2,z,rr(.5,1.2),rr(.5,1.3),rr(.5,1.2),rnd()*6)}
   for(let i=0;i<9;i++){const x=-96+rr(-7,7),z=-58+rr(-7,7);shav.add(x,gy([x,z])-.2,z,rr(.6,1.3),rr(.6,1.4),rr(.6,1.3))}
-  for(const o of[logs,towers,troofs,walk_,bodies,domes,letters,wins,spruce,birch,crown,shav])o.make();
+  for(const o of[logs,towers,troofs,walk_,bodies,domes,letters,wins,spruce,birch,crown,shav])o.make();Z.logs=logs;Z.cLog=cLog;Z.P7=P7;
   Z.flies=points(240,.9);Z.fseed=[];for(let i=0;i<240;i++)Z.fseed.push([rnd()*TAU,rr(6,74),rr(1,20),rnd()*9]);
   Z.fires=points(6,5);Z.firePos=[[20,22],[-24,12],[8,-30],[-38,-34],[40,-8],[-6,44]];
   secret(Z,Z.top,'L\'écorce pliée en huit','Tout en haut, au pied du bulbe. Personne ne l\'a jamais dépliée, et vous non plus.');
@@ -97,10 +97,10 @@ Z.tick=(t)=>{const F=Z.flies,k=Z.flyK,fk=fogK(0,8,0);F.visible=k>0;if(k>0)for(le
 Z.info={nom:'Le Puits des Neuf Édits',sur:'Donjon · Pentagone · Volcan · Inspiration chinoise impériale',pm:'Tyrannie',pp:'Liberté',conteur:'Conteur C, le Maître du jeu sournois',
   recit:'Il était une fois un empereur qui voulait des lois auxquelles la lave elle-même obéirait. Il fit creuser au fond du cratère un puits de neuf étages et grava un Édit à chacun. Le neuvième, il le fit tailler dans un sceau de jade céladon, à l\'envers, comme tous les sceaux. La lave obéit et durcit en croûte. L\'empereur, lui, ne remonta jamais. Le puits a sa morale, gravée sous la margelle : un ordre s\'applique d\'abord à la main qui le grave.',
   pal:['Croûte brun-violet laquée d\'empreintes vermillon. Dalles céladon et dalles de jade fondu, presque du même vert. Pluie tiède de lapilli.','Fumerolles rabattues en voiles jaune soufre, auvents de laque rouge, une tablette clouée à chaque palier.','Cratère de basalte brun, pagodes de tuf à demi fondues, lueurs orange, fumerolles libres.','La croûte se fend, la lave coule en rigoles. Les tablettes sont retournées face contre terre.','Le puits est ouvert sur le ciel. Fontaines de lave vermillon, panaches jaune soufre, et une passerelle de dominos que nulle règle ne prévoit.']};
-Z.atm=atmo({top:['#24161f','#4a3a20','#3d3029','#5f86ac','#2f6fd0'],hor:['#48282f','#8f7f30','#7a4a2a','#d8cfc6','#ffcf4a'],sun:['#a06a5a','#d9b860','#ffb070','#fff0dd','#fff1c0'],
+Z.atm=atmo({top:['#24161f','#4a3a20','#3d3029','#5f86ac','#1c4a9c'],hor:['#48282f','#8f7f30','#7a4a2a','#d8cfc6','#d88a36'],sun:['#a06a5a','#d9b860','#ffb070','#fff0dd','#fff1c0'],
   hs:['#8a6a74','#8a7a40','#806050','#b0c0d0','#ffd070'],hg:['#2a1a20','#3a3018','#40241a','#6a3a2a','#ff5a2a'],clc:['#2a1c22','#a89a3a','#5a4a40','#f2efe8','#f6e27a'],wc:['#2a2024','#d9c860','#ff8a3a','#ff9a4a','#ff5a1e'],
-  sunI:[.6,.7,.9,1.25,1.7],hI:[1.15,.85,.7,.7,.8],fog:[.012,.011,.006,.0045,.003],el:[55,45,35,45,50],cl:[1,1,.8,.6,.5],wn:[.8,.4,.2,.4,.9],wv:[14,3,-3,-4,-6],wd:[1,3,2,2,3],ws:[.3,.3,.22,.25,.3],wI:[1,1,3,3.5,4.5],
-  exp:[1.55,1.15,1.1,1,1],bl:[.9,.8,1.1,1.2,1.3],az:-120});
+  sunI:[.6,.7,1,1.25,1.7],hI:[1.15,.9,1,.8,.8],fog:[.012,.011,.006,.0045,.0022],el:[55,45,35,45,50],cl:[1,1,.8,.6,.5],wn:[.8,.4,.2,.4,.9],wv:[14,3,-3,-4,-6],wd:[1,3,2,2,3],ws:[.3,.3,.22,.25,.3],wI:[1,1,3,3.5,4.5],
+  exp:[1.55,1.2,1.35,1.05,1],bl:[.9,.8,1.1,1.2,1.3],az:-120});
 const lavaY=lv=>lv>=0?-25+wpos(lv)*11:-25-wneg(lv)*7;Z.lavaY=lavaY;
 Z.h=(u,v,lv,n1,n2)=>{const r=Math.hypot(u,v),t=wpos(lv),crest=12*(.8+.5*n1);
   if(r>=47)return crest*Math.exp(-((r-47)/10)*((r-47)/10))+(n2-.5)*1.4;
@@ -110,8 +110,8 @@ Z.h=(u,v,lv,n1,n2)=>{const r=Math.hypot(u,v),t=wpos(lv),crest=12*(.8+.5*n1);
   return Math.max(lerp(st,cone,t*.85),lavaY(lv))};
 const cCrust=ramp('#3a2630','#3f3326','#3b2d26','#2e211d','#241815'),cCel=LIN('#a9c9b0'),cJade=LIN('#86b392'),cSeal=LIN('#c8321e'),cSul=LIN('#d9c23a'),
   cLava=ramp('#7a2a10','#c85a14','#ff7a1e','#ff5a1a','#ff3a14');
-Z.col=(u,v,lv,h,n1,n2,n3,x,z,o)=>{const r=Math.hypot(u,v),n=wneg(lv),t=wpos(lv);cCrust(lv,o);const s=.75+.5*n2;o[0]*=s;o[1]*=s;o[2]*=s;
-  if(r<47&&h<=lavaY(lv)+.06){cLava(lv,o);return 2.5+2.5*t+(n2-.5)*2}
+Z.col=(u,v,lv,h,n1,n2,n3,x,z,o)=>{const r=Math.hypot(u,v),n=wneg(lv),t=wpos(lv);cCrust(lv,o);let s=.75+.5*n2;if(r<41&&r>5.9){const q=(41-r)/3.9,f=q-Math.floor(q);s*=f>.6?.55:f>.4?1.7:1}o[0]*=s;o[1]*=s;o[2]*=s;
+  if(r<47&&h<=lavaY(lv)+.06){cLava(lv,o);return 1.5+.1*t+(n2-.5)*2}
   if(n>0&&r<47.5){const qx=x/6,qz=z/6,ix=Math.floor(qx),iz=Math.floor(qz),fx=qx-ix,fz=qz-iz,ed=Math.min(fx,1-fx,fz,1-fz),hh=hash(ix,iz);
     if(ed>.1){if(hh<.45)mix3(o,o,cCel,n*.92);else if(hh<.8)mix3(o,o,cJade,n*.92);if(ed>.27&&hash(ix+9,iz)<.2)mix3(o,o,cSeal,n)}}
   const sul=sst(.55,.7,n1+ (n2-.5)*.3)*(1-Math.abs(lv+2)/6);if(sul>0)mix3(o,o,cSul,clamp(sul,0,1)*.8);
@@ -152,12 +152,12 @@ Z.build=()=>{const gh=(u,v,lv)=>Z.gh(u,v,lv===undefined?0:lv);
 };
 Z.update=lv=>{const n=wneg(lv),p=wpos(lv);
   walls.set(null,(o,i,c)=>cTuf(lv,c));for(const q of[walls,roofs])q.a.forEach(o=>{o.rz=o.e.t*p*.22;o.dy=-p*1.6});walls.set(null,(o,i,c)=>cTuf(lv,c));roofs.set(null,(o,i,c)=>cRoofD(lv,c));
-  tabs.a.forEach(o=>{o.y=Z.gh(o.e.u,o.e.v,lv)-.1+p*.5;o.rx=-sst(.5,3.5,lv)*PI/2*.96});tabs.set(()=>[1,1+n*.6,1]);
+  tabs.a.forEach(o=>{o.y=Z.gh(o.e.u,o.e.v,lv)-.1+p*.5;o.rx=-sst(.5,3.5,lv)*PI/2*.96});tabs.set(()=>[1.5,1.5+n*.6,1.5]);
   aw.set(()=>sst(-.5,-2.5,lv)*sst(-7.5,-5,lv)*.6+sst(-.5,-2.5,lv)*.4);cang.set(()=>sst(1.5,4,lv));
   dom.a.forEach(o=>{const e=o.e,a=lv<0?e.n:e.p,k=lv<0?n:sst(0,.75,p),u=lerp(e.z[0],a[0],k),v=lerp(e.z[1],a[1],k),w=Z.w(u,v);o.x=w[0];o.z=w[1];
     o.rx=lerp(e.z[2],a[2],k);o.ry=lerp(e.z[3],a[3],k)-Z.ax;o.rz=lerp(e.z[4],0,k);const g=Z.gh(u,v,lv)+lerp(.2,1.1,1-Math.abs(o.rx)/(PI/2));o.y=(lv>0&&e.by!==undefined)?lerp(g,e.by,k):g});
   dom.set();for(const s of Z.bs)s.on=lv>=3.6;
-  Z.fk=lv>=0?.12+.88*sst(1.5,7,lv):.12*sst(-5,0,lv);Z.light.intensity=.25+2.2*Z.fk+(lv>=0?.8:.8*(1-n));const c=Z.w(0,0);Z.light.position.set(c[0],lavaY(lv)+10+p*22,c[1]);
+  Z.fk=lv>=0?.12+.88*sst(1.5,7,lv):.12*sst(-5,0,lv);Z.light.intensity=.25+(2.2-1.3*wpos(lv))*Z.fk+(lv>=0?.8-.4*wpos(lv):.8*(1-n));const c=Z.w(0,0);Z.light.position.set(c[0],lavaY(lv)+10+p*22,c[1]);
   cSul_(lv)};
 const sm=ramp('#1a1216','#b8a838','#5a4a44','#e8e4dc','#e6d040'),sI=nramp(.5,.9,.5,.7,1);let smC=[0,0,0];function cSul_(lv){sm(lv,smC);Z.smoke.material.opacity=.12+.14*sI(lv);Z.sH=nramp(26,14,30,44,70)(lv)}
 Z.tick=(t,dt)=>{const F=Z.fount,lv=Z.lv,c=Z.w(0,0),ly=lavaY(lv),k=Z.fk,P=F.P,C=F.C,fk=fogK(c[0],10,c[1]);
