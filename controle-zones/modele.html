@@ -1,0 +1,433 @@
+<title>Mosaïque d'Emprise</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Plateau à gauche (mosaïque en SVG), console de commandement à droite. Monde sombre assumé : lapis et nuit, un seul thème. */
+:root{
+  color-scheme:dark;
+  --nuit:#0d1220; --lapis:#16203a; --trait:#2b3a5e; --os:#e8e2d4; --brume:#9aa3b8;
+  --moi:#3fc1b0; --moi-f:#1f6f68; --rival:#d2566b; --rival-f:#7a2738;
+  --lum:#e7c46a; --ombre:#8b6fd6; --alerte:#f0a24a;
+  --f-titre:"Marcellus","Trajan Pro",Georgia,serif;
+  --f-texte:"Inter",system-ui,sans-serif;
+  --f-data:"JetBrains Mono",ui-monospace,monospace;
+}
+html,body{height:100%}
+body{background:var(--nuit);color:var(--os);font-family:var(--f-texte);font-size:14px;line-height:1.45}
+.page{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;max-width:1400px;margin:0 auto;
+  padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (max-width:900px){.page{grid-template-columns:minmax(0,1fr)}}
+header{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 20px}
+h1{font-family:var(--f-titre);font-weight:400;font-size:28px;letter-spacing:.04em;margin:0;text-wrap:balance}
+.sous{color:var(--brume);font-size:13px}
+.plateau{position:relative;background:radial-gradient(ellipse at 50% 45%,var(--lapis),var(--nuit) 75%);border:1px solid var(--trait);border-radius:6px;min-width:0}
+svg#carte{width:100%;height:auto;display:block;max-height:calc(100vh - 110px)}
+.tuile{stroke:var(--nuit);stroke-width:.045;cursor:default;transition:filter .15s}
+.tuile.jouable{cursor:pointer}
+.tuile.jouable:hover{filter:brightness(1.5)}
+.tuile.cible{stroke:var(--os);stroke-width:.08}
+.route{stroke-linecap:round;pointer-events:none}
+.etiq{font-family:var(--f-data);font-size:.36px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-weight:600}
+.glyphe{font-size:.42px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.faille{fill:#05070d;stroke:#1a2238;stroke-width:.03}
+.console{display:flex;flex-direction:column;gap:14px;min-width:0}
+.bloc{border:1px solid var(--trait);border-radius:6px;padding:12px 14px;background:color-mix(in srgb,var(--lapis) 70%,transparent)}
+.bloc h2{font-family:var(--f-titre);font-weight:400;font-size:16px;letter-spacing:.06em;margin:0 0 8px;color:var(--brume);text-transform:uppercase}
+.camps{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.camp{border-left:3px solid var(--c);padding-left:10px}
+.camp b{font-family:var(--f-titre);font-weight:400;font-size:15px;color:var(--c)}
+.chiffres{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:12px;color:var(--brume)}
+.pa{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.pa i{width:14px;height:14px;border-radius:50%;border:1px solid var(--moi);display:block}
+.pa i.plein{background:var(--moi)}
+.boutons{display:flex;gap:8px;flex-wrap:wrap}
+button{font:600 13px var(--f-texte);color:var(--nuit);background:var(--os);border:0;border-radius:4px;padding:8px 14px;cursor:pointer}
+button.second{background:transparent;color:var(--os);border:1px solid var(--trait)}
+button.actif{background:var(--alerte);color:var(--nuit)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,.tuile:focus-visible{outline:2px solid var(--lum);outline-offset:2px}
+#fiche .nom{font-family:var(--f-titre);font-size:17px}
+#fiche .type{color:var(--brume);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+#fiche .verdict{margin-top:6px;font-size:13px}
+.ok{color:var(--moi)} .non{color:var(--rival)} .att{color:var(--alerte)}
+#journal{max-height:170px;overflow:auto;font-size:12.5px;display:flex;flex-direction:column-reverse;gap:3px}
+#journal p{margin:0;color:var(--brume)} #journal p b{color:var(--os);font-weight:500}
+details summary{cursor:pointer;font-family:var(--f-titre);letter-spacing:.06em;text-transform:uppercase;color:var(--brume)}
+details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;gap:5px;font-size:13px}
+.choix{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--nuit) 78%,transparent);border-radius:6px;padding:16px}
+.choix .carte-choix{max-width:460px;background:var(--lapis);border:1px solid var(--trait);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.choix h3{font-family:var(--f-titre);font-weight:400;font-size:22px;margin:0}
+.choix p{margin:0;color:var(--brume)}
+.legende{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--brume)}
+.legende span{display:inline-flex;align-items:center;gap:5px}
+.paquet{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:4px;max-height:220px;overflow:auto}
+.carte-p{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:baseline;font-size:12.5px;padding:3px 6px;border-radius:3px;background:color-mix(in srgb,var(--trait) 40%,transparent)}
+.carte-p.lum span:first-child{color:var(--lum)} .carte-p.omb span:first-child{color:var(--ombre)}
+.carte-p .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .carte-p em{color:var(--brume);font-style:normal}
+.cf{font-family:var(--f-data);font-size:11px;color:var(--brume)}
+@media (prefers-reduced-motion:reduce){.tuile{transition:none}}
+</style>
+
+<div class="page">
+<header>
+  <h1>Mosaïque d'Emprise</h1>
+  <span class="sous">Prototype de règles · contrôle de zones façon Go sur 110 tuiles Girih · tour par tour contre un seigneur rival</span>
+</header>
+
+<section class="plateau" aria-label="Plateau">
+  <svg id="carte" role="img" aria-label="Mosaïque Girih"></svg>
+  <div class="choix" id="ecranChoix">
+    <div class="carte-choix">
+      <h3>Choisis ta voie</h3>
+      <p>Tu pars du Fort-Étalon, en haut. Le rival part du Cadran des Dix Portes, en bas. Berestograd, au centre, n'appartient à personne.</p>
+      <p>Tes zones glissent vers ton pôle à chaque tour. La Lumière tire des créatures de ses Antres ; l'Ombre en fait des barrages qui verrouillent les tuiles voisines.</p>
+      <div class="boutons">
+        <button id="voieLum">Lumière (+7)</button>
+        <button id="voieOmb" class="second">Ombre (−7)</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<aside class="console">
+  <div class="bloc">
+    <h2 id="titreTour">Tour 1</h2>
+    <div class="camps">
+      <div class="camp" style="--c:var(--moi)"><b>Toi</b><div class="chiffres" id="statMoi"></div><div class="pa" id="paMoi"></div></div>
+      <div class="camp" style="--c:var(--rival)"><b>Rival</b><div class="chiffres" id="statRival"></div></div>
+    </div>
+  </div>
+  <div class="bloc boutons">
+    <button id="finTour">Fin du tour</button>
+    <button id="briseSceau" class="second">Brise-sceau (0)</button>
+    <button id="recommencer" class="second">Recommencer</button>
+  </div>
+  <div class="bloc"><h2>Paquet pour le donjon</h2><div class="chiffres" id="paquetResume"></div><ul id="paquetListe" class="paquet"></ul></div>
+  <div class="bloc" id="fiche"><span class="sous">Survole une tuile pour voir son niveau, son coût et ses verrous.</span></div>
+  <div class="bloc"><h2>Chronique</h2><div id="journal"></div></div>
+  <div class="bloc">
+    <details open>
+      <summary>Règles du prototype</summary>
+      <ul>
+        <li><b>Conquérir</b> une tuile neutre voisine de ton territoire coûte des points d'action : 1 + |niveau|/4 si son niveau penche déjà vers ton pôle, 1 + |niveau|/2 sinon. Revenu de base 3 actions par tour (4 pour le rival), et tu gardes jusqu'à 2 actions non dépensées pour le tour suivant.</li>
+        <li><b>Libertés</b> : un groupe de tuiles reliées par des routes respire par les tuiles neutres qui le touchent et qui ne sont pas verrouillées contre lui.</li>
+        <li><b>Encerclement</b> : un groupe sans liberté est capturé et son niveau bascule de signe. Interdit de jouer dans une tuile où ton propre groupe étoufferait, sauf si ce coup capture.</li>
+        <li><b>Citadelle</b> (décagone) : verrouille ses voisines contre l'ennemi. Un groupe qui contient une Citadelle tient 3 tours de siège avant de tomber.</li>
+        <li><b>Antre</b> (papillon) : à niveau négatif, barrage qui verrouille ses voisines contre l'ennemi. À niveau positif, +1 action (créatures).</li>
+        <li><b>Marché</b> (losange) +1 action, <b>Ressource</b> (hexagone) +1 action par paire, seulement si la route les relie à une Citadelle.</li>
+        <li><b>Donjon</b> (pentagone) : sa prise donne une charge de Brise-sceau, qui permet de conquérir une tuile verrouillée.</li>
+        <li><b>Rempart</b> : relie deux de tes Citadelles par une route et toute la route devient rempart (trait doré). Chaque tuile du rempart verrouille ses voisines, comme une Citadelle.</li>
+        <li><b>Paquet</b> : chaque zone de ton royaume (tuiles et territoire) te donne une carte pour la partie donjon : Ressource, Échange, Créature, Pouvoir ou Bastion, de l'école de son niveau (Lumière ou Ombre), de force |niveau|.</li>
+        <li><b>Territoire</b> : une poche neutre bordée par un seul camp lui appartient, compte au score et glisse vers son pôle.</li>
+        <li><b>Fin</b> : prendre la Citadelle de départ adverse gagne. Perdre la tienne, c'est la mort : on recommence. Sinon, au tour 30, le score (tuiles + territoire) départage.</li>
+      </ul>
+    </details>
+    <div class="legende" style="margin-top:10px">
+      <span><svg width="14" height="14"><rect width="14" height="14" fill="url(#hachMoi)"/></svg>verrou à toi</span>
+      <span><svg width="14" height="14"><rect width="14" height="14" fill="url(#hachRival)"/></svg>verrou rival</span>
+      <span><svg width="14" height="14"><circle cx="7" cy="7" r="3" fill="var(--moi)"/></svg>territoire</span>
+      <span><svg width="18" height="14"><line x1="1" y1="7" x2="17" y2="7" stroke="var(--lum)" stroke-width="4"/></svg>rempart</span>
+    </div>
+  </div>
+</aside>
+</div>
+
+<script>
+const CARTE = /*CARTE*/null;
+const T = CARTE.t, N = T.length;
+const DEPART = {moi:44, rival:94};
+const GLYPHE = {Citadelle:"♜", Donjon:"⛫", Antre:"✺", "Marché":"◆", Ressource:"❖"};
+const VAL = {Citadelle:8, Donjon:3, "Marché":2.5, Ressource:2, Antre:2};
+const MAX_TOURS = 30;
+let S; // état
+
+function nouvellePartie(pole){
+  S = {own:Array(N).fill(null), lvl:T.map(t=>t.n), pole:{moi:pole, rival:-pole},
+       pa:{moi:0,rival:0}, sceau:{moi:0,rival:0}, siege:{moi:3,rival:3},
+       tour:1, fini:false, brise:false, journal:[]};
+  for (const s of ["moi","rival"]){
+    const d = DEPART[s]; S.own[d] = s; S.lvl[d] = S.pole[s];
+    for (const v of T[d].v.slice(0,1)){ S.own[v]=s; S.lvl[v]=S.pole[s]; }
+  }
+  S.pa.moi = revenu(S,"moi");
+  log(`Tu prends la voie de <b>${pole>0?"la Lumière":"l'Ombre"}</b>. Le rival suit l'autre.`);
+  rendre();
+}
+const autre = s => s==="moi"?"rival":"moi";
+
+// ---------- logique pure (travaille sur un état passé en argument) ----------
+function groupes(st, s){
+  const vu = new Uint8Array(N), out=[];
+  for (let i=0;i<N;i++) if (st.own[i]===s && !vu[i]){
+    const g=[], pile=[i]; vu[i]=1;
+    while(pile.length){ const x=pile.pop(); g.push(x);
+      for (const y of T[x].v) if (!vu[y] && st.own[y]===s){vu[y]=1;pile.push(y);} }
+    out.push(g);
+  }
+  return out;
+}
+function remparts(st){ // tuiles de la route la plus courte entre deux Citadelles d'un même groupe
+  const R = new Uint8Array(N);
+  for (const s of ["moi","rival"]) for (const g of groupes(st,s)){
+    const cits = g.filter(x=>T[x].type==="Citadelle"); if (cits.length<2) continue;
+    const dans = new Set(g);
+    for (let a=0;a<cits.length;a++) for (let b=a+1;b<cits.length;b++){
+      const prev = new Map([[cits[a],-1]]), file=[cits[a]];
+      while(file.length){ const x=file.shift(); if (x===cits[b]) break;
+        for (const y of T[x].v) if (dans.has(y) && !prev.has(y)){prev.set(y,x);file.push(y);} }
+      for (let x=cits[b]; x!==-1 && x!==undefined; x=prev.get(x)) R[x]=1;
+    }
+  }
+  return R;
+}
+function verrouPar(st, i){ // camps qui verrouillent la tuile neutre i
+  const l = new Set(), R = st._R || (st._R = remparts(st));
+  for (const v of T[i].v){ const o = st.own[v]; if (!o) continue;
+    if (T[v].type==="Citadelle" || R[v]) l.add(o);
+    if (T[v].type==="Antre" && st.lvl[v]<0) l.add(o);
+  }
+  return l;
+}
+function libertes(st, g, s){
+  const L = new Set();
+  for (const x of g) for (const v of T[x].v)
+    if (!st.own[v] && !verrouPar(st,v).has(autre(s))) L.add(v);
+  return L;
+}
+function cout(st, i, s){
+  const n = st.lvl[i], a = Math.abs(n);
+  const memeSens = n===0 || Math.sign(n)===Math.sign(st.pole[s]);
+  return memeSens ? 1 + Math.floor(a/4) : 1 + Math.ceil(a/2);
+}
+function revenu(st, s){
+  let pa = s==="rival" ? 4 : 3;
+  for (const g of groupes(st,s)){
+    if (!g.some(x=>T[x].type==="Citadelle")) continue;
+    let res=0;
+    for (const x of g){ const ty=T[x].type;
+      if (ty==="Ressource") res++;
+      if (ty==="Marché") pa++;
+      if (ty==="Antre" && st.lvl[x]>0) pa++; }
+    pa += Math.floor(res/2);
+  }
+  return Math.min(pa, 9);
+}
+function territoire(st){
+  const ter = Array(N).fill(null), vu = new Uint8Array(N);
+  for (let i=0;i<N;i++) if (!st.own[i] && !vu[i]){
+    const g=[], bord=new Set(), pile=[i]; vu[i]=1;
+    while(pile.length){ const x=pile.pop(); g.push(x);
+      for (const y of T[x].v){ if (st.own[y]) bord.add(st.own[y]);
+        else if(!vu[y]){vu[y]=1;pile.push(y);} } }
+    if (bord.size===1 && g.length<=12){ const o=[...bord][0]; for (const x of g) ter[x]=o; }
+  }
+  return ter;
+}
+function analyse(st, i, s, brise){ // légalité d'un coup
+  if (st.own[i]) return {ok:false, pourquoi:st.own[i]===s?"Déjà à toi.":"Tuile ennemie : on ne la prend qu'en l'encerclant."};
+  if (!T[i].v.some(v=>st.own[v]===s)) return {ok:false, pourquoi:"Pas de route : elle ne touche aucune de tes tuiles."};
+  const verrou = verrouPar(st,i).has(autre(s));
+  if (verrou && !brise) return {ok:false, verrou:true, pourquoi:"Verrouillée par l'ennemi (Citadelle ou Antre-barrage voisin)."};
+  const c = cout(st,i,s);
+  if (c > st.pa[s]) return {ok:false, cout:c, pourquoi:`Coûte ${c} actions, il t'en reste ${st.pa[s]}.`};
+  const sim = jouer(clone(st), i, s, verrou);
+  if (sim.suicide) return {ok:false, cout:c, pourquoi:"Ton groupe y étoufferait (aucune liberté) sans rien capturer."};
+  return {ok:true, cout:c, verrou, sim};
+}
+function clone(st){ return {...st, _R:null, own:st.own.slice(), lvl:st.lvl.slice(), pa:{...st.pa}, sceau:{...st.sceau}, siege:{...st.siege}, journal:[]}; }
+function jouer(st, i, s, brise){
+  const o = autre(s);
+  st.pa[s] -= cout(st,i,s); st.own[i]=s; st._R=null;
+  if (brise) st.sceau[s]--;
+  if (T[i].type==="Donjon") st.sceau[s]++;
+  st.capt = 0; st.prises=[];
+  for (const g of groupes(st,o)){
+    if (libertes(st,g,o).size>0) continue;
+    if (g.some(x=>T[x].type==="Citadelle")) continue; // siège, résolu en fin de tour (les remparts sont toujours dans un groupe à Citadelle)
+    for (const x of g){ st.own[x]=s; st.lvl[x] = -st.lvl[x] || st.pole[s]; }
+    st._R=null; st.capt += g.length; st.prises.push(g);
+  }
+  const monG = groupes(st,s).find(g=>g.includes(i));
+  st.suicide = st.capt===0 && libertes(st,monG,s).size===0 && !monG.some(x=>T[x].type==="Citadelle");
+  return st;
+}
+function finDeTour(st, s){ // dérive des niveaux + siège des citadelles du camp adverse
+  const ter = territoire(st);
+  for (let i=0;i<N;i++){
+    if (st.own[i]===s || ter[i]===s){ const p=st.pole[s]; st.lvl[i] = Math.max(-7,Math.min(7, st.lvl[i]+Math.sign(p))); }
+  }
+  const o = autre(s), evts=[];
+  for (const g of groupes(st,o)){
+    if (!g.some(x=>T[x].type==="Citadelle") || libertes(st,g,o).size>0) continue;
+    if (!g.some(x=>T[x].v.some(v=>st.own[v]===s))) continue; // pas de siège sans ennemi au contact
+    const dep = g.includes(DEPART[o]);
+    if (dep){ st.siege[o]--; evts.push(st.siege[o]>0 ? `siege:${st.siege[o]}` : "chute"); if (st.siege[o]>0) continue; }
+    for (const x of g){ st.own[x]=s; st.lvl[x] = -st.lvl[x] || st.pole[s]; }
+    st._R=null; evts.push("prise:"+g.length);
+  }
+  for (const g of groupes(st,o)) if (g.includes(DEPART[o]) && libertes(st,g,o).size>0) st.siege[o]=3;
+  return evts;
+}
+const CARTE_DE = {Ressource:["Ressource","❖"], "Marché":["Échange","◆"], Antre:["Créature","✺"], Donjon:["Pouvoir","⛫"], Citadelle:["Bastion","♜"]};
+function paquet(st, s){ // cartes tirées des zones du royaume (tuiles + territoire)
+  const ter=territoire(st), out=[];
+  for (let i=0;i<N;i++) if (st.own[i]===s || ter[i]===s){
+    const n=st.lvl[i], [genre,g]=CARTE_DE[T[i].type];
+    const ecole = n>0?"Lumière":n<0?"Ombre":"Neutre";
+    out.push({genre,g,ecole,force:Math.max(1,Math.abs(n)),nom:T[i].nom.split(",")[0],ter:ter[i]===s});
+  }
+  return out.sort((a,b)=>b.force-a.force);
+}
+function score(st, s){ const ter=territoire(st); let n=0; for(let i=0;i<N;i++) if(st.own[i]===s||ter[i]===s) n++; return n; }
+
+// ---------- IA rival ----------
+function coupIA(){
+  const s="rival", o="moi";
+  const libAvant = groupes(S,o).reduce((a,g)=>a+Math.min(libertes(S,g,o).size,4),0);
+  let best=null;
+  for (let i=0;i<N;i++){
+    if (S.own[i]) continue;
+    const a = analyse(S,i,s,false); if (!a.ok) continue;
+    const sim=a.sim;
+    const libApres = groupes(sim,o).reduce((x,g)=>x+Math.min(libertes(sim,g,o).size,4),0);
+    const monG = groupes(sim,s).find(g=>g.includes(i));
+    const mesLib = libertes(sim,monG,s).size;
+    let v = 14*sim.capt + 3*(libAvant-libApres) + VAL[T[i].type] - 0.9*a.cout + (mesLib<=1?-5:0) + Math.random()*0.8;
+    const dMoi = T[i].v.some(x=>S.own[x]===o) ? 1.5 : 0; v += dMoi;
+    if (!best || v>best.v) best={i,v,a};
+  }
+  return best;
+}
+async function tourIA(){
+  S.pa.rival = Math.min(S.pa.rival,2) + revenu(S,"rival");
+  let garde=0;
+  while (!S.fini && garde++<12){
+    const c = coupIA(); if (!c) break;
+    S.pa.rival -= 0; Object.assign(S, jouer(clone(S), c.i, "rival", false), {journal:S.journal});
+    log(`Le rival prend <b>${T[c.i].nom}</b>${S.capt?` et encercle ${S.capt} de tes tuiles`:""}.`);
+    rendre(c.i); await new Promise(r=>setTimeout(r,260));
+  }
+  appliquerFin("rival");
+  if (S.fini) return;
+  S.tour++;
+  if (S.tour>MAX_TOURS){ const a=score(S,"moi"), b=score(S,"rival"); finir(a>b?"Victoire aux points":"Défaite aux points", `${a} contre ${b}.`); return; }
+  S.pa.moi = Math.min(S.pa.moi,2) + revenu(S,"moi"); S.ia=false; rendre();
+}
+function appliquerFin(s){
+  const evts = finDeTour(S,s), o=autre(s);
+  for (const e of evts){
+    if (e.startsWith("siege")) log(`<b>${o==="moi"?"Ta Citadelle":"La Citadelle rivale"}</b> est assiégée : plus que ${e.split(":")[1]} tours.`);
+    if (e.startsWith("prise")) log(`Une Citadelle encerclée tombe (${e.split(":")[1]} tuiles).`);
+  }
+  verifierFin();
+}
+function verifierFin(){
+  if (S.own[DEPART.rival]==="moi") finir("Victoire","Le Cadran des Dix Portes est à toi.");
+  else if (S.own[DEPART.moi]==="rival") finir("Mort","Le Fort-Étalon est tombé. Tu perds tout et tu recommences.");
+}
+function finir(titre, texte){ S.fini=true; log(`<b>${titre}.</b> ${texte}`); rendre(); montrerChoix(titre, texte); }
+
+// ---------- interface ----------
+const svg = document.getElementById("carte");
+const NS="http://www.w3.org/2000/svg";
+const el=(n,a)=>{const e=document.createElementNS(NS,n); for(const k in a) e.setAttribute(k,a[k]); return e;};
+const xs=T.flatMap(t=>t.pts.map(p=>p[0])), ys=T.flatMap(t=>t.pts.map(p=>p[1]));
+const m=.3, X0=Math.min(...xs)-m, Y0=Math.min(...ys)-m;
+svg.setAttribute("viewBox",`${X0} ${Y0} ${Math.max(...xs)+m-X0} ${Math.max(...ys)+m-Y0}`);
+const defs = el("defs",{});
+defs.innerHTML = `
+<pattern id="hachMoi" width=".22" height=".22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width=".22" height=".22" fill="transparent"/><line x1="0" y1="0" x2="0" y2=".22" stroke="#3fc1b0" stroke-width=".07"/></pattern>
+<pattern id="hachRival" width=".22" height=".22" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><rect width=".22" height=".22" fill="transparent"/><line x1="0" y1="0" x2="0" y2=".22" stroke="#d2566b" stroke-width=".07"/></pattern>`;
+document.body.appendChild(Object.assign(document.createElementNS(NS,"svg"),{style:"position:absolute;width:0;height:0"})).appendChild(defs.cloneNode(true));
+svg.appendChild(defs);
+for (const f of CARTE.f) svg.appendChild(el("polygon",{points:f.map(p=>p.join(",")).join(" "),class:"faille"}));
+const gT=el("g",{}), gH=el("g",{}), gR=el("g",{}), gL=el("g",{});
+svg.append(gT,gH,gR,gL);
+const poly=[], hach=[], etq=[], gly=[], ter=[];
+T.forEach((t,i)=>{
+  const pts=t.pts.map(p=>p.join(",")).join(" ");
+  const p=el("polygon",{points:pts,class:"tuile",tabindex:"0"}); poly.push(p); gT.appendChild(p);
+  const h=el("polygon",{points:pts,fill:"none","pointer-events":"none"}); hach.push(h); gH.appendChild(h);
+  const g=el("text",{x:t.c[0],y:t.c[1]-.2,class:"glyphe"}); g.textContent=GLYPHE[t.type]; gly.push(g); gL.appendChild(g);
+  const e=el("text",{x:t.c[0],y:t.c[1]+.2,class:"etiq"}); etq.push(e); gL.appendChild(e);
+  const d=el("circle",{cx:t.c[0]+.32,cy:t.c[1]+.2,r:.09}); ter.push(d); gL.appendChild(d);
+  p.addEventListener("mouseenter",()=>fiche(i)); p.addEventListener("focus",()=>fiche(i));
+  p.addEventListener("click",()=>cliquer(i));
+  p.addEventListener("keydown",ev=>{ if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();cliquer(i);} });
+});
+function couleurNeutre(n){
+  const a=Math.abs(n)/7;
+  if (n===0) return "#4a5578";
+  const base = n>0 ? [231,196,106] : [139,111,214];
+  const fond=[42,52,82];
+  const c=fond.map((f,k)=>Math.round(f+(base[k]-f)*(.3+.6*a)));
+  return `rgb(${c})`;
+}
+function rendre(dernier){
+  const terr = territoire(S);
+  for (let i=0;i<N;i++){
+    const o=S.own[i], n=S.lvl[i];
+    poly[i].setAttribute("fill", o==="moi" ? (Math.abs(n)>=5?"#2fae9f":"#24877d") : o==="rival" ? (Math.abs(n)>=5?"#b8445c":"#93304a") : couleurNeutre(n));
+    const jouable = !S.fini && !S.ia && !o && analyse(S,i,"moi",S.brise).ok;
+    poly[i].classList.toggle("jouable", jouable);
+    poly[i].classList.toggle("cible", i===dernier);
+    const v = o ? null : verrouPar(S,i);
+    hach[i].setAttribute("fill", v && v.has("rival") ? "url(#hachRival)" : v && v.has("moi") ? "url(#hachMoi)" : "none");
+    etq[i].textContent = (n>0?"+":"")+n;
+    etq[i].setAttribute("fill", o ? "#e8e2d4" : n>0 ? "#1a1408" : "#e8e2d4");
+    gly[i].setAttribute("fill", o ? "#e8e2d4cc" : n>0 ? "#1a1408aa" : "#e8e2d4aa");
+    ter[i].setAttribute("fill", terr[i]==="moi"?"#3fc1b0":terr[i]==="rival"?"#d2566b":"none");
+  }
+  gR.innerHTML="";
+  const R = remparts(S);
+  for (let i=0;i<N;i++) for (const v of T[i].v) if (v>i && S.own[i] && S.own[i]===S.own[v]){
+    const mur = R[i] && R[v];
+    gR.appendChild(el("line",{x1:T[i].c[0],y1:T[i].c[1],x2:T[v].c[0],y2:T[v].c[1],class:"route",
+      stroke: mur ? "#e7c46a" : S.own[i]==="moi"?"#7fe6d8":"#f08a9b","stroke-width":mur?".2":".07","stroke-opacity":mur?".95":".75"}));
+  }
+  const pq = paquet(S,"moi"), cpt={};
+  for (const c of pq) cpt[c.genre]=(cpt[c.genre]||0)+1;
+  document.getElementById("paquetResume").textContent = pq.length ? Object.entries(cpt).map(([k,v])=>`${v} ${k}`).join(" · ") : "Aucune carte pour l'instant.";
+  document.getElementById("paquetListe").innerHTML = pq.slice(0,14).map(c=>`<li class="carte-p ${c.ecole==="Lumière"?"lum":c.ecole==="Ombre"?"omb":""}"><span>${c.g}</span><span class="cn">${c.genre} · ${c.nom}${c.ter?" <em>(territoire)</em>":""}</span><span class="cf">${c.ecole} ${c.force}</span></li>`).join("") + (pq.length>14?`<li class="sous">et ${pq.length-14} autres…</li>`:"");
+  document.getElementById("titreTour").textContent = S.fini ? "Partie terminée" : `Tour ${S.tour} / ${MAX_TOURS}${S.ia?" · le rival joue":""}`;
+  for (const s of ["moi","rival"]){
+    const nb=S.own.filter(x=>x===s).length, tr=terr.filter(x=>x===s).length;
+    document.getElementById(s==="moi"?"statMoi":"statRival").innerHTML =
+      `${nb} tuiles · ${tr} territoire<br>revenu ${revenu(S,s)} · sceaux ${S.sceau[s]}<br>remparts ${"■".repeat(S.siege[s])}${"□".repeat(3-S.siege[s])}`;
+  }
+  const r=revenu(S,"moi"); document.getElementById("paMoi").innerHTML = Array.from({length:Math.max(r,S.pa.moi)},(_,k)=>`<i class="${k<S.pa.moi?"plein":""}"></i>`).join("");
+  const b=document.getElementById("briseSceau"); b.textContent=`Brise-sceau (${S.sceau.moi})`; b.disabled=S.sceau.moi<1||S.fini||S.ia; b.classList.toggle("actif",S.brise);
+  document.getElementById("finTour").disabled = S.fini||S.ia;
+  document.getElementById("journal").innerHTML = S.journal.map(x=>`<p>${x}</p>`).reverse().join("");
+}
+function fiche(i){
+  const t=T[i], n=S.lvl[i], o=S.own[i];
+  const a = analyse(S,i,"moi",S.brise);
+  const v = verrouPar(S,i);
+  const cl = a.ok ? "ok" : (a.pourquoi||"").startsWith("Coûte") ? "att" : "non";
+  document.getElementById("fiche").innerHTML = `
+    <div class="type">${GLYPHE[t.type]} ${t.type} · ${t.id}</div>
+    <div class="nom">${t.nom}</div>
+    <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${!o?` · coût ${cout(S,i,"moi")}`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
+    <div class="verdict ${cl}">${a.ok ? (a.sim.capt?`Jouable : capture ${a.sim.capt} tuile(s) ennemie(s).`:"Jouable : clique pour conquérir.") : a.pourquoi}</div>`;
+}
+function cliquer(i){
+  if (S.fini||S.ia) return;
+  const a = analyse(S,i,"moi",S.brise);
+  if (!a.ok){ fiche(i); return; }
+  const j=S.journal; S = Object.assign(a.sim,{journal:j});
+  if (a.verrou) S.brise=false;
+  log(`Tu conquiers <b>${T[i].nom}</b> (${a.cout} actions)${S.capt?` et captures ${S.capt} tuile(s) rivale(s)`:""}${T[i].type==="Donjon"?" · +1 Brise-sceau":""}.`);
+  verifierFin(); rendre(i); fiche(i);
+}
+function log(x){ S.journal.push(x); if (S.journal.length>60) S.journal.shift(); }
+document.getElementById("finTour").onclick=()=>{ if(S.fini||S.ia) return; appliquerFin("moi"); if(S.fini) return; S.ia=true; S.brise=false; rendre(); tourIA(); };
+document.getElementById("briseSceau").onclick=()=>{ S.brise=!S.brise; rendre(); };
+const ecran=document.getElementById("ecranChoix");
+function montrerChoix(titre,texte){ ecran.hidden=false; ecran.querySelector("h3").textContent=titre; ecran.querySelectorAll("p")[0].textContent=texte; ecran.querySelectorAll("p")[1].textContent="Rejoue en choisissant une voie."; }
+document.getElementById("voieLum").onclick=()=>{ ecran.hidden=true; nouvellePartie(1); };
+document.getElementById("voieOmb").onclick=()=>{ ecran.hidden=true; nouvellePartie(-1); };
+document.getElementById("recommencer").onclick=()=>montrerChoix("Recommencer","Une nouvelle partie repart de zéro.");
+nouvellePartie(1);
+</script>
