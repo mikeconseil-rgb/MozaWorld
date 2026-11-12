@@ -28,6 +28,9 @@ svg#carte{width:100%;height:auto;display:block;max-height:calc(100vh - 110px)}
 .tuile.jouable{cursor:pointer}
 .tuile.jouable:hover{filter:brightness(1.5)}
 .tuile.cible{stroke:var(--os);stroke-width:.08}
+@keyframes bascule{0%{filter:brightness(2.6) saturate(1.6)}100%{filter:none}}
+.tuile.bascule{animation:bascule .9s ease-out}
+#fiche .palier{font-family:var(--f-titre);color:var(--lum);font-size:14px;letter-spacing:.04em}
 .tuile.dom{stroke:var(--lum);stroke-width:.07}
 .horde{fill:var(--alerte);font-size:.34px}
 .tourg{font-size:.4px;stroke:var(--nuit);stroke-width:.02;paint-order:stroke}
@@ -71,7 +74,7 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
 .carte-p.lum span:first-child{color:var(--lum)} .carte-p.omb span:first-child{color:var(--ombre)}
 .carte-p .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .carte-p em{color:var(--brume);font-style:normal}
 .cf{grid-column:2;font-family:var(--f-data);font-size:11px;color:var(--brume)}
-@media (prefers-reduced-motion:reduce){.tuile{transition:none}}
+@media (prefers-reduced-motion:reduce){.tuile{transition:none}.tuile.bascule{animation:none}}
 </style>
 
 <div class="page">
@@ -86,7 +89,7 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
     <div class="carte-choix">
       <h3>Choisis ta voie</h3>
       <p>Tu pars du Fort-Étalon, en haut. Le rival part du Cadran des Dix Portes, en bas. Berestograd, au centre, n'appartient à personne.</p>
-      <p>Tes zones glissent vers ton pôle à chaque tour. La Lumière tire des créatures de ses Antres ; l'Ombre en fait des barrages qui verrouillent les tuiles voisines.</p>
+      <p>Chaque épreuve réussie fait bondir une zone d'un palier vers ton pôle. La Lumière tire des créatures de ses Antres ; l'Ombre en fait des barrages qui verrouillent les tuiles voisines.</p>
       <div class="boutons">
         <button id="voieLum">Lumière (+7)</button>
         <button id="voieOmb" class="second">Ombre (−7)</button>
@@ -107,6 +110,7 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
     <button id="finTour">Fin du tour</button>
     <button id="briseSceau" class="second">Brise-sceau (0)</button>
     <button id="batir" class="second">Bâtir une tour (2)</button>
+    <button id="vassal" class="second">Poster un vassal (1)</button>
     <button id="recommencer" class="second">Recommencer</button>
   </div>
   <div class="bloc"><h2>Paquet de pouvoirs</h2><div class="chiffres" id="paquetResume"></div><ul id="paquetListe" class="paquet"></ul></div>
@@ -117,8 +121,8 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
       <summary>Règles du prototype</summary>
       <ul>
         <li><b>Épreuves</b> : chaque type de zone a la sienne. Ressource : Récolte. Marché : Chantier (building, développement). Antre : Chasse. Donjon : Grand Donjon (+1 action, carte +1). Citadelle : Garde du château.</li>
-        <li><b>Mener l'épreuve</b> d'une zone voisine coûte 1 + |niveau|/2 actions (+2 si une tour ennemie la garde). Chaque épreuve réussie pousse son niveau de 2 paliers vers ton pôle. Dès qu'elle atteint ±2 de ton côté, la zone est à toi.</li>
-        <li><b>Raid</b> : mener l'épreuve d'une zone du rival la pousse de 3 paliers vers ton pôle. Si elle passe sous ±2 de son côté, il la perd. Citadelles et remparts ne tombent que par siège. Revenu de base 3 actions par tour (4 pour le rival), et tu gardes jusqu'à 2 actions non dépensées pour le tour suivant.</li>
+        <li><b>Mener l'épreuve</b> d'une zone voisine coûte 1 + |niveau|/2 actions (+2 si une tour ennemie la garde). Chaque épreuve réussie fait bondir la zone d'un seul palier vers ton pôle, et chaque palier la change en profondeur : aspect, ressources, créatures, épreuve suivante (Frémissement, Éveil, Emprise, Métamorphose, Domination, Apogée, Absolu). Tu peux aussi mener l'épreuve de tes propres zones pour les monter plus haut : cartes plus fortes, zone plus dure à reprendre. Les niveaux ne bougent jamais tout seuls. Dès qu'elle atteint ±2 de ton côté, la zone est à toi.</li>
+        <li><b>Raid</b> : mener l'épreuve d'une zone du rival la fait reculer d'un palier vers ton pôle. Si elle passe sous ±2 de son côté, il la perd. Citadelles et remparts ne tombent que par siège. Revenu de base 3 actions par tour (4 pour le rival), et tu gardes jusqu'à 2 actions non dépensées pour le tour suivant.</li>
         <li><b>Libertés</b> : un groupe de tuiles reliées par des routes respire par les tuiles neutres qui le touchent et qui ne sont pas verrouillées contre lui.</li>
         <li><b>Encerclement</b> : un groupe sans liberté est capturé et son niveau bascule de signe. Interdit de jouer dans une tuile où ton propre groupe étoufferait, sauf si ce coup capture.</li>
         <li><b>Citadelle</b> (décagone) : verrouille ses voisines contre l'ennemi. Un groupe qui contient une Citadelle tient 3 tours de siège avant de tomber.</li>
@@ -129,10 +133,10 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
         <li><b>Paquet</b> : chaque zone de ton royaume (tuiles et territoire) te donne une carte : Ressource, Ouvrage, Créature, Pouvoir ou Bastion, de l'école de son niveau (Lumière ou Ombre), de force |niveau|. Plus l'épreuve était dure, plus la carte est forte : Mineure (1 à 3), Majeure (4 et 5), Ultime (6 et plus).</li>
         <li><b>Contre-pouvoirs</b> : chaque genre est redoutable contre un autre. Pouvoir brise Bastion, Bastion arrête Créature, Créature saccage Ouvrage, Ouvrage détourne Ressource, Ressource (le sel et le fer froid) dissipe Pouvoir. Une carte d'Ombre compte aussi double contre la Lumière, et inversement.</li>
         <li><b>Domaines</b> (inspiré de Carcassonne) : des tuiles voisines du même type forment un domaine. Il est achevé quand toutes ses tuiles sont prises, par n'importe qui. Le camp qui a le plus de voix l'emporte (1 voix par tuile, 2 par vassal), gagne +1 action par tour, des points égaux à sa taille, et ses cartes deviennent rares (★, force +2). Égalité : les deux gagnent.</li>
-        <li><b>Vassaux</b> : tu en as 5. Clique sur une de tes tuiles d'un domaine ouvert pour en poster un (1 action). Il te revient quand le domaine s'achève, ou si la tuile est capturée.</li>
+        <li><b>Vassaux</b> : tu en as 5. Clique sur « Poster un vassal », puis sur une de tes tuiles d'un domaine ouvert (1 action). Il te revient quand le domaine s'achève, ou si la tuile est capturée.</li>
         <li><b>Guerre des hordes</b> : une zone à ±7 lève une horde (⚔ et un compte à rebours). Après 4 manches, la horde envahit sa voisine la plus faible, si celle-ci a au moins 2 paliers de défense de moins (défense 5 ou moins). Une horde sauvage vide la zone ; la horde d'une de tes zones à 7 la prend pour toi. Tes zones qui montent à ±7 deviennent donc tes armées.</li>
         <li><b>Défense</b> = |niveau| de la tuile, +3 si une tour est sur elle ou à côté, +3 si elle touche une Citadelle ou un rempart, +1 par Donjon (pouvoir) relié à ta Citadelle, maximum +2. Les Citadelles sont imprenables par les hordes. Bâtir une tour coûte 2 actions.</li>
-        <li><b>Territoire</b> : une poche neutre bordée par un seul camp lui appartient, compte au score et glisse vers son pôle.</li>
+        <li><b>Territoire</b> : une poche neutre bordée par un seul camp lui appartient, et compte au score.</li>
         <li><b>Fin</b> : prendre la Citadelle de départ adverse gagne. Perdre la tienne, c'est la mort : on recommence. Sinon, au tour 30, le score départage : tuiles + territoire + taille des domaines remportés + tuiles de rempart.</li>
       </ul>
     </details>
@@ -219,7 +223,10 @@ function libertes(st, g, s){
     if (!st.own[v] && !verrouPar(st,v).has(autre(s))) L.add(v);
   return L;
 }
-const SEUIL = 2, PAS_DONJON = 2, PAS_RAID = 3;
+const SEUIL = 2, PAS_DONJON = 1, PAS_RAID = 1;
+// Chaque palier est un vrai changement de la zone : aspect, ressources, créatures, épreuve
+const PALIER = ["Équilibre","Frémissement","Éveil","Emprise","Métamorphose","Domination","Apogée","Absolu"];
+const nomPalier = (i, n) => n===0 ? "Équilibre" : `${n>0?T[i].pp:T[i].pm} ${Math.abs(n)} · ${PALIER[Math.abs(n)]}`;
 function cout(st, i, s){ // difficulté du donjon de la zone : plus le niveau est extrême, plus il est dur
   let c = 1 + Math.floor(Math.abs(st.lvl[i])/2) + (T[i].type==="Donjon"?1:0); // le Grand Donjon est plus dur
   const o = st.own[i];
@@ -253,11 +260,11 @@ function territoire(st){
   return ter;
 }
 function analyse(st, i, s, brise){ // légalité d'un coup
-  if (st.own[i]===s) return {ok:false, pourquoi:"Déjà à toi."};
+  if (st.own[i]===s && Math.sign(st.lvl[i])===Math.sign(st.pole[s]) && Math.abs(st.lvl[i])>=7) return {ok:false, pourquoi:"Déjà au palier 7 : sa horde se lève."};
   const raid = st.own[i]===autre(s);
   if (raid && (T[i].type==="Citadelle" || remparts(st)[i])) return {ok:false, pourquoi:"Donjon scellé : une Citadelle ou un rempart ne tombe que par siège."};
-  if (!T[i].v.some(v=>st.own[v]===s)) return {ok:false, pourquoi:"Pas de route : elle ne touche aucune de tes tuiles."};
-  const verrou = !raid && verrouPar(st,i).has(autre(s));
+  if (st.own[i]!==s && !T[i].v.some(v=>st.own[v]===s)) return {ok:false, pourquoi:"Pas de route : elle ne touche aucune de tes tuiles."};
+  const verrou = !raid && st.own[i]!==s && verrouPar(st,i).has(autre(s));
   if (verrou && !brise) return {ok:false, verrou:true, pourquoi:"Verrouillée par l'ennemi (Citadelle ou Antre-barrage voisin)."};
   const c = cout(st,i,s);
   if (c > st.pa[s]) return {ok:false, cout:c, pourquoi:`Coûte ${c} actions, il t'en reste ${st.pa[s]}.`};
@@ -273,6 +280,7 @@ function jouer(st, i, s, brise){
   const avant = st.own[i], p = Math.sign(st.pole[s]);
   st.lvl[i] = Math.max(-7, Math.min(7, st.lvl[i] + p*(avant===o ? PAS_RAID : PAS_DONJON)));
   st.capt = 0; st.prises=[]; st.dEvts=[]; st.suicide=false; st.resultat=null;
+  if (avant===s){ st.resultat="renforcee"; return st; }
   if (avant===o){ // raid : la zone ennemie baisse ; elle est perdue si elle quitte le pôle de son maître
     if (tient(st,i,o)){ st.resultat="affaiblie"; return st; }
     st.own[i]=null; st._R=null; st.tours[i]=false;
@@ -356,7 +364,7 @@ function texteGuerre(e){
 function finDeTour(st, s){ // dérive des niveaux + siège des citadelles du camp adverse
   const ter = territoire(st);
   for (let i=0;i<N;i++){
-    if (st.own[i]===s || ter[i]===s){ const p=st.pole[s]; st.lvl[i] = Math.max(-7,Math.min(7, st.lvl[i]+Math.sign(p))); }
+    // plus de dérive automatique : seuls les épreuves font bouger les niveaux
   }
   const o = autre(s), evts=[];
   for (const g of groupes(st,o)){
@@ -397,14 +405,14 @@ function coupIA(){
   const libAvant = groupes(S,o).reduce((a,g)=>a+Math.min(libertes(S,g,o).size,4),0);
   let best=null;
   for (let i=0;i<N;i++){
-    if (S.own[i]===s) continue;
     const a = analyse(S,i,s,false); if (!a.ok) continue;
     const sim=a.sim;
     const libApres = groupes(sim,o).reduce((x,g)=>x+Math.min(libertes(sim,g,o).size,4),0);
     const monG = groupes(sim,s).find(g=>g.includes(i));
     const mesLib = monG ? libertes(sim,monG,s).size : 9;
     const dom = (sim.dEvts||[]).reduce((a,e)=>a+(e.gagnants.includes(s)?DOMS[e.d].length*1.5:-DOMS[e.d].length),0);
-    const gain = sim.resultat==="prise" ? VAL[T[i].type] : sim.resultat==="arrachee" ? 5 : sim.resultat==="affaiblie" ? 2 : VAL[T[i].type]*0.35;
+    const front = T[i].v.some(x=>S.own[x]===o) ? 1.5 : 0.3;
+    const gain = sim.resultat==="renforcee" ? front + (Math.abs(sim.lvl[i])===7?2:0) + VAL[T[i].type]*0.2 : sim.resultat==="prise" ? VAL[T[i].type] : sim.resultat==="arrachee" ? 5 : sim.resultat==="affaiblie" ? 2 : VAL[T[i].type]*0.35;
     let v = gain - VAL[T[i].type] + dom + 14*sim.capt + 3*(libAvant-libApres) + VAL[T[i].type] - 0.9*a.cout + (mesLib<=1?-5:0) + Math.random()*0.8;
     const dMoi = T[i].v.some(x=>S.own[x]===o) ? 1.5 : 0; v += dMoi;
     if (!best || v>best.v) best={i,v,a};
@@ -499,6 +507,7 @@ function couleurNeutre(n){
   const c=fond.map((f,k)=>Math.round(f+(base[k]-f)*(.3+.6*a)));
   return `rgb(${c})`;
 }
+let lvlVu = null;
 function rendre(dernier){
   const terr = territoire(S);
   for (let i=0;i<N;i++){
@@ -507,6 +516,7 @@ function rendre(dernier){
     const jouable = !S.fini && !S.ia && o!=="moi" && analyse(S,i,"moi",S.brise).ok;
     poly[i].classList.toggle("jouable", jouable);
     poly[i].classList.toggle("cible", i===dernier);
+    if (lvlVu && lvlVu[i]!==n){ poly[i].classList.remove("bascule"); void poly[i].getBBox(); poly[i].classList.add("bascule"); }
     const v = o ? null : verrouPar(S,i);
     hach[i].setAttribute("fill", v && v.has("rival") ? "url(#hachRival)" : v && v.has("moi") ? "url(#hachMoi)" : "none");
     etq[i].textContent = (n>0?"+":"")+n;
@@ -521,6 +531,7 @@ function rendre(dernier){
     hach[i].setAttribute("stroke-width", ".06"); hach[i].setAttribute("stroke-dasharray", ach?".12 .08":"");
     ter[i].setAttribute("fill", terr[i]==="moi"?"#3fc1b0":terr[i]==="rival"?"#d2566b":"none");
   }
+  lvlVu = S.lvl.slice();
   gR.innerHTML="";
   const R = remparts(S);
   for (let i=0;i<N;i++) for (const v of T[i].v) if (v>i && S.own[i] && S.own[i]===S.own[v]){
@@ -539,6 +550,7 @@ function rendre(dernier){
       `${nb} tuiles · ${tr} territoire · score ${score(S,s)}<br>vassaux ${"◆".repeat(S.res[s])}${"◇".repeat(VASSAUX-S.res[s])} · domaines ${Object.values(S.acheves).filter(w=>w.includes(s)).length}<br>revenu ${revenu(S,s)} · sceaux ${S.sceau[s]}<br>remparts ${"■".repeat(S.siege[s])}${"□".repeat(3-S.siege[s])}`;
   }
   const r=revenu(S,"moi"); document.getElementById("paMoi").innerHTML = Array.from({length:Math.max(r,S.pa.moi)},(_,k)=>`<i class="${k<S.pa.moi?"plein":""}"></i>`).join("");
+  const bv=document.getElementById("vassal"); bv.disabled=S.fini||S.ia||S.pa.moi<1||S.res.moi<1; bv.classList.toggle("actif",!!S.vassMode);
   const bt=document.getElementById("batir"); bt.disabled=S.fini||S.ia||S.pa.moi<COUT_TOUR; bt.classList.toggle("actif",S.bati);
   const b=document.getElementById("briseSceau"); b.textContent=`Brise-sceau (${S.sceau.moi})`; b.disabled=S.sceau.moi<1||S.fini||S.ia; b.classList.toggle("actif",S.brise);
   document.getElementById("finTour").disabled = S.fini||S.ia;
@@ -548,16 +560,17 @@ function fiche(i){
   const t=T[i], n=S.lvl[i], o=S.own[i];
   const a = analyse(S,i,"moi",S.brise);
   const v = verrouPar(S,i);
-  const cl = o==="moi" ? (vassalPossible(i)==="ok"?"ok":"att") : a.ok ? "ok" : (a.pourquoi||"").startsWith("Coûte") ? "att" : "non";
+  const cl = o==="moi" && S.bati ? (tourPossible(i)==="ok"?"ok":"att") : o==="moi" && S.vassMode ? (vassalPossible(i)==="ok"?"ok":"att") : a.ok ? "ok" : (a.pourquoi||"").startsWith("Coûte") ? "att" : "non";
   document.getElementById("fiche").innerHTML = `
     <div class="type">${GLYPHE[t.type]} ${t.type} · ${t.id}</div>
     <div class="nom">${t.nom}</div>
-    <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${o!=="moi"?` · ${EPREUVE[t.type].replace(/^(la |le )/,"")} ${cout(S,i,"moi")} actions`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
+    <div class="palier">${nomPalier(i,n)}</div>
+    <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${true?` · ${EPREUVE[t.type].replace(/^(la |le )/,"")} ${cout(S,i,"moi")} actions`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
     ${enDomaine(i)?`<div class="chiffres">domaine de ${DOMS[DOM[i]].length} ${t.type==="Marché"?"Marchés":t.type+"s"} · ${S.acheves[DOM[i]]?"achevé":"ouvert"} · voix toi ${poids(S,DOM[i],"moi")}, rival ${poids(S,DOM[i],"rival")}</div>`:""}
     ${S.vass[i]?`<div class="chiffres">vassal ${S.vass[i]==="moi"?"à toi":"rival"} posté ici</div>`:""}
     ${S.horde[i]>0?`<div class="chiffres att">⚔ horde levée : invasion dans ${ATTENTE_HORDE-S.horde[i]} manche(s)${cibleHorde(S,i)!==null?` vers ${T[cibleHorde(S,i)].nom}`:", aucune cible assez faible"}</div>`:""}
     ${o?`<div class="chiffres">défense ${T[i].type==="Citadelle"?"imprenable":defense(S,i)}${T[i].type!=="Citadelle"?(defense(S,i)<=5?" · envahissable par une horde":" · à l'abri des hordes"):""}${S.tours[i]?" · tour":""}</div>`:""}
-    <div class="verdict ${cl}">${o==="moi" && S.bati ? (tourPossible(i)==="ok"?"Clique pour élever une tour.":tourPossible(i)) : o==="moi" ? (vassalPossible(i)==="ok"?"Clique pour poster un vassal (1 action, +2 voix).":vassalPossible(i)) : a.ok ? `${EPREUVE_DESC[t.type]}<br>Clique pour mener l'épreuve : niveau ${a.sim.lvl[i]>0?"+":""}${a.sim.lvl[i]}, ${a.sim.resultat==="prise"?"la zone devient tienne":a.sim.resultat==="arrachee"?"le rival perd la zone":a.sim.resultat==="affaiblie"?"le rival la garde encore":"pas encore assez pour la prendre"}${a.sim.capt?`, encercle ${a.sim.capt} tuile(s)`:""}.` : a.pourquoi}</div>`;
+    <div class="verdict ${cl}">${o==="moi" && S.bati ? (tourPossible(i)==="ok"?"Clique pour élever une tour.":tourPossible(i)) : o==="moi" && S.vassMode ? (vassalPossible(i)==="ok"?"Clique pour poster un vassal (1 action, +2 voix).":vassalPossible(i)) : a.ok ? `${EPREUVE_DESC[t.type]}<br>Clique pour mener l'épreuve : la zone deviendrait <b>${nomPalier(i,a.sim.lvl[i])}</b>, ${a.sim.resultat==="renforcee"?"ta zone monte d'un palier":a.sim.resultat==="prise"?"la zone devient tienne":a.sim.resultat==="arrachee"?"le rival perd la zone":a.sim.resultat==="affaiblie"?"le rival la garde encore":"pas encore assez pour la prendre"}${a.sim.capt?`, encercle ${a.sim.capt} tuile(s)`:""}.` : a.pourquoi}</div>`;
 }
 function tourPossible(i){
   if (S.own[i]!=="moi") return "Une tour se bâtit sur une de tes tuiles.";
@@ -579,8 +592,8 @@ const EPREUVE_DESC = {Ressource:"Récolte : mini-jeu de moisson et de gestion de
 function texteDonjon(i, s, a){
   const qui = (s==="moi" ? "Tu mènes " : "Le rival mène ") + EPREUVE[T[i].type], n=S.lvl[i], niv=`${n>0?"+":""}${n}`;
   const r = S.resultat;
-  const fin = r==="prise" ? `la zone est ${s==="moi"?"à toi":"à lui"}` : r==="arrachee" ? `la zone ${s==="moi"?"échappe au rival":"t'échappe"}` : r==="affaiblie" ? (s==="moi" ? "la zone du rival baisse" : "ta zone baisse, mais tu la tiens encore") : "la zone n'a pas encore basculé";
-  return `${qui} de <b>${T[i].nom}</b> (${a.cout} actions) : niveau ${niv}, ${fin}${S.capt?`, ${S.capt} tuile(s) encerclée(s)`:""}${r==="prise"&&T[i].type==="Donjon"?" · +1 Brise-sceau":""}.`;
+  const fin = r==="renforcee" ? "ta zone monte d'un palier" .replace("ta zone", s==="moi"?"ta zone":"sa zone") : r==="prise" ? `la zone est ${s==="moi"?"à toi":"à lui"}` : r==="arrachee" ? `la zone ${s==="moi"?"échappe au rival":"t'échappe"}` : r==="affaiblie" ? (s==="moi" ? "la zone du rival baisse" : "ta zone baisse, mais tu la tiens encore") : "la zone n'a pas encore basculé";
+  return `${qui} de <b>${T[i].nom}</b> (${a.cout} actions) : la zone devient <b>${nomPalier(i,n)}</b>, ${fin}${S.capt?`, ${S.capt} tuile(s) encerclée(s)`:""}${r==="prise"&&T[i].type==="Donjon"?" · +1 Brise-sceau":""}.`;
 }
 function cliquer(i){
   if (S.fini||S.ia) return;
@@ -588,8 +601,8 @@ function cliquer(i){
     if (tourPossible(i)==="ok"){ S.tours[i]=true; S.pa.moi-=COUT_TOUR; S.bati=false; log(`Tu élèves une tour sur <b>${T[i].nom}</b> (+3 défense ici et autour).`); rendre(i); }
     fiche(i); return;
   }
-  if (S.own[i]==="moi"){
-    if (vassalPossible(i)==="ok"){ S.vass[i]="moi"; S.res.moi--; S.pa.moi--; log(`Tu postes un vassal sur <b>${T[i].nom}</b> (+2 voix dans ce domaine).`); rendre(i); }
+  if (S.own[i]==="moi" && S.vassMode){
+    if (vassalPossible(i)==="ok"){ S.vass[i]="moi"; S.res.moi--; S.pa.moi--; S.vassMode=false; log(`Tu postes un vassal sur <b>${T[i].nom}</b> (+2 voix dans ce domaine).`); rendre(i); }
     fiche(i); return;
   }
   const a = analyse(S,i,"moi",S.brise);
@@ -601,9 +614,10 @@ function cliquer(i){
   verifierFin(); rendre(i); fiche(i);
 }
 function log(x){ S.journal.push(x); if (S.journal.length>60) S.journal.shift(); }
-document.getElementById("finTour").onclick=()=>{ if(S.fini||S.ia) return; appliquerFin("moi"); if(S.fini) return; S.ia=true; S.brise=false; S.bati=false; rendre(); tourIA(); };
+document.getElementById("finTour").onclick=()=>{ if(S.fini||S.ia) return; appliquerFin("moi"); if(S.fini) return; S.ia=true; S.brise=false; S.bati=false; S.vassMode=false; rendre(); tourIA(); };
 document.getElementById("briseSceau").onclick=()=>{ S.brise=!S.brise; S.bati=false; rendre(); };
-document.getElementById("batir").onclick=()=>{ S.bati=!S.bati; S.brise=false; rendre(); };
+document.getElementById("batir").onclick=()=>{ S.bati=!S.bati; S.brise=false; S.vassMode=false; rendre(); };
+document.getElementById("vassal").onclick=()=>{ S.vassMode=!S.vassMode; S.bati=false; S.brise=false; rendre(); };
 const ecran=document.getElementById("ecranChoix");
 function montrerChoix(titre,texte){ ecran.hidden=false; ecran.querySelector("h3").textContent=titre; ecran.querySelectorAll("p")[0].textContent=texte; ecran.querySelectorAll("p")[1].textContent="Rejoue en choisissant une voie."; }
 document.getElementById("voieLum").onclick=()=>{ ecran.hidden=true; nouvellePartie(1); };

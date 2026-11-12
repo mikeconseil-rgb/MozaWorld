@@ -9,6 +9,6 @@ for i,t in enumerate(T):
 nb=[set() for _ in T]
 for e,l in edges.items():
     if len(l)==2: a,b=l; nb[a].add(b); nb[b].add(a)
-out=[{"id":t["id"],"type":t["type"],"nom":t["nom"],"pts":t["pts"],"c":t["c"],"n":t["niveau"],"v":sorted(nb[i])} for i,t in enumerate(T)]
+out=[{"id":t["id"],"type":t["type"],"nom":t["nom"],"pts":t["pts"],"c":t["c"],"n":t["niveau"],"v":sorted(nb[i]),"pm":t.get("pmoins","Ombre"),"pp":t.get("pplus","Lumière")} for i,t in enumerate(T)]
 json.dump({"t":out,"f":m["failles"]},open('carte.json','w'),ensure_ascii=False,separators=(',',':'))
 import collections;print(collections.Counter(len(x) for x in nb), [ (i,t['id']) for i,t in enumerate(T) if t['type']=='Citadelle'])
