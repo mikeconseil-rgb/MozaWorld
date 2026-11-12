@@ -134,7 +134,7 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
         <li><b>Contre-pouvoirs</b> : chaque genre est redoutable contre un autre. Pouvoir brise Bastion, Bastion arrête Créature, Créature saccage Ouvrage, Ouvrage détourne Ressource, Ressource (le sel et le fer froid) dissipe Pouvoir. Une carte d'Ombre compte aussi double contre la Lumière, et inversement.</li>
         <li><b>Domaines</b> (inspiré de Carcassonne) : des tuiles voisines du même type forment un domaine. Il est achevé quand toutes ses tuiles sont prises, par n'importe qui. Le camp qui a le plus de voix l'emporte (1 voix par tuile, 2 par vassal), gagne +1 action par tour, des points égaux à sa taille, et ses cartes deviennent rares (★, force +2). Égalité : les deux gagnent.</li>
         <li><b>Vassaux</b> : tu en as 5. Clique sur « Poster un vassal », puis sur une de tes tuiles d'un domaine ouvert (1 action). Il te revient quand le domaine s'achève, ou si la tuile est capturée.</li>
-        <li><b>Guerre des hordes</b> : une zone à ±7 lève une horde (⚔ et un compte à rebours). Après 4 manches, la horde envahit sa voisine la plus faible, si celle-ci a au moins 2 paliers de défense de moins (défense 5 ou moins). Une horde sauvage vide la zone ; la horde d'une de tes zones à 7 la prend pour toi. Tes zones qui montent à ±7 deviennent donc tes armées.</li>
+        <li><b>Guerre des hordes</b> : chaque zone a son pôle envahisseur. Arrivée à 7 de ce côté, elle lève une horde (⚔ et un compte à rebours). Après 4 manches, la horde envahit sa voisine la plus faible, si celle-ci a au moins 2 paliers de défense de moins (défense 5 ou moins). Une horde sauvage vide la zone ; la horde d'une de tes zones à 7 la prend pour toi. Tes zones qui montent à 7 du côté envahisseur deviennent donc tes armées. Poussée de l'autre côté, la zone n'envahit jamais, mais sa carte gagne +2 de force.</li>
         <li><b>Défense</b> = |niveau| de la tuile, +3 si une tour est sur elle ou à côté, +3 si elle touche une Citadelle ou un rempart, +1 par Donjon (pouvoir) relié à ta Citadelle, maximum +2. Les Citadelles sont imprenables par les hordes. Bâtir une tour coûte 2 actions.</li>
         <li><b>Empreinte</b> (✧) : une zone sauvage se souvient de toi. Son épreuve te coûte une action de moins, et une seule réussite suffit pour la reprendre dès qu'elle est à 1 palier de ton côté. Ta carte revient à sa force d'avant. Tes tours deviennent des ruines, que tu relèves pour 1 action. L'empreinte s'efface si un autre prend la zone avant toi.</li>
         <li><b>Territoire</b> : une poche neutre bordée par un seul camp lui appartient, et compte au score.</li>
@@ -169,6 +169,9 @@ for (let i=0;i<N;i++) if (DOM[i]<0){
   for (let k=0;k<g.length;k++) for (const y of T[g[k]].v) if (DOM[y]<0 && T[y].type===T[i].type){ DOM[y]=DOMS.length; g.push(y); }
   DOMS.push(g);
 }
+// Chaque zone a un pôle qui envahit (sa horde) ; l'autre pôle accorde un pouvoir plus fort. Fixé par zone.
+const INV = T.map(t=>{ let h=0; for (const ch of t.id+t.nom) h=(h*31+ch.charCodeAt(0))>>>0; return (h%2) ? 1 : -1; });
+const nomPole = (i, sg) => sg>0 ? T[i].pp : T[i].pm;
 const enDomaine = i => DOMS[DOM[i]].length>=2;
 let S; // état
 
@@ -348,7 +351,7 @@ function cibleHorde(st, i){ // la tuile la plus faible qu'une horde peut envahir
 function guerre(st){ // en fin de manche : les zones à ±7 lèvent une horde, qui frappe après ATTENTE_HORDE manches
   const ev=[];
   for (let i=0;i<N;i++){
-    if (Math.abs(st.lvl[i])<7 || T[i].type==="Citadelle"){ st.horde[i]=0; continue; }
+    if (Math.abs(st.lvl[i])<7 || Math.sign(st.lvl[i])!==INV[i] || T[i].type==="Citadelle"){ st.horde[i]=0; continue; }
     st.horde[i]++;
     if (st.horde[i] < ATTENTE_HORDE) continue;
     const c = cibleHorde(st,i); st.horde[i]=0;
@@ -395,7 +398,7 @@ function paquet(st, s){ // cartes tirées des zones du royaume (tuiles + territo
     const n=st.lvl[i], [genre,g]=CARTE_DE[T[i].type];
     const ecole = n>0?"Lumière":n<0?"Ombre":"Neutre";
     const rare = !!(st.acheves[DOM[i]] && st.acheves[DOM[i]].includes(s));
-    out.push({genre,g,ecole,rare,force:Math.min(9,Math.max(1,Math.abs(n))+(rare?2:0)+(T[i].type==="Donjon"?1:0)),nom:T[i].nom.split(",")[0],ter:ter[i]===s});
+    out.push({genre,g,ecole,rare,force:Math.min(9,Math.max(1,Math.abs(n))+(rare?2:0)+(T[i].type==="Donjon"?1:0)+(n && Math.sign(n)===-INV[i] ? 2 : 0)),nom:T[i].nom.split(",")[0],ter:ter[i]===s});
   }
   return out.sort((a,b)=>b.force-a.force);
 }
@@ -599,6 +602,7 @@ function fiche(i){
     <div class="type">${GLYPHE[t.type]} ${t.type} · ${t.id}</div>
     <div class="nom">${t.nom}</div>
     <div class="palier">${nomPalier(i,n)}</div>
+    <div class="chiffres">à 7, ${nomPole(i,INV[i])} lâche une horde · ${nomPole(i,-INV[i])} accorde un pouvoir plus fort (+2)</div>
     <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${true?` · ${EPREUVE[t.type].replace(/^(la |le )/,"")} ${cout(S,i,"moi")} actions`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
     ${enDomaine(i)?`<div class="chiffres">domaine de ${DOMS[DOM[i]].length} ${t.type==="Marché"?"Marchés":t.type+"s"} · ${S.acheves[DOM[i]]?"achevé":"ouvert"} · voix toi ${poids(S,DOM[i],"moi")}, rival ${poids(S,DOM[i],"rival")}</div>`:""}
     ${S.emp[i]==="moi"?`<div class="chiffres ok">✧ ton empreinte : épreuve plus facile, reprise dès 1 palier de ton côté</div>`:""}
