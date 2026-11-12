@@ -88,7 +88,7 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
   <div class="choix" id="ecranChoix">
     <div class="carte-choix">
       <h3>Choisis ta voie</h3>
-      <p>Tu pars du Fort-Étalon, en haut. Le rival part du Cadran des Dix Portes, en bas. Berestograd, au centre, n'appartient à personne.</p>
+      <p id="intro"></p>
       <p>Chaque épreuve réussie fait bondir une zone d'un palier vers ton pôle. La Lumière tire des créatures de ses Antres ; l'Ombre en fait des barrages qui verrouillent les tuiles voisines.</p>
       <div class="boutons">
         <button id="voieLum">Lumière (+7)</button>
@@ -156,7 +156,8 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
 <script>
 const CARTE = /*CARTE*/null;
 const T = CARTE.t, N = T.length;
-const DEPART = {moi:44, rival:94};
+const DEPART = {...CARTE.depart};
+const court = i => T[i].nom.split(",")[0];
 const GLYPHE = {Citadelle:"♜", Donjon:"⛫", Antre:"✺", "Marché":"◆", Ressource:"❖"};
 const VAL = {Citadelle:8, Donjon:3, "Marché":2.5, Ressource:2, Antre:2};
 const MAX_TOURS = 30;
@@ -176,6 +177,7 @@ const enDomaine = i => DOMS[DOM[i]].length>=2;
 let S; // état
 
 function nouvellePartie(pole){
+  Object.assign(DEPART, CARTE.depart);
   S = {own:Array(N).fill(null), lvl:T.map(t=>t.n), pole:{moi:pole, rival:-pole},
        pa:{moi:0,rival:0}, vass:Array(N).fill(null), emp:Array(N).fill(null), ruine:Array(N).fill(null), morts:0, horde:Array(N).fill(0), tours:Array(N).fill(false), bati:false, res:{moi:VASSAUX,rival:VASSAUX}, acheves:{}, sceau:{moi:0,rival:0}, siege:{moi:3,rival:3},
        tour:1, fini:false, brise:false, journal:[]};
@@ -476,7 +478,7 @@ function nettoyer(st){ // l'empreinte et les ruines s'effacent quand un autre pr
 }
 function verifierFin(){
   nettoyer(S);
-  if (S.own[DEPART.rival]==="moi") finir("Victoire","Le Cadran des Dix Portes est à toi.");
+  if (S.own[DEPART.rival]==="moi") finir("Victoire",`${court(DEPART.rival)}, la Citadelle du rival, est à toi.`);
   else if (S.own[DEPART.moi]==="rival") mourir();
 }
 function mourir(){ // tu perds tout ; tes zones redeviennent sauvages, avec ton empreinte
@@ -496,7 +498,7 @@ function mourir(){ // tu perds tout ; tes zones redeviennent sauvages, avec ton 
     const v = (T[i].type==="Citadelle"?20:0) + dist[i] - Math.abs(S.lvl[i]) + (S.emp[i]==="moi"?2:0);
     if (!best || v>best.v) best={i,v}; }
   DEPART.moi = best.i; S.own[best.i]="moi"; S.lvl[best.i]=S.pole.moi*SEUIL; S.emp[best.i]=null;
-  log(`<b>Mort n° ${S.morts}.</b> Tu perds tout : héros, pouvoirs, vassaux. Tes ${n} zones redeviennent sauvages mais gardent ton empreinte (✧). Tu renais à <b>${T[best.i].nom}</b>.`);
+  log(`<b>Mort n° ${S.morts}.</b> Tu perds tout : héros, pouvoirs, vassaux. ${n>1?`Tes ${n} zones redeviennent sauvages mais gardent`:n===1?"Ta zone redevient sauvage mais garde":"Aucune zone ne garde"} ton empreinte (✧). Tu renais à <b>${T[best.i].nom}</b>.`);
   rendre(best.i);
 }
 function finir(titre, texte){ S.fini=true; log(`<b>${titre}.</b> ${texte}`); rendre(); montrerChoix(titre, texte); }
@@ -506,7 +508,7 @@ const svg = document.getElementById("carte");
 const NS="http://www.w3.org/2000/svg";
 const el=(n,a)=>{const e=document.createElementNS(NS,n); for(const k in a) e.setAttribute(k,a[k]); return e;};
 const xs=T.flatMap(t=>t.pts.map(p=>p[0])), ys=T.flatMap(t=>t.pts.map(p=>p[1]));
-const m=.3, X0=Math.min(...xs)-m, Y0=Math.min(...ys)-m;
+const m=.05, X0=Math.min(...xs)-m, Y0=Math.min(...ys)-m;
 svg.setAttribute("viewBox",`${X0} ${Y0} ${Math.max(...xs)+m-X0} ${Math.max(...ys)+m-Y0}`);
 const defs = el("defs",{});
 defs.innerHTML = `
@@ -519,9 +521,9 @@ const gT=el("g",{}), gH=el("g",{}), gR=el("g",{}), gL=el("g",{});
 svg.append(gT,gH,gR,gL);
 const poly=[], hach=[], etq=[], gly=[], ter=[], vas=[], hor=[], tou=[], emp=[];
 T.forEach((t,i)=>{
-  const pts=t.pts.map(p=>p.join(",")).join(" ");
-  const p=el("polygon",{points:pts,class:"tuile",tabindex:"0"}); poly.push(p); gT.appendChild(p);
-  const h=el("polygon",{points:pts,fill:"none","pointer-events":"none"}); hach.push(h); gH.appendChild(h);
+  const chemin=[t.pts,...(t.pts2||[])].map(r=>"M"+r.map(p=>p.join(",")).join("L")+"Z").join("");
+  const p=el("path",{d:chemin,class:"tuile",tabindex:"0"}); poly.push(p); gT.appendChild(p);
+  const h=el("path",{d:chemin,fill:"none","pointer-events":"none"}); hach.push(h); gH.appendChild(h);
   const g=el("text",{x:t.c[0],y:t.c[1]-.2,class:"glyphe"}); g.textContent=GLYPHE[t.type]; gly.push(g); gL.appendChild(g);
   const e=el("text",{x:t.c[0],y:t.c[1]+.2,class:"etiq"}); etq.push(e); gL.appendChild(e);
   const d=el("circle",{cx:t.c[0]+.32,cy:t.c[1]+.2,r:.09}); ter.push(d); gL.appendChild(d);
@@ -560,6 +562,8 @@ function rendre(dernier){
     gly[i].setAttribute("fill", o ? "#e8e2d4cc" : n>0 ? "#1a1408aa" : "#e8e2d4aa");
     hor[i].textContent = S.horde[i]>0 ? `⚔${ATTENTE_HORDE-S.horde[i]}` : "";
     tou[i].setAttribute("fill", S.tours[i] ? (o==="moi"?"#7fe6d8":"#f08a9b") : S.ruine[i] ? "#8a8f9c" : "none");
+    tou[i].setAttribute("visibility", S.tours[i]||S.ruine[i] ? "visible" : "hidden");
+    vas[i].setAttribute("visibility", S.vass[i] ? "visible" : "hidden");
     emp[i].textContent = S.emp[i]==="moi" ? "✧" : "";
     vas[i].setAttribute("fill", S.vass[i]==="moi"?"#7fe6d8":S.vass[i]==="rival"?"#f08a9b":"none");
     vas[i].setAttribute("stroke", S.vass[i]?"#0d1220":"none");
@@ -660,6 +664,7 @@ document.getElementById("batir").onclick=()=>{ S.bati=!S.bati; S.brise=false; S.
 document.getElementById("vassal").onclick=()=>{ S.vassMode=!S.vassMode; S.bati=false; S.brise=false; rendre(); };
 const ecran=document.getElementById("ecranChoix");
 function montrerChoix(titre,texte){ ecran.hidden=false; ecran.querySelector("h3").textContent=titre; ecran.querySelectorAll("p")[0].textContent=texte; ecran.querySelectorAll("p")[1].textContent="Rejoue en choisissant une voie."; }
+document.getElementById("intro").textContent = `Tu pars de ${court(DEPART.moi)}, à l'ouest. Le rival part de ${court(DEPART.rival)}, à l'est. ${court(CARTE.centre)}, au centre, n'appartient à personne.`;
 document.getElementById("voieLum").onclick=()=>{ ecran.hidden=true; nouvellePartie(1); };
 document.getElementById("voieOmb").onclick=()=>{ ecran.hidden=true; nouvellePartie(-1); };
 document.getElementById("recommencer").onclick=()=>montrerChoix("Recommencer","Une nouvelle partie repart de zéro.");
