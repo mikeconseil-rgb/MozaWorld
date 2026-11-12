@@ -77,7 +77,7 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
 <div class="page">
 <header>
   <h1>Mosaïque d'Emprise</h1>
-  <span class="sous">Prototype de règles · contrôle de zones un peu Go, un peu Carcassonne, sur 110 tuiles Girih · tour par tour contre un seigneur rival</span>
+  <span class="sous">Prototype de règles · couche stratégique du monde ouvert : chaque donjon fait monter ou baisser sa zone · un peu Go, un peu Carcassonne · tour par tour contre un seigneur rival</span>
 </header>
 
 <section class="plateau" aria-label="Plateau">
@@ -116,7 +116,8 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
     <details open>
       <summary>Règles du prototype</summary>
       <ul>
-        <li><b>Conquérir</b> une tuile neutre voisine de ton territoire coûte des points d'action : 1 + |niveau|/4 si son niveau penche déjà vers ton pôle, 1 + |niveau|/2 sinon. Revenu de base 3 actions par tour (4 pour le rival), et tu gardes jusqu'à 2 actions non dépensées pour le tour suivant.</li>
+        <li><b>Faire le donjon</b> d'une zone voisine coûte 1 + |niveau|/2 actions (+2 si une tour ennemie la garde). Chaque donjon réussi pousse son niveau de 2 paliers vers ton pôle. Dès qu'elle atteint ±2 de ton côté, la zone est à toi.</li>
+        <li><b>Raid</b> : faire le donjon d'une zone du rival la pousse de 3 paliers vers ton pôle. Si elle passe sous ±2 de son côté, il la perd. Citadelles et remparts ne tombent que par siège. Revenu de base 3 actions par tour (4 pour le rival), et tu gardes jusqu'à 2 actions non dépensées pour le tour suivant.</li>
         <li><b>Libertés</b> : un groupe de tuiles reliées par des routes respire par les tuiles neutres qui le touchent et qui ne sont pas verrouillées contre lui.</li>
         <li><b>Encerclement</b> : un groupe sans liberté est capturé et son niveau bascule de signe. Interdit de jouer dans une tuile où ton propre groupe étoufferait, sauf si ce coup capture.</li>
         <li><b>Citadelle</b> (décagone) : verrouille ses voisines contre l'ennemi. Un groupe qui contient une Citadelle tient 3 tours de siège avant de tomber.</li>
@@ -216,11 +217,14 @@ function libertes(st, g, s){
     if (!st.own[v] && !verrouPar(st,v).has(autre(s))) L.add(v);
   return L;
 }
-function cout(st, i, s){
-  const n = st.lvl[i], a = Math.abs(n);
-  const memeSens = n===0 || Math.sign(n)===Math.sign(st.pole[s]);
-  return memeSens ? 1 + Math.floor(a/4) : 1 + Math.ceil(a/2);
+const SEUIL = 2, PAS_DONJON = 2, PAS_RAID = 3;
+function cout(st, i, s){ // difficulté du donjon de la zone : plus le niveau est extrême, plus il est dur
+  let c = 1 + Math.floor(Math.abs(st.lvl[i])/2);
+  const o = st.own[i];
+  if (o && o!==s && (st.tours[i] || T[i].v.some(v=>st.own[v]===o && st.tours[v]))) c += 2; // donjon gardé par une tour
+  return c;
 }
+const tient = (st, i, s) => Math.sign(st.lvl[i])===Math.sign(st.pole[s]) && Math.abs(st.lvl[i])>=SEUIL;
 function revenu(st, s){
   let pa = s==="rival" ? 4 : 3;
   for (const g of groupes(st,s)){
@@ -247,23 +251,35 @@ function territoire(st){
   return ter;
 }
 function analyse(st, i, s, brise){ // légalité d'un coup
-  if (st.own[i]) return {ok:false, pourquoi:st.own[i]===s?"Déjà à toi.":"Tuile ennemie : on ne la prend qu'en l'encerclant."};
+  if (st.own[i]===s) return {ok:false, pourquoi:"Déjà à toi."};
+  const raid = st.own[i]===autre(s);
+  if (raid && (T[i].type==="Citadelle" || remparts(st)[i])) return {ok:false, pourquoi:"Donjon scellé : une Citadelle ou un rempart ne tombe que par siège."};
   if (!T[i].v.some(v=>st.own[v]===s)) return {ok:false, pourquoi:"Pas de route : elle ne touche aucune de tes tuiles."};
-  const verrou = verrouPar(st,i).has(autre(s));
+  const verrou = !raid && verrouPar(st,i).has(autre(s));
   if (verrou && !brise) return {ok:false, verrou:true, pourquoi:"Verrouillée par l'ennemi (Citadelle ou Antre-barrage voisin)."};
   const c = cout(st,i,s);
   if (c > st.pa[s]) return {ok:false, cout:c, pourquoi:`Coûte ${c} actions, il t'en reste ${st.pa[s]}.`};
   const sim = jouer(clone(st), i, s, verrou);
   if (sim.suicide) return {ok:false, cout:c, pourquoi:"Ton groupe y étoufferait (aucune liberté) sans rien capturer."};
-  return {ok:true, cout:c, verrou, sim};
+  return {ok:true, cout:c, verrou, raid, sim};
 }
 function clone(st){ return {...st, _R:null, vass:st.vass.slice(), horde:st.horde.slice(), tours:st.tours.slice(), res:{...st.res}, acheves:{...st.acheves}, own:st.own.slice(), lvl:st.lvl.slice(), pa:{...st.pa}, sceau:{...st.sceau}, siege:{...st.siege}, journal:[]}; }
 function jouer(st, i, s, brise){
   const o = autre(s);
-  st.pa[s] -= cout(st,i,s); st.own[i]=s; st._R=null;
+  st.pa[s] -= cout(st,i,s);
   if (brise) st.sceau[s]--;
+  const avant = st.own[i], p = Math.sign(st.pole[s]);
+  st.lvl[i] = Math.max(-7, Math.min(7, st.lvl[i] + p*(avant===o ? PAS_RAID : PAS_DONJON)));
+  st.capt = 0; st.prises=[]; st.dEvts=[]; st.suicide=false; st.resultat=null;
+  if (avant===o){ // raid : la zone ennemie baisse ; elle est perdue si elle quitte le pôle de son maître
+    if (tient(st,i,o)){ st.resultat="affaiblie"; return st; }
+    st.own[i]=null; st._R=null; st.tours[i]=false;
+    if (st.vass[i]){ st.res[st.vass[i]]++; st.vass[i]=null; }
+    st.resultat="arrachee";
+  }
+  if (!tient(st,i,s)){ st.resultat = st.resultat || "progres"; return st; }
+  st.own[i]=s; st._R=null; st.resultat="prise";
   if (T[i].type==="Donjon") st.sceau[s]++;
-  st.capt = 0; st.prises=[];
   for (const g of groupes(st,o)){
     if (libertes(st,g,o).size>0) continue;
     if (g.some(x=>T[x].type==="Citadelle")) continue; // siège, résolu en fin de tour (les remparts sont toujours dans un groupe à Citadelle)
@@ -375,14 +391,15 @@ function coupIA(){
   const libAvant = groupes(S,o).reduce((a,g)=>a+Math.min(libertes(S,g,o).size,4),0);
   let best=null;
   for (let i=0;i<N;i++){
-    if (S.own[i]) continue;
+    if (S.own[i]===s) continue;
     const a = analyse(S,i,s,false); if (!a.ok) continue;
     const sim=a.sim;
     const libApres = groupes(sim,o).reduce((x,g)=>x+Math.min(libertes(sim,g,o).size,4),0);
     const monG = groupes(sim,s).find(g=>g.includes(i));
-    const mesLib = libertes(sim,monG,s).size;
+    const mesLib = monG ? libertes(sim,monG,s).size : 9;
     const dom = (sim.dEvts||[]).reduce((a,e)=>a+(e.gagnants.includes(s)?DOMS[e.d].length*1.5:-DOMS[e.d].length),0);
-    let v = dom + 14*sim.capt + 3*(libAvant-libApres) + VAL[T[i].type] - 0.9*a.cout + (mesLib<=1?-5:0) + Math.random()*0.8;
+    const gain = sim.resultat==="prise" ? VAL[T[i].type] : sim.resultat==="arrachee" ? 5 : sim.resultat==="affaiblie" ? 2 : VAL[T[i].type]*0.35;
+    let v = gain - VAL[T[i].type] + dom + 14*sim.capt + 3*(libAvant-libApres) + VAL[T[i].type] - 0.9*a.cout + (mesLib<=1?-5:0) + Math.random()*0.8;
     const dMoi = T[i].v.some(x=>S.own[x]===o) ? 1.5 : 0; v += dMoi;
     if (!best || v>best.v) best={i,v,a};
   }
@@ -394,7 +411,7 @@ async function tourIA(){
   while (!S.fini && garde++<12){
     const c = coupIA(); if (!c) break;
     S.pa.rival -= 0; Object.assign(S, jouer(clone(S), c.i, "rival", false), {journal:S.journal});
-    log(`Le rival prend <b>${T[c.i].nom}</b>${S.capt?` et encercle ${S.capt} de tes tuiles`:""}.`);
+    log(texteDonjon(c.i, "rival", c.a));
     for (const e of S.dEvts||[]) log(texteDomaine(e));
     rendre(c.i); await new Promise(r=>setTimeout(r,260));
   }
@@ -481,7 +498,7 @@ function rendre(dernier){
   for (let i=0;i<N;i++){
     const o=S.own[i], n=S.lvl[i];
     poly[i].setAttribute("fill", o==="moi" ? (Math.abs(n)>=5?"#2fae9f":"#24877d") : o==="rival" ? (Math.abs(n)>=5?"#b8445c":"#93304a") : couleurNeutre(n));
-    const jouable = !S.fini && !S.ia && !o && analyse(S,i,"moi",S.brise).ok;
+    const jouable = !S.fini && !S.ia && o!=="moi" && analyse(S,i,"moi",S.brise).ok;
     poly[i].classList.toggle("jouable", jouable);
     poly[i].classList.toggle("cible", i===dernier);
     const v = o ? null : verrouPar(S,i);
@@ -529,12 +546,12 @@ function fiche(i){
   document.getElementById("fiche").innerHTML = `
     <div class="type">${GLYPHE[t.type]} ${t.type} · ${t.id}</div>
     <div class="nom">${t.nom}</div>
-    <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${!o?` · coût ${cout(S,i,"moi")}`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
+    <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${o!=="moi"?` · donjon ${cout(S,i,"moi")} actions`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
     ${enDomaine(i)?`<div class="chiffres">domaine de ${DOMS[DOM[i]].length} ${t.type==="Marché"?"Marchés":t.type+"s"} · ${S.acheves[DOM[i]]?"achevé":"ouvert"} · voix toi ${poids(S,DOM[i],"moi")}, rival ${poids(S,DOM[i],"rival")}</div>`:""}
     ${S.vass[i]?`<div class="chiffres">vassal ${S.vass[i]==="moi"?"à toi":"rival"} posté ici</div>`:""}
     ${S.horde[i]>0?`<div class="chiffres att">⚔ horde levée : invasion dans ${ATTENTE_HORDE-S.horde[i]} manche(s)${cibleHorde(S,i)!==null?` vers ${T[cibleHorde(S,i)].nom}`:", aucune cible assez faible"}</div>`:""}
     ${o?`<div class="chiffres">défense ${T[i].type==="Citadelle"?"imprenable":defense(S,i)}${T[i].type!=="Citadelle"?(defense(S,i)<=5?" · envahissable par une horde":" · à l'abri des hordes"):""}${S.tours[i]?" · tour":""}</div>`:""}
-    <div class="verdict ${cl}">${o==="moi" && S.bati ? (tourPossible(i)==="ok"?"Clique pour élever une tour.":tourPossible(i)) : o==="moi" ? (vassalPossible(i)==="ok"?"Clique pour poster un vassal (1 action, +2 voix).":vassalPossible(i)) : a.ok ? (a.sim.capt?`Jouable : capture ${a.sim.capt} tuile(s) ennemie(s).`:"Jouable : clique pour conquérir.") : a.pourquoi}</div>`;
+    <div class="verdict ${cl}">${o==="moi" && S.bati ? (tourPossible(i)==="ok"?"Clique pour élever une tour.":tourPossible(i)) : o==="moi" ? (vassalPossible(i)==="ok"?"Clique pour poster un vassal (1 action, +2 voix).":vassalPossible(i)) : a.ok ? `Clique pour faire le donjon : niveau ${a.sim.lvl[i]>0?"+":""}${a.sim.lvl[i]}, ${a.sim.resultat==="prise"?"la zone devient tienne":a.sim.resultat==="arrachee"?"le rival perd la zone":a.sim.resultat==="affaiblie"?"le rival la garde encore":"pas encore assez pour la prendre"}${a.sim.capt?`, encercle ${a.sim.capt} tuile(s)`:""}.` : a.pourquoi}</div>`;
 }
 function tourPossible(i){
   if (S.own[i]!=="moi") return "Une tour se bâtit sur une de tes tuiles.";
@@ -551,6 +568,12 @@ function vassalPossible(i){
   if (S.pa.moi<1) return "Poster un vassal coûte 1 action.";
   return "ok";
 }
+function texteDonjon(i, s, a){
+  const qui = s==="moi" ? "Tu fais" : "Le rival fait", n=S.lvl[i], niv=`${n>0?"+":""}${n}`;
+  const r = S.resultat;
+  const fin = r==="prise" ? `la zone est ${s==="moi"?"à toi":"à lui"}` : r==="arrachee" ? `la zone ${s==="moi"?"échappe au rival":"t'échappe"}` : r==="affaiblie" ? (s==="moi" ? "la zone du rival baisse" : "ta zone baisse, mais tu la tiens encore") : "la zone n'a pas encore basculé";
+  return `${qui} le donjon de <b>${T[i].nom}</b> (${a.cout} actions) : niveau ${niv}, ${fin}${S.capt?`, ${S.capt} tuile(s) encerclée(s)`:""}${r==="prise"&&T[i].type==="Donjon"?" · +1 Brise-sceau":""}.`;
+}
 function cliquer(i){
   if (S.fini||S.ia) return;
   if (S.own[i]==="moi" && S.bati){
@@ -566,7 +589,7 @@ function cliquer(i){
   const j=S.journal; S = Object.assign(a.sim,{journal:j});
   if (a.verrou) S.brise=false;
   for (const e of S.dEvts||[]) setTimeout(()=>{log(texteDomaine(e)); rendre(i);},0);
-  log(`Tu conquiers <b>${T[i].nom}</b> (${a.cout} actions)${S.capt?` et captures ${S.capt} tuile(s) rivale(s)`:""}${T[i].type==="Donjon"?" · +1 Brise-sceau":""}.`);
+  log(texteDonjon(i, "moi", a));
   verifierFin(); rendre(i); fiche(i);
 }
 function log(x){ S.journal.push(x); if (S.journal.length>60) S.journal.shift(); }
