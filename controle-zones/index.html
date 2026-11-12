@@ -136,8 +136,9 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
         <li><b>Vassaux</b> : tu en as 5. Clique sur « Poster un vassal », puis sur une de tes tuiles d'un domaine ouvert (1 action). Il te revient quand le domaine s'achève, ou si la tuile est capturée.</li>
         <li><b>Guerre des hordes</b> : une zone à ±7 lève une horde (⚔ et un compte à rebours). Après 4 manches, la horde envahit sa voisine la plus faible, si celle-ci a au moins 2 paliers de défense de moins (défense 5 ou moins). Une horde sauvage vide la zone ; la horde d'une de tes zones à 7 la prend pour toi. Tes zones qui montent à ±7 deviennent donc tes armées.</li>
         <li><b>Défense</b> = |niveau| de la tuile, +3 si une tour est sur elle ou à côté, +3 si elle touche une Citadelle ou un rempart, +1 par Donjon (pouvoir) relié à ta Citadelle, maximum +2. Les Citadelles sont imprenables par les hordes. Bâtir une tour coûte 2 actions.</li>
+        <li><b>Empreinte</b> (✧) : une zone sauvage se souvient de toi. Son épreuve te coûte une action de moins, et une seule réussite suffit pour la reprendre dès qu'elle est à 1 palier de ton côté. Ta carte revient à sa force d'avant. Tes tours deviennent des ruines, que tu relèves pour 1 action. L'empreinte s'efface si un autre prend la zone avant toi.</li>
         <li><b>Territoire</b> : une poche neutre bordée par un seul camp lui appartient, et compte au score.</li>
-        <li><b>Fin</b> : prendre la Citadelle de départ adverse gagne. Perdre la tienne, c'est la mort : on recommence. Sinon, au tour 30, le score départage : tuiles + territoire + taille des domaines remportés + tuiles de rempart.</li>
+        <li><b>Fin</b> : prendre la Citadelle de départ adverse gagne. Perdre la tienne, c'est la mort : tu perds tout (héros, pouvoirs, vassaux) et tu renais ailleurs, faible. Tes zones restent dans le monde, sauvages, avec leur niveau. Sinon, au tour 30, le score départage : tuiles + territoire + taille des domaines remportés + tuiles de rempart.</li>
       </ul>
     </details>
     <div class="legende" style="margin-top:10px">
@@ -160,6 +161,7 @@ const GLYPHE = {Citadelle:"♜", Donjon:"⛫", Antre:"✺", "Marché":"◆", Res
 const VAL = {Citadelle:8, Donjon:3, "Marché":2.5, Ressource:2, Antre:2};
 const MAX_TOURS = 30;
 const VASSAUX = 5, ATTENTE_HORDE = 4, COUT_TOUR = 2;
+const coutTour = i => S.ruine[i]==='moi' ? 1 : COUT_TOUR;
 // Domaines : tuiles voisines du même type (un champ de Ressources, une chaîne de Donjons...). Taille 2 et plus.
 const DOM = Array(N).fill(-1), DOMS = [];
 for (let i=0;i<N;i++) if (DOM[i]<0){
@@ -172,7 +174,7 @@ let S; // état
 
 function nouvellePartie(pole){
   S = {own:Array(N).fill(null), lvl:T.map(t=>t.n), pole:{moi:pole, rival:-pole},
-       pa:{moi:0,rival:0}, vass:Array(N).fill(null), horde:Array(N).fill(0), tours:Array(N).fill(false), bati:false, res:{moi:VASSAUX,rival:VASSAUX}, acheves:{}, sceau:{moi:0,rival:0}, siege:{moi:3,rival:3},
+       pa:{moi:0,rival:0}, vass:Array(N).fill(null), emp:Array(N).fill(null), ruine:Array(N).fill(null), morts:0, horde:Array(N).fill(0), tours:Array(N).fill(false), bati:false, res:{moi:VASSAUX,rival:VASSAUX}, acheves:{}, sceau:{moi:0,rival:0}, siege:{moi:3,rival:3},
        tour:1, fini:false, brise:false, journal:[]};
   for (const s of ["moi","rival"]){
     const d = DEPART[s]; S.own[d] = s; S.lvl[d] = S.pole[s];
@@ -230,6 +232,8 @@ const nomPalier = (i, n) => n===0 ? "Équilibre" : `${n>0?T[i].pp:T[i].pm} ${Mat
 function cout(st, i, s){ // difficulté du donjon de la zone : plus le niveau est extrême, plus il est dur
   let c = 1 + Math.floor(Math.abs(st.lvl[i])/2) + (T[i].type==="Donjon"?1:0); // le Grand Donjon est plus dur
   const o = st.own[i];
+  if (!o && st.emp && st.emp[i]===s) c -= 1; // la zone reconnaît son ancien maître
+  c = Math.max(1, c);
   if (o && o!==s && (st.tours[i] || T[i].v.some(v=>st.own[v]===o && st.tours[v]))) c += 2; // donjon gardé par une tour
   return c;
 }
@@ -272,7 +276,7 @@ function analyse(st, i, s, brise){ // légalité d'un coup
   if (sim.suicide) return {ok:false, cout:c, pourquoi:"Ton groupe y étoufferait (aucune liberté) sans rien capturer."};
   return {ok:true, cout:c, verrou, raid, sim};
 }
-function clone(st){ return {...st, _R:null, vass:st.vass.slice(), horde:st.horde.slice(), tours:st.tours.slice(), res:{...st.res}, acheves:{...st.acheves}, own:st.own.slice(), lvl:st.lvl.slice(), pa:{...st.pa}, sceau:{...st.sceau}, siege:{...st.siege}, journal:[]}; }
+function clone(st){ return {...st, _R:null, vass:st.vass.slice(), emp:st.emp.slice(), ruine:st.ruine.slice(), horde:st.horde.slice(), tours:st.tours.slice(), res:{...st.res}, acheves:{...st.acheves}, own:st.own.slice(), lvl:st.lvl.slice(), pa:{...st.pa}, sceau:{...st.sceau}, siege:{...st.siege}, journal:[]}; }
 function jouer(st, i, s, brise){
   const o = autre(s);
   st.pa[s] -= cout(st,i,s);
@@ -287,8 +291,9 @@ function jouer(st, i, s, brise){
     if (st.vass[i]){ st.res[st.vass[i]]++; st.vass[i]=null; }
     st.resultat="arrachee";
   }
-  if (!tient(st,i,s)){ st.resultat = st.resultat || "progres"; return st; }
-  st.own[i]=s; st._R=null; st.resultat="prise";
+  const reconnu = !avant && st.emp[i]===s && Math.sign(st.lvl[i])===Math.sign(st.pole[s]) && Math.abs(st.lvl[i])>=1;
+  if (!tient(st,i,s) && !reconnu){ st.resultat = st.resultat || "progres"; return st; }
+  st.own[i]=s; st._R=null; st.resultat = st.emp[i]===s ? "reprise" : "prise"; st.emp[i]=null;
   if (T[i].type==="Donjon") st.sceau[s]++;
   for (const g of groupes(st,o)){
     if (libertes(st,g,o).size>0) continue;
@@ -460,9 +465,36 @@ function appliquerFin(s){
   }
   verifierFin();
 }
+function nettoyer(st){ // l'empreinte et les ruines s'effacent quand un autre prend la zone
+  for (let i=0;i<N;i++) if (st.own[i]){
+    if (st.emp[i] && st.emp[i]!==st.own[i]) st.emp[i]=null;
+    if (st.ruine[i] && st.ruine[i]!==st.own[i]) st.ruine[i]=null;
+  }
+}
 function verifierFin(){
+  nettoyer(S);
   if (S.own[DEPART.rival]==="moi") finir("Victoire","Le Cadran des Dix Portes est à toi.");
-  else if (S.own[DEPART.moi]==="rival") finir("Mort","Le Fort-Étalon est tombé. Tu perds tout et tu recommences.");
+  else if (S.own[DEPART.moi]==="rival") mourir();
+}
+function mourir(){ // tu perds tout ; tes zones redeviennent sauvages, avec ton empreinte
+  S.morts++;
+  let n=0;
+  for (let i=0;i<N;i++) if (S.own[i]==="moi"){
+    S.own[i]=null; S.emp[i]="moi"; n++;
+    if (S.tours[i]){ S.tours[i]=false; S.ruine[i]="moi"; }
+    if (S.vass[i]) S.vass[i]=null;
+  }
+  S.res.moi=VASSAUX; S.sceau.moi=0; S.pa.moi=0; S.siege.moi=3; S._R=null;
+  // Réapparition : une Citadelle libre si possible, sinon la zone calme la plus éloignée du rival
+  const dist=Array(N).fill(99), file=[DEPART.rival]; dist[DEPART.rival]=0;
+  while(file.length){ const x=file.shift(); for (const y of T[x].v) if (dist[y]===99){dist[y]=dist[x]+1; file.push(y);} }
+  let best=null;
+  for (let i=0;i<N;i++){ if (S.own[i]) continue;
+    const v = (T[i].type==="Citadelle"?20:0) + dist[i] - Math.abs(S.lvl[i]) + (S.emp[i]==="moi"?2:0);
+    if (!best || v>best.v) best={i,v}; }
+  DEPART.moi = best.i; S.own[best.i]="moi"; S.lvl[best.i]=S.pole.moi*SEUIL; S.emp[best.i]=null;
+  log(`<b>Mort n° ${S.morts}.</b> Tu perds tout : héros, pouvoirs, vassaux. Tes ${n} zones redeviennent sauvages mais gardent ton empreinte (✧). Tu renais à <b>${T[best.i].nom}</b>.`);
+  rendre(best.i);
 }
 function finir(titre, texte){ S.fini=true; log(`<b>${titre}.</b> ${texte}`); rendre(); montrerChoix(titre, texte); }
 
@@ -482,7 +514,7 @@ svg.appendChild(defs);
 for (const f of CARTE.f) svg.appendChild(el("polygon",{points:f.map(p=>p.join(",")).join(" "),class:"faille"}));
 const gT=el("g",{}), gH=el("g",{}), gR=el("g",{}), gL=el("g",{});
 svg.append(gT,gH,gR,gL);
-const poly=[], hach=[], etq=[], gly=[], ter=[], vas=[], hor=[], tou=[];
+const poly=[], hach=[], etq=[], gly=[], ter=[], vas=[], hor=[], tou=[], emp=[];
 T.forEach((t,i)=>{
   const pts=t.pts.map(p=>p.join(",")).join(" ");
   const p=el("polygon",{points:pts,class:"tuile",tabindex:"0"}); poly.push(p); gT.appendChild(p);
@@ -491,6 +523,7 @@ T.forEach((t,i)=>{
   const e=el("text",{x:t.c[0],y:t.c[1]+.2,class:"etiq"}); etq.push(e); gL.appendChild(e);
   const d=el("circle",{cx:t.c[0]+.32,cy:t.c[1]+.2,r:.09}); ter.push(d); gL.appendChild(d);
   const hb=el("text",{x:t.c[0],y:t.c[1]-.55,class:"etiq horde"}); hor.push(hb); gL.appendChild(hb);
+  const em=el("text",{x:t.c[0]+.34,y:t.c[1]-.2,class:"glyphe",fill:"#7fe6d8"}); emp.push(em); gL.appendChild(em);
   const tw=el("text",{x:t.c[0]-.34,y:t.c[1]-.2,class:"glyphe tourg"}); tw.textContent="♖"; tou.push(tw); gL.appendChild(tw);
   const vs=el("polygon",{points:[[0,-.17],[.13,0],[0,.17],[-.13,0]].map(q=>[t.c[0]-.32+q[0],t.c[1]+.2+q[1]].join(",")).join(" "),class:"vassal"}); vas.push(vs); gL.appendChild(vs);
   p.addEventListener("mouseenter",()=>{fiche(i);surligner(i);}); p.addEventListener("focus",()=>{fiche(i);surligner(i);});
@@ -523,7 +556,8 @@ function rendre(dernier){
     etq[i].setAttribute("fill", o ? "#e8e2d4" : n>0 ? "#1a1408" : "#e8e2d4");
     gly[i].setAttribute("fill", o ? "#e8e2d4cc" : n>0 ? "#1a1408aa" : "#e8e2d4aa");
     hor[i].textContent = S.horde[i]>0 ? `⚔${ATTENTE_HORDE-S.horde[i]}` : "";
-    tou[i].setAttribute("fill", S.tours[i] ? (o==="moi"?"#7fe6d8":"#f08a9b") : "none");
+    tou[i].setAttribute("fill", S.tours[i] ? (o==="moi"?"#7fe6d8":"#f08a9b") : S.ruine[i] ? "#8a8f9c" : "none");
+    emp[i].textContent = S.emp[i]==="moi" ? "✧" : "";
     vas[i].setAttribute("fill", S.vass[i]==="moi"?"#7fe6d8":S.vass[i]==="rival"?"#f08a9b":"none");
     vas[i].setAttribute("stroke", S.vass[i]?"#0d1220":"none");
     const ach = S.acheves[DOM[i]];
@@ -547,7 +581,7 @@ function rendre(dernier){
   for (const s of ["moi","rival"]){
     const nb=S.own.filter(x=>x===s).length, tr=terr.filter(x=>x===s).length;
     document.getElementById(s==="moi"?"statMoi":"statRival").innerHTML =
-      `${nb} tuiles · ${tr} territoire · score ${score(S,s)}<br>vassaux ${"◆".repeat(S.res[s])}${"◇".repeat(VASSAUX-S.res[s])} · domaines ${Object.values(S.acheves).filter(w=>w.includes(s)).length}<br>revenu ${revenu(S,s)} · sceaux ${S.sceau[s]}<br>remparts ${"■".repeat(S.siege[s])}${"□".repeat(3-S.siege[s])}`;
+      `${nb} tuiles · ${tr} territoire · score ${score(S,s)}${s==="moi"&&S.morts?` · morts ${S.morts}`:""}<br>vassaux ${"◆".repeat(S.res[s])}${"◇".repeat(VASSAUX-S.res[s])} · domaines ${Object.values(S.acheves).filter(w=>w.includes(s)).length}<br>revenu ${revenu(S,s)} · sceaux ${S.sceau[s]}<br>remparts ${"■".repeat(S.siege[s])}${"□".repeat(3-S.siege[s])}`;
   }
   const r=revenu(S,"moi"); document.getElementById("paMoi").innerHTML = Array.from({length:Math.max(r,S.pa.moi)},(_,k)=>`<i class="${k<S.pa.moi?"plein":""}"></i>`).join("");
   const bv=document.getElementById("vassal"); bv.disabled=S.fini||S.ia||S.pa.moi<1||S.res.moi<1; bv.classList.toggle("actif",!!S.vassMode);
@@ -567,15 +601,17 @@ function fiche(i){
     <div class="palier">${nomPalier(i,n)}</div>
     <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${true?` · ${EPREUVE[t.type].replace(/^(la |le )/,"")} ${cout(S,i,"moi")} actions`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
     ${enDomaine(i)?`<div class="chiffres">domaine de ${DOMS[DOM[i]].length} ${t.type==="Marché"?"Marchés":t.type+"s"} · ${S.acheves[DOM[i]]?"achevé":"ouvert"} · voix toi ${poids(S,DOM[i],"moi")}, rival ${poids(S,DOM[i],"rival")}</div>`:""}
+    ${S.emp[i]==="moi"?`<div class="chiffres ok">✧ ton empreinte : épreuve plus facile, reprise dès 1 palier de ton côté</div>`:""}
+    ${S.ruine[i]==="moi"?`<div class="chiffres">ruine de ta tour : la relever coûte 1 action</div>`:""}
     ${S.vass[i]?`<div class="chiffres">vassal ${S.vass[i]==="moi"?"à toi":"rival"} posté ici</div>`:""}
     ${S.horde[i]>0?`<div class="chiffres att">⚔ horde levée : invasion dans ${ATTENTE_HORDE-S.horde[i]} manche(s)${cibleHorde(S,i)!==null?` vers ${T[cibleHorde(S,i)].nom}`:", aucune cible assez faible"}</div>`:""}
     ${o?`<div class="chiffres">défense ${T[i].type==="Citadelle"?"imprenable":defense(S,i)}${T[i].type!=="Citadelle"?(defense(S,i)<=5?" · envahissable par une horde":" · à l'abri des hordes"):""}${S.tours[i]?" · tour":""}</div>`:""}
-    <div class="verdict ${cl}">${o==="moi" && S.bati ? (tourPossible(i)==="ok"?"Clique pour élever une tour.":tourPossible(i)) : o==="moi" && S.vassMode ? (vassalPossible(i)==="ok"?"Clique pour poster un vassal (1 action, +2 voix).":vassalPossible(i)) : a.ok ? `${EPREUVE_DESC[t.type]}<br>Clique pour mener l'épreuve : la zone deviendrait <b>${nomPalier(i,a.sim.lvl[i])}</b>, ${a.sim.resultat==="renforcee"?"ta zone monte d'un palier":a.sim.resultat==="prise"?"la zone devient tienne":a.sim.resultat==="arrachee"?"le rival perd la zone":a.sim.resultat==="affaiblie"?"le rival la garde encore":"pas encore assez pour la prendre"}${a.sim.capt?`, encercle ${a.sim.capt} tuile(s)`:""}.` : a.pourquoi}</div>`;
+    <div class="verdict ${cl}">${o==="moi" && S.bati ? (tourPossible(i)==="ok"?"Clique pour élever une tour.":tourPossible(i)) : o==="moi" && S.vassMode ? (vassalPossible(i)==="ok"?"Clique pour poster un vassal (1 action, +2 voix).":vassalPossible(i)) : a.ok ? `${EPREUVE_DESC[t.type]}<br>Clique pour mener l'épreuve : la zone deviendrait <b>${nomPalier(i,a.sim.lvl[i])}</b>, ${a.sim.resultat==="reprise"?"elle te reconnaît et revient à toi":a.sim.resultat==="renforcee"?"ta zone monte d'un palier":a.sim.resultat==="prise"?"la zone devient tienne":a.sim.resultat==="arrachee"?"le rival perd la zone":a.sim.resultat==="affaiblie"?"le rival la garde encore":"pas encore assez pour la prendre"}${a.sim.capt?`, encercle ${a.sim.capt} tuile(s)`:""}.` : a.pourquoi}</div>`;
 }
 function tourPossible(i){
   if (S.own[i]!=="moi") return "Une tour se bâtit sur une de tes tuiles.";
   if (S.tours[i]) return "Il y a déjà une tour ici.";
-  if (S.pa.moi<COUT_TOUR) return `Une tour coûte ${COUT_TOUR} actions.`;
+  if (S.pa.moi<coutTour(i)) return `Une tour coûte ${coutTour(i)} action(s).`;
   return "ok";
 }
 function vassalPossible(i){
@@ -592,13 +628,13 @@ const EPREUVE_DESC = {Ressource:"Récolte : mini-jeu de moisson et de gestion de
 function texteDonjon(i, s, a){
   const qui = (s==="moi" ? "Tu mènes " : "Le rival mène ") + EPREUVE[T[i].type], n=S.lvl[i], niv=`${n>0?"+":""}${n}`;
   const r = S.resultat;
-  const fin = r==="renforcee" ? "ta zone monte d'un palier" .replace("ta zone", s==="moi"?"ta zone":"sa zone") : r==="prise" ? `la zone est ${s==="moi"?"à toi":"à lui"}` : r==="arrachee" ? `la zone ${s==="moi"?"échappe au rival":"t'échappe"}` : r==="affaiblie" ? (s==="moi" ? "la zone du rival baisse" : "ta zone baisse, mais tu la tiens encore") : "la zone n'a pas encore basculé";
+  const fin = r==="reprise" ? "la zone reconnaît son ancien maître et revient à toi, sa carte avec elle" : r==="renforcee" ? "ta zone monte d'un palier" .replace("ta zone", s==="moi"?"ta zone":"sa zone") : r==="prise" ? `la zone est ${s==="moi"?"à toi":"à lui"}` : r==="arrachee" ? `la zone ${s==="moi"?"échappe au rival":"t'échappe"}` : r==="affaiblie" ? (s==="moi" ? "la zone du rival baisse" : "ta zone baisse, mais tu la tiens encore") : "la zone n'a pas encore basculé";
   return `${qui} de <b>${T[i].nom}</b> (${a.cout} actions) : la zone devient <b>${nomPalier(i,n)}</b>, ${fin}${S.capt?`, ${S.capt} tuile(s) encerclée(s)`:""}${r==="prise"&&T[i].type==="Donjon"?" · +1 Brise-sceau":""}.`;
 }
 function cliquer(i){
   if (S.fini||S.ia) return;
   if (S.own[i]==="moi" && S.bati){
-    if (tourPossible(i)==="ok"){ S.tours[i]=true; S.pa.moi-=COUT_TOUR; S.bati=false; log(`Tu élèves une tour sur <b>${T[i].nom}</b> (+3 défense ici et autour).`); rendre(i); }
+    if (tourPossible(i)==="ok"){ const c=coutTour(i), r=S.ruine[i]==="moi"; S.tours[i]=true; S.ruine[i]=null; S.pa.moi-=c; S.bati=false; log(r?`Tu relèves la tour en ruine de <b>${T[i].nom}</b> (1 action).`:`Tu élèves une tour sur <b>${T[i].nom}</b> (+3 défense ici et autour).`); rendre(i); }
     fiche(i); return;
   }
   if (S.own[i]==="moi" && S.vassMode){
