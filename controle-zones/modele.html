@@ -67,17 +67,17 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
 .legende{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--brume)}
 .legende span{display:inline-flex;align-items:center;gap:5px}
 .paquet{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:4px;max-height:220px;overflow:auto}
-.carte-p{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:baseline;font-size:12.5px;padding:3px 6px;border-radius:3px;background:color-mix(in srgb,var(--trait) 40%,transparent)}
+.carte-p{display:grid;grid-template-columns:18px minmax(0,1fr);row-gap:1px;gap:8px;align-items:baseline;font-size:12.5px;padding:3px 6px;border-radius:3px;background:color-mix(in srgb,var(--trait) 40%,transparent)}
 .carte-p.lum span:first-child{color:var(--lum)} .carte-p.omb span:first-child{color:var(--ombre)}
 .carte-p .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .carte-p em{color:var(--brume);font-style:normal}
-.cf{font-family:var(--f-data);font-size:11px;color:var(--brume)}
+.cf{grid-column:2;font-family:var(--f-data);font-size:11px;color:var(--brume)}
 @media (prefers-reduced-motion:reduce){.tuile{transition:none}}
 </style>
 
 <div class="page">
 <header>
   <h1>Mosaïque d'Emprise</h1>
-  <span class="sous">Prototype de règles · couche stratégique du monde ouvert : chaque donjon fait monter ou baisser sa zone · un peu Go, un peu Carcassonne · tour par tour contre un seigneur rival</span>
+  <span class="sous">Prototype de règles · couche stratégique du monde ouvert : chaque épreuve (récolte, chantier, chasse, grand donjon) fait monter ou baisser sa zone · un peu Go, un peu Carcassonne · tour par tour contre un seigneur rival</span>
 </header>
 
 <section class="plateau" aria-label="Plateau">
@@ -109,15 +109,16 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
     <button id="batir" class="second">Bâtir une tour (2)</button>
     <button id="recommencer" class="second">Recommencer</button>
   </div>
-  <div class="bloc"><h2>Paquet pour le donjon</h2><div class="chiffres" id="paquetResume"></div><ul id="paquetListe" class="paquet"></ul></div>
+  <div class="bloc"><h2>Paquet de pouvoirs</h2><div class="chiffres" id="paquetResume"></div><ul id="paquetListe" class="paquet"></ul></div>
   <div class="bloc" id="fiche"><span class="sous">Survole une tuile pour voir son niveau, son coût et ses verrous.</span></div>
   <div class="bloc"><h2>Chronique</h2><div id="journal"></div></div>
   <div class="bloc">
     <details open>
       <summary>Règles du prototype</summary>
       <ul>
-        <li><b>Faire le donjon</b> d'une zone voisine coûte 1 + |niveau|/2 actions (+2 si une tour ennemie la garde). Chaque donjon réussi pousse son niveau de 2 paliers vers ton pôle. Dès qu'elle atteint ±2 de ton côté, la zone est à toi.</li>
-        <li><b>Raid</b> : faire le donjon d'une zone du rival la pousse de 3 paliers vers ton pôle. Si elle passe sous ±2 de son côté, il la perd. Citadelles et remparts ne tombent que par siège. Revenu de base 3 actions par tour (4 pour le rival), et tu gardes jusqu'à 2 actions non dépensées pour le tour suivant.</li>
+        <li><b>Épreuves</b> : chaque type de zone a la sienne. Ressource : Récolte. Marché : Chantier (building, développement). Antre : Chasse. Donjon : Grand Donjon (+1 action, carte +1). Citadelle : Garde du château.</li>
+        <li><b>Mener l'épreuve</b> d'une zone voisine coûte 1 + |niveau|/2 actions (+2 si une tour ennemie la garde). Chaque épreuve réussie pousse son niveau de 2 paliers vers ton pôle. Dès qu'elle atteint ±2 de ton côté, la zone est à toi.</li>
+        <li><b>Raid</b> : mener l'épreuve d'une zone du rival la pousse de 3 paliers vers ton pôle. Si elle passe sous ±2 de son côté, il la perd. Citadelles et remparts ne tombent que par siège. Revenu de base 3 actions par tour (4 pour le rival), et tu gardes jusqu'à 2 actions non dépensées pour le tour suivant.</li>
         <li><b>Libertés</b> : un groupe de tuiles reliées par des routes respire par les tuiles neutres qui le touchent et qui ne sont pas verrouillées contre lui.</li>
         <li><b>Encerclement</b> : un groupe sans liberté est capturé et son niveau bascule de signe. Interdit de jouer dans une tuile où ton propre groupe étoufferait, sauf si ce coup capture.</li>
         <li><b>Citadelle</b> (décagone) : verrouille ses voisines contre l'ennemi. Un groupe qui contient une Citadelle tient 3 tours de siège avant de tomber.</li>
@@ -125,7 +126,8 @@ details ul{padding-left:18px;margin:8px 0 0;display:flex;flex-direction:column;g
         <li><b>Marché</b> (losange) +1 action, <b>Ressource</b> (hexagone) +1 action par paire, seulement si la route les relie à une Citadelle.</li>
         <li><b>Donjon</b> (pentagone) : sa prise donne une charge de Brise-sceau, qui permet de conquérir une tuile verrouillée.</li>
         <li><b>Rempart</b> : relie deux de tes Citadelles par une route et toute la route devient rempart (trait doré). Chaque tuile du rempart verrouille ses voisines, comme une Citadelle.</li>
-        <li><b>Paquet</b> : chaque zone de ton royaume (tuiles et territoire) te donne une carte pour la partie donjon : Ressource, Échange, Créature, Pouvoir ou Bastion, de l'école de son niveau (Lumière ou Ombre), de force |niveau|.</li>
+        <li><b>Paquet</b> : chaque zone de ton royaume (tuiles et territoire) te donne une carte : Ressource, Ouvrage, Créature, Pouvoir ou Bastion, de l'école de son niveau (Lumière ou Ombre), de force |niveau|. Plus l'épreuve était dure, plus la carte est forte : Mineure (1 à 3), Majeure (4 et 5), Ultime (6 et plus).</li>
+        <li><b>Contre-pouvoirs</b> : chaque genre est redoutable contre un autre. Pouvoir brise Bastion, Bastion arrête Créature, Créature saccage Ouvrage, Ouvrage détourne Ressource, Ressource (le sel et le fer froid) dissipe Pouvoir. Une carte d'Ombre compte aussi double contre la Lumière, et inversement.</li>
         <li><b>Domaines</b> (inspiré de Carcassonne) : des tuiles voisines du même type forment un domaine. Il est achevé quand toutes ses tuiles sont prises, par n'importe qui. Le camp qui a le plus de voix l'emporte (1 voix par tuile, 2 par vassal), gagne +1 action par tour, des points égaux à sa taille, et ses cartes deviennent rares (★, force +2). Égalité : les deux gagnent.</li>
         <li><b>Vassaux</b> : tu en as 5. Clique sur une de tes tuiles d'un domaine ouvert pour en poster un (1 action). Il te revient quand le domaine s'achève, ou si la tuile est capturée.</li>
         <li><b>Guerre des hordes</b> : une zone à ±7 lève une horde (⚔ et un compte à rebours). Après 4 manches, la horde envahit sa voisine la plus faible, si celle-ci a au moins 2 paliers de défense de moins (défense 5 ou moins). Une horde sauvage vide la zone ; la horde d'une de tes zones à 7 la prend pour toi. Tes zones qui montent à ±7 deviennent donc tes armées.</li>
@@ -219,7 +221,7 @@ function libertes(st, g, s){
 }
 const SEUIL = 2, PAS_DONJON = 2, PAS_RAID = 3;
 function cout(st, i, s){ // difficulté du donjon de la zone : plus le niveau est extrême, plus il est dur
-  let c = 1 + Math.floor(Math.abs(st.lvl[i])/2);
+  let c = 1 + Math.floor(Math.abs(st.lvl[i])/2) + (T[i].type==="Donjon"?1:0); // le Grand Donjon est plus dur
   const o = st.own[i];
   if (o && o!==s && (st.tours[i] || T[i].v.some(v=>st.own[v]===o && st.tours[v]))) c += 2; // donjon gardé par une tour
   return c;
@@ -369,14 +371,18 @@ function finDeTour(st, s){ // dérive des niveaux + siège des citadelles du cam
   for (const e of verifierDomaines(st)) evts.push(e);
   return evts;
 }
-const CARTE_DE = {Ressource:["Ressource","❖"], "Marché":["Échange","◆"], Antre:["Créature","✺"], Donjon:["Pouvoir","⛫"], Citadelle:["Bastion","♜"]};
+const CARTE_DE = {Ressource:["Ressource","❖"], "Marché":["Ouvrage","◆"], Antre:["Créature","✺"], Donjon:["Pouvoir","⛫"], Citadelle:["Bastion","♜"]};
+// Cycle des contre-pouvoirs : chaque genre est redoutable contre le suivant
+const CONTRE = {Pouvoir:"Bastion", Bastion:"Créature", "Créature":"Ouvrage", Ouvrage:"Ressource", Ressource:"Pouvoir"};
+const POURQUOI = {Pouvoir:"brise les sceaux des bastions", Bastion:"arrête les hordes de créatures", "Créature":"saccage les chantiers", Ouvrage:"canalise et détourne les récoltes", Ressource:"le sel et le fer froid dissipent les pouvoirs"};
+const RANG = f => f>=6 ? "Ultime" : f>=4 ? "Majeure" : "Mineure";
 function paquet(st, s){ // cartes tirées des zones du royaume (tuiles + territoire)
   const ter=territoire(st), out=[];
   for (let i=0;i<N;i++) if (st.own[i]===s || ter[i]===s){
     const n=st.lvl[i], [genre,g]=CARTE_DE[T[i].type];
     const ecole = n>0?"Lumière":n<0?"Ombre":"Neutre";
     const rare = !!(st.acheves[DOM[i]] && st.acheves[DOM[i]].includes(s));
-    out.push({genre,g,ecole,rare,force:Math.min(9,Math.max(1,Math.abs(n))+(rare?2:0)),nom:T[i].nom.split(",")[0],ter:ter[i]===s});
+    out.push({genre,g,ecole,rare,force:Math.min(9,Math.max(1,Math.abs(n))+(rare?2:0)+(T[i].type==="Donjon"?1:0)),nom:T[i].nom.split(",")[0],ter:ter[i]===s});
   }
   return out.sort((a,b)=>b.force-a.force);
 }
@@ -525,7 +531,7 @@ function rendre(dernier){
   const pq = paquet(S,"moi"), cpt={};
   for (const c of pq) cpt[c.genre]=(cpt[c.genre]||0)+1;
   document.getElementById("paquetResume").textContent = pq.length ? Object.entries(cpt).map(([k,v])=>`${v} ${k}`).join(" · ") : "Aucune carte pour l'instant.";
-  document.getElementById("paquetListe").innerHTML = pq.slice(0,14).map(c=>`<li class="carte-p ${c.ecole==="Lumière"?"lum":c.ecole==="Ombre"?"omb":""}"><span>${c.g}</span><span class="cn">${c.rare?"★ ":""}${c.genre} · ${c.nom}${c.ter?" <em>(territoire)</em>":""}</span><span class="cf">${c.ecole} ${c.force}</span></li>`).join("") + (pq.length>14?`<li class="sous">et ${pq.length-14} autres…</li>`:"");
+  document.getElementById("paquetListe").innerHTML = pq.slice(0,14).map(c=>`<li class="carte-p ${c.ecole==="Lumière"?"lum":c.ecole==="Ombre"?"omb":""}"><span>${c.g}</span><span class="cn">${c.rare?"★ ":""}${c.genre} · ${c.nom}${c.ter?" <em>(territoire)</em>":""}</span><span class="cf" title="${c.genre} : ${POURQUOI[c.genre]}">${RANG(c.force)} ${c.force} · contre ${CONTRE[c.genre]}</span></li>`).join("") + (pq.length>14?`<li class="sous">et ${pq.length-14} autres…</li>`:"");
   document.getElementById("titreTour").textContent = S.fini ? "Partie terminée" : `Tour ${S.tour} / ${MAX_TOURS}${S.ia?" · le rival joue":""}`;
   for (const s of ["moi","rival"]){
     const nb=S.own.filter(x=>x===s).length, tr=terr.filter(x=>x===s).length;
@@ -546,12 +552,12 @@ function fiche(i){
   document.getElementById("fiche").innerHTML = `
     <div class="type">${GLYPHE[t.type]} ${t.type} · ${t.id}</div>
     <div class="nom">${t.nom}</div>
-    <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${o!=="moi"?` · donjon ${cout(S,i,"moi")} actions`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
+    <div class="chiffres">niveau ${(n>0?"+":"")+n} · ${o==="moi"?"à toi":o==="rival"?"au rival":"neutre"}${o!=="moi"?` · ${EPREUVE[t.type].replace(/^(la |le )/,"")} ${cout(S,i,"moi")} actions`:""}${remparts(S)[i]?" · rempart":""}${v.size?` · verrou ${[...v].map(x=>x==="moi"?"à toi":"rival").join(", ")}`:""}</div>
     ${enDomaine(i)?`<div class="chiffres">domaine de ${DOMS[DOM[i]].length} ${t.type==="Marché"?"Marchés":t.type+"s"} · ${S.acheves[DOM[i]]?"achevé":"ouvert"} · voix toi ${poids(S,DOM[i],"moi")}, rival ${poids(S,DOM[i],"rival")}</div>`:""}
     ${S.vass[i]?`<div class="chiffres">vassal ${S.vass[i]==="moi"?"à toi":"rival"} posté ici</div>`:""}
     ${S.horde[i]>0?`<div class="chiffres att">⚔ horde levée : invasion dans ${ATTENTE_HORDE-S.horde[i]} manche(s)${cibleHorde(S,i)!==null?` vers ${T[cibleHorde(S,i)].nom}`:", aucune cible assez faible"}</div>`:""}
     ${o?`<div class="chiffres">défense ${T[i].type==="Citadelle"?"imprenable":defense(S,i)}${T[i].type!=="Citadelle"?(defense(S,i)<=5?" · envahissable par une horde":" · à l'abri des hordes"):""}${S.tours[i]?" · tour":""}</div>`:""}
-    <div class="verdict ${cl}">${o==="moi" && S.bati ? (tourPossible(i)==="ok"?"Clique pour élever une tour.":tourPossible(i)) : o==="moi" ? (vassalPossible(i)==="ok"?"Clique pour poster un vassal (1 action, +2 voix).":vassalPossible(i)) : a.ok ? `Clique pour faire le donjon : niveau ${a.sim.lvl[i]>0?"+":""}${a.sim.lvl[i]}, ${a.sim.resultat==="prise"?"la zone devient tienne":a.sim.resultat==="arrachee"?"le rival perd la zone":a.sim.resultat==="affaiblie"?"le rival la garde encore":"pas encore assez pour la prendre"}${a.sim.capt?`, encercle ${a.sim.capt} tuile(s)`:""}.` : a.pourquoi}</div>`;
+    <div class="verdict ${cl}">${o==="moi" && S.bati ? (tourPossible(i)==="ok"?"Clique pour élever une tour.":tourPossible(i)) : o==="moi" ? (vassalPossible(i)==="ok"?"Clique pour poster un vassal (1 action, +2 voix).":vassalPossible(i)) : a.ok ? `${EPREUVE_DESC[t.type]}<br>Clique pour mener l'épreuve : niveau ${a.sim.lvl[i]>0?"+":""}${a.sim.lvl[i]}, ${a.sim.resultat==="prise"?"la zone devient tienne":a.sim.resultat==="arrachee"?"le rival perd la zone":a.sim.resultat==="affaiblie"?"le rival la garde encore":"pas encore assez pour la prendre"}${a.sim.capt?`, encercle ${a.sim.capt} tuile(s)`:""}.` : a.pourquoi}</div>`;
 }
 function tourPossible(i){
   if (S.own[i]!=="moi") return "Une tour se bâtit sur une de tes tuiles.";
@@ -568,11 +574,13 @@ function vassalPossible(i){
   if (S.pa.moi<1) return "Poster un vassal coûte 1 action.";
   return "ok";
 }
+const EPREUVE = {Ressource:"la Récolte", "Marché":"le Chantier", Antre:"la Chasse", Donjon:"le Grand Donjon", Citadelle:"la Garde du château"};
+const EPREUVE_DESC = {Ressource:"Récolte : mini-jeu de moisson et de gestion des stocks.", "Marché":"Chantier : mini-jeu de construction et de développement.", Antre:"Chasse : traquer, vaincre ou dresser les créatures.", Donjon:"Grand Donjon : un donjon énorme, le plus dur du jeu, qui donne les cartes les plus fortes.", Citadelle:"Garde du château : tenir les murs contre des vagues."};
 function texteDonjon(i, s, a){
-  const qui = s==="moi" ? "Tu fais" : "Le rival fait", n=S.lvl[i], niv=`${n>0?"+":""}${n}`;
+  const qui = (s==="moi" ? "Tu mènes " : "Le rival mène ") + EPREUVE[T[i].type], n=S.lvl[i], niv=`${n>0?"+":""}${n}`;
   const r = S.resultat;
   const fin = r==="prise" ? `la zone est ${s==="moi"?"à toi":"à lui"}` : r==="arrachee" ? `la zone ${s==="moi"?"échappe au rival":"t'échappe"}` : r==="affaiblie" ? (s==="moi" ? "la zone du rival baisse" : "ta zone baisse, mais tu la tiens encore") : "la zone n'a pas encore basculé";
-  return `${qui} le donjon de <b>${T[i].nom}</b> (${a.cout} actions) : niveau ${niv}, ${fin}${S.capt?`, ${S.capt} tuile(s) encerclée(s)`:""}${r==="prise"&&T[i].type==="Donjon"?" · +1 Brise-sceau":""}.`;
+  return `${qui} de <b>${T[i].nom}</b> (${a.cout} actions) : niveau ${niv}, ${fin}${S.capt?`, ${S.capt} tuile(s) encerclée(s)`:""}${r==="prise"&&T[i].type==="Donjon"?" · +1 Brise-sceau":""}.`;
 }
 function cliquer(i){
   if (S.fini||S.ia) return;
