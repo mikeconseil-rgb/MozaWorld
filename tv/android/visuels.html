@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@import url(assets/polices.css);
+body{margin:0;background:#000}
+.b{width:320px;height:180px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 30% 50%,#2a1d2b,#0d0c0f 70%)}
+.i{width:192px;height:192px;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 45%,#2a1d2b,#0d0c0f 75%)}
+canvas{position:absolute;inset:0}
+.t{position:absolute;left:150px;top:52px;font:600 34px "Cormorant Garamond";color:#efe7d6;line-height:1}
+.s{position:absolute;left:152px;top:104px;font:500 12px Jost;letter-spacing:.22em;text-transform:uppercase;color:#c9a45c}
+</style></head><body>
+<div class="b" id="b"><canvas id="cb" width="320" height="180"></canvas><div class="t" style="top:58px">MozaWorld</div><div class="s" style="top:108px">Cinq Tuiles</div></div>
+<div class="i" id="i"><canvas id="ci" width="192" height="192"></canvas></div>
+<script>
+function star(c,x,y,R,col){const g=c.getContext('2d');g.save();g.translate(x,y);
+ for(let k=0;k<3;k++){const r=R*(1-k*.3);g.beginPath();for(let i=0;i<20;i++){const a=i*Math.PI/10-Math.PI/2,rr=i%2?r*.6:r;i?g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):g.moveTo(Math.cos(a)*rr,Math.sin(a)*rr)}g.closePath();
+ if(k==0){g.fillStyle=col[0];g.fill()}g.strokeStyle=col[1];g.lineWidth=k?1.5:2.5;g.stroke()}
+ const gr=g.createRadialGradient(0,0,0,0,0,R*.35);gr.addColorStop(0,'#fff3c8');gr.addColorStop(1,'rgba(230,162,90,0)');g.fillStyle=gr;g.beginPath();g.arc(0,0,R*.35,0,7);g.fill();g.restore()}
+star(document.getElementById('cb'),78,90,62,['#5a2f2a','#e8c77f']);
+star(document.getElementById('ci'),96,96,80,['#5a2f2a','#e8c77f']);
+</script></body></html>

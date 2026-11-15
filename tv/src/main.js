@@ -106,7 +106,10 @@ const isHeld=a=>held[a]&&performance.now()-held[a]<1200;
 
 /* ---------- Modes ---------- */
 let mode='titre',curZ=null,hudKey='',started=false;
+let lastBack=0;
 function act(a,rep){
+  if(AX&&AX.state==='suspended')AX.resume();
+  if(a==='back'){const t=performance.now();if(t-lastBack<250)return;lastBack=t}
   if(a==='son'){toggleSound();return}
   if(mode==='titre'||mode==='menu'){uiAct(a,rep);return}
   if(mode==='monde'){if(rep)return;
@@ -137,6 +140,7 @@ function toMonde(){closeUI();mode='monde';document.body.classList.remove('jeu-ou
 function titre(){mode='titre';const o=[];
   if(hasSave)o.push({l:'Reprendre la partie',ic:'◆',go:()=>{startGame(false)}});
   o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
+  if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){for(const Z of ZN){S.lv[Z.id]=0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=0;rebuild(Z);Z.update(0);placeAlt(Z)}
     S.cards=[];S.hurt=0;S.lives=1;for(const s of secrets)s.found=false;save()}
@@ -154,6 +158,7 @@ function openMenu(){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%3;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize();openMenu()}},
     {l:'Comment jouer',ic:'?',go:openAide},
+    ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Recommencer à zéro',ic:'↺',go:()=>ui('menu',{sur:'Recommencer',t:'Tout effacer ?',corps:'<p>Les cinq zones reviennent au niveau 0, vos cartes et vos secrets sont perdus.</p>',back:openMenu,
       opts:[{l:'Non, revenir',ic:'◆',go:openMenu},{l:'Oui, tout recommencer',ic:'↺',go:()=>{startGame(true)}}]})}]})}
 function openVoyage(){ui('menu',{sur:'Voyager',t:'Les cinq zones',corps:'<p class="petit">Le héros réapparaît devant la Pierre d\'éveil de la zone. Vous pouvez aussi marcher : les zones se touchent.</p>',back:openMenu,
@@ -431,4 +436,4 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 titre();requestAnimationFrame(loop);
-window.MZ={P,ZN,S,tp,secrets,act,held,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);Z.update(lv);placeAlt(Z)},A};
+window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);Z.update(lv);placeAlt(Z)},A};
