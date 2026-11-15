@@ -1,0 +1,162 @@
+<title>MozaWorld TV</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap">
+<style>
+/* Version télé : lue à trois mètres, pilotée à la télécommande. Tout est grand, rien ne dépend du survol,
+   et chaque élément actif a un focus très visible. Marges de 5 % pour les télés qui rognent les bords. */
+:root{
+  color-scheme:dark;
+  --encre:#0d0c0f;--voile:rgba(13,12,15,.66);--voile2:rgba(13,12,15,.9);
+  --ivoire:#efe7d6;--sable:#bdb19a;--laiton:#c9a45c;--laiton2:#e8c77f;
+  --moins:#7fb0c8;--plus:#e6a25a;--rouge:#d0564a;
+  --titre:"Cormorant Garamond","Iowan Old Style",Georgia,serif;
+  --texte:"Jost","Avenir Next","Segoe UI",sans-serif;
+  --mx:max(16px,4.5vw);--my:max(14px,4.5vh);
+  --u:min(1vw,1.78vh); /* unité qui suit la taille de l'écran : 1080p → ~19 px */
+}
+html,body{height:100%;margin:0}
+body{background:var(--encre);color:var(--ivoire);font-family:var(--texte);overflow:hidden;font-size:calc(var(--u)*1.25)}
+canvas#vue{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none}
+.hud{position:fixed;z-index:5;pointer-events:none;transition:opacity .4s}
+body.jeu-ouvert .hud.mondain{opacity:0}
+.cadre{background:var(--voile);border:1px solid rgba(201,164,92,.35);border-radius:3px;backdrop-filter:blur(6px)}
+.sur{font-size:calc(var(--u)*.95);letter-spacing:.2em;text-transform:uppercase;color:var(--laiton);font-weight:500;text-shadow:0 1px 8px rgba(0,0,0,.9)}
+
+/* Cartouche de zone */
+.cart{top:var(--my);left:var(--mx);max-width:calc(var(--u)*27)}
+.nom{font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*2.9);line-height:1.02;margin:.15em 0 .15em;text-shadow:0 2px 18px rgba(0,0,0,.7)}
+.palier{font-family:var(--titre);font-style:italic;font-size:calc(var(--u)*1.4);line-height:1.3;text-shadow:0 1px 10px rgba(0,0,0,.85)}
+.filet{height:2px;width:calc(var(--u)*6);background:linear-gradient(90deg,var(--laiton),transparent);margin:.5em 0}
+.maitre{margin-top:.6em;font-size:calc(var(--u)*1.05);color:var(--sable);text-shadow:0 1px 8px #000}
+.maitre b{color:var(--laiton2);font-weight:500}
+
+/* État du héros */
+.etat{top:var(--my);right:var(--mx);padding:calc(var(--u)*.8) calc(var(--u)*1.2);text-align:right;display:grid;gap:calc(var(--u)*.4)}
+.etat .l{font-size:calc(var(--u)*.9);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}
+.etat b{font-family:var(--titre);font-size:calc(var(--u)*1.9);color:var(--ivoire);font-variant-numeric:tabular-nums;font-weight:600}
+.vies{display:inline-flex;gap:calc(var(--u)*.5);vertical-align:middle}
+.vie{width:calc(var(--u)*1);height:calc(var(--u)*1);transform:rotate(45deg);border:2px solid var(--rouge)}
+.vie.on{background:var(--rouge);box-shadow:0 0 10px rgba(208,86,74,.7)}
+
+/* Jauge de niveau */
+.jauge{left:50%;bottom:var(--my);transform:translateX(-50%);display:flex;align-items:center;gap:calc(var(--u)*1.2);padding:calc(var(--u)*.8) calc(var(--u)*1.6)}
+.pole{font-family:var(--titre);font-size:calc(var(--u)*1.7);font-weight:600;white-space:nowrap}
+.pole.m{color:var(--moins)}.pole.p{color:var(--plus)}
+.pips{display:flex;gap:calc(var(--u)*.38);align-items:center}
+.pip{width:calc(var(--u)*.75);height:calc(var(--u)*.75);transform:rotate(45deg);border:1px solid rgba(239,231,214,.45);transition:all .25s}
+.pip.z{border-color:var(--laiton)}
+.pip.on.m{background:var(--moins);border-color:var(--moins)}.pip.on.p{background:var(--plus);border-color:var(--plus)}
+.pip.cur{transform:rotate(45deg) scale(1.6);box-shadow:0 0 12px currentColor}
+.niv{font-family:var(--titre);font-size:calc(var(--u)*2.3);font-weight:600;min-width:1.7em;text-align:center;font-variant-numeric:tabular-nums}
+
+/* Invite d'action */
+.invite{left:50%;bottom:calc(var(--my) + var(--u)*6.4);transform:translateX(-50%);text-align:center;white-space:nowrap;font-size:calc(var(--u)*1.35);text-shadow:0 1px 10px #000}
+.invite .ok{display:inline-grid;place-items:center;min-width:2.2em;height:2.2em;padding:0 .5em;border-radius:1.1em;background:var(--laiton);color:var(--encre);font-weight:600;font-size:.85em;margin-right:.5em;vertical-align:middle}
+.invite .fl{display:inline-block;color:var(--laiton2);font-size:1.3em;vertical-align:middle;margin-right:.3em;transition:transform .2s}
+.invite.attente{color:var(--sable)}
+
+/* Mini-carte et légende */
+.carte{left:var(--mx);bottom:var(--my);padding:calc(var(--u)*.6)}
+.carte canvas{display:block;width:calc(var(--u)*13);height:calc(var(--u)*13)}
+.aide{right:var(--mx);bottom:var(--my);padding:calc(var(--u)*.7) calc(var(--u)*1.1);font-size:calc(var(--u)*1);line-height:1.8;color:var(--sable);text-align:right}
+.aide i{font-style:normal;color:var(--ivoire);font-weight:500}
+
+/* Bandeau (secrets, mue, échec) */
+.toast{left:50%;top:22%;transform:translateX(-50%);width:min(calc(var(--u)*44),60vw);text-align:center;opacity:0;transition:opacity .6s}
+.toast.vu{opacity:1}
+.toast .t1{font-size:calc(var(--u)*1.25);letter-spacing:.22em;text-transform:uppercase;color:var(--laiton2);font-weight:600;text-shadow:0 1px 8px #000}
+.toast .t2{font-family:var(--titre);font-size:calc(var(--u)*3.2);font-weight:600;margin:.12em 0;text-shadow:0 2px 16px #000}
+.toast .t3{font-family:var(--titre);font-style:italic;font-size:calc(var(--u)*1.6);line-height:1.35;text-shadow:0 1px 12px #000}
+
+/* Panneaux plein écran (titre, menu, éveil, épreuve) */
+.ecran{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:var(--my) var(--mx);background:radial-gradient(ellipse at 50% 55%,rgba(13,12,15,.45),rgba(13,12,15,.93));transition:opacity .5s}
+.ecran[hidden]{display:none}
+.boite{width:min(calc(var(--u)*72),92vw);max-height:90vh;overflow:hidden;padding:calc(var(--u)*2.4) calc(var(--u)*3);background:var(--voile2);border:1px solid rgba(201,164,92,.45);border-radius:3px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.boite h2{font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*3.2);line-height:1.05;margin:.15em 0 .3em}
+.boite p{font-family:var(--titre);font-size:calc(var(--u)*1.6);line-height:1.4;margin:0 0 .8em}
+.boite .petit{font-family:var(--texte);font-size:calc(var(--u)*1.05);color:var(--sable);line-height:1.5}
+.choix{display:grid;gap:calc(var(--u)*.7);margin-top:calc(var(--u)*1.2)}
+.choix.deux{grid-template-columns:1fr 1fr}
+.opt{display:flex;align-items:center;gap:calc(var(--u)*1.2);padding:calc(var(--u)*.95) calc(var(--u)*1.4);border:2px solid rgba(201,164,92,.28);border-radius:3px;font-size:calc(var(--u)*1.35);color:var(--ivoire);background:rgba(239,231,214,.03);transition:background .15s,border-color .15s,transform .15s}
+.opt .d{margin-left:auto;font-size:calc(var(--u)*1.05);color:var(--sable);text-align:right}
+.opt .ic{font-family:var(--titre);font-size:1.5em;width:1.4em;text-align:center;color:var(--laiton2)}
+.opt.f{border-color:var(--laiton2);background:rgba(201,164,92,.2);transform:scale(1.02);box-shadow:0 0 0 4px rgba(232,199,127,.18)}
+.opt.off{opacity:.42}
+.opt.m .ic{color:var(--moins)}.opt.p .ic{color:var(--plus)}
+#seuil .boite{text-align:center;background:transparent;border:0;box-shadow:none}
+#seuil h1{font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*7.5);line-height:.95;margin:.1em 0 .2em}
+#seuil .opt{justify-content:center;max-width:calc(var(--u)*30);margin:0 auto}
+
+/* Épreuve */
+#jeu{background:radial-gradient(ellipse at 50% 50%,rgba(13,12,15,.3),rgba(13,12,15,.82))}
+#jeu.monde{background:none;pointer-events:none;place-items:start center}
+#jeu .tete{position:fixed;top:var(--my);left:50%;transform:translateX(-50%);text-align:center;width:min(calc(var(--u)*70),90vw)}
+#jeu .tete h2{font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*2.6);margin:.1em 0;text-shadow:0 2px 14px #000}
+#jeu .consigne{font-size:calc(var(--u)*1.2);color:var(--ivoire);text-shadow:0 1px 8px #000}
+#jeu .compte{display:flex;justify-content:center;gap:calc(var(--u)*2.4);margin-top:.5em;font-size:calc(var(--u)*1.15);color:var(--sable);text-shadow:0 1px 8px #000}
+#jeu .compte b{font-family:var(--titre);font-size:1.7em;color:var(--ivoire);font-variant-numeric:tabular-nums}
+#jcv{width:min(80vw,68vh);height:min(80vw,68vh);margin-top:18vh}
+#jeu.monde #jcv{display:none}
+
+/* Paquet */
+.cartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--u)*15),1fr));gap:calc(var(--u)*1);margin-top:calc(var(--u)*1);max-height:58vh;overflow:hidden}
+.kc{padding:calc(var(--u)*1);border:1px solid rgba(201,164,92,.4);border-radius:3px;background:linear-gradient(160deg,rgba(201,164,92,.12),rgba(13,12,15,.4))}
+.kc .k1{font-size:calc(var(--u)*.8);letter-spacing:.16em;text-transform:uppercase;color:var(--laiton)}
+.kc .k2{font-family:var(--titre);font-size:calc(var(--u)*1.55);font-weight:600;line-height:1.1;margin:.25em 0}
+.kc .k3{font-size:calc(var(--u)*.95);color:var(--sable);line-height:1.4}
+.kc.m{border-color:rgba(127,176,200,.55)}.kc.p{border-color:rgba(230,162,90,.55)}
+
+@media (prefers-reduced-motion:reduce){.hud,.toast,.ecran,.pip,.opt{transition:none}}
+</style>
+
+<canvas id="vue" tabindex="0"></canvas>
+
+<div class="hud mondain cart">
+  <div class="sur" id="h-sur"></div>
+  <div class="nom" id="h-nom"></div>
+  <div class="filet"></div>
+  <div class="palier" id="h-pal"></div>
+  <div class="maitre" id="h-mai"></div>
+</div>
+
+<div class="hud mondain etat cadre">
+  <div><span class="l">Blessures </span><span class="vies" id="h-vies"></span></div>
+  <div><span class="l">Cartes </span><b id="h-cartes">0</b></div>
+  <div><span class="l">Secrets </span><b id="h-sec">0</b><span class="l"> / <span id="h-sect">0</span></span></div>
+</div>
+
+<div class="hud invite" id="invite"></div>
+
+<div class="hud jauge cadre">
+  <span class="pole m" id="h-pm"></span>
+  <span class="pips" id="h-pips"></span>
+  <span class="pole p" id="h-pp"></span>
+  <span class="niv" id="h-niv">0</span>
+</div>
+
+<div class="hud mondain carte cadre"><canvas id="mini" width="300" height="300"></canvas></div>
+
+<div class="hud mondain aide cadre">
+  <div><i>▲ ▼</i> marcher (tenir pour courir)</div>
+  <div><i>◀ ▶</i> tourner</div>
+  <div><i>OK</i> agir · <i>Retour</i> menu</div>
+</div>
+
+<div class="hud toast" id="toast"><div class="t1" id="t1"></div><div class="t2" id="t2"></div><div class="t3" id="t3"></div></div>
+
+<div class="ecran" id="seuil">
+  <div class="boite">
+    <div class="sur">MozaWorld · édition salon</div>
+    <h1>Cinq Tuiles</h1>
+    <p>Cinq zones de la mosaïque Girih dorment au niveau zéro. Dans chacune se dresse une Pierre d'éveil : réussissez son épreuve et la zone fait un bond d'un palier vers le pôle de votre choix, jusqu'à −7 ou +7. Chaque bond transforme la zone et vous donne une carte de pouvoir.</p>
+    <div class="choix" id="seuil-choix"></div>
+    <p class="petit" style="margin-top:1.4em">Télécommande : flèches pour se déplacer, OK pour agir, Retour pour le menu. Une manette fonctionne aussi.</p>
+  </div>
+</div>
+
+<div class="ecran" id="menu" hidden><div class="boite"><div class="sur" id="menu-sur">Menu</div><h2 id="menu-t">Pause</h2><div id="menu-corps"></div><div class="choix" id="menu-choix"></div></div></div>
+
+<div class="ecran" id="jeu" hidden>
+  <div class="tete"><div class="sur" id="j-sur"></div><h2 id="j-t"></h2><div class="consigne" id="j-c"></div><div class="compte" id="j-n"></div></div>
+  <canvas id="jcv" width="720" height="720"></canvas>
+</div>
