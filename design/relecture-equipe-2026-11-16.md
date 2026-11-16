@@ -16,6 +16,8 @@ L'équipe a relu le code, la liste des 986 zones, les textes des conteurs et les
 
 ## Questions pour l'utilisateur (sans réponse, l'équipe suit la recommandation)
 
+Réponses du 16 novembre : 1 non, les axes restent tels quels (« deux axes, choix moraux, donc dur de dire bien et mal ») ; 2 oui, liste régénérée dans `design/donnees/sous-zones-986-v2.csv`. 3, 4 et 5 sans réponse pour l'instant.
+
 1. **Axes bien/mal.** Remplacer les 15 axes bien/mal par des paires de forces opposées (ex. Corruption/Pureté → Rouille/Vernis, Mort/Vie → Os/Sève, Folie/Raison → Rêve/Calcul) ? Reco : oui, l'équipe propose les 15 paires, l'utilisateur valide.
 2. **Liste des 986.** La régénérer avec 383 / 246 / 182 / 130 / 45, l'Assemblée à la place du Marché, les Ressources sans pôle mais avec leur type de mana, en gardant les 20 zones déjà écrites ? Reco : oui.
 3. **Mana pendant un combat.** La mise sort de la réserve et forme le budget du combat ; le héros ajoute 1 mana par tour ; le mana non dépensé revient à la réserve en cas de victoire, perdu en cas de fuite ou de défaite. Reco : oui, pour le prochain APK.
