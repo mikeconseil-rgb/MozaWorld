@@ -11,7 +11,8 @@ sed -e 's|<link rel="stylesheet" href="https://fonts.googleapis.com[^>]*>|<link 
     -e 's|https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js|three.min.js|' ../index.html > assets/index.html
 grep -q 'googleapis\|cdnjs' assets/index.html && { echo "lien externe restant"; exit 1; }
 # 2. Code Java -> dex
-javac --release 8 -nowarn -cp "$SDK" -d out/classes src/com/mozaworld/tv/*.java 2>&1 | grep -v "warning\|JAVA_TOOL" || true
+mkdir -p out/stubs && javac --release 8 -nowarn -cp "$SDK" -d out/stubs stubs/android/webkit/*.java
+javac --release 8 -nowarn -cp "$SDK:out/stubs" -d out/classes src/com/mozaworld/tv/*.java 2>&1 | grep -v "warning\|JAVA_TOOL" || true
 dalvik-exchange --dex --output=out/apk/classes.dex out/classes
 # 3. Ressources + manifeste + assets
 aapt package -f -M AndroidManifest.xml -S res -A assets -I "$SDK" -F out/base.apk -0 arsc

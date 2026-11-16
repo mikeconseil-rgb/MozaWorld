@@ -5,7 +5,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -27,6 +29,25 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        creer();
+        plein();
+    }
+
+    /* Si le moteur de rendu de la télé tombe (mémoire, carte graphique), on ne ferme pas l'appli :
+       on recrée la vue et la partie reprend depuis la sauvegarde. */
+    private class Client extends WebViewClient {
+        public boolean onRenderProcessGone(WebView v, RenderProcessGoneDetail d) {
+            if (v != web) return true;
+            ViewGroup p = (ViewGroup) web.getParent();
+            if (p != null) p.removeView(web);
+            web.destroy();
+            web = null;
+            creer();
+            return true;
+        }
+    }
+
+    private void creer() {
         web = new WebView(this);
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -38,14 +59,13 @@ public class MainActivity extends Activity {
         s.setUseWideViewPort(true);
         web.setBackgroundColor(0xFF0D0C0F);
         web.setWebChromeClient(new WebChromeClient());
-        web.setWebViewClient(new WebViewClient());
+        web.setWebViewClient(new Client());
         web.addJavascriptInterface(new Pont(), "Android");
         web.setFocusable(true);
         web.setFocusableInTouchMode(true);
         setContentView(web);
         web.loadUrl("file:///android_asset/index.html");
         web.requestFocus();
-        plein();
     }
 
     private void plein() {
@@ -62,15 +82,15 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        web.evaluateJavascript("window.MZ&&MZ.act('back',false)", null);
+        if (web != null) web.evaluateJavascript("window.MZ&&MZ.act('back',false)", null);
     }
 
     @Override
-    protected void onPause() { web.evaluateJavascript("window.MZ&&MZ.pause&&MZ.pause()", null); web.onPause(); super.onPause(); }
+    protected void onPause() { if (web != null) web.evaluateJavascript("window.MZ&&MZ.pause&&MZ.pause()", null); if (web != null) web.onPause(); super.onPause(); }
 
     @Override
-    protected void onResume() { super.onResume(); web.onResume(); plein(); }
+    protected void onResume() { super.onResume(); if (web != null) web.onResume(); plein(); }
 
     @Override
-    protected void onDestroy() { web.destroy(); super.onDestroy(); }
+    protected void onDestroy() { if (web != null) web.destroy(); super.onDestroy(); }
 }

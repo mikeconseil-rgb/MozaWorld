@@ -50,7 +50,7 @@ const canvas=document.getElementById('vue');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
 /* Version télé : on rend l'image à une largeur fixe (QUAL.w) puis la télé l'agrandit. Trois réglages, ajustés seuls si l'image saccade. */
 const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4}];
-let QI=1;try{const q=+localStorage.getItem('mz-tv-q');if(q>=0&&q<3)QI=q}catch(_){}
+let QI=window.Android?0:1;try{const q=+localStorage.getItem('mz-tv-q');if(q>=0&&q<3)QI=q}catch(_){}
 const QUAL=()=>QUALS[QI];
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,QUAL().w/Math.max(320,innerWidth)));
 renderer.shadowMap.enabled=QUAL().sh>0;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -108,7 +108,7 @@ function secret(Z,pos,titre,texte,cond){const m=new THREE.Mesh(secGeo,secMat);sc
 const secHalo=points(32,7,{opacity:.8});
 
 /* ---------- Terrain ---------- */
-const CELL=2;let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
+const CELL=3; /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
 for(const Z of ZN)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
 X0-=64;X1+=64;Z0-=64;Z1+=64;
 const GW=Math.ceil((X1-X0)/CELL)+1,GH=Math.ceil((Z1-Z0)/CELL)+1,GN=GW*GH;
@@ -138,7 +138,10 @@ function rebuild(Z){const lv=Z.lv,V=Z.verts,cs=Z.cs,sn=Z.sn,cx=Z.c[0],cz=Z.c[1];
   for(let n=0;n<V.length;n++){const k=V[n],x=tP[k*3],z=tP[k*3+2],dx=x-cx,dz=z-cz,u=dx*cs+dz*sn,v=-dx*sn+dz*cs;
     const h=Z.h(u,v,lv,tn1[k],tn2[k],tn3[k],x,z)*tEf[k];tP[k*3+1]=h;
     tG[k]=Z.col(u,v,lv,h,tn1[k],tn2[k],tn3[k],x,z,tc)*Math.min(1,tEf[k]*3);tC[k*3]=tc[0];tC[k*3+1]=tc[1];tC[k*3+2]=tc[2]}
-  if(terrain){normals(V);const a=terrain.geometry.attributes;a.position.needsUpdate=a.color.needsUpdate=a.glow.needsUpdate=a.normal.needsUpdate=true}}
+  if(terrain){normals(V);const a=terrain.geometry.attributes;
+    /* on n'envoie à la carte graphique que la bande de sommets de cette zone, pas tout le monde */
+    if(Z.vmin===undefined){let lo=1e9,hi=-1;for(const k of V){if(k<lo)lo=k;if(k>hi)hi=k}Z.vmin=lo;Z.vmax=hi}
+    for(const n of['position','color','normal','glow']){const at=a[n];at.updateRange.offset=Z.vmin*at.itemSize;at.updateRange.count=(Z.vmax-Z.vmin+1)*at.itemSize;at.needsUpdate=true}}}
 function normals(V){const f=k=>{const i=k%GW,j=(k/GW)|0,l=tP[(i>0?k-1:k)*3+1],r=tP[(i<GW-1?k+1:k)*3+1],d=tP[(j>0?k-GW:k)*3+1],u=tP[(j<GH-1?k+GW:k)*3+1];
     const nx=l-r,ny=2*CELL,nz=d-u,s=1/Math.hypot(nx,ny,nz);tN[k*3]=nx*s;tN[k*3+1]=ny*s;tN[k*3+2]=nz*s};
   if(V)for(let n=0;n<V.length;n++)f(V[n]);else for(let k=0;k<GN;k++)f(k)}

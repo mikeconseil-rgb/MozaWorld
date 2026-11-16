@@ -104,6 +104,8 @@ function pollPad(){const ps=navigator.getGamepads?navigator.getGamepads():[];let
 /* Filet de sécurité : une touche dont on ne reçoit plus rien depuis 1,2 s est relâchée */
 const isHeld=a=>held[a]&&performance.now()-held[a]<1200;
 
+function terrainAll(){const a=terrain.geometry.attributes;for(const n of['position','color','normal','glow']){a[n].updateRange.count=-1;a[n].needsUpdate=true}}
+
 /* ---------- Modes ---------- */
 let mode='titre',curZ=null,hudKey='',started=false;
 let lastBack=0;
@@ -143,6 +145,7 @@ function titre(){mode='titre';const o=[];
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){for(const Z of ZN){S.lv[Z.id]=0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=0;rebuild(Z);Z.update(0);placeAlt(Z)}
+    terrainAll();
     S.cards=[];S.hurt=0;S.lives=1;for(const s of secrets)s.found=false;save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
@@ -414,8 +417,12 @@ function toggleSound(){soundOn=!soundOn;if(master)master.gain.setTargetAtTime(so
 /* ---------- Boucle ---------- */
 let last=performance.now(),T=0,frame=0,stepAcc=0,fpsA=0,fpsN=0,fpsT=0,autoQ=true;
 function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000);last=t;T+=dt;frame++;pollPad();
-  const rate=mode==='mue'?(mue&&mue.rep?1.4:.42):3.2;
-  for(const Z of ZN){if(Math.abs(Z.lv-Z.lvT)>1e-4){const d=Z.lvT-Z.lv,s=Math.sign(d)*Math.min(Math.abs(d),dt*rate);Z.lv+=s;if(Math.abs(Z.lvT-Z.lv)<1e-4)Z.lv=Z.lvT;rebuild(Z);Z.update(Z.lv);placeAlt(Z)}Z.tick(T,dt)}
+  /* Transformation d'une zone : au lieu de reconstruire le terrain à chaque image (trop lourd pour une télé),
+     on avance par petits bonds espacés (au plus un toutes les 0,45 s et une zone à la fois). */
+  const rate=mode==='mue'?(mue&&mue.rep?1.4:.42):3.2;let rebuilt=false;
+  for(const Z of ZN){if(Math.abs(Z.lv-Z.lvT)>1e-4){Z.acc=(Z.acc||0)+dt;
+      if(!rebuilt&&(Z.acc>=.45||Math.abs(Z.lvT-Z.lv)<=Z.acc*rate+1e-4)){const d=Z.lvT-Z.lv,s=Math.sign(d)*Math.min(Math.abs(d),Z.acc*rate);Z.lv+=s;Z.acc=0;
+        if(Math.abs(Z.lvT-Z.lv)<1e-4)Z.lv=Z.lvT;rebuild(Z);Z.update(Z.lv);placeAlt(Z);rebuilt=true}}else Z.acc=0;Z.tick(T,dt)}
   for(const Z of ZN){const a=Z.alt,r=restLeft(Z)>0;a.st.rotation.z=T*.4;a.gem.rotation.y=T*1.2;a.gem.material=r?altRest:altGlow;a.li.intensity=r?.25:1.1+.3*Math.sin(T*2.2+Z.i)}
   if(mode==='mue'&&mue){stepMue(dt);if(mue)camMue(dt);else camFollow(dt)}
   else{if(mode==='epreuve'&&E){E.t+=dt;E.step(dt,T);if(E&&!E.monde)E.draw(T)}else if(mode==='monde')move(dt);else if(!started){P.yaw+=dt*.05;P.y=stand(P.x,P.z,1e3).g}else move(0);
@@ -436,4 +443,4 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 titre();requestAnimationFrame(loop);
-window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);Z.update(lv);placeAlt(Z)},A};
+window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z)},A};
