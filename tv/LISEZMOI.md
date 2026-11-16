@@ -16,6 +16,26 @@ on choisit le pôle (▲ vers +, ▼ vers −), on réussit l'épreuve de la zon
 | Exarchat des Lucioles | Antre | La Chasse aux lucioles : frapper quand la reine traverse l'affût | OK |
 | Foire de Givrecloche | Marché | Le Chantier : rejouer un plan de flèches de plus en plus long | flèches |
 
+## Version 1.2 : combat au tour par tour et premiers pouvoirs
+
+Avant d'éveiller une zone, il faut l'**activer** : à sa Pierre d'éveil, on bat ses gardiens au tour par tour. La zone devient à vous et donne son pouvoir :
+
+| Zone | Pouvoir gagné à l'activation |
+|---|---|
+| Ressource (Tezcamixtli) | **Source de mana** : +1 mana par tour ; 2 mana au niveau 2 ; 2 mana et une carte de plus en main au niveau 3. Une Ressource ne monte que jusqu'à ±3. |
+| Antre (Lucioles) | **Bête alliée** : la carte d'appel fait venir une créature qui frappe à chaque tour et encaisse les coups à la place du héros (3 bêtes au plus). |
+| Donjon (Neuf Édits) | Carte d'attaque forte. |
+| Citadelle (Berestograd) | +6 PV et une carte de garde pour tous les alliés. |
+| Marché (Givrecloche) | Carte gratuite qui fait piocher (et donne 1 mana au niveau 2). |
+
+Combat : le héros commence avec 30 PV, 2 mana par tour et 8 cartes (Coup de bâton, Pas de côté, Souffle court). Chaque tour : le mana se remplit, on pioche jusqu'à 5 cartes,
+on joue ses cartes (◀ ▶ choisir, OK jouer, ▼ fin du tour), puis les bêtes frappent et chaque monstre fait l'action annoncée au-dessus de sa tête
+(attaque, garde, frappe tout le monde, prend son élan puis frappe fort, soigne). Retour : pause, on peut fuir sans blessure.
+Les cartes de zone se renforcent quand la zone s'éveille et leur effet est **doublé dans la zone qu'elles contrent** (même cycle que les épreuves).
+En marchant, des créatures surgissent parfois (réglable dans le menu : fréquentes, normales, rares, aucune) ; une victoire permet d'ajouter une carte au paquet de combat.
+Une défaite = une blessure ; à la mort, le paquet de combat revient aux cartes de départ et les zones sont à réactiver.
+Pendant un combat la 3D n'est plus dessinée, pour ménager la télé.
+
 ## Suggestions du projet intégrées
 
 - Une épreuve par type de zone, chaque réussite = **+1 palier** avec un gros changement visible (mue).
