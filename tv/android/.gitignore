@@ -1,0 +1,4 @@
+out/
+*.keystore
+*.apk
+assets/index.html
