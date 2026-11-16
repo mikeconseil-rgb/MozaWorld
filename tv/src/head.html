@@ -107,6 +107,63 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 .kc .k3{font-size:calc(var(--u)*.95);color:var(--sable);line-height:1.4}
 .kc.m{border-color:rgba(127,176,200,.55)}.kc.p{border-color:rgba(230,162,90,.55)}
 
+/* Combat au tour par tour */
+#combat{z-index:15;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:calc(var(--u)*.6);
+  background:radial-gradient(ellipse at 50% 30%,var(--zcA),transparent 60%),radial-gradient(ellipse at 50% 120%,rgba(201,164,92,.16),transparent 55%),var(--encre)}
+#combat[hidden]{display:none}
+.cb-tete{text-align:center}
+.cb-tete h2{font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*2.3);margin:.05em 0 0}
+.cb-rang{display:flex;justify-content:center;align-items:flex-end;gap:calc(var(--u)*2.6);min-height:calc(var(--u)*12.5)}
+#cb-allies{min-height:calc(var(--u)*10.5)}
+.u{position:relative;width:calc(var(--u)*13);text-align:center;transition:opacity .6s,transform .2s}
+.u .por svg{width:calc(var(--u)*7);height:calc(var(--u)*7);display:block;margin:0 auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.6))}
+.u.chef .por svg{width:calc(var(--u)*8.6);height:calc(var(--u)*8.6)}
+.u .un{font-family:var(--titre);font-size:calc(var(--u)*1.3);font-weight:600;line-height:1.1;margin-top:.2em}
+.u .bar{position:relative;height:calc(var(--u)*1.2);margin:.35em auto 0;width:92%;background:rgba(239,231,214,.1);border:1px solid rgba(239,231,214,.3);border-radius:2px;overflow:hidden}
+.u .bar i{position:absolute;top:0;bottom:0;left:0;background:linear-gradient(90deg,#9e3a32,var(--rouge));transition:width .35s}
+#cb-allies .u .bar i{background:linear-gradient(90deg,#5d8a4e,#8fc06f)}
+.u .bar span{position:relative;font-size:calc(var(--u)*.85);line-height:calc(var(--u)*1.2);font-variant-numeric:tabular-nums;text-shadow:0 1px 3px #000}
+.u .gd{height:1.3em;font-size:calc(var(--u)*1);color:var(--moins);font-weight:600}
+.u .int{min-height:2.5em;font-size:calc(var(--u)*.95);color:var(--sable);line-height:1.25;display:flex;align-items:flex-end;justify-content:center}
+.u .int b{font-family:var(--titre);font-size:1.6em;color:var(--laiton2);margin-right:.25em}
+#cb-allies .u .int{min-height:1.4em}
+.u.vise{transform:scale(1.08)}
+.u.vise .por{outline:3px solid var(--laiton2);outline-offset:4px;border-radius:50%}
+.u.mort{opacity:.18}
+.u.choc{animation:choc .35s}
+.u.agit{animation:agit .4s}
+@keyframes choc{0%,100%{transform:none}25%{transform:translateX(-8px)}60%{transform:translateX(7px)}}
+@keyframes agit{0%,100%{transform:none}40%{transform:translateY(calc(var(--u)*1.4)) scale(1.06)}}
+.pop{position:absolute;left:50%;top:30%;transform:translateX(-50%);font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*2.6);pointer-events:none;animation:pop 1s forwards;text-shadow:0 2px 8px #000;white-space:nowrap}
+.pop.deg{color:#ff7a68}.pop.g{color:var(--moins)}.pop.soin{color:#9fe08a}
+@keyframes pop{0%{opacity:0;margin-top:0}15%{opacity:1}100%{opacity:0;margin-top:calc(var(--u)*-4)}}
+.cb-log{text-align:center;font-family:var(--titre);font-style:italic;font-size:calc(var(--u)*1.5);min-height:1.4em;color:var(--ivoire)}
+.cb-log.neuf{animation:neuf .5s}
+@keyframes neuf{from{opacity:.2}to{opacity:1}}
+.cb-bas{display:grid;grid-template-columns:auto 1fr auto;gap:calc(var(--u)*1.5);align-items:end}
+.cb-mana{display:grid;justify-items:center;gap:.3em;min-width:calc(var(--u)*8)}
+.cb-mana .l,.cb-piles span{font-size:calc(var(--u)*.85);letter-spacing:.16em;text-transform:uppercase;color:var(--sable)}
+.cb-mana b{font-family:var(--titre);font-size:calc(var(--u)*3.4);line-height:1;color:var(--laiton2)}
+.mp{display:flex;gap:calc(var(--u)*.45)}
+.mp i{width:calc(var(--u)*1);height:calc(var(--u)*1);transform:rotate(45deg);border:2px solid var(--laiton)}
+.mp i.on{background:var(--laiton2);box-shadow:0 0 10px rgba(232,199,127,.7)}
+.cb-piles{display:grid;gap:.4em;text-align:right;min-width:calc(var(--u)*8)}
+.cb-piles b{font-family:var(--titre);font-size:1.6em;color:var(--ivoire);margin-left:.3em}
+#cb-main{display:flex;justify-content:center;gap:calc(var(--u)*.9);align-items:flex-end}
+.cc{position:relative;width:calc(var(--u)*11.5);min-height:calc(var(--u)*11.5);padding:calc(var(--u)*1) calc(var(--u)*.9) calc(var(--u)*.8);border:2px solid rgba(201,164,92,.4);border-radius:4px;
+  background:linear-gradient(170deg,rgba(239,231,214,.1),rgba(13,12,15,.85));display:flex;flex-direction:column;transition:transform .15s,border-color .15s;box-sizing:border-box}
+.cc.z{border-color:var(--kcB);background:linear-gradient(170deg,var(--kcA),rgba(13,12,15,.88))}
+.cc .co{position:absolute;top:calc(var(--u)*-1);left:calc(var(--u)*-.8);width:calc(var(--u)*2.4);height:calc(var(--u)*2.4);border-radius:50%;background:var(--laiton);color:var(--encre);display:grid;place-items:center;font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*1.6)}
+.cc .cn{font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*1.45);line-height:1.1;margin-bottom:.35em}
+.cc .ct{font-size:calc(var(--u)*.95);line-height:1.35;color:var(--ivoire);flex:1}
+.cc .cz{font-size:calc(var(--u)*.72);letter-spacing:.12em;text-transform:uppercase;color:var(--sable);margin-top:.5em}
+.cc.fin{border-style:dashed;justify-content:center;text-align:center;min-height:calc(var(--u)*9)}
+.cc.f{transform:translateY(calc(var(--u)*-2)) scale(1.08);border-color:var(--laiton2);box-shadow:0 0 0 4px rgba(232,199,127,.22),0 14px 30px rgba(0,0,0,.6)}
+.cc.off{opacity:.45}
+.cc.choisie{transform:translateY(calc(var(--u)*-3)) scale(1.1);border-color:#fff}
+.cb-aide{text-align:center;font-size:calc(var(--u)*1);color:var(--sable)}
+.boite .cc{width:auto;min-height:0}
+.boite .cc .co{top:calc(var(--u)*.6);left:auto;right:calc(var(--u)*.6);width:calc(var(--u)*2);height:calc(var(--u)*2);font-size:calc(var(--u)*1.3)}
 @media (prefers-reduced-motion:reduce){.hud,.toast,.ecran,.pip,.opt{transition:none}}
 </style>
 
@@ -123,6 +180,7 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 <div class="hud mondain etat cadre">
   <div><span class="l">Blessures </span><span class="vies" id="h-vies"></span></div>
   <div><span class="l">Cartes </span><b id="h-cartes">0</b></div>
+  <div><span class="l">Combat </span><b id="h-deck">8</b><span class="l"> cartes · mana </span><b id="h-mana">2</b></div>
   <div><span class="l">Secrets </span><b id="h-sec">0</b><span class="l"> / <span id="h-sect">0</span></span></div>
 </div>
 
@@ -149,13 +207,22 @@ body.jeu-ouvert .hud.mondain{opacity:0}
   <div class="boite">
     <div class="sur">MozaWorld · édition salon</div>
     <h1>Cinq Tuiles</h1>
-    <p>Cinq zones de la mosaïque Girih dorment au niveau zéro. Dans chacune se dresse une Pierre d'éveil : réussissez son épreuve et la zone fait un bond d'un palier vers le pôle de votre choix, jusqu'à −7 ou +7. Chaque bond transforme la zone et vous donne une carte de pouvoir.</p>
+    <p>Cinq zones de la mosaïque Girih dorment au niveau zéro. Dans chacune se dresse une Pierre d'éveil : battez d'abord ses gardiens au tour par tour pour activer la zone et gagner son pouvoir (mana, bête alliée, attaque, garde), puis réussissez son épreuve et la zone fait un bond d'un palier vers le pôle de votre choix, jusqu'à −7 ou +7. Chaque bond transforme la zone et vous donne une carte de pouvoir.</p>
     <div class="choix" id="seuil-choix"></div>
     <p class="petit" style="margin-top:1.4em">Télécommande : flèches pour se déplacer, OK pour agir, Retour pour le menu. Une manette fonctionne aussi.</p>
   </div>
 </div>
 
 <div class="ecran" id="menu" hidden><div class="boite"><div class="sur" id="menu-sur">Menu</div><h2 id="menu-t">Pause</h2><div id="menu-corps"></div><div class="choix" id="menu-choix"></div></div></div>
+
+<div class="ecran" id="combat" hidden>
+  <div class="cb-tete"><div class="sur" id="cb-sur"></div><h2 id="cb-t"></h2></div>
+  <div class="cb-rang" id="cb-foes"></div>
+  <div class="cb-log" id="cb-log"></div>
+  <div class="cb-rang" id="cb-allies"></div>
+  <div class="cb-bas"><div class="cb-mana" id="cb-mana"></div><div id="cb-main"></div><div class="cb-piles" id="cb-piles"></div></div>
+  <div class="cb-aide" id="cb-aide"></div>
+</div>
 
 <div class="ecran" id="jeu" hidden>
   <div class="tete"><div class="sur" id="j-sur"></div><h2 id="j-t"></h2><div class="consigne" id="j-c"></div><div class="compte" id="j-n"></div></div>
