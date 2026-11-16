@@ -36,6 +36,17 @@ En marchant, des créatures surgissent parfois (réglable dans le menu : fréque
 Une défaite = une blessure ; à la mort, le paquet de combat revient aux cartes de départ et les zones sont à réactiver.
 Pendant un combat la 3D n'est plus dessinée, pour ménager la télé.
 
+## Version 1.5 : réserve de mana et Donjon à aménager
+
+Premier test décidé le 16 novembre : un combat payé avec le mana des Ressources, puis un Donjon à aménager (`src/economie.js`).
+
+- **Une seule réserve de mana** (6 au départ, affichée en haut à droite). Un **cycle** dure 60 s dans la démo ; à chaque cycle la Ressource activée ajoute 1 mana, puis 2 au niveau 2 (au niveau 3, en plus, une carte de plus en main). La Ressource va de 0 à 3, sans pôle.
+- **Mise de départ** : avant chaque combat on mise 2, 4 ou 6 mana de la réserve. C'est le budget du combat ; le héros ajoute 1 mana par tour. Le mana non dépensé revient dans la réserve si l'on gagne, il est perdu si l'on fuit ou si l'on perd (provisoire, à revoir après le test).
+- **Paquet de départ** : les mêmes 10 cartes communes pour tout le monde (5 Coup de bâton, 3 Pas de côté, 2 Souffle court), assez pour une zone de niveau 0, peut-être 1. Paquet de 40 cartes au plus.
+- **Donjon des Neuf Édits à aménager** : une fois activé, sa Pierre propose « Aménager le Donjon ». Quatre salles, un piège par salle, payé avec la réserve : Herse à pointes (2 mana, force 3), Glyphe de brume (2, force 2, le piège suivant compte double), Fosse de lave (3, force 5), Gardien d'édit (4, force 6).
+- **Assauts** : tous les 3 cycles, le monde sauvage attaque le Donjon. La horde (force 6 + 3 par palier du Donjon + 2 par assaut déjà repoussé + hasard) traverse les salles dans l'ordre. Repoussée : +2 mana. Passée : une salle est saccagée et le Donjon recule d'un palier. « Provoquer un assaut maintenant » sert à tester vite.
+- **Trois rythmes d'entretien à comparer** (menu, ou écran du Donjon) : à chaque cycle (1 mana par piège, sinon il dort), à l'assaut (2 mana par piège quand l'assaut arrive, sinon il ne se déclenche pas), usure (pas d'entretien, chaque piège sert 3 assauts puis casse).
+
 ## Suggestions du projet intégrées
 
 - Une épreuve par type de zone, chaque réussite = **+1 palier** avec un gros changement visible (mue).

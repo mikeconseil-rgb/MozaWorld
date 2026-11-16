@@ -3,7 +3,9 @@
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
    Tout se joue à la télécommande : ◀ ▶ choisir, OK jouer, Retour pause. Rien de 3D pendant le combat (léger). */
 
-const DEPART=['coup','coup','coup','coup','garde','garde','garde','souffle'];
+/* Les mêmes 10 cartes communes pour tout le monde : assez pour une zone de niveau 0, peut-être 1, pas plus. */
+const DEPART=['coup','coup','coup','coup','coup','garde','garde','garde','souffle','souffle'];
+const PAQUET_MAX=40;
 const ZCOL={CIT:'#c0584c',DON:'#e0782f',RES:'#73b45e',ANT:'#e2cb62',MAR:'#93bede'};
 const rgba=(h,a)=>`rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;
 const ZCOURT={CIT:'Berestograd',DON:'Neuf Édits',RES:'Tezcamixtli',ANT:'Lucioles',MAR:'Givrecloche'};
@@ -22,7 +24,7 @@ const CK={
     txt:k=>`Tous vos alliés gagnent ${(6+2*Lz('CIT'))*contreX(k)} de garde.`,jeu:k=>CB.allies.forEach(u=>u.pv>0&&garder(u,(6+2*Lz('CIT'))*contreX(k)))},
   DON:{z:'DON',nom:()=>poleN('DON','Édit de fer','Édit de délivrance'),cout:2,cible:1,
     txt:k=>`${(10+3*Lz('DON'))*contreX(k)} dégâts.`,jeu:(k,t)=>frappe(t,(10+3*Lz('DON'))*contreX(k))},
-  RES:{z:'RES',nom:()=>poleN('RES','Gerbe de folie','Gerbe de raison'),cout:0,
+  RES:{z:'RES',nom:()=>'Gerbe de Tezcamixtli',cout:0,
     txt:k=>`+1 mana ce tour, soigne le héros de ${(2+Lz('RES'))*contreX(k)}.`,jeu:k=>{CB.mana++;soigner(CB.hero,(2+Lz('RES'))*contreX(k))}},
   ANT:{z:'ANT',nom:()=>poleN('ANT','Appel : Luciole de nuit','Appel : Lancière de l\'aurore'),cout:2,
     txt:k=>{const b=bete(k);return`Une bête rejoint le combat : ${b.pv} PV, frappe ${b.atk} à chaque tour.`},jeu:k=>invoquer(bete(k))},
@@ -49,11 +51,12 @@ const pvMax=()=>30+(S.act.CIT?6+2*Lz('CIT'):0);
 /* ---------- Déroulement ---------- */
 let CB=null;
 const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-function startCombat(Z,kind){
+function startCombat(Z,kind,mise){
+  if(mise===undefined){choisirMise(Z,kind);return}
   const foes=kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
     :Array.from({length:Lz(Z.id)>=3?3:2},()=>monstre(Z,Math.floor(Math.random()*2)));
   const hero={nom:'Le héros',pv:pvMax(),max:pvMax(),g:0,hero:1};
-  CB={Z,kind,foes,hero,allies:[hero],pile:melange(S.deck.slice()),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
+  CB={Z,kind,foes,hero,allies:[hero],pile:melange(S.deck.slice()),defausse:[],main:[],mana:mise,mise,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
   mode='combat';closeUI();document.body.classList.add('jeu-ouvert');$('toast').classList.remove('vu');toastT=0;
   const H=$('combat');H.hidden=false;H.style.setProperty('--zcA',rgba(ZCOL[Z.id],.22));
   $('cb-sur').textContent=(kind==='eveil'?'Activation · les gardiens de la Pierre':'Rencontre')+' · '+Z.info.sur.split(' · ')[0]+' niveau '+(sgn(S.lv[Z.id])||'0');
@@ -66,7 +69,7 @@ function startCombat(Z,kind){
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
-function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.mana=manaMax();
+function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.mana+=1;   /* la mise de départ est le budget du combat ; le héros ajoute 1 mana par tour */
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
@@ -107,25 +110,26 @@ function agir(m){const I=m.int;if(!I)return;m.el&&(m.el.classList.remove('agit')
 
 /* ---------- Fin du combat : récompenses ---------- */
 function fermerCombat(){$('combat').hidden=true;CB=null;CBwalk=P.walked;CBnext=prochaineRencontre()}
-const RECO={RES:'Source de mana : +1 mana à chaque tour de combat. En éveillant la zone : 2 mana au niveau 2, puis 2 mana et une carte de plus en main au niveau 3.',
+const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1 mana, puis 2 au niveau 2, puis 2 et une carte de plus en main au niveau 3.',
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
-function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';
+function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';const rendu=ok?C.mana:0;if(rendu){S.res+=rendu;etatHud()}
+  const retour=rendu?` ${rendu} mana non dépensé(s) retourne(nt) dans la réserve (${S.res}).`:ok?'':` La mise (${C.mise} mana) est perdue.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
-    ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
+    ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3).${retour} À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
       back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
   S.hurt=Math.max(0,S.hurt-(C.kind==='eveil'?1:0));
-  if(C.kind==='eveil'){S.act[Z.id]=true;S.own[Z.id]=true;S.emp[Z.id]=false;if(S.deck.length<24)S.deck.push(Z.id);save();etatHud();hudKey='';fanfare(S.lv[Z.id]||1);
-    ui('menu',{sur:'Zone activée',t:Z.info.nom,corps:`<p>La zone est à vous. Vous gagnez la carte « ${CK[Z.id].nom()} ».</p><div class="cartes" style="grid-template-columns:1fr">${carteHTML(Z.id)}</div><p class="petit" style="margin-top:1em">${RECO[Z.id]} Vous pouvez maintenant éveiller cette zone : plus elle s'éloigne de zéro, plus sa carte devient forte.</p>`,
+  if(C.kind==='eveil'){if(Z.id==='DON')S.dernierAssaut=S.nc;S.act[Z.id]=true;S.own[Z.id]=true;S.emp[Z.id]=false;if(S.deck.length<PAQUET_MAX)S.deck.push(Z.id);save();etatHud();hudKey='';fanfare(S.lv[Z.id]||1);
+    ui('menu',{sur:'Zone activée',t:Z.info.nom,corps:`<p>La zone est à vous. Vous gagnez la carte « ${CK[Z.id].nom()} ».${retour}</p><div class="cartes" style="grid-template-columns:1fr">${carteHTML(Z.id)}</div><p class="petit" style="margin-top:1em">${RECO[Z.id]} Vous pouvez maintenant éveiller cette zone : plus elle s'éloigne de zéro, plus sa carte devient forte.</p>`,
       back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});return}
   /* rencontre : choisir une carte à ajouter au paquet de combat */
   const offre=[S.act[Z.id]?Z.id:['coup','garde','souffle'][Math.floor(Math.random()*3)],['coup','garde','souffle'][Math.floor(Math.random()*3)]];
   if(offre[0]===offre[1])offre[1]=offre[0]==='coup'?'garde':'coup';
-  const plein=S.deck.length>=24;save();sfx('hit');
-  ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${plein?'Votre paquet de combat est plein (24 cartes).':'Choisissez une carte à ajouter à votre paquet de combat.'}${S.act[Z.id]?'':' Activez la zone à sa Pierre d\'éveil pour que ses rencontres offrent sa carte.'}</p><div class="cartes">${offre.map(carteHTML).join('')}</div>`,
+  const plein=S.deck.length>=PAQUET_MAX;save();sfx('hit');
+  ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${plein?'Votre paquet de combat est plein ('+PAQUET_MAX+' cartes).':'Choisissez une carte à ajouter à votre paquet de combat.'}${retour}${S.act[Z.id]?'':' Activez la zone à sa Pierre d\'éveil pour que ses rencontres offrent sa carte.'}</p><div class="cartes">${offre.map(carteHTML).join('')}</div>`,
     back:toMonde,opts:[...offre.map(k=>({l:'Prendre « '+CK[k].nom()+' »',ic:'+',off:plein,go:()=>{S.deck.push(k);save();toMonde()}})),{l:'Ne rien prendre',ic:'◆',go:toMonde}]})}
-function fuir(){const C=CB;fermerCombat();toMonde();if(C.kind==='renc')toast('Fuite','Vous semez les créatures','Rien de perdu, rien de gagné.')}
-function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas. Les gardiens d\'une Pierre attendront votre retour.</p>',
+function fuir(){const C=CB;fermerCombat();toMonde();toast('Fuite',C.kind==='renc'?'Vous semez les créatures':'Les gardiens attendront',`La mise (${C.mise} mana) est perdue.`)}
+function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas, mais le mana misé est perdu. Les gardiens d\'une Pierre attendront votre retour.</p>',
   back:reprendreCombat,opts:[{l:'Continuer le combat',ic:'▲',go:reprendreCombat},{l:'Fuir',ic:'◆',go:fuir}]})}
 function reprendreCombat(){closeUI();mode='combat'}
 
@@ -160,7 +164,7 @@ function majUnites(){if(!CB)return;const v=vivants(CB.foes);
     if(u.bete)e.querySelector('.int').textContent='⚔ '+u.atk+' à chaque tour';
     else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}`:''}
     e.classList.toggle('vise',!!CB.sel&&u===v[CB.ti])}
-  $('cb-mana').innerHTML=`<span class="l">Mana</span><span class="mp">${Array.from({length:Math.max(CB.mana,manaMax())},(_,i)=>`<i class="${i<CB.mana?'on':''}"></i>`).join('')}</span><b>${CB.mana}</b>`;
+  $('cb-mana').innerHTML=`<span class="l">Mana</span><span class="mp">${Array.from({length:Math.min(CB.mana,14)},()=>'<i class="on"></i>').join('')}</span><b>${CB.mana}</b>`;
   $('cb-piles').innerHTML=`<span>Pioche <b>${CB.pile.length}</b></span><span>Défausse <b>${CB.defausse.length}</b></span><span>Tour <b>${CB.tour}</b></span>`}
 function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" style="${z?'--kcA:'+rgba(ZCOL[z],.3)+';--kcB:'+rgba(ZCOL[z],.75):''}"><div class="co">${c.cout}</div><div class="cn">${c.nom()}</div><div class="ct">${c.txt(k)}</div><div class="cz">${z?TYPE[z].kind+' · '+ZCOURT[z]:'Base'}</div></div>`}
 function dessinerMain(){const C=CB;if(!C)return;const h=$('cb-main');

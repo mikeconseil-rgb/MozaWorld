@@ -15,6 +15,7 @@ try{const j=JSON.parse(localStorage.getItem('mz-tv-1')||'null');if(j&&j.lv){Obje
 for(const id of IDS)if(S.act[id]===undefined)S.act[id]=!!S.own[id];
 if(!Array.isArray(S.deck)||!S.deck.length)S.deck=DEPART.concat(IDS.filter(id=>S.act[id]));
 if(S.renc===undefined)S.renc=1;
+initEco();
 function save(){S.found=secrets.map((s,i)=>s.found?i:-1).filter(i=>i>=0);try{localStorage.setItem('mz-tv-1',JSON.stringify(S))}catch(_){}}
 const now=()=>Date.now()/1000;
 const restLeft=Z=>Math.max(0,(S.rest[Z.id]||0)-now());
@@ -151,19 +152,20 @@ function titre(){mode='titre';const o=[];
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){for(const Z of ZN){S.lv[Z.id]=0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=0;rebuild(Z);Z.update(0);placeAlt(Z)}
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
+    S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();S.res=RESERVE_DEPART;S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
   mode='monde';hudKey='';etatHud();
   if(neuf)setTimeout(()=>toast('Berestograd · niveau 0','Cherchez la Pierre d\'éveil','Suivez la flèche dorée en bas de l\'écran, puis appuyez sur OK devant la Pierre.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
-  ui('menu',{sur:'Pause',t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.cards.length} carte(s) · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]),0)} sur 35</p>`,
+  ui('menu',{sur:'Pause',t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.cards.length} carte(s) · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]),0)} sur 31 · réserve <b>${S.res}</b> mana · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Paquet de cartes',ic:'▤',d:S.cards.length+' carte(s)',go:openPaquet},
-    {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · mana '+manaMax(),go:openCombatPaquet},
+    {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+S.res+' mana',go:openCombatPaquet},
+    {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
     {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
@@ -178,10 +180,10 @@ function cardHTML(c){return`<div class="kc ${c.pole?'p':'m'}"><div class="k1">${
 function openPaquet(){ui('menu',{sur:'Paquet',t:'Vos cartes de pouvoir',corps:S.cards.length?`<div class="cartes">${S.cards.slice(-8).map(cardHTML).join('')}</div>`:'<p>Aucune carte encore. Chaque éveil réussi en donne une. Une carte facilite l\'épreuve d\'une autre zone : c\'est un contre-pouvoir.</p>',
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
-  ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Mana par tour ${manaMax()}${sourceMana()?' (dont '+sourceMana()+' de la Ressource)':''} · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
+  ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve ${S.res} mana${prodRessource()?' (la Ressource en ajoute '+prodRessource()+' par cycle)':''} · en combat : la mise, plus 1 mana par tour · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
-<p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. La zone devient à vous et vous donne son pouvoir : du mana (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
+<p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Avant chaque combat, vous misez une part de votre réserve de mana : c'est le budget du combat, et le héros ajoute 1 mana par tour. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure et plus la carte gagnée est forte (Mineure, Majeure, Ultime).</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
@@ -190,13 +192,15 @@ function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',c
 let carteOn=true;
 function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ci=bestCard(Z),emp=S.emp[Z.id];
   const diff=t=>{const b=Math.abs(t)-(emp?1:0)-(carteOn&&ci>=0?S.cards[ci].pw:0);return'Épreuve '+['très facile','facile','facile','moyenne','dure','dure','très dure','redoutable'][clamp(b,0,7)]};
-  const o=[],cap=Z.id==='RES'?3:7;
+  const o=[],cap=Z.id==='RES'?3:7,res=Z.id==='RES';
   if(!S.act[Z.id]){o.push({l:'Activer la zone : affronter ses gardiens',ic:'⚔',cls:'p',d:(emp?'empreinte : gardiens affaiblis · ':'')+'combat',go:()=>startCombat(Z,'eveil')});
     o.push({l:'Éveil verrouillé',ic:'▲',off:true,d:'activez d\'abord la zone'})}
   else{
-  if(lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
-  if(lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)});
-  if(Math.abs(lv)>=cap)o.push({l:'Niveau maximal atteint',ic:'◆',off:true,d:'une Ressource ne monte que de trois niveaux'})}
+  if(res&&lv<3)o.push({l:`Niveau ${lv+1} sur 3`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
+  if(!res&&lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
+  if(!res&&lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)});
+  if(res?lv>=3:Math.abs(lv)>=cap)o.push({l:'Niveau maximal atteint',ic:'◆',off:true,d:'une Ressource va de 0 à 3, sans pôle'})}
+  if(Z.id==='DON'&&S.act.DON&&S.own.DON)o.unshift({l:'Aménager le Donjon',ic:'⛬',cls:'p',d:`${nbPieges()} piège(s) · réserve ${S.res}`,go:()=>openDonjon()});
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
   if(ci>=0)o.push({l:`Jouer « ${S.cards[ci].nom} »`,ic:carteOn?'☑':'☐',d:carteOn?`épreuve −${S.cards[ci].pw}, carte dépensée`:'carte gardée',go:()=>{carteOn=!carteOn;openEveil(Z,UI.f)}});
   o.push({l:'Partir',ic:'◆',go:toMonde});
@@ -368,7 +372,7 @@ function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
   $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
-function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-cartes').textContent=S.cards.length;$('h-deck').textContent=S.deck.length;$('h-mana').textContent=manaMax();$('h-sec').textContent=secrets.filter(s=>s.found).length}
+function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-cartes').textContent=S.cards.length;$('h-deck').textContent=S.deck.length;$('h-mana').textContent=S.res;$('h-sec').textContent=secrets.filter(s=>s.found).length}
 let invKey='';
 function invite(){let h='',cls='';const el=$('invite');
   if(mode==='monde'&&curZ){const a=curZ.alt,d=Math.hypot(a.x-P.x,a.z-P.z),r=restLeft(curZ);
