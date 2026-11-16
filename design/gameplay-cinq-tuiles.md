@@ -12,8 +12,9 @@ Copie de référence du 16 novembre 2026. Document vivant (version complète, av
 6. **Donjon possédé :** devient un jeu de gestion et de défense de donjon (inspiration de genre seulement, rien copier). Chaque Donjon possédé déverrouille un dispositif de défense propre à sa sous-zone. Le mana paie les pièges ; c'est le même mana que pour les cartes ; chaque piège a une couleur, on peut payer avec une couleur que son paquet n'utilise pas. Hordes et rivaux doivent vaincre le Donjon tel que le joueur l'a aménagé.
 7. **Assemblée :** siège politique de la région, épreuve = duel d'arguments en cartes, donne des cartes de loi et un multiplicateur de voix. Système de voix pondérées par type de tuile.
 8. **Choix moraux :** environ 7 épreuves sur 10 reposent sur un choix cornélien pour adultes, dur mais juste ; le choix décide du pôle. Les 3 autres sont des épreuves d'adresse ou de combat pures.
-9. **Citadelles :** 45, chacune avec son propre style graphique (manga, noir et blanc et brouillard…) ; une famille de styles par type pour les petites tuiles.
-10. **Tuiles épiques :** 5 Citadelles épiques, une par grande région (accord provisoire).
+9. **Deux pôles, pas le bien et le mal :** une zone à −7 n'est pas nécessairement mauvaise, ni une zone à +7 bonne ; ce sont deux évolutions opposées (ex. glace et feu), chacune avec ses forces et ses dangers. Pas de folie à −7.
+10. **Citadelles :** 45, chacune avec son propre style graphique (manga, noir et blanc et brouillard…) ; une famille de styles par type pour les petites tuiles.
+11. **Tuiles épiques :** 5 Citadelles épiques, une par grande région (accord provisoire).
 
 ## Ce que la géométrie impose (mesuré)
 
@@ -26,6 +27,19 @@ Copie de référence du 16 novembre 2026. Document vivant (version complète, av
 | Losange | 1 | 4 | 25 à 34 % | Petit, entre les autres, facile à encercler |
 
 Avec 106 décagones, les Citadelles couvraient 36 % du monde ; avec 45, 18 %. Le générateur sans trou (controle-zones/pavage/girih_exact.py), même poussé à 11 %, n'a placé que 7 décagones sur 152.
+
+## Les six types de mana (décidé le 16 novembre)
+
+Six types de mana, un par famille de biomes. Répartition des 24 biomes proposée par l'équipe, à valider (noms provisoires) :
+
+| Mana | Biomes |
+| --- | --- |
+| Feu | Volcan, Désert de sable, Savane, Canyon |
+| Glace | Glacier, Toundra, Fjord, Forêt boréale |
+| Eau | Récif, Archipel, Delta fluvial, Mangrove |
+| Sève | Jungle, Marais, Forêt de champignons géants, Oasis |
+| Pierre | Haute montagne, Cavernes cristallines, Cité en ruines, Désert de sel |
+| Vent | Steppe, Lande, Îles flottantes, Falaise côtière |
 
 ## Fiches
 
@@ -85,17 +99,17 @@ Cycle des contre-pouvoirs (version télé) : Donjon → Citadelle → Antre → 
 - Citadelle : ouvrir les portes aux réfugiés alors que des espions se cachent parmi eux, ou les laisser dehors face à la horde.
 
 ## Questions ouvertes de l'équipe (16 novembre, avec recommandation)
-1. Taille du paquet en combat : 20 cartes.
-2. Plafond de mana : 10 par tour.
-3. Lieu du combat : sur place, le décor sert d'arène.
-4. Le joueur sait-il quelle option mène au + ou au − : non.
-5. Les choix moraux survivent-ils à la mort : oui, l'héritier hérite des rancunes.
-6. Qui aménage les Donjons non pris : rivaux et monde sauvage.
-7. Le monde sauvage vote-t-il à l'Assemblée : oui, contre par défaut.
-8. Une horde fait-elle baisser une Ressource : oui, d'un niveau, et coupe ses routes.
-9. Monnaie du commerce : or séparé du mana.
-10. Après une victoire épique : nouveau monde tiré au hasard.
-11. Couronne de transition de style autour des Citadelles : oui.
-12. Texte des 383 Ressources : quelques lignes chacune.
-13. Folie à −7 : pas pour l'instant.
-14. Premier test sur la version télé : combat de cartes payé avec le mana des Ressources, puis un Donjon à aménager.
+1. Taille du paquet : TRANCHÉ (16 nov.) — le paquet se forge dans les Citadelles, 15 cartes minimum, 40 maximum.
+2. Plafond de mana : TRANCHÉ (16 nov.) — pas de simple plafond ; option C, réserve unique avec entretien : tout le mana des Ressources va dans une seule réserve ; les pièges coûtent un entretien à chaque cycle, les pouvoirs coûtent à l'activation, chaque combat demande une mise de départ. Le joueur arbitre entre défense, paquet et pouvoirs. À caler en test : durée du cycle, entretien par piège, mise de départ.
+3. Lieu du combat : VALIDÉ (16 nov.) — sur place, le décor de la zone sert d’arène.
+4. Le joueur sait-il quelle option mène au + ou au − : TRANCHÉ (16 nov.) — ça dépend des cas, pas de règle générale ; selon l’épreuve, la conséquence est annoncée ou se découvre après.
+5. Les choix moraux survivent-ils à la mort : TRANCHÉ (16 nov.) — oui, en permanence ; le monde se souvient et l’héritier hérite des rancunes.
+6. Qui aménage les Donjons non pris : VALIDÉ (16 nov.) — les rivaux et le monde sauvage, avec leurs propres pièges.
+7. Le monde sauvage vote-t-il à l’Assemblée : TRANCHÉ (16 nov.) — oui, mais pas toujours contre le joueur ; certaines cartes politiques sont pro-sauvage ou anti-sauvage, et une partie des tuiles sauvages vote pour ou contre selon la carte jouée.
+8. Une horde fait-elle baisser une Ressource : VALIDÉ (16 nov.) — oui, d’un niveau, et elle coupe ses routes.
+9. Monnaie du commerce : VALIDÉ (16 nov.) — monnaie séparée du mana, gagnée en vendant des matériaux, avec un nom évocateur (esprit « gallion », « piastre »), pas « or ». Nom choisi : la tesselle.
+10. Après une victoire épique : PROVISOIRE (16 nov., « pour l’instant ») — fin de ce monde et nouveau monde tiré au hasard.
+11. Couronne de transition de style autour des Citadelles : VALIDÉ (16 nov.) — oui.
+12. Texte des 383 Ressources : VALIDÉ (16 nov.) — une histoire légère de quelques lignes chacune ; les conteurs se concentrent sur les 603 autres zones.
+13. Folie à −7 : TRANCHÉ (16 nov.) — non ; une zone à −7 n'est pas nécessairement mauvaise, ni une zone à +7 bonne : ce sont deux pôles qui évoluent (par exemple glace et feu), chacun avec ses forces et ses dangers.
+14. Premier test sur la version télé : VALIDÉ (16 nov.) — un combat de cartes payé avec le mana des Ressources, puis un Donjon à aménager.
