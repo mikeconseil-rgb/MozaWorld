@@ -159,6 +159,7 @@ function openMenu(){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Paquet de cartes',ic:'▤',d:S.cards.length+' carte(s)',go:openPaquet},
     {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
+    {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%3;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize();openMenu()}},
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
@@ -443,4 +444,4 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 titre();requestAnimationFrame(loop);
-window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z)},A};
+window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z)},A};
