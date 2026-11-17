@@ -9477,7 +9477,7 @@ function terrainCarreaux(){const g=terrain.geometry,A=g.attributes,src=g.index.a
    Tout est lu dans les cartes elles-mêmes (CK), au niveau voulu : le Grimoire suit donc les cartes, quelle que soit leur version. */
 const avecNiveau=(id,lv,fn)=>{const a=S.lv[id];S.lv[id]=lv;try{return fn()}finally{S.lv[id]=a}};
 const estRes=Z=>(Z.mod||Z.id)==='RES';
-const nbPaquet=k=>S.deck.filter(x=>x===k).length;
+const nbPaquet=k=>S.deck.filter(x=>x===k||String(x).startsWith(k+'#')).length;   /* 2.2 : les copies portent leur palier (« ZONE#-3 ») */
 function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
   const vues=ZN.filter(Z=>S.act[Z.id]||S.lv[Z.id]).length;
   ui('menu',{sur:'Grimoire',t:'Le Grimoire des cartes',f:typeof f==='number'?f:0,deux:true,
