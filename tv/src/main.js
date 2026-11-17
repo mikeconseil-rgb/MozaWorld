@@ -9,11 +9,17 @@ const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
 
 /* ---------- Partie : niveaux, maîtrise, empreintes, repos, cartes, blessures ---------- */
 const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},deck:DEPART.slice(),renc:1};
-for(const id of IDS){S.lv[id]=0;S.own[id]=false;S.emp[id]=false;S.rest[id]=0}
+/* Niveau de départ selon l'éloignement (idée du 17 nov. : « les zones au-delà pourraient être niveau 5, avec des combats impossibles
+   à gagner avant d'avoir établi son premier territoire ») : les 5 zones de départ à 0, leurs voisines à ±2, puis ±4, puis ±5.
+   Les Ressources restent à 0 (il faut du mana pour bâtir son paquet). Le pôle est tiré une fois pour toutes par zone. */
+const NIV_DEP=(()=>{const o={},d={},file=[];for(const id of['CIT','DON','RES','ANT','MAR']){d[id]=0;file.push(id)}
+  while(file.length){const z=file.shift();for(const v of (typeof VOISINES!=='undefined'?VOISINES[z]:[])||[])if(d[v]===undefined){d[v]=d[z]+1;file.push(v)}}
+  for(const Z of ZN){const k=d[Z.id]===undefined?3:d[Z.id],n=[0,2,4,5][Math.min(3,k)],sg=hash(Z.c[0]*.01,Z.c[1]*.01)<.5?-1:1;o[Z.id]=(Z.mod||Z.id)==='RES'?0:n*sg}return o})();
+for(const id of IDS){S.lv[id]=NIV_DEP[id]||0;S.own[id]=false;S.emp[id]=false;S.rest[id]=0}
 let hasSave=false;
 try{const j=JSON.parse(localStorage.getItem('mz-tv-1')||'null');if(j&&j.lv){Object.assign(S,j);hasSave=true}}catch(_){}
 /* 2.0 : une partie de la 1.9 ne connaît pas les nouvelles tuiles */
-for(const id of IDS){if(S.lv[id]===undefined)S.lv[id]=0;if(S.own[id]===undefined)S.own[id]=false;if(S.emp[id]===undefined)S.emp[id]=false;if(S.rest[id]===undefined)S.rest[id]=0}
+for(const id of IDS){if(S.lv[id]===undefined)S.lv[id]=NIV_DEP[id]||0;if(S.own[id]===undefined)S.own[id]=false;if(S.emp[id]===undefined)S.emp[id]=false;if(S.rest[id]===undefined)S.rest[id]=0}
 /* Parties enregistrées avant le combat : les zones déjà à vous comptent comme activées */
 for(const id of IDS)if(S.act[id]===undefined)S.act[id]=!!S.own[id];
 if(!Array.isArray(S.deck)||!S.deck.length)S.deck=DEPART.concat(IDS.filter(id=>S.act[id]));
@@ -173,7 +179,7 @@ function titre(){mode='titre';const o=[];
   o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
   ui('seuil',{opts:o})}
-function startGame(neuf){if(neuf){for(const Z of ZN){S.lv[Z.id]=0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=0;rebuild(Z);Z.update(0);placeAlt(Z)}CULL.dirty=true;
+function startGame(neuf){if(neuf){for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
     S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
