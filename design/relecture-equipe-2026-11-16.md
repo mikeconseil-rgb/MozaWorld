@@ -16,7 +16,7 @@ L'équipe a relu le code, la liste des 986 zones, les textes des conteurs et les
 
 ## Questions pour l'utilisateur (sans réponse, l'équipe suit la recommandation)
 
-Réponses du 16 novembre : 1 non, les axes restent tels quels (« deux axes, choix moraux, donc dur de dire bien et mal ») ; 2 oui, liste régénérée dans `design/donnees/sous-zones-986-v2.csv`. 3 oui pour l'instant, provisoire, à revoir après le test. 4 : les mêmes 10 cartes communes peu fortes pour tous au départ (niveau 0, peut-être 1, rien de plus) ; le 15 à 40 vaut pour le paquet forgé en Citadelle. 5 ouvert, à décider par des tests (« pas encore satisfait »).
+Réponses du 16 novembre : 1 non, les axes restent tels quels (« deux axes, choix moraux, donc dur de dire bien et mal ») ; 2 oui, liste régénérée dans `design/donnees/sous-zones-986-v2.csv`. 3 remplacé le 17 novembre après le test de l'APK 1.5 (« la mise de mana n'est pas le fun ») : une réserve de mana, une capacité de dépense qui monte de 1 par tour, des boosts possibles (APK 1.6). 4 : les mêmes 10 cartes communes peu fortes pour tous au départ (niveau 0, peut-être 1, rien de plus) ; le 15 à 40 vaut pour le paquet forgé en Citadelle. 5 ouvert, à décider par des tests (« pas encore satisfait »).
 
 1. **Axes bien/mal.** Remplacer les 15 axes bien/mal par des paires de forces opposées (ex. Corruption/Pureté → Rouille/Vernis, Mort/Vie → Os/Sève, Folie/Raison → Rêve/Calcul) ? Reco : oui, l'équipe propose les 15 paires, l'utilisateur valide.
 2. **Liste des 986.** La régénérer avec 383 / 246 / 182 / 130 / 45, l'Assemblée à la place du Marché, les Ressources sans pôle mais avec leur type de mana, en gardant les 20 zones déjà écrites ? Reco : oui.

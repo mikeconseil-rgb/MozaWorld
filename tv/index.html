@@ -1298,11 +1298,11 @@ const CK={
   DON:{z:'DON',nom:()=>poleN('DON','Édit de fer','Édit de délivrance'),cout:2,cible:1,
     txt:k=>`${(10+3*Lz('DON'))*contreX(k)} dégâts.`,jeu:(k,t)=>frappe(t,(10+3*Lz('DON'))*contreX(k))},
   RES:{z:'RES',nom:()=>'Gerbe de Tezcamixtli',cout:0,
-    txt:k=>`+1 mana ce tour, soigne le héros de ${(2+Lz('RES'))*contreX(k)}.`,jeu:k=>{CB.mana++;soigner(CB.hero,(2+Lz('RES'))*contreX(k))}},
+    txt:k=>`Boost : +1 de capacité de dépense ce tour, soigne le héros de ${(2+Lz('RES'))*contreX(k)}.`,jeu:k=>{CB.mana++;CB.capT++;soigner(CB.hero,(2+Lz('RES'))*contreX(k))}},
   ANT:{z:'ANT',nom:()=>poleN('ANT','Appel : Luciole de nuit','Appel : Lancière de l\'aurore'),cout:2,
     txt:k=>{const b=bete(k);return`Une bête rejoint le combat : ${b.pv} PV, frappe ${b.atk} à chaque tour.`},jeu:k=>invoquer(bete(k))},
   MAR:{z:'MAR',nom:()=>poleN('MAR','Lot de brume','Lot de clarté'),cout:0,
-    txt:k=>`Piochez ${2*contreX(k)} cartes${Lz('MAR')>=2?', +1 mana':''}.`,jeu:k=>{pioche(2*contreX(k));if(Lz('MAR')>=2)CB.mana++}}};
+    txt:k=>`Piochez ${2*contreX(k)} cartes${Lz('MAR')>=2?', boost : +1 de capacité ce tour':''}.`,jeu:k=>{pioche(2*contreX(k));if(Lz('MAR')>=2){CB.mana++;CB.capT++}}}};
 const bete=k=>{const L=Lz('ANT'),x=contreX(k);return{nom:poleN('ANT','Luciole de nuit','Lancière de l\'aurore'),pv:(7+3*L)*x,max:(7+3*L)*x,atk:(3+L)*x,g:0,bete:1}};
 
 /* ---------- Gardiens des zones (originaux) : a attaque, g garde, t frappe tout le monde, c charge puis f frappe forte, s soin ---------- */
@@ -1322,14 +1322,15 @@ const mainMax=()=>S.act.RES&&Lz('RES')>=3?6:5;                  /* le bonus du n
 const pvMax=()=>30+(S.act.CIT?6+2*Lz('CIT'):0);
 
 /* ---------- Déroulement ---------- */
+/* ce qu'on peut encore dépenser ce tour : la capacité du tour, sans dépasser la réserve */
+const dispo=()=>CB?Math.max(0,Math.min(CB.mana,S.res)):0;
 let CB=null;
 const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-function startCombat(Z,kind,mise){
-  if(mise===undefined){choisirMise(Z,kind);return}
+function startCombat(Z,kind){
   const foes=kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
     :Array.from({length:Lz(Z.id)>=3?3:2},()=>monstre(Z,Math.floor(Math.random()*2)));
   const hero={nom:'Le héros',pv:pvMax(),max:pvMax(),g:0,hero:1};
-  CB={Z,kind,foes,hero,allies:[hero],pile:melange(S.deck.slice()),defausse:[],main:[],mana:mise,mise,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
+  CB={Z,kind,foes,hero,allies:[hero],pile:melange(S.deck.slice()),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
   mode='combat';closeUI();document.body.classList.add('jeu-ouvert');$('toast').classList.remove('vu');toastT=0;
   const H=$('combat');H.hidden=false;H.style.setProperty('--zcA',rgba(ZCOL[Z.id],.22));
   $('cb-sur').textContent=(kind==='eveil'?'Activation · les gardiens de la Pierre':'Rencontre')+' · '+Z.info.sur.split(' · ')[0]+' niveau '+(sgn(S.lv[Z.id])||'0');
@@ -1342,11 +1343,11 @@ function startCombat(Z,kind,mise){
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
-function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.mana+=1;   /* la mise de départ est le budget du combat ; le héros ajoute 1 mana par tour */
+function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
-function jouer(i,t){const k=CB.main[i],c=CK[k];CB.mana-=c.cout;CB.main.splice(i,1);CB.defausse.push(k);
+function jouer(i,t){const k=CB.main[i],c=CK[k];CB.mana-=c.cout;S.res-=c.cout;CB.main.splice(i,1);CB.defausse.push(k);
   journal(`Vous jouez « ${c.nom()} »${contreX(k)>1?' : contre-pouvoir, effet doublé !':'.'}`);c.jeu(k,t);clack();
   CB.f=Math.min(CB.f,CB.main.length);CB.sel=null;majUnites();dessinerMain();finSiFini()}
 function finTour(){CB.busy=true;CB.sel=null;CB.defausse.push(...CB.main);CB.main=[];dessinerMain();
@@ -1386,8 +1387,8 @@ function fermerCombat(){$('combat').hidden=true;CB=null;CBwalk=P.walked;CBnext=p
 const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1 mana, puis 2 au niveau 2, puis 2 et une carte de plus en main au niveau 3.',
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
-function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';const rendu=ok?C.mana:0;if(rendu){S.res+=rendu;etatHud()}
-  const retour=rendu?` ${rendu} mana non dépensé(s) retourne(nt) dans la réserve (${S.res}).`:ok?'':` La mise (${C.mise} mana) est perdue.`;
+function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
+  const retour=` Réserve : ${S.res} mana.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
     ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3).${retour} À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
       back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
@@ -1401,8 +1402,8 @@ function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';const rendu=o
   const plein=S.deck.length>=PAQUET_MAX;save();sfx('hit');
   ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${plein?'Votre paquet de combat est plein ('+PAQUET_MAX+' cartes).':'Choisissez une carte à ajouter à votre paquet de combat.'}${retour}${S.act[Z.id]?'':' Activez la zone à sa Pierre d\'éveil pour que ses rencontres offrent sa carte.'}</p><div class="cartes">${offre.map(carteHTML).join('')}</div>`,
     back:toMonde,opts:[...offre.map(k=>({l:'Prendre « '+CK[k].nom()+' »',ic:'+',off:plein,go:()=>{S.deck.push(k);save();toMonde()}})),{l:'Ne rien prendre',ic:'◆',go:toMonde}]})}
-function fuir(){const C=CB;fermerCombat();toMonde();toast('Fuite',C.kind==='renc'?'Vous semez les créatures':'Les gardiens attendront',`La mise (${C.mise} mana) est perdue.`)}
-function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas, mais le mana misé est perdu. Les gardiens d\'une Pierre attendront votre retour.</p>',
+function fuir(){const C=CB;fermerCombat();toMonde();toast('Fuite',C.kind==='renc'?'Vous semez les créatures':'Les gardiens attendront',`Réserve : ${S.res} mana.`)}
+function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas ; le mana déjà dépensé est perdu. Les gardiens d\'une Pierre attendront votre retour.</p>',
   back:reprendreCombat,opts:[{l:'Continuer le combat',ic:'▲',go:reprendreCombat},{l:'Fuir',ic:'◆',go:fuir}]})}
 function reprendreCombat(){closeUI();mode='combat'}
 
@@ -1418,7 +1419,7 @@ function cbInput(a,rep){const C=CB;if(!C)return;
   else if(a==='down'){C.f=C.main.length;tick();dessinerMain()}
   else if(a==='up'&&C.f===C.main.length&&C.main.length){C.f=0;tick();dessinerMain()}
   else if(a==='ok'&&!rep){if(C.f===C.main.length){clack();finTour();return}
-    const k=C.main[C.f],c=CK[k];if(c.cout>C.mana){sfx('miss');journal('Pas assez de mana pour « '+c.nom()+' ».');return}
+    const k=C.main[C.f],c=CK[k];if(c.cout>dispo()){sfx('miss');journal(c.cout>S.res?'Réserve de mana vide pour « '+c.nom()+' ».':'Capacité de dépense atteinte ce tour pour « '+c.nom()+' ».');return}
     if(c.cible){const v=vivants(C.foes);if(v.length>1){C.sel='cible';C.ti=0;dessinerMain();majUnites();journal('Choisissez la cible avec ◀ ▶, puis OK.');return}jouer(C.f,v[0])}
     else jouer(C.f)}}
 
@@ -1437,12 +1438,12 @@ function majUnites(){if(!CB)return;const v=vivants(CB.foes);
     if(u.bete)e.querySelector('.int').textContent='⚔ '+u.atk+' à chaque tour';
     else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}`:''}
     e.classList.toggle('vise',!!CB.sel&&u===v[CB.ti])}
-  $('cb-mana').innerHTML=`<span class="l">Mana</span><span class="mp">${Array.from({length:Math.min(CB.mana,14)},()=>'<i class="on"></i>').join('')}</span><b>${CB.mana}</b>`;
+  const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">réserve ${S.res}</span>`;
   $('cb-piles').innerHTML=`<span>Pioche <b>${CB.pile.length}</b></span><span>Défausse <b>${CB.defausse.length}</b></span><span>Tour <b>${CB.tour}</b></span>`}
 function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" style="${z?'--kcA:'+rgba(ZCOL[z],.3)+';--kcB:'+rgba(ZCOL[z],.75):''}"><div class="co">${c.cout}</div><div class="cn">${c.nom()}</div><div class="ct">${c.txt(k)}</div><div class="cz">${z?TYPE[z].kind+' · '+ZCOURT[z]:'Base'}</div></div>`}
 function dessinerMain(){const C=CB;if(!C)return;const h=$('cb-main');
   h.innerHTML=C.main.map(carteHTML).join('')+`<div class="cc fin"><div class="cn">Fin du tour</div><div class="ct">Les bêtes frappent, puis les monstres agissent.</div></div>`;
-  [...h.children].forEach((d,i)=>{d.classList.toggle('f',i===C.f&&!C.busy);if(i<C.main.length&&CK[C.main[i]].cout>C.mana)d.classList.add('off');if(C.sel&&i===C.f)d.classList.add('choisie')});
+  [...h.children].forEach((d,i)=>{d.classList.toggle('f',i===C.f&&!C.busy);if(i<C.main.length&&CK[C.main[i]].cout>dispo())d.classList.add('off');if(C.sel&&i===C.f)d.classList.add('choisie')});
   $('cb-aide').textContent=C.busy?'Les créatures agissent…':C.sel?'◀ ▶ choisir la cible · OK frapper · ▼ annuler':'◀ ▶ choisir une carte · OK jouer · ▼ fin du tour · Retour pause';majUnites()}
 function journal(t){const j=$('cb-log');j.textContent=t;j.classList.remove('neuf');void j.offsetWidth;j.classList.add('neuf')}
 
@@ -1458,16 +1459,15 @@ function verifierRencontre(){if(mode!=='monde'||!started||!curZ||!RENC[S.renc||1
 /* MozaWorld TV 1.5 : économie du mana et Donjon à aménager (premier test décidé le 16 novembre 2026).
    - Une seule réserve de mana. La Ressource (Tezcamixtli) la remplit à chaque cycle : 1 mana au niveau 0-1, 2 au niveau 2,
      2 au niveau 3 avec son bonus (une carte de plus en main).
-   - En combat, on mise une part de la réserve : c'est le budget du combat ; le héros ajoute 1 mana par tour.
-     Le mana non dépensé revient dans la réserve si l'on gagne ; il est perdu si l'on fuit ou si l'on perd.
+   - En combat, les cartes se paient avec la réserve. La capacité de dépense monte de 1 par tour (1, 2, 3…) ;
+     certaines cartes donnent un boost (+1 de capacité ce tour).
    - Le Donjon des Neuf Édits, une fois activé, s'aménage : 4 salles, un piège par salle, payé avec la réserve.
      Le monde sauvage l'attaque à intervalles réguliers ; les pièges actifs affaiblissent la horde l'un après l'autre.
    - L'entretien des pièges a trois rythmes au choix (menu), pour comparer en jouant. */
 
 const CYCLE=60;            /* secondes d'un cycle de jeu dans la démo (un « jour » du jeu complet, raccourci) */
 const ASSAUT_CYCLES=3;     /* un assaut du sauvage tous les 3 cycles quand le Donjon est à vous */
-const RESERVE_DEPART=6;
-const MISES=[2,4,6];
+const RESERVE_DEPART=10;
 
 const PIEGES={
   herse:{nom:'Herse à pointes',pose:2,force:3,txt:'Bon marché, arrête les petits groupes.'},
@@ -1545,15 +1545,6 @@ function changerPiege(i){const cur=S.pieges[i],k0=cur?cur.k:null;
     opts:[...PORDRE.slice(1).map(k=>{const P_=PIEGES[k];return{l:P_.nom+(k===k0?' (en place)':''),ic:P_.pose,d:`force ${P_.force} · ${P_.txt}`,off:k===k0||S.res<P_.pose,
       go:()=>{S.res-=P_.pose;S.pieges[i]={k,u:3,dort:false};save();etatHud();sfx('hit');openDonjon(i)}}}),
       {l:'Salle vide',ic:'○',off:!cur,go:()=>{S.pieges[i]=null;save();openDonjon(i)}},{l:'Retour',ic:'◆',go:()=>openDonjon(i)}]})}
-
-/* ---------- Mise de départ d'un combat ---------- */
-function choisirMise(Z,kind){mode='menu';document.body.classList.add('jeu-ouvert');
-  const o=MISES.map(m=>({l:`Miser ${Math.min(m,S.res)} mana`,ic:Math.min(m,S.res),d:m>S.res?'toute la réserve':`il restera ${S.res-m} en réserve`,off:m>S.res&&MISES.some(x=>x<m&&x>=S.res),go:()=>{const v=Math.min(m,S.res);S.res-=v;save();etatHud();startCombat(Z,kind,v)}}));
-  if(S.res===0)o.splice(0,o.length,{l:'Combattre sans mise',ic:'0',d:'1 mana par tour seulement',go:()=>startCombat(Z,kind,0)});
-  o.push({l:kind==='eveil'?'Partir':'Fuir',ic:'◆',go:()=>{if(kind==='renc'){CBwalk=P.walked;CBnext=prochaineRencontre()}toMonde()}});
-  ui('menu',{sur:kind==='eveil'?'Activation · gardiens de la Pierre':'Des créatures surgissent',t:'Mise de départ',
-    corps:`<p class="petit">Réserve : <b>${S.res}</b> mana. La mise est le budget du combat ; le héros ajoute 1 mana par tour. Ce qui reste revient dans la réserve si vous gagnez, et se perd si vous fuyez ou perdez.</p>`,
-    back:o[o.length-1].go,opts:o})}
 /* MozaWorld TV : héros, Pierres d'éveil, épreuves, cartes, télécommande, musique, boucle. */
 const $=id=>document.getElementById(id);
 const IDS=['CIT','DON','RES','ANT','MAR'];
@@ -1736,10 +1727,10 @@ function cardHTML(c){return`<div class="kc ${c.pole?'p':'m'}"><div class="k1">${
 function openPaquet(){ui('menu',{sur:'Paquet',t:'Vos cartes de pouvoir',corps:S.cards.length?`<div class="cartes">${S.cards.slice(-8).map(cardHTML).join('')}</div>`:'<p>Aucune carte encore. Chaque éveil réussi en donne une. Une carte facilite l\'épreuve d\'une autre zone : c\'est un contre-pouvoir.</p>',
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
-  ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve ${S.res} mana${prodRessource()?' (la Ressource en ajoute '+prodRessource()+' par cycle)':''} · en combat : la mise, plus 1 mana par tour · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
+  ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve ${S.res} mana${prodRessource()?' (la Ressource en ajoute '+prodRessource()+' par cycle)':''} · en combat, on dépense la réserve : 1 mana au tour 1, 2 au tour 2, et ainsi de suite (certaines cartes donnent un boost) · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
-<p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Avant chaque combat, vous misez une part de votre réserve de mana : c'est le budget du combat, et le héros ajoute 1 mana par tour. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
+<p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. En combat, les cartes se paient avec votre réserve de mana ; la capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), et certaines cartes donnent un boost. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure et plus la carte gagnée est forte (Mineure, Majeure, Ultime).</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}

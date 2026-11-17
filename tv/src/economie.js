@@ -1,16 +1,15 @@
 /* MozaWorld TV 1.5 : économie du mana et Donjon à aménager (premier test décidé le 16 novembre 2026).
    - Une seule réserve de mana. La Ressource (Tezcamixtli) la remplit à chaque cycle : 1 mana au niveau 0-1, 2 au niveau 2,
      2 au niveau 3 avec son bonus (une carte de plus en main).
-   - En combat, on mise une part de la réserve : c'est le budget du combat ; le héros ajoute 1 mana par tour.
-     Le mana non dépensé revient dans la réserve si l'on gagne ; il est perdu si l'on fuit ou si l'on perd.
+   - En combat, les cartes se paient avec la réserve. La capacité de dépense monte de 1 par tour (1, 2, 3…) ;
+     certaines cartes donnent un boost (+1 de capacité ce tour).
    - Le Donjon des Neuf Édits, une fois activé, s'aménage : 4 salles, un piège par salle, payé avec la réserve.
      Le monde sauvage l'attaque à intervalles réguliers ; les pièges actifs affaiblissent la horde l'un après l'autre.
    - L'entretien des pièges a trois rythmes au choix (menu), pour comparer en jouant. */
 
 const CYCLE=60;            /* secondes d'un cycle de jeu dans la démo (un « jour » du jeu complet, raccourci) */
 const ASSAUT_CYCLES=3;     /* un assaut du sauvage tous les 3 cycles quand le Donjon est à vous */
-const RESERVE_DEPART=6;
-const MISES=[2,4,6];
+const RESERVE_DEPART=10;
 
 const PIEGES={
   herse:{nom:'Herse à pointes',pose:2,force:3,txt:'Bon marché, arrête les petits groupes.'},
@@ -88,12 +87,3 @@ function changerPiege(i){const cur=S.pieges[i],k0=cur?cur.k:null;
     opts:[...PORDRE.slice(1).map(k=>{const P_=PIEGES[k];return{l:P_.nom+(k===k0?' (en place)':''),ic:P_.pose,d:`force ${P_.force} · ${P_.txt}`,off:k===k0||S.res<P_.pose,
       go:()=>{S.res-=P_.pose;S.pieges[i]={k,u:3,dort:false};save();etatHud();sfx('hit');openDonjon(i)}}}),
       {l:'Salle vide',ic:'○',off:!cur,go:()=>{S.pieges[i]=null;save();openDonjon(i)}},{l:'Retour',ic:'◆',go:()=>openDonjon(i)}]})}
-
-/* ---------- Mise de départ d'un combat ---------- */
-function choisirMise(Z,kind){mode='menu';document.body.classList.add('jeu-ouvert');
-  const o=MISES.map(m=>({l:`Miser ${Math.min(m,S.res)} mana`,ic:Math.min(m,S.res),d:m>S.res?'toute la réserve':`il restera ${S.res-m} en réserve`,off:m>S.res&&MISES.some(x=>x<m&&x>=S.res),go:()=>{const v=Math.min(m,S.res);S.res-=v;save();etatHud();startCombat(Z,kind,v)}}));
-  if(S.res===0)o.splice(0,o.length,{l:'Combattre sans mise',ic:'0',d:'1 mana par tour seulement',go:()=>startCombat(Z,kind,0)});
-  o.push({l:kind==='eveil'?'Partir':'Fuir',ic:'◆',go:()=>{if(kind==='renc'){CBwalk=P.walked;CBnext=prochaineRencontre()}toMonde()}});
-  ui('menu',{sur:kind==='eveil'?'Activation · gardiens de la Pierre':'Des créatures surgissent',t:'Mise de départ',
-    corps:`<p class="petit">Réserve : <b>${S.res}</b> mana. La mise est le budget du combat ; le héros ajoute 1 mana par tour. Ce qui reste revient dans la réserve si vous gagnez, et se perd si vous fuyez ou perdez.</p>`,
-    back:o[o.length-1].go,opts:o})}
