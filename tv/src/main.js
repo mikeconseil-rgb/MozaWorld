@@ -184,7 +184,7 @@ function uiAct(a,rep){if(!UI)return;const n=UI.opts.length,st=UI.deux&&(a==='lef
 function closeUI(){if(UI){$(UI.host).hidden=true;UI=null}}
 function toMonde(){closeUI();mode='monde';document.body.classList.remove('jeu-ouvert')}
 
-function titre(){mode='titre';const o=[];
+function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textContent='version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:'');
   if(hasSave)o.push({l:'Reprendre la partie',ic:'◆',go:()=>{startGame(false)}});
   o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
@@ -198,7 +198,7 @@ function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_D
   if(neuf)setTimeout(()=>toast('Berestograd · niveau 0','Cherchez la Pierre d\'éveil','Suivez la flèche dorée en bas de l\'écran, puis appuyez sur OK devant la Pierre.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
-  ui('menu',{sur:'Pause',t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
+  ui('menu',{sur:'Pause · version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:''),t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
@@ -258,7 +258,7 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 let mue=null;
 function startMue(Z,lv){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
   const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${typeof reposZone==='function'?reposZone(Z.id):REPOS} secondes avant le prochain bond.</p>`;
-  ui('menu',{sur:rs?'Mue · Ressource':'Mue · nouvelle carte',t:I.nom,corps:rs?`<p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}`:`<div class="cartes">${carteHTML(Z.id)}</div><p class="petit">La carte de combat « ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}`,
+  ui('menu',{sur:rs?'Mue · Ressource':'Mue · nouvelle carte',t:I.nom,corps:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});mode='menu'}};
   toast(`Palier ${sgn(lv)} · ${lv>0?I_(Z).pp:lv<0?I_(Z).pm:'Équilibre'}`,Z.info.nom,palTxt(Z,lv));fanfare(lv)}
 const I_=Z=>Z.info;

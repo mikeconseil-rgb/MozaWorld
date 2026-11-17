@@ -5,9 +5,9 @@ const avecNiveau=(id,lv,fn)=>{const a=S.lv[id];S.lv[id]=lv;try{return fn()}final
 const estRes=Z=>(Z.mod||Z.id)==='RES';
 const nbPaquet=k=>S.deck.filter(x=>x===k||String(x).startsWith(k+'#')).length;   /* 2.2 : les copies portent leur palier (« ZONE#-3 ») */
 function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
-  const vues=ZN.filter(Z=>S.act[Z.id]||S.lv[Z.id]).length;
+  const vues=ZN.filter(Z=>S.own[Z.id]).length;
   ui('menu',{sur:'Grimoire',t:'Le Grimoire des cartes',f:typeof f==='number'?f:0,deux:true,
-    corps:`<p class="petit">Une carte par pôle et par zone, gagnée à chaque palier réussi à la Pierre d'éveil. ${vues} zone(s) sur ${ZN.length} déjà prises · choisissez une zone pour voir ses cartes.</p>`,
+    corps:`<p class="petit">Une carte par pôle et par zone, gagnée à chaque palier réussi à la Pierre d'éveil. ${vues} zone(s) à vous sur ${ZN.length} · choisissez une zone pour voir ses cartes.</p>`,
     back:openMenu,opts:[
       {l:'Règles des cartes',ic:'?',go:grimoireRegles},
       {l:'Cartes communes',ic:'▤',d:'paquet de départ',go:grimoireCommunes},
