@@ -72,6 +72,16 @@ L'utilisateur a branché une manette Xbox sur la Bravia. La WebView d'Android ne
 Mana confirmé par l'utilisateur le même jour (déjà en place depuis la 1.7) : la limite de dépense par tour est commune à tous les types, et les cartes communes se paient avec n'importe quel type.
 APK : `MozaWorld-TV-1.9-manette.apk`, versionCode 11, s'installe par-dessus la 1.8.
 
+## Version 2.1 : une carte par pôle, un effet par tuile (17 novembre)
+
+Ce que l'utilisateur a demandé : « les cartes doivent être différentes selon le pôle choisi », liées à l'histoire de la zone et du pôle, et chaque tuile doit avoir un effet unique.
+- Chaque zone qui a des pôles a maintenant deux cartes qui ne se ressemblent pas, une par pôle (`POLES` dans `src/zonesplus.js`). Par exemple, l'Oubli de Berestograd efface la garde des ennemis, et sa Mémoire dresse un rempart. La Tyrannie des Neuf Édits frappe fort mais blesse le héros, et leur Liberté frappe tous les ennemis. La version jouée dépend du côté où se trouve la zone, et sa force dépend de l'écart à zéro.
+- Les Ressources n'ont pas de pôle, mais chacune a sa propre gerbe, tirée de son biome (`GERBES`).
+- Nouveau comportement des ennemis : un ennemi peut « hésiter », c'est-à-dire perdre son action du tour.
+- La liste complète, avec le lieu d'acquisition et chaque palier de −7 à +7, est dans `/mnt/project-files/demo-tv/v2.0/cartes-2.1.md`.
+
+APK : `MozaWorld-TV-2.1.apk`, versionCode 13.
+
 ## Version 2.0 : fluidité, monuments, mana gris, carte agrandie (17 novembre)
 
 Retour de test de la 1.9 : déplacements laborieux, « ça rame », marches dures à monter, activation peu claire, manque de mana.

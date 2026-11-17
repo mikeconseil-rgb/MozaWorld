@@ -114,6 +114,7 @@ function agir(m){const I=m.int;if(!I)return;m.el&&(m.el.classList.remove('agit')
   else if(I.a==='t'){journal(`${m.nom} frappe tout le monde (${I.v}).`);for(const u of vivants(CB.allies))frappe(u,I.v,m)}
   else if(I.a==='g'){garder(m,I.v);journal(`${m.nom} se met en garde.`)}
   else if(I.a==='s'){const w=vivants(CB.foes).sort((p,q)=>p.pv/p.max-q.pv/q.max)[0];soigner(w,I.v);journal(`${m.nom} soigne ${w===m?'ses plaies':w.nom}.`)}
+  else if(I.a==='h')journal(`${m.nom} hésite et ne fait rien.`)
   else journal(`${m.nom} prend son élan : le prochain coup sera fort.`)}
 
 /* ---------- Fin du combat : récompenses ---------- */

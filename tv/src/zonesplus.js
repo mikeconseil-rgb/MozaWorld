@@ -107,5 +107,67 @@ function plusTables(){
   /* contre-pouvoir : la tuile la plus proche du type que contre la sienne */
   for(const Z of ZN){if(!Z.plus)continue;const cible=CONTRE[Z.mod];let b=null,bd=1e9;
     for(const Q of ZN){if(Q===Z||(Q.mod||Q.id)!==cible)continue;const dd=Math.hypot(Q.c[0]-Z.c[0],Q.c[1]-Z.c[1]);if(dd<bd){bd=dd;b=Q}}
-    CONTRE[Z.id]=b?b.id:cible}}
+    CONTRE[Z.id]=b?b.id:cible}
+  cartesPoles()}
 const betePlus=(id,k)=>{const L=Lz(id),x=contreX(k);return{nom:poleN(id,'Luciole de nuit','Lancière de l\'aurore'),pv:(7+3*L)*x,max:(7+3*L)*x,atk:(3+L)*x,g:0,bete:1}};
+
+/* ---------- Cartes propres à chaque pôle (2.0, demande du 17 nov. : « les cartes doivent être différentes selon le pôle choisi,
+   reliées au background de la zone et du pôle ») et effet propre à chaque tuile. L = écart à zéro de la zone (1 à 7), x = contre-pouvoir. ---------- */
+const hesite=m=>{if(m&&m.pv>0){m.int={a:'h',v:0,ic:'?',t:'hésite'};pop(m,'hésite','g')}};
+const tous=()=>vivants(CB.foes);
+const perdPV=n=>{CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');majUnites()};
+const bete2=(nom,pv,atk)=>({nom,pv,max:pv,atk,g:0,bete:1});
+/* chaque entrée : [nom, coût, cible, texte(L,x), jeu(L,x,t)] */
+const POLES={
+  /* Berestograd : Oubli (la neige efface tout) / Mémoire (les écorces gravées, les remparts qu'on se rappelle) */
+  CIT:[['Neige de l\'oubli',1,0,(L,x)=>`Les ennemis oublient : leur garde tombe et ils subissent ${(1+L)*x} dégâts${L>=4?' ; ils oublient aussi ce qu\'ils allaient faire (hésitent ce tour)':''}.`,(L,x)=>tous().forEach(m=>{m.g=0;if(L>=4)hesite(m);frappe(m,(1+L)*x)})],
+       ['Rempart de mémoire',1,0,(L,x)=>`Tous vos alliés gagnent ${(6+2*L)*x} de garde.`,(L,x)=>CB.allies.forEach(u=>u.pv>0&&garder(u,(6+2*L)*x))]],
+  /* Neuf Édits : Tyrannie (l'édit qui écrase, même celui qui le prononce) / Liberté (l'édit qui délivre tout le monde) */
+  DON:[['Édit de fer',2,1,(L,x)=>`${(12+4*L)*x} dégâts. La cruauté coûte 2 PV au héros.`,(L,x,t)=>{frappe(t,(12+4*L)*x);perdPV(2)}],
+       ['Édit de délivrance',2,0,(L,x)=>`${(4+L)*x} dégâts à tous les ennemis, piochez 1 carte.`,(L,x)=>{tous().forEach(m=>frappe(m,(4+L)*x));pioche(1)}]],
+  /* Exarchat : Nuit (lucioles qui brûlent vite) / Aurore (lancière qui tient la ligne) */
+  ANT:[['Appel : Luciole de nuit',2,0,(L,x)=>`Une luciole rejoint le combat : ${(5+2*L)*x} PV, frappe ${(4+L)*x} à chaque tour. Fragile, mais vive.`,(L,x)=>invoquer(bete2('Luciole de nuit',(5+2*L)*x,(4+L)*x))],
+       ['Appel : Lancière de l\'aurore',2,0,(L,x)=>`Une lancière rejoint le combat : ${(10+4*L)*x} PV, frappe ${(2+L)*x}. Le héros gagne 3 de garde.`,(L,x)=>{invoquer(bete2('Lancière de l\'aurore',(10+4*L)*x,(2+L)*x));garder(CB.hero,3)}]],
+  /* Givrecloche : Brume (les lots scellés, l'adversaire ne sait plus) / Clarté (les règles neuves écrites à la craie) */
+  MAR:[['Lot de brume',1,1,(L,x)=>`Piochez ${x} carte(s). La cible se perd dans la brume : elle hésite ce tour.`,(L,x,t)=>{pioche(x);hesite(t)}],
+       ['Lot de clarté',0,0,(L,x)=>`Piochez ${2*x} cartes${L>=5?', boost rare : +1 de capacité ce tour':''}.`,(L,x)=>{pioche(2*x);if(L>=5){CB.mana++;CB.capT++}}]],
+  /* La Taïga de Kobor (Donjon) : Mensonge / Vérité */
+  DON045:[['Sceau du Mensonge',2,1,(L,x)=>`${(7+3*L)*x} dégâts ; la cible, trompée, hésite ce tour.`,(L,x,t)=>{frappe(t,(7+3*L)*x);hesite(t)}],
+          ['Sceau de Vérité',2,1,(L,x)=>`${(9+3*L)*x} dégâts qui ignorent la garde : rien ne cache la vérité.`,(L,x,t)=>{t.g=0;frappe(t,(9+3*L)*x)}]],
+  /* Le Fjord de Rames (Donjon) : Cauchemar / Rêve */
+  DON024:[['Sceau du Cauchemar',2,0,(L,x)=>`${(2+L)*x} dégâts à tous ; la peur leur retire 1 d'attaque pour le combat.`,(L,x)=>tous().forEach(m=>{frappe(m,(2+L)*x);m.atk=Math.max(1,m.atk-1)})],
+          ['Sceau du Rêve',2,1,(L,x)=>`${(7+3*L)*x} dégâts, et le héros, apaisé, se soigne de ${(2+L)*x}.`,(L,x,t)=>{frappe(t,(7+3*L)*x);soigner(CB.hero,(2+L)*x)}]],
+  /* Le Canyon de Fjorhel (Assemblée) : Silence / Chant */
+  ASS152:[['Loi du Silence',1,0,(L,x)=>`Piochez 1 carte. ${L>=4?'Deux ennemis':'Un ennemi'} se taisent : ils hésitent ce tour.`,(L,x)=>{pioche(1);tous().slice(0,L>=4?2:1).forEach(hesite)}],
+          ['Loi du Chant',0,0,(L,x)=>`Piochez 1 carte ; le chant donne ${(2+L)*x} de garde à tous vos alliés.`,(L,x)=>{pioche(1);CB.allies.forEach(u=>u.pv>0&&garder(u,(2+L)*x))}]],
+  /* L'Oasis de Raak (Assemblée) : Pierre / Cristal */
+  ASS155:[['Loi de Pierre',0,0,(L,x)=>`Le héros gagne ${(5+2*L)*x} de garde, piochez 1 carte.`,(L,x)=>{garder(CB.hero,(5+2*L)*x);pioche(1)}],
+          ['Loi de Cristal',0,0,(L,x)=>`Piochez 2 cartes ; la lumière du cristal soigne le héros de ${(1+L)*x}.`,(L,x)=>{pioche(2);soigner(CB.hero,(1+L)*x)}]],
+  /* L'Oasis de Maulu (Antre) : Glace / Feu */
+  ANT120:[['Appel : Tortue de givre',2,0,(L,x)=>`Une tortue de givre rejoint le combat : ${(12+4*L)*x} PV, frappe ${(1+L)*x}. Le héros gagne 4 de garde.`,(L,x)=>{invoquer(bete2('Tortue de givre',(12+4*L)*x,(1+L)*x));garder(CB.hero,4)}],
+          ['Appel : Salamandre d\'oasis',2,0,(L,x)=>`Une salamandre rejoint le combat : ${(5+2*L)*x} PV, frappe ${(5+L)*x} à chaque tour.`,(L,x)=>invoquer(bete2('Salamandre d\'oasis',(5+2*L)*x,(5+L)*x))]],
+  /* Les Cavernes de cristal de Balpak (Assemblée) : Cendre / Floraison */
+  ASS012:[['Loi des Cendres',0,0,(L,x)=>`${(1+L)*x} dégâts à tous les ennemis, piochez 1 carte.`,(L,x)=>{tous().forEach(m=>frappe(m,(1+L)*x));pioche(1)}],
+          ['Loi de Floraison',0,0,(L,x)=>`Tous vos alliés se soignent de ${(2+L)*x}, piochez 1 carte.`,(L,x)=>{CB.allies.forEach(u=>u.pv>0&&soigner(u,(2+L)*x));pioche(1)}]],
+  /* La Lande de Cezo (Assemblée) : Corruption / Pureté */
+  ASS006:[['Loi de Corruption',0,1,(L,x)=>`La cible perd ${(1+Math.floor(L/2))*x} d'attaque pour le combat. La corruption coûte 2 PV au héros.`,(L,x,t)=>{t.atk=Math.max(1,t.atk-(1+Math.floor(L/2))*x);pop(t,'affaibli','g');perdPV(2)}],
+          ['Loi de Pureté',0,0,(L,x)=>`Piochez 2 cartes, le héros se soigne de ${(2+L)*x}.`,(L,x)=>{pioche(2);soigner(CB.hero,(2+L)*x)}]],
+  /* Le Delta de Pama (Assemblée) : Ruine / Abondance */
+  ASS150:[['Loi de Ruine',0,1,(L,x)=>`La garde de la cible s'effondre, puis ${(3+2*L)*x} dégâts.`,(L,x,t)=>{t.g=0;frappe(t,(3+2*L)*x)}],
+          ['Loi d\'Abondance',0,0,(L,x)=>`Piochez ${3*x} cartes${L>=5?', boost rare : +1 de capacité ce tour':''}.`,(L,x)=>{pioche(3*x);if(L>=5){CB.mana++;CB.capT++}}]]};
+/* Ressources : pas de pôle (niveaux 1 à 3) ; une gerbe propre à chaque tuile, selon son mana et son biome */
+const GERBES={
+  RES227:['',1,(L,x,t)=>{pioche(1);frappe(t,(3+2*L)*x)},L=>`Piochez 1 carte, ${3+2*L} dégâts : le sable brûlant.`],
+  RES345:['',0,(L,x)=>{pioche(1);tous().forEach(m=>frappe(m,(1+L)*x))},L=>`Piochez 1 carte, ${1+L} dégâts à tous : l'éboulis du canyon.`],
+  RES079:['',0,(L,x)=>{pioche(1);CB.allies.forEach(u=>u.pv>0&&garder(u,(3+L)*x))},L=>`Piochez 1 carte, tous vos alliés gagnent ${3+L} de garde : les vieux murs.`],
+  RES374:['',0,(L,x)=>{pioche(1);garder(CB.hero,(4+2*L)*x)},L=>`Piochez 1 carte, le héros gagne ${4+2*L} de garde : l'abri des sapins.`],
+  RES122:['',0,(L,x)=>{pioche(1);CB.allies.forEach(u=>u.pv>0&&soigner(u,(2+L)*x))},L=>`Piochez 1 carte, tous vos alliés se soignent de ${2+L} : l'eau du récif.`],
+  RES021:['',0,(L,x)=>{pioche(1);soigner(CB.hero,(3+2*L)*x)},L=>`Piochez 1 carte, le héros se soigne de ${3+2*L} : la source de l'oasis.`],
+  RES212:['',0,(L,x)=>pioche(1+x),L=>`Piochez 2 cartes : le vent de la steppe.`],
+  RES136:['',0,(L,x)=>{pioche(1);garder(CB.hero,(3+L)*x);soigner(CB.hero,L*x)},L=>`Piochez 1 carte, le héros gagne ${3+L} de garde et se soigne de ${L} : l'abri de la falaise.`]};
+function cartesPoles(){
+  for(const id in POLES){const P=POLES[id],L=()=>Math.max(1,Lz(id)),side=()=>(S.lv[id]||0)<0?P[0]:P[1],old=CK[id]||{};
+    CK[id]={z:id,nom:()=>side()[0],get cout(){return side()[1]},get cible(){return side()[2]},
+      txt:k=>side()[3](L(),contreX(k)),jeu:(k,t)=>side()[4](L(),contreX(k),t),poles:P}}
+  for(const id in GERBES){if(!ZB[id])continue;const G=GERBES[id],L=()=>Math.max(1,Lz(id)),nom=CK[id].nom;
+    CK[id]={z:id,nom,cout:0,cible:G[1],txt:k=>G[3](L()),jeu:(k,t)=>G[2](L(),contreX(k),t)}}}
