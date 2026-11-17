@@ -31,7 +31,10 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Éveiller : réussir l'épreuve de la zone la fait bondir d'un palier, dans le pôle choisi, avec une mue. Plus on s'éloigne de zéro, plus c'est dur ; les paliers 6 et 7 sont des combats de boss.
 - Un délai sépare deux évolutions d'une même zone (un jour dans le jeu complet, 40 secondes dans la version jouée). Ce n'est pas une punition d'échec.
 - Environ 7 épreuves sur 10 reposent sur un choix moral cornélien, dur mais juste, pour adultes ; le choix décide du pôle. Les choix restent dans le monde après la mort du héros **(pas encore dans le jeu : les épreuves actuelles sont des mini-jeux d'adresse)**.
-- Assemblée : l'épreuve visée est un duel d'arguments en cartes, avec des votes pondérés par type de tuile **(pas encore dans le jeu)**.
+- Assemblée : l'épreuve est le **Duel d'arguments** (le Chantier ne sert plus qu'aux Ressources). C'est un duel de cartes contre le Conseil en place (deux orateurs et le président), joué avec le moteur de combat mais avec un **paquet politique à part**, jamais mêlé au paquet de combat. Les PV des orateurs sont leur conviction ; ceux du héros, son crédit (24, +2 par Assemblée tenue).
+  - Paquet politique : 5 cartes communes à tous (Argument, Réfutation, Promesse, Menace, Rallier), plus une carte de voix par type de tuile tenue (Milice au prétoire pour les Citadelles, Édit scellé pour les Donjons, Clameur de la meute pour les Antres, Greniers ouverts pour les Ressources, Motion d'ordre pour les Assemblées) : 5 à 10 cartes.
+  - Vote avant le duel : chaque voisine tenue vote pour vous (Assemblée 3, Citadelle 2, Ressource 2, Antre 1, Donjon 1) ; une voisine sauvage vote pour le pôle qui lui ressemble et contre l'autre (±1). Chaque voix nette retire 3 de conviction au Conseil (ou lui en ajoute).
+  - Gagner fait monter l'Assemblée d'un palier ; perdre blesse, comme une épreuve ratée. Le Conseil se renforce avec le palier visé.
 
 ## 4. Le territoire de départ
 

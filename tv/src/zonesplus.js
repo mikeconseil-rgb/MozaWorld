@@ -93,7 +93,7 @@ function plusTables(){
   for(const Z of ZN){if(!Z.plus)continue;const id=Z.id,m=Z.mod,d=Z.d,I=Z.info;
     const court=d.nom.replace(/^(La |Le |Les |L')/,''),deN=d.nom.replace(/^Les /,'des ').replace(/^Le /,'du ').replace(/^La /,'de la ').replace(/^L'/,"de l'");
     const jeu=m==='RES'?'MAR':m;   /* la Récolte se joue dans les îles de Tezcamixtli : ailleurs, une Ressource passe le Chantier */
-    TYPE[id]={ep:TYPE[jeu].ep,kind:TYPE[m].kind,txt:TYPE[jeu].txt};GAMES[id]=GAMES[jeu];
+    const tj=m==='RES'&&typeof CHANTIER!=='undefined'?CHANTIER:TYPE[jeu];TYPE[id]={ep:tj.ep,kind:TYPE[m].kind,txt:tj.txt};GAMES[id]=GAMES[jeu];
     ZMANA[id]=d.mana;ZCOL[id]=MCOL[d.mana]||ZCOL[m];ZCOURT[id]=court;ZPTS[id]=ZPTS[m];MON[id]=MON[m];
     RECO[id]=m==='RES'?`Source de mana ${d.mana} : 1 par cycle, puis 2 au niveau 2, puis 2 et une carte de plus en main au niveau 3.`:RECO[m];
     if(typeof DECOR!=='undefined')DECOR[id]=DECOR[m];if(typeof ART!=='undefined')ART[id]=ART[m];ZA[id]=ZA[m];
