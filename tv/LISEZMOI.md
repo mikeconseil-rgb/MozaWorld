@@ -72,6 +72,20 @@ L'utilisateur a branché une manette Xbox sur la Bravia. La WebView d'Android ne
 Mana confirmé par l'utilisateur le même jour (déjà en place depuis la 1.7) : la limite de dépense par tour est commune à tous les types, et les cartes communes se paient avec n'importe quel type.
 APK : `MozaWorld-TV-1.9-manette.apk`, versionCode 11, s'installe par-dessus la 1.8.
 
+## Version 2.2 : les cartes des conteurs (17 novembre)
+
+Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au background de la zone ; une carte différente à chaque palier ; au palier 7, une carte qui change de nature et permet des combos forts ; une carte utilitaire pour chaque secret.
+
+- **229 cartes** écrites par les quatre conteurs (A, B, C, D), relues par le critique et le game design : 7 cartes par pôle pour les 12 zones à pôles (paliers 1 à 6, puis la forme du palier 7), 3 Gerbes par Ressource, 31 cartes de secrets, plus les 10 communes de départ.
+- **Une carte par palier** : chaque palier réussi ajoute au paquet la carte de ce palier (clé `ZONE#-3`, `ZONE#+5`, `RES079#r2`). Si la zone redescend sous ce palier ou change de pôle, la carte dort hors du paquet de combat et revient quand la zone reprend ce palier.
+- **Résonances** (Braise, Givre, Sang, Racine, Sceau, Abîme) : chaque forme du palier 7 en pose une et en réveille une autre ; elles s'affichent en haut du combat.
+- **Nouvelles mécaniques** : brûlure, marque, riposte, vol de vie, écho, récupération, exil, conditions, prix.
+- **Garde-fous** : le mana gagné par une carte disparaît à la fin du combat ; l'écho ne double jamais un réveil ; une récupération ne reprend pas une carte qui récupère (2 par tour au plus) ; une résonance posée par un secret ne réveille qu'à moitié.
+- **Secrets** : trouver un secret ajoute sa carte utilitaire au paquet de combat.
+- Code : `src/cartes.js` (moteur des opérations) et `src/cartes-donnees.js` (généré par `design/cartes-2.2/outils/assembler.py` à partir des fichiers des conteurs). Règles : `design/cartes-2.2/regles-avancees.md`. Méthode pour les nouvelles tuiles : `design/cartes-2.2/consignes-cartes.md`.
+
+APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
+
 ## Version 2.1-grimoire : le Grimoire des cartes (17 novembre)
 
 Ce que l'utilisateur a demandé : « ajoute un menu dans le jeu pour y mettre le grimoire ». Le menu pause a maintenant une entrée **Grimoire des cartes** (`src/grimoire.js`). On y trouve les règles des cartes, les cartes communes, puis une page par zone. Chaque page dit où gagner la carte (la Pierre d'éveil et son épreuve), le mana, le niveau actuel de la zone et le nombre de copies dans le paquet. Elle montre aussi la carte de chaque pôle au palier actuel, puis aux paliers 4 et 7. Tout est lu dans les cartes elles-mêmes, au niveau voulu, donc le Grimoire suit les cartes 2.2 sans retouche. Les longues listes (Voyager, Grimoire) défilent maintenant à la manette.

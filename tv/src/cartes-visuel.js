@@ -175,7 +175,7 @@ function bandeau(ck,coul,uid){return`<svg class="kband" viewBox="0 0 160 8" pres
 
 /* ---------- Coins du cadre selon le mana (dessinés pour le coin haut gauche, 30 × 30) ---------- */
 const COIN={Feu:'<path d="M2 28 Q2 10 10 2 Q8 10 14 12 Q12 4 20 1 Q16 10 22 16 Q14 14 10 22 Q8 16 4 18Z"/>',
- Glace:'<path d="M2 2 L26 6 L10 8 L22 18 L8 12 L6 26Z"/>',Eau:'<path d="M2 28 Q2 4 22 4 Q30 6 26 14 Q22 20 16 14 Q14 10 18 9" fill="none" stroke-width="2.4"/><path d="M6 24 Q6 10 16 8" fill="none" stroke-width="1.2"/>',
+ Glace:'<path d="M2 2 L20 4 L9 7 L16 14 L7 9 L4 20Z"/><path d="M4 4 L24 24" stroke-width="1.2" fill="none" opacity=".6"/>',Eau:'<path d="M2 28 Q2 4 22 4 Q30 6 26 14 Q22 20 16 14 Q14 10 18 9" fill="none" stroke-width="2.4"/><path d="M6 24 Q6 10 16 8" fill="none" stroke-width="1.2"/>',
  'Sève':'<path d="M2 28 Q4 8 24 4" fill="none" stroke-width="2"/><path d="M8 14 Q2 8 6 2 Q14 6 8 14Z M16 7 Q16 0 24 0 Q24 7 16 7Z M4 22 Q-2 18 0 12 Q6 14 4 22Z"/>',
  Pierre:'<path d="M2 2 H16 V8 H10 V16 H2Z"/><path d="M18 2 H26 V6 H18Z M2 18 H6 V26 H2Z"/>',
  Vent:'<path d="M3 26 Q3 4 20 4 Q28 4 26 11 Q24 16 19 13 Q16 10 20 8" fill="none" stroke-width="2"/><path d="M9 26 Q9 12 18 10" fill="none" stroke-width="1.4"/>'};
@@ -195,7 +195,7 @@ function scene(P,uid){const r=rng(P.id+'|'+P.pole),[m,l,d]=P.m,a=P.acc,bk=bkey(P
   const rayons=P.ult?`<g opacity=".55">${Array.from({length:18},(_,i)=>{const t=i*PI/9;return`<path d="M${f1(x)} 52 L${f1(x+Math.cos(t)*120)} ${f1(52+Math.sin(t)*120)} L${f1(x+Math.cos(t+.08)*120)} ${f1(52+Math.sin(t+.08)*120)}Z" fill="${l}"/>`}).join('')}</g>`:'';
   const frise=P.ult?`<rect x="2" y="2" width="156" height="96" fill="none" stroke="${l}" stroke-width="3" stroke-dasharray="6 3 2 3"/><rect width="160" height="100" fill="url(#mz-girih)" opacity=".9"/>`:'';
   const halo=P.L>=6?`<ellipse cx="${f1(x)}" cy="56" rx="38" ry="30" fill="${a}" opacity=".35" filter="url(#mz-flou)"/>`:'';
-  const pw=P.pole==='neg'?P.pm:P.pole==='pos'?P.pp:'';
+  const pw=P.mod==='RES'?'':P.pole==='neg'?P.pm:P.pole==='pos'?P.pp:'';
   return ciel(P,r,uid)+rayons+B.loin(r,c)+halo+`<g transform="translate(${f1(x)} ${f1(82-82*sc)}) scale(${sc})">${mon}</g>`+B.pres(r,c)+(P.L>=2||P.mod==='RES'?effetPole(pw,c,r,P.L):'')+tex+frise+
     `<g transform="translate(146 4)" fill="${c.embL}" stroke="${c.embL}" opacity=".9"><rect x="-1" y="-1" width="14" height="14" rx="3" fill="${d}" stroke="none" opacity=".7"/><g>${EMBT[P.mod]||''}</g></g>`}
 
@@ -210,31 +210,36 @@ function sceneSecret(c,P,uid){const r=rng(String(c.secret||uid)),bk=P?bkey(P.bio
 
 /* ---------- Rendu public ---------- */
 let uidN=0;
+/* les cartes de palier (« ZONE#-3 », « ZONE#+5 », « RES079#r2 ») se dessinent à leur propre palier, pas au niveau actuel de la zone */
+const zoneDeCarte=(k,c)=>{const P=c.z?infoZone(c.z):null;if(!P)return null;const i=String(k).indexOf('#');
+  if(i>=0){const sg=k[i+1],n=+k.slice(i+2)||1;P.lv=sg==='-'?-n:n;P.L=n;P.pole=sg==='-'?'neg':'pos'}
+  if(P.mod==='RES')P.pole='pos';return P};
 const accent=P=>{const A=ZACC[P.id],m=(VMANA[P.mana]||VMANA.Pierre);if(A)return P.pole==='neg'?A[0]:A[1];
   /* zones sans fiche : deux accents dérivés du mana, l'un froid et lointain, l'autre chaud et proche, à luminosité égale */
   return P.pole==='neg'?mix(m[1],'#8a7ad0',.45):mix(m[1],'#e0703a',.45)};
 window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
   if(c.secret||c.zs&&!c.z){const P=c.zs?infoZone(c.zs):null;return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${sceneSecret(c,P,uid)}</svg>`}
-  const P=c.z?infoZone(c.z):null;
+  const P=zoneDeCarte(k,c);
   if(!P){const a=ART[k]||ART.coup;return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="vf${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0c0f"/><stop offset="1" stop-color="${a.fond?a.fond[1]:'#3a2a20'}"/></linearGradient></defs>
    <rect width="160" height="100" fill="url(#vf${uid})"/><rect width="160" height="100" fill="url(#mz-girih)"/>${a.d}</svg>`}
-  P.m=VMANA[P.mana]||VMANA.Pierre;P.acc=accent(P);P.ult=!!c.ultime;
+  P.m=VMANA[P.mana]||VMANA.Pierre;P.acc=accent(P);P.ult=!!c.ultime||(P.L>=7&&!!c.pose);
   return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid)}</svg>`};
 
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
-window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,uid='h'+(uidN++);
+const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>300?' t5':n>220?' t4':n>150?' t3':n>95?' t2':n>60?' t1':''};
+window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,uid='h'+(uidN++),txt=c.txt(k),lg=longueur(txt);
   const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
   const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">${amb}</div>`:'';
   /* carte de secret */
   if(c.secret||(c.zs&&!z)){const P=c.zs?infoZone(c.zs):null;
-    return`<div class="cc kcarte secret${gris?' gris':''}">${co}<div class="ksceau" title="Secret">✦</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div>
-     <div class="cz">Secret${P?' · '+P.nom.replace(/^(La |Le |Les |L')/,''):''}</div><div class="ct">${c.txt(k)}</div>${ambH}</div>`}
+    return`<div class="cc kcarte secret${lg}${gris?' gris':''}">${co}<div class="ksceau" title="Secret">✦</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div>
+     <div class="cz">Secret${P?' · '+P.nom.replace(/^(La |Le |Les |L')/,''):''}</div><div class="ct">${txt}</div>${ambH}</div>`}
   /* carte commune */
-  const P=z?infoZone(z):null;
+  const P=z?zoneDeCarte(k,c):null;
   if(!P){const a=ART[k]||ART.coup;
-    return`<div class="cc kcarte base${gris?' gris':''}" style="--kb:#c9a45c">${co}<div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${a.sorte||''} · Commune</div><div class="ct">${c.txt(k)}</div></div>`}
+    return`<div class="cc kcarte base${lg}${gris?' gris':''}" style="--kb:#c9a45c">${co}<div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${a.sorte||''} · Commune</div><div class="ct">${txt}</div></div>`}
   /* carte de zone */
-  const V=VMANA[P.mana]||VMANA.Pierre,res=P.mod==='RES',ult=!!c.ultime||(!res&&P.L>=7&&c.ultime!==false&&c.pose!==undefined);
+  const V=VMANA[P.mana]||VMANA.Pierre,res=P.mod==='RES',ult=!res&&(!!c.ultime||(P.L>=7&&!!c.pose));
   const nP=res?Math.min(3,Math.max(1,P.L)):P.L,maxP=res?3:7,pw=res?'':(P.pole==='neg'?P.pm:P.pole==='pos'?P.pp:'');
   const coulP=res?'#e0a040':accent(P);
   const crest=pw?`<div class="kblason ${P.pole}" title="Pôle ${pw}"><svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor">${glypheP(pw)}</svg></div>`:'';
@@ -242,24 +247,24 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const ligne=[sorte,P.mana,pw||(res?'Niv. '+nP:'')].filter(Boolean).join(' · ');
   const resH=(c.pose||c.reveille)?`<div class="kresos">${c.pose?glypheR(c.pose,1):''}${c.pose&&c.reveille?'<b></b>':''}${c.reveille?glypheR(c.reveille,0):''}</div>`:'';
   const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
-  const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':''].filter(Boolean).join(' ');
+  const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
   return`<div class="${cls}" style="--kb:${V[0]};--kl:${V[1]};--kd:${V[2]};--kcA:${rgba(V[0],.28)};--kcB:${rgba(V[0],.8)};--pc:${coulP}">
    ${nP>=3||ult?coins(P.mana,V[1],nP):''}${coZ}${crest}<div class="art">${artCarte(k)}${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
-   <div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${c.txt(k)}</div>${nP>=4&&!ult?bandeau(ckey(P.cult),V[1],uid+'b').replace('kband','kband bas'):''}${ambH}${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`};
+   <div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${txt}</div>${nP>=4&&!ult?bandeau(ckey(P.cult),V[1],uid+'b').replace('kband','kband bas'):''}${ambH}${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`};
 
 /* ---------- CSS propre au visuel 2.2 ---------- */
 const css=document.createElement('style');css.textContent=`
 .cc.kcarte{isolation:isolate}
 .cc.kcarte .art{position:relative;flex:0 0 auto}
 .cc.kcarte .cz{letter-spacing:.07em}
+
 .cc.kcarte.ultime .cz{display:none}
-.cc.kcarte.ultime .ct{font-size:calc(var(--u)*.84);line-height:1.22}
 .cc.kcarte.ultime .cn{margin-top:.1em}
 .kband{display:block;width:100%;height:calc(var(--u)*.55);margin-top:calc(var(--u)*.2);opacity:.85}
-.kcoin{position:absolute;width:calc(var(--u)*1.7);height:calc(var(--u)*1.7);z-index:1;pointer-events:none;opacity:.9;filter:drop-shadow(0 1px 1px #000)}
+.kcoin{position:absolute;width:calc(var(--u)*1.3);height:calc(var(--u)*1.3);z-index:1;pointer-events:none;opacity:.9;filter:drop-shadow(0 1px 1px #000)}
 .kcoin.tl{top:-3px;left:-3px}.kcoin.tr{top:-3px;right:-3px;transform:scaleX(-1)}.kcoin.bl{bottom:-3px;left:-3px;transform:scaleY(-1)}.kcoin.br{bottom:-3px;right:-3px;transform:scale(-1,-1)}
-.cc.kcarte.L3 .kcoin,.cc.kcarte.L4 .kcoin{width:calc(var(--u)*2.1);height:calc(var(--u)*2.1)}
-.cc.kcarte .kcoin.brille{width:calc(var(--u)*2.5);height:calc(var(--u)*2.5);filter:drop-shadow(0 0 4px var(--kl)) drop-shadow(0 1px 1px #000)}
+.cc.kcarte.L3 .kcoin,.cc.kcarte.L4 .kcoin{width:calc(var(--u)*1.5);height:calc(var(--u)*1.5)}
+.cc.kcarte .kcoin.brille{width:calc(var(--u)*1.9);height:calc(var(--u)*1.9);filter:drop-shadow(0 0 4px var(--kl)) drop-shadow(0 1px 1px #000)}
 .cc.kcarte.L3,.cc.kcarte.L4,.cc.kcarte.L5,.cc.kcarte.L6,.cc.kcarte.L7{box-shadow:0 10px 24px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.07),inset 0 0 0 calc(var(--u)*.22) var(--kd),inset 0 0 0 calc(var(--u)*.28) var(--kb)}
 .cc.kcarte.L5,.cc.kcarte.L6{box-shadow:0 10px 24px rgba(0,0,0,.65),0 0 18px var(--kcA),inset 0 0 0 calc(var(--u)*.22) var(--kd),inset 0 0 0 calc(var(--u)*.28) var(--kb)}
 /* pôle − : gravure (cadre à double filet net, fond froid) ; pôle + : émail (fond chaud, lueur) */
@@ -309,5 +314,20 @@ const css=document.createElement('style');css.textContent=`
 .cc.kcarte.base{border-color:#6e5c44;background:linear-gradient(180deg,#221c17,#141012)}
 .cc.kcarte.base .art{filter:saturate(.75)}
 .cc.kcarte.f.ultime{border-color:transparent}
+.cc.kcarte .ct{overflow:hidden}
+.cc.kcarte.t1 .ct{font-size:calc(var(--u)*.84);line-height:1.22}
+.cc.kcarte.t2 .art{height:calc(var(--u)*5)}.cc.kcarte.t2 .ct{font-size:calc(var(--u)*.76);line-height:1.18}
+.cc.kcarte.t3 .art{height:calc(var(--u)*4.2)}.cc.kcarte.t3 .ct{font-size:calc(var(--u)*.68);line-height:1.15;padding:.3em .35em}
+.cc.kcarte.t4 .art{height:calc(var(--u)*3.4)}.cc.kcarte.t4 .ct{font-size:calc(var(--u)*.6);line-height:1.12;padding:.25em .3em}
+.cc.kcarte.t2 .kband.bas,.cc.kcarte.t3 .kband.bas,.cc.kcarte.t4 .kband.bas,.cc.kcarte.t5 .kband.bas{display:none}
+.cc.kcarte.t5 .art{height:calc(var(--u)*2.8)}.cc.kcarte.t5 .ct{font-size:calc(var(--u)*.54);line-height:1.1;padding:.2em .25em}
+/* dans la main, la carte choisie montre tout son texte, lisible à 3 m */
+#cb-main .cc.kcarte.f{height:auto;min-height:calc(var(--u)*15.8);align-self:flex-end}
+#cb-main .cc.kcarte.f .art{height:calc(var(--u)*5.4)}
+#cb-main .cc.kcarte.f .ct{font-size:calc(var(--u)*.86);line-height:1.24;overflow:visible}
+#cb-main .cc.kcarte.f{width:calc(var(--u)*14);flex-basis:calc(var(--u)*14)}
+.boite .cc.kcarte{height:auto;min-height:calc(var(--u)*15.8)}
+.boite .cc.kcarte .art{height:calc(var(--u)*6.4)}
+.boite .cc.kcarte .ct{font-size:calc(var(--u)*.88);line-height:1.26;overflow:visible}
 `;document.head.appendChild(css);
 })();
