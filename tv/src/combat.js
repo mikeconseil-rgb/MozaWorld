@@ -3,8 +3,8 @@
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
    Tout se joue à la télécommande : ◀ ▶ choisir, OK jouer, Retour pause. Rien de 3D pendant le combat (léger). */
 
-/* Les mêmes 10 cartes communes pour tout le monde : assez pour une zone de niveau 0, peut-être 1, pas plus. */
-const DEPART=['coup','coup','coup','coup','coup','garde','garde','garde','souffle','souffle'];
+/* Les mêmes 5 cartes communes pour tout le monde (17 nov. : « on en met 5 en tout », sans carte de pioche) : assez pour une zone de niveau 0. */
+const DEPART=['coup','coup','coup','garde','garde'];
 const PAQUET_MAX=40;
 const ZCOL={CIT:'#c0584c',DON:'#e0782f',RES:'#73b45e',ANT:'#e2cb62',MAR:'#93bede'};
 const rgba=(h,a)=>`rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;

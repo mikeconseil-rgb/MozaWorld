@@ -1391,7 +1391,10 @@ function carteCK(id,choix,niv){const L=()=>Math.max(1,niv());const cur=()=>choix
     get reveille(){const p=(cur().ops||[]).find(o=>o[0]==='reveil');return p?p[1]:null},
     txt:k=>texteCarte(cur().effet,L(),contreX(k))+(typeof atoutsDe==='function'?atoutsDe(id).map(a=>` Atout ${a.nom}.`).join(''):''),jeu:(k,t)=>{if(typeof atoutsAvant==='function')atoutsAvant(id,k);const avant=vivants(CB.foes).reduce((a,m)=>a+m.pv,0);const dbl=CB.echo&&!(cur().ops||[]).some(o=>o[0]==='echo');if(dbl){CB.echo=false;journal('Écho : effet doublé.')}
       const ctx={L:L(),x:contreX(k)*(dbl?2:1),dbl,t,z:id,k};execOps(cur().ops,ctx);if(typeof atoutsApres==='function')atoutsApres(id,k,t,ctx,avant);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
-function installerCartes22(){if(typeof CARTES22==='undefined')return;
+function installerCartes22(){
+  /* anciennes parties : le paquet garde au plus les 5 communes de départ (3 Coup de bâton, 2 Pas de côté, plus de Souffle court) */
+  if(Array.isArray(S.deck)){const reste={};for(const k of DEPART)reste[k]=(reste[k]||0)+1;S.deck=S.deck.filter(k=>{if(!(k in CK)||CK[k].z||CK[k].secret)return true;if(reste[k]>0){reste[k]--;return true}return false})}
+  if(typeof CARTES22==='undefined')return;
   /* « chaque palier donne une carte » : P.m1…P.m6 et P.p1…P.p6 si les conteurs les ont écrites, sinon la carte du pôle (P.m, P.p) qui grandit avec L */
   const parPalier=(P,s,n)=>n>=7&&P[s+'7']?Object.assign({p7:1},P[s+'7']):(P[s+n]||P[s]);
   for(const id in CARTES22.zones){const P=CARTES22.zones[id];if(!ZB[id])continue;
@@ -8909,8 +8912,8 @@ function styleBorder(id){const Z=ZB[id],Q=CIT;let best=null;
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
    Tout se joue à la télécommande : ◀ ▶ choisir, OK jouer, Retour pause. Rien de 3D pendant le combat (léger). */
 
-/* Les mêmes 10 cartes communes pour tout le monde : assez pour une zone de niveau 0, peut-être 1, pas plus. */
-const DEPART=['coup','coup','coup','coup','coup','garde','garde','garde','souffle','souffle'];
+/* Les mêmes 5 cartes communes pour tout le monde (17 nov. : « on en met 5 en tout », sans carte de pioche) : assez pour une zone de niveau 0. */
+const DEPART=['coup','coup','coup','garde','garde'];
 const PAQUET_MAX=40;
 const ZCOL={CIT:'#c0584c',DON:'#e0782f',RES:'#73b45e',ANT:'#e2cb62',MAR:'#93bede'};
 const rgba=(h,a)=>`rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;
@@ -9918,7 +9921,7 @@ function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
         d:(estRes(Z)?'Ressource':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+2)})),
       {l:'Retour',ic:'◆',go:openMenu}]})}
 function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:()=>openGrimoire(0),
-  corps:`<p class="petit">· Le paquet de départ : 10 cartes communes, les mêmes pour tous.</p>
+  corps:`<p class="petit">· Le paquet de départ : 5 cartes communes, les mêmes pour tous (3 Coup de bâton, 2 Pas de côté).</p>
 <p class="petit">· Une carte de zone se gagne à chaque palier réussi à la Pierre d'éveil de sa zone. Ni les combats ni l'activation n'en donnent.</p>
 <p class="petit">· Toutes vos copies suivent le niveau actuel de leur zone : si la zone passe de +2 à +3, vos cartes se renforcent ; si elle passe du côté −, elles deviennent la carte de l'autre pôle.</p>
 <p class="petit">· En combat, la capacité de dépense monte de 1 par tour (1, 2, 3…), tous types confondus. Une carte de zone se paie avec le mana de sa zone ; les cartes communes en mana gris, infini. Sans assez du bon mana, une carte de zone se joue en gris : effet −25 %, pas de contre-pouvoir.</p>
