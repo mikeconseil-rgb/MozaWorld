@@ -1270,7 +1270,10 @@ const betePlus=(id,k)=>{const L=Lz(id),x=contreX(k);return{nom:poleN(id,'Luciole
 
 /* ---------- Cartes propres à chaque pôle (2.0, demande du 17 nov. : « les cartes doivent être différentes selon le pôle choisi,
    reliées au background de la zone et du pôle ») et effet propre à chaque tuile. L = écart à zéro de la zone (1 à 7), x = contre-pouvoir. ---------- */
-const hesite=m=>{if(m&&m.pv>0){m.int={a:'h',v:0,ic:'?',t:'hésite'};pop(m,'hésite','g')}};
+/* garde-fou (revue impact, 17 nov.) : un chef s'habitue ; une 2e hésitation au tour suivant ne lui retire que son élan */
+const hesite=m=>{if(!m||m.pv<=0)return;const t=CB?CB.tour:0;
+  if(m.chef&&m.hesT===t-1){if(m.int&&m.int.a==='c'){m.int={a:'a',v:m.atk,ic:'⚔',t:'attaque'};pop(m,'perd son élan','g')}else pop(m,'s\'habitue','g');m.hesT=-9;return}
+  m.hesT=t;m.int={a:'h',v:0,ic:'?',t:'hésite'};pop(m,'hésite','g')};
 const tous=()=>vivants(CB.foes);
 const perdPV=n=>{CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');majUnites()};
 const bete2=(nom,pv,atk)=>({nom,pv,max:pv,atk,g:0,bete:1});
@@ -8938,7 +8941,7 @@ const CK={
   garde:{nom:()=>'Pas de côté',cout:1,txt:()=>'5 de garde : la Garde se dresse devant le héros. Si elle était déjà levée, elle ne s\'effrite pas au prochain tour.',jeu:()=>{if(gardeU())CB.gardeTient=1;garder(CB.hero,5)}},
   pieu:{nom:()=>'Pieu planté',cout:1,txt:()=>'Un bloqueur de 6 PV prend place sur le terrain : il encaisse les coups et renvoie 2 dégâts à qui le frappe.',jeu:()=>invoquer({nom:'Pieu planté',pv:6,max:6,atk:0,g:0,bete:1,mur:1,epine:2})},
   caillou:{nom:()=>'Jet de pierre',cout:0,txt:()=>'3 dégâts à l\'ennemi qui prend son élan (sinon au hasard) : il perd son élan et hésite.',jeu:()=>{const v=vivants(CB.foes);if(!v.length)return;const m=v.find(x=>x.int&&x.int.a==='c')||v[Math.floor(Math.random()*v.length)];frappe(m,3);if(m.pv>0&&m.int&&m.int.a==='c'){hesite(m);journal(m.nom+' perd son élan.')}}},
-  torche:{nom:()=>'Torche',cout:1,cible:1,txt:()=>'2 dégâts, puis 2 de brûlure sur 2 tours. Si la cible brûlait déjà, sa brûlure double.',jeu:(k,t)=>{if(!t)return;const deja=t.br&&t.br.length;frappe(t,2);if(t.pv<=0)return;t.br=t.br||[];if(deja)t.br.forEach(b=>b[0]*=2);t.br.push([CB.gris?1:2,2])}},
+  torche:{nom:()=>'Torche',cout:1,cible:1,txt:()=>'2 dégâts, puis 2 de brûlure sur 2 tours. Si la cible brûlait déjà, sa brûlure double (une fois par tour).',jeu:(k,t)=>{if(!t)return;const deja=t.br&&t.br.length;frappe(t,2);if(t.pv<=0)return;t.br=t.br||[];if(deja&&t.brDbl!==CB.tour){t.brDbl=CB.tour;t.br.forEach(b=>b[0]*=2)}t.br.push([CB.gris?1:2,2])}},
   souffle:{nom:()=>'Souffle court',cout:0,txt:()=>'Piochez 1 carte, 2 de garde.',jeu:()=>{pioche(1);garder(CB.hero,2)}},
   CIT:{z:'CIT',nom:()=>poleN('CIT','Palissade d\'oubli','Rempart de mémoire'),cout:1,
     txt:k=>`Tous vos alliés gagnent ${(6+2*Lz('CIT'))*contreX(k)} de garde.`,jeu:k=>CB.allies.forEach(u=>u.pv>0&&garder(u,(6+2*Lz('CIT'))*contreX(k)))},

@@ -85,7 +85,7 @@ for n,co,e,mc,k in [('Coup de bâton',1,'6 dégâts. Sur une cible qui brûle : 
   ('Pas de côté',1,"5 de garde : la Garde se dresse devant le héros. Si elle était déjà levée, elle ne s'effrite pas au prochain tour.",['Garde','Bloqueur'],1),
   ('Pieu planté',1,'Un bloqueur de 6 PV prend place sur le terrain : il encaisse les coups et renvoie 2 dégâts à qui le frappe.',['Bloqueur','Riposte'],1),
   ('Jet de pierre',0,"3 dégâts à l'ennemi qui prend son élan (sinon au hasard) : il perd son élan et hésite.",['Dégâts','Contrôle'],1),
-  ('Torche',1,'2 dégâts, puis 2 de brûlure sur 2 tours. Si la cible brûlait déjà, sa brûlure double.',['Dégâts','Brûlure','Combo'],1)]:
+  ('Torche',1,'2 dégâts, puis 2 de brûlure sur 2 tours. Si la cible brûlait déjà, sa brûlure double (une fois par tour).',['Dégâts','Brûlure','Combo'],1)]:
   G.append(dict(nom=n,zone='Paquet de départ',tuile='Commune',mana='Gris',pole='',polenom='×1',cout=co,e1=e,genre='Commune',mec=mc))
 order={'m':0,'p':1,'m7':2,'p7':3}
 def zkey(z):return (list(META).index(z))

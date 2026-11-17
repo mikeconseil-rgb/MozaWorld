@@ -113,7 +113,10 @@ const betePlus=(id,k)=>{const L=Lz(id),x=contreX(k);return{nom:poleN(id,'Luciole
 
 /* ---------- Cartes propres à chaque pôle (2.0, demande du 17 nov. : « les cartes doivent être différentes selon le pôle choisi,
    reliées au background de la zone et du pôle ») et effet propre à chaque tuile. L = écart à zéro de la zone (1 à 7), x = contre-pouvoir. ---------- */
-const hesite=m=>{if(m&&m.pv>0){m.int={a:'h',v:0,ic:'?',t:'hésite'};pop(m,'hésite','g')}};
+/* garde-fou (revue impact, 17 nov.) : un chef s'habitue ; une 2e hésitation au tour suivant ne lui retire que son élan */
+const hesite=m=>{if(!m||m.pv<=0)return;const t=CB?CB.tour:0;
+  if(m.chef&&m.hesT===t-1){if(m.int&&m.int.a==='c'){m.int={a:'a',v:m.atk,ic:'⚔',t:'attaque'};pop(m,'perd son élan','g')}else pop(m,'s\'habitue','g');m.hesT=-9;return}
+  m.hesT=t;m.int={a:'h',v:0,ic:'?',t:'hésite'};pop(m,'hésite','g')};
 const tous=()=>vivants(CB.foes);
 const perdPV=n=>{CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');majUnites()};
 const bete2=(nom,pv,atk)=>({nom,pv,max:pv,atk,g:0,bete:1});
