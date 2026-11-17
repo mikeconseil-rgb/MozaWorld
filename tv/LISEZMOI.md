@@ -180,8 +180,8 @@ le style bascule exactement à la frontière, même quand on regarde une zone de
 Menu → « Styles par zone » pour comparer avec et sans. Planches : `node tools/styles-capture.js index.html <dossier>`.
 
 ### 2.4 · Territoire de départ, zones scellées et chemins (17 nov.)
-- Territoire de départ (regles-avancees.md, section 1 ter) : environ 9 tuiles au niveau 0, de quoi bâtir un paquet de 15 cartes (5 communes + 10 cartes de zone) : 1 Citadelle, 1 Donjon, 1 Antre, 2 Assemblées (montées au palier 2) et 4 Ressources. Ce sont les 5 zones d'origine plus les plus proches qui manquent (ZONES_DEP dans main.js).
+- Territoire de départ (regles-avancees.md, section 1 ter) : 12 tuiles au niveau 0 (choix C2) : 6 zones à cartes (1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée) et 6 Ressources. Ce sont les 5 zones d'origine plus les plus proches qui manquent (ZONES_DEP dans main.js).
 - Les zones qui l'entourent sont à ±5 ; au-delà, pôle et niveau au hasard, tirés à chaque nouvelle partie (S.graine). Les Ressources hors départ ont un niveau 0 à 3 au hasard.
 - Les Ressources ne donnent pas de carte de combat (elles produisent du mana).
-- Zones scellées : hors du territoire de départ, une zone ne peut pas être activée tant que toutes les zones de départ ne sont pas à vous ET que le paquet compte moins de 15 cartes (une zone où vous avez une empreinte reste reprenable). Le bandeau montre « ⌂ x/9 départ ».
+- Zones scellées : hors du territoire de départ, une zone ne peut pas être activée tant que toutes les zones de départ ne sont pas à vous ou que le paquet compte moins de 15 cartes (une zone où vous avez une empreinte reste reprenable). Le bandeau montre « ⌂ x/12 départ ».
 - Chemins (chemins.js) : chaque route ouverte trace un chemin de dalles entre les Pierres des deux zones ; le tracé reste si la route est coupée. Sur un chemin, aucune rencontre, sauf dans une Citadelle. Exception à venir : un rempart actif qui n'est pas à vous.
