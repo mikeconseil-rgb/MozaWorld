@@ -190,7 +190,7 @@ const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
 function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
-  let gain='';if(ok){const t=ZMANA[Z.id],n=C.kind==='eveil'?2:1;gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
+  let gain='';if(ok){const t=ZMANA[Z.id],n=(C.kind==='eveil'?2:1)+(C.kind==='renc'&&typeof bonusChant==='function'?bonusChant():0);gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
   const retour=`${gain} Réserve : ${resTexte()}.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
     ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3).${retour} À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
@@ -259,7 +259,7 @@ function journal(t){const j=$('cb-log');j.textContent=t;j.classList.remove('neuf
 /* ---------- Rencontres en se promenant ---------- */
 const RENC=[['fréquentes',.7],['normales',1],['rares',2],['aucune',0]];
 let CBwalk=0,CBnext=0;
-const prochaineRencontre=()=>{const f=RENC[S.renc||1][1];return f?(110+Math.random()*90)*f:1e9};
+const prochaineRencontre=()=>{const f=RENC[S.renc||1][1];return f?(110+Math.random()*90)*f*(typeof facteurRencontre==='function'?facteurRencontre():1):1e9};
 function verifierRencontre(){if(mode!=='monde'||!started||!curZ||!RENC[S.renc||1][1])return;
   if(!CBnext)CBnext=prochaineRencontre();
   if(typeof majChemins==='function'){majChemins();if(abriChemin()){CBwalk=Math.max(CBwalk,P.walked-CBnext+5);return}}

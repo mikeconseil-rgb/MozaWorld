@@ -185,3 +185,12 @@ Menu → « Styles par zone » pour comparer avec et sans. Planches : `node tool
 - Les Ressources ne donnent pas de carte de combat (elles produisent du mana).
 - Zones scellées : hors du territoire de départ, une zone ne peut pas être activée tant que toutes les zones de départ ne sont pas à vous ou que le paquet compte moins de 15 cartes (une zone où vous avez une empreinte reste reprenable). Le bandeau montre « ⌂ x/12 départ ».
 - Chemins (chemins.js) : chaque route ouverte trace un chemin de dalles entre les Pierres des deux zones ; le tracé reste si la route est coupée. Sur un chemin, aucune rencontre, sauf dans une Citadelle. Exception à venir : un rempart actif qui n'est pas à vous.
+
+### 2.4 · Pouvoirs de carte du monde des Assemblées (17 nov., provisoires)
+Code : tv/src/assemblees.js. Une Assemblée n'agit pas en combat : sa loi agit sur le monde quand elle est à vous, activée et au palier 1 ou plus (pôle − ou + selon le signe du palier).
+1. Givrecloche (MAR) : Brume, le Donjon voisin n'est pas assailli ; Clarté, la minicarte montre le niveau et les secrets des zones à 2 tuiles.
+2. Lande de Cezo (ASS006) : +1 mana par route ouverte à chaque cycle.
+3. Balpak (ASS012) : repos des Pierres de Balpak et de ses voisines divisé par deux.
+4. Delta de Pama (ASS150) : les assauts du sauvage arrivent deux fois plus tard.
+5. Canyon de Fjorhel (ASS152) : Silence, deux fois moins de rencontres dans vos zones ; Chant, rencontres plus fréquentes, +1 mana par victoire.
+6. Oasis de Raak (ASS155) : « Borner une zone » à sa Pierre ; la zone bornée ne recule pas face à une horde (et plus tard un rival).

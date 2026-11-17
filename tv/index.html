@@ -10194,7 +10194,7 @@ const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
 function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
-  let gain='';if(ok){const t=ZMANA[Z.id],n=C.kind==='eveil'?2:1;gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
+  let gain='';if(ok){const t=ZMANA[Z.id],n=(C.kind==='eveil'?2:1)+(C.kind==='renc'&&typeof bonusChant==='function'?bonusChant():0);gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
   const retour=`${gain} Réserve : ${resTexte()}.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
     ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3).${retour} À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
@@ -10263,7 +10263,7 @@ function journal(t){const j=$('cb-log');j.textContent=t;j.classList.remove('neuf
 /* ---------- Rencontres en se promenant ---------- */
 const RENC=[['fréquentes',.7],['normales',1],['rares',2],['aucune',0]];
 let CBwalk=0,CBnext=0;
-const prochaineRencontre=()=>{const f=RENC[S.renc||1][1];return f?(110+Math.random()*90)*f:1e9};
+const prochaineRencontre=()=>{const f=RENC[S.renc||1][1];return f?(110+Math.random()*90)*f*(typeof facteurRencontre==='function'?facteurRencontre():1):1e9};
 function verifierRencontre(){if(mode!=='monde'||!started||!curZ||!RENC[S.renc||1][1])return;
   if(!CBnext)CBnext=prochaineRencontre();
   if(typeof majChemins==='function'){majChemins();if(abriChemin()){CBwalk=Math.max(CBwalk,P.walked-CBnext+5);return}}
@@ -10336,8 +10336,10 @@ function cycle(){S.nc++;const lignes=[];
   if(donjonAVous()&&nbPieges()&&S.ent===0){let paye=0,dorment=0;
     for(const x of S.pieges){if(!x)continue;const m=PIEGES[x.k].m;if(peutPayer(m,1)){payer(m,1);paye++;x.dort=false}else{x.dort=true;dorment++}}
     lignes.push(`−${paye} mana d'entretien${dorment?`, ${dorment} piège(s) endormi(s)`:''}`)}
+  if(typeof peages==='function')peages(lignes);
   save();etatHud();
-  if(donjonAVous()&&S.nc-S.dernierAssaut>=ASSAUT_CYCLES){S.dernierAssaut=S.nc;assaut(lignes);return}
+  if(donjonAVous()&&S.nc-S.dernierAssaut>=(typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES)){S.dernierAssaut=S.nc;
+    if(typeof cacheParBrume==='function'&&cacheParBrume('DON')){lignes.push('Une horde rôde, mais la Brume de Givrecloche cache le Donjon : elle passe son chemin')}else{assaut(lignes);return}}
   if(lignes.length&&started&&mode==='monde')toast('Cycle '+S.nc,'Réserve : '+resTexte(),lignes.join(' · '))}
 setInterval(()=>{if(!started||mode==='titre')return;S.tc++;if(S.tc>=CYCLE){S.tc=0;cycle()}},1000);
 
@@ -10354,7 +10356,8 @@ function assaut(avant){let h=forceHorde();const h0=h,l=[];
   const ok=h<=0;
   if(ok){S.assauts.ok++;gagner('Feu',2);l.push('La horde se brise dans vos salles : +2 Feu pris sur les vaincus.')}
   else{S.assauts.ko++;const i=S.pieges.findIndex(Boolean);if(i>=0){l.push(`La horde passe (reste ${h}) et saccage ${SALLES[i]}.`);S.pieges[i]=null}else l.push(`La horde passe (reste ${h}) : aucune salle ne la retient.`);
-    if(S.lv.DON!==0){const n=S.lv.DON-Math.sign(S.lv.DON);S.lv.DON=n;DON.lvT=n;l.push(`Le Donjon recule d'un palier (${sgn(n)||'0'}).`)}}
+    if(S.lv.DON!==0&&typeof borne==='function'&&borne('DON'))l.push('La Pierre de bornage de Raak tient : le Donjon ne recule pas.');
+    else if(S.lv.DON!==0){const n=S.lv.DON-Math.sign(S.lv.DON);S.lv.DON=n;DON.lvT=n;l.push(`Le Donjon recule d'un palier (${sgn(n)||'0'}).`)}}
   save();etatHud();hudKey='';
   ecoRapport.push({ok,h0,lignes:[...(avant||[]),...l]});montrerRapport()}
 function montrerRapport(){if(!ecoRapport.length||mode!=='monde')return;const r=ecoRapport.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
@@ -10369,7 +10372,7 @@ function openDonjon(f){mode='menu';document.body.classList.add('jeu-ouvert');
   o.push({l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openDonjon(UI.f)}});
   o.push({l:'Provoquer un assaut maintenant (test)',ic:'⚔',go:()=>{closeUI();mode='monde';S.dernierAssaut=S.nc;assaut([])}});
   o.push({l:'Retour',ic:'◆',go:toMonde});
-  const prochain=Math.max(0,(S.dernierAssaut+ASSAUT_CYCLES-S.nc-1)*CYCLE+(CYCLE-S.tc));
+  const prochain=Math.max(0,(S.dernierAssaut+(typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES)-S.nc-1)*CYCLE+(CYCLE-S.tc));
   ui('menu',{sur:'Donjon à vous · aménager',t:'Les salles des Neuf Édits',f,
     corps:`<p class="petit">Réserve : ${resHTML()}.</p><p class="petit">Chaque salle reçoit un piège ; chaque piège a son type de mana, pour la pose comme pour l'entretien. Un type que votre paquet n'utilise pas peut servir ici. Prochain assaut du sauvage dans environ ${fmt(prochain)} ; la horde traverse les salles dans l'ordre.</p><p class="petit">${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:o})}
@@ -10378,6 +10381,48 @@ function changerPiege(i){const cur=S.pieges[i],k0=cur?cur.k:null;
     opts:[...PORDRE.slice(1).map(k=>{const P_=PIEGES[k];return{l:P_.nom+(k===k0?' (en place)':''),ic:P_.pose,d:`${P_.pose} ${P_.m} · force ${P_.force} · ${P_.txt}`,off:k===k0||!peutPayer(P_.m,P_.pose),
       go:()=>{payer(P_.m,P_.pose);S.pieges[i]={k,u:3,dort:false};save();etatHud();sfx('hit');openDonjon(i)}}}),
       {l:'Salle vide',ic:'○',off:!cur,go:()=>{S.pieges[i]=null;save();openDonjon(i)}},{l:'Retour',ic:'◆',go:()=>openDonjon(i)}]})}
+/* Pouvoirs de carte du monde des Assemblées (17 nov., validés « pour l'instant » par l'utilisateur ; regles-avancees.md, section 1 sexies).
+   Une Assemblée agit sur le monde, pas en combat. Son pouvoir s'active quand elle est à vous, activée et au palier 1 ou plus.
+   Le signe du palier choisit la loi quand l'Assemblée en a deux (− : premier pôle, + : second). */
+const ASSEMBLEES={
+  MAR:  {nom:'Givrecloche',loi:l=>l<0?'Brume : vos zones voisines sont cachées aux hordes (le Donjon voisin n\'est pas assailli)':'Clarté : vous voyez le niveau et les secrets des zones jusqu\'à 2 tuiles'},
+  ASS006:{nom:'Lande de Cezo',loi:()=>'Loi des péages : chaque route ouverte rapporte +1 mana par cycle'},
+  ASS012:{nom:'Balpak',loi:()=>'Loi du brûlis : le repos des Pierres d\'éveil voisines est divisé par deux'},
+  ASS150:{nom:'Delta de Pama',loi:()=>'Greniers : les invasions vers vos zones arrivent deux fois plus tard'},
+  ASS152:{nom:'Canyon de Fjorhel',loi:l=>l<0?'Silence : deux fois moins de rencontres dans votre territoire':'Chant : plus de rencontres, chacune gagnée donne 1 mana de plus'},
+  ASS155:{nom:'Oasis de Raak',loi:()=>'Pierre de bornage : la zone bornée ne peut pas perdre de niveau face à une horde ou un rival'}};
+/* 0 si la loi dort ; sinon le signe du palier (−1 ou +1) */
+const loi=id=>!ASSEMBLEES[id]||!S.own[id]||!S.act[id]||!(S.lv[id])?0:Math.sign(S.lv[id]);
+const voisinesDe=id=>(typeof VOISINES!=='undefined'&&VOISINES[id])||[];
+/* à n tuiles au plus (largeur d'abord) */
+function aPortee(id,n){const d={[id]:0},f=[id];while(f.length){const z=f.shift();if(d[z]>=n)continue;for(const v of voisinesDe(z))if(d[v]===undefined){d[v]=d[z]+1;f.push(v)}}return d}
+/* Balpak : repos divisé par deux pour l'Assemblée et ses voisines */
+const reposZone=id=>loi('ASS012')&&(id==='ASS012'||voisinesDe('ASS012').indexOf(id)>=0)?REPOS/2:REPOS;
+/* Pama : les assauts du sauvage arrivent deux fois plus tard */
+const cyclesAssaut=()=>ASSAUT_CYCLES*(loi('ASS150')?2:1);
+/* Givrecloche en Brume : la horde ne trouve pas le Donjon s'il est voisin (ou si c'est l'Assemblée elle-même) */
+const cacheParBrume=id=>loi('MAR')<0&&(id==='MAR'||voisinesDe('MAR').indexOf(id)>=0);
+/* Givrecloche en Clarté : zones à 2 tuiles ou moins */
+const clarte=()=>loi('MAR')>0?aPortee('MAR',2):null;
+/* Cezo : +1 mana par route ouverte, du type de la zone d'où part la route */
+function peages(lignes){if(!loi('ASS006')||typeof etatRoutes!=='function')return;etatRoutes();let n=0;
+  for(const r in S.routes)for(const _ of S.routes[r]){const t=(typeof ZMANA!=='undefined'&&ZMANA[r])||'Vent';gagner(t,1);n++}
+  if(n)lignes.push(`+${n} mana des péages de Cezo`)}
+/* Fjorhel : facteur de distance entre deux rencontres, et bonus de mana */
+const facteurRencontre=()=>{const l=loi('ASS152');if(!l||!curZ||!S.own[curZ.id])return 1;return l<0?2:.6};
+const bonusChant=()=>loi('ASS152')>0?1:0;
+/* Raak : la zone bornée ne recule pas */
+const borne=id=>!!loi('ASS155')&&S.borne===id;
+function optionsAssemblee(Z){const A=ASSEMBLEES[Z.id];if(!A)return[];const l=loi(Z.id),o=[];
+  o.push({l:l?'Loi en vigueur':'Loi endormie',ic:'⚖',off:true,d:l?A.loi(l):'prenez et activez l\'Assemblée, puis montez-la au palier 1 ou plus : '+A.loi(1)});
+  if(Z.id==='ASS155'&&l)o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+ZB[S.borne].info.nom:'aucune zone bornée',go:()=>choisirBorne()});
+  return o}
+function choisirBorne(){const mes=ZN.filter(Z=>S.own[Z.id]);
+  ui('menu',{sur:'Oasis de Raak · Pierre de bornage',t:'Borner une zone',corps:'<p class="petit">La zone bornée ne peut pas perdre de niveau face à une horde ou un rival. Une seule à la fois.</p>',back:()=>openEveil(ZB.ASS155),
+    opts:[...mes.map(Z=>({l:Z.info.nom,ic:S.borne===Z.id?'⌖':'○',d:'palier '+(sgn(S.lv[Z.id])||'0'),go:()=>{S.borne=Z.id;save();toast('Pierre de bornage',Z.info.nom,'Cette zone ne reculera plus face aux hordes.');openEveil(ZB.ASS155)}})),{l:'Retour',ic:'◆',go:()=>openEveil(ZB.ASS155)}]})}
+/* La récompense affichée d'une Assemblée est sa loi du monde (elle n'agit pas en combat) */
+function recoAssemblees(){for(const id in ASSEMBLEES){const A=ASSEMBLEES[id],Z=ZB[id];if(!Z)continue;
+  RECO[id]=`Loi du monde (au palier 1 ou plus) : ${Z.info.pm} ou ${Z.info.pp} selon le pôle. ${A.loi(-1)===A.loi(1)?A.loi(1):A.loi(-1)+' ; '+A.loi(1)}.`}}
 /* MozaWorld TV : habillage du combat (17 novembre).
    Retour de l'utilisateur : « c'est vraiment moche, il faut un minimum d'art dans les cartes ; un type commun au début c'est ok ».
    Ici, seulement de l'image : une illustration par sorte de carte, un portrait par créature, un décor par zone.
@@ -11517,6 +11562,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
   if(ci>=0)o.push({l:`Jouer « ${S.cards[ci].nom} »`,ic:carteOn?'☑':'☐',d:carteOn?`épreuve −${S.cards[ci].pw}, carte dépensée`:'carte gardée',go:()=>{carteOn=!carteOn;openEveil(Z,UI.f)}});
   if(typeof optionsRoutes==='function')o.push(...optionsRoutes(Z));
+  if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
     corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
@@ -11550,7 +11596,7 @@ function startEpreuve(Z,target){const ci=bestCard(Z),useC=carteOn&&ci>=0;let pw=
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+REPOS;S.hurt=Math.max(0,S.hurt-1);const c=newCard(Z,target);S.cards.push(c);if(S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target,c)}
+  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);const c=newCard(Z,target);S.cards.push(c);if(S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target,c)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
@@ -11726,7 +11772,9 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
     const g=dispo?6+2*pulse:S.own[Z.id]?5:3.5;mc.fillStyle=r?'#7d7466':dispo?`rgba(255,217,138,${.6+.4*pulse})`:'rgba(201,164,92,.7)';mc.beginPath();mc.moveTo(x,y-g);mc.lineTo(x+g*.7,y);mc.lineTo(x,y+g);mc.lineTo(x-g*.7,y);mc.fill();
     if(dispo){mc.strokeStyle=`rgba(255,217,138,${.5*pulse})`;mc.lineWidth=1.5;mc.beginPath();mc.arc(x,y,g+4,0,TAU);mc.stroke()}}
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
-  for(const q of secrets){if(q.found||!q.cond(q.Z.lv))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
+  const CL=typeof clarte==='function'?clarte():null;
+  if(CL)for(const Z of ZN)if(CL[Z.id]!==undefined&&!S.own[Z.id]){const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 13px sans-serif';mc.textAlign='center';mc.fillStyle='#bfe3ff';mc.fillText(sgn(S.lv[Z.id])||'0',cx,cy-10)}
+  for(const q of secrets){if(q.found||!q.cond(q.Z.lv)&&!(CL&&CL[q.Z.id]!==undefined))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
   if(E&&E.monde)for(const o of E.orbs)if(!o.got){mc.fillStyle='#b8ff9a';mc.beginPath();mc.arc((o.x+ox)*s,(o.z+oz)*s,3.4+Math.sin(T*6),0,TAU);mc.fill()}
   const x=(P.x+ox)*s,y=(P.z+oz)*s,fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);mc.fillStyle='#fff';mc.beginPath();mc.moveTo(x+fx*10,y+fz*10);mc.lineTo(x-fz*5-fx*5,y+fx*5-fz*5);mc.lineTo(x+fz*5-fx*5,y-fx*5-fz*5);mc.fill()}
 
@@ -11803,6 +11851,6 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(!CB){cullScene();draw(T)}}   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
-plusTables();titre();requestAnimationFrame(loop);
+plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);
 window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};
 </script></body></html>
