@@ -1,0 +1,21 @@
+name: Test de fumée
+# Vérifie avant chaque fusion que la page jouée démarre, qu'une partie se lance et qu'un combat se joue.
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  fumee:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Installer Playwright et Chromium
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Test de fumée
+        run: node tv/tools/test-fumee.js
