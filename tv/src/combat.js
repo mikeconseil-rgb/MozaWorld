@@ -77,7 +77,7 @@ function startCombat(Z,kind){
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
-function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.riposte=0;CB.echo=false;CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
+function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.riposte=0;CB.echo=false;CB.nrecup=0;CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
@@ -119,7 +119,7 @@ function agir(m){const I=m.int;if(!I)return;m.el&&(m.el.classList.remove('agit')
   else journal(`${m.nom} prend son élan : le prochain coup sera fort.`)}
 
 /* ---------- Fin du combat : récompenses ---------- */
-function fermerCombat(){$('combat').hidden=true;CB=null;CBwalk=P.walked;CBnext=prochaineRencontre()}
+function fermerCombat(){if(typeof oublierManaDeCombat==='function')oublierManaDeCombat(CB);$('combat').hidden=true;CB=null;CBwalk=P.walked;CBnext=prochaineRencontre()}
 const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1 mana, puis 2 au niveau 2, puis 2 et une carte de plus en main au niveau 3.',
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};

@@ -25,12 +25,18 @@ function execOp(o,c){const L=c.L,x=c.x,n=v=>Math.max(0,Math.round(val(v,L)*x)),o
     case'vulnerable':for(const m of cibles(o[1],c.t)){m.vul=(m.vul||0)+Math.max(1,Math.round(val(o[2],L)));pop(m,'marqué','deg')}break;
     case'riposte':CB.riposte=(CB.riposte||0)+n(o[1]);pop(CB.hero,'riposte '+CB.riposte,'g');break;
     case'echo':CB.echo=true;journal('Écho : la prochaine carte de zone de ce tour comptera double.');break;
-    case'recup':{const d=CB.defausse,i=d.length-2;if(i>=0&&CB.main.length<8){CB.main.push(d.splice(i,1)[0])}break}
-    case'mana':if(typeof gagner==='function')gagner(o[1]==='zone'?ZMANA[c.z]:o[1],Math.max(1,Math.round(val(o[2],L))));break;
+    case'recup':{/* jamais une carte qui a elle-même une récupération ; 2 par tour au plus (anti-boucle) */
+      if((CB.nrecup=(CB.nrecup||0)+1)>2)break;const d=CB.defausse;
+      for(let i=d.length-2;i>=0;i--){const kk=d[i],cc=CK[kk];const ops=cc&&cc.ops?cc.ops():[];if(ops.some(o=>o[0]==='recup'))continue;if(CB.main.length<8)CB.main.push(d.splice(i,1)[0]);break}break}
+    case'mana':{/* mana de combat : il disparaît à la fin du combat */const ty=o[1]==='zone'?ZMANA[c.z]:o[1],q=Math.min(2,Math.max(1,Math.round(val(o[2],L))));
+      if(typeof gagner==='function'){gagner(ty,q);(CB.mg=CB.mg||{})[ty]=(CB.mg[ty]||0)+q}break}
     case'boost':CB.mana++;CB.capT++;break;
     case'exil':c.exil=true;break;
-    case'pose':(CB.reso=CB.reso||{})[o[1]]=((CB.reso||{})[o[1]]||0)+1;journal(`Résonance posée : ${o[1]}.`);break;
-    case'reveil':if(CB.reso&&CB.reso[o[1]]>0){if(o[2])CB.reso[o[1]]--;journal(`${o[1]} se réveille !`);execOps(o[3],c)}break;
+    case'pose':{CB.reso=CB.reso||{};CB.resoD=CB.resoD||{};CB.reso[o[1]]=(CB.reso[o[1]]||0)+1;if(c.demi)CB.resoD[o[1]]=(CB.resoD[o[1]]||0)+1;journal(`Résonance posée : ${o[1]}.`);break}
+    case'reveil':if(CB.reso&&CB.reso[o[1]]>0){const r=o[1],D=CB.resoD||{},plein=CB.reso[r]>(D[r]||0);
+      if(o[2]){CB.reso[r]--;if(!plein)D[r]--}journal(`${r} se réveille${plein?' !':' à moitié.'}`);
+      /* l'écho ne double jamais un réveil ; une résonance posée par un secret ne donne que la moitié du réveil */
+      execOps(o[3],Object.assign({},c,{x:c.x/(c.dbl?2:1)*(plein?1:.5),ig:false,vv:false}))}break;
     case'si':if(condition(o[1],c))execOps(o[2],c);break;
     case'prixPV':perdPV(Math.round(val(o[1],L)));break;
     case'prixDefausse':for(let i=0;i<val(o[1],L)&&CB.main.length;i++){const j=Math.floor(Math.random()*CB.main.length);CB.defausse.push(CB.main.splice(j,1)[0])}break;
@@ -40,7 +46,7 @@ function execOp(o,c){const L=c.L,x=c.x,n=v=>Math.max(0,Math.round(val(v,L)*x)),o
   }}
 function condition(q,c){const t=c.t;switch(q){
   case'bete':return CB.allies.some(u=>u.bete&&u.pv>0);
-  case'blesse':return CB.hero.pv*2<CB.hero.max;
+  case'blesse':case'mipv':case'moitiePV':return CB.hero.pv*2<CB.hero.max;
   case'seul':return vivants(CB.foes).length===1;
   case'hesite':return!!(t&&t.int&&t.int.a==='h');
   case'garde':return CB.hero.g>0;
@@ -50,12 +56,12 @@ function texteCarte(t,L,x){return String(t||'').replace(/\(?(\d+)\s*\+\s*(\d*)\s
   .replace(/\((\d+)\s*[×x]\s*L\)/g,(m,b)=>String(+b*L*x)).replace(/(^|[\s(])L(?=[\s.,;)]|$)/g,(m,p)=>p+L*x)}
 /* fabrique une entrée de CK à partir d'une carte de données ; side() choisit la variante selon le pôle et le palier */
 function carteCK(id,choix,niv){const L=()=>Math.max(1,niv());const cur=()=>choix();
-  return{z:id,nom:()=>cur().nom,get cout(){return cur().cout},get cible(){return cur().cible?1:0},amb:()=>cur().ambiance||'',
+  return{z:id,nom:()=>cur().nom,get cout(){return cur().cout},get cible(){return cur().cible?1:0},amb:()=>cur().ambiance||'',ops:()=>cur().ops||[],
     get ultime(){return Math.abs(S.lv[id]||0)>=7&&!!cur().p7},
     get pose(){const p=(cur().ops||[]).find(o=>o[0]==='pose');return p?p[1]:null},
     get reveille(){const p=(cur().ops||[]).find(o=>o[0]==='reveil');return p?p[1]:null},
     txt:k=>texteCarte(cur().effet,L(),contreX(k)),jeu:(k,t)=>{const dbl=CB.echo&&!(cur().ops||[]).some(o=>o[0]==='echo');if(dbl){CB.echo=false;journal('Écho : effet doublé.')}
-      const ctx={L:L(),x:contreX(k)*(dbl?2:1),t,z:id,k};execOps(cur().ops,ctx);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
+      const ctx={L:L(),x:contreX(k)*(dbl?2:1),dbl,t,z:id,k};execOps(cur().ops,ctx);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
 function installerCartes22(){if(typeof CARTES22==='undefined')return;
   /* « chaque palier donne une carte » : P.m1…P.m6 et P.p1…P.p6 si les conteurs les ont écrites, sinon la carte du pôle (P.m, P.p) qui grandit avec L */
   const parPalier=(P,s,n)=>n>=7&&P[s+'7']?Object.assign({p7:1},P[s+'7']):(P[s+n]||P[s]);
@@ -69,7 +75,7 @@ function installerCartes22(){if(typeof CARTES22==='undefined')return;
   /* secrets : une carte utilitaire par secret, clé « S<numéro> », payée en gris */
   secrets.forEach((q,i)=>{const d=CARTES22.secrets[q.titre];if(!d)return;const k='S'+i;
     CK[k]={nom:()=>d.nom,cout:d.cout,cible:d.cible?1:0,secret:q.titre,zs:q.Z.id,ultime:false,pose:null,reveille:null,amb:()=>d.ambiance||'',txt:()=>texteCarte(d.effet,1,1),
-      jeu:(kk,t)=>{const ctx={L:1,x:1,t,k:kk};execOps(d.ops,ctx);if(ctx.exil){const j=CB.defausse.lastIndexOf(kk);if(j>=0)CB.defausse.splice(j,1)}}};
+      ops:()=>d.ops||[],jeu:(kk,t)=>{const ctx={L:1,x:1,t,k:kk,demi:true};execOps(d.ops,ctx);if(ctx.exil){const j=CB.defausse.lastIndexOf(kk);if(j>=0)CB.defausse.splice(j,1)}}};
     if(typeof ART!=='undefined')ART[k]=ART.souffle||ART.coup})}
 /* un secret trouvé ajoute sa carte au paquet de combat */
 function carteDeSecret(q){const i=secrets.indexOf(q),k='S'+i;if(!CK[k])return'';if(S.deck.indexOf(k)<0&&S.deck.length<PAQUET_MAX)S.deck.push(k);return CK[k].nom()}
@@ -77,3 +83,5 @@ function carteDeSecret(q){const i=secrets.indexOf(q),k='S'+i;if(!CK[k])return'';
 function eveillee(k){const i=k.indexOf('#');if(i<0)return true;const id=k.slice(0,i),s=k[i+1],n=+k.slice(i+2),lv=S.lv[id]||0;
   return s==='r'?Math.abs(lv)>=n:(s==='-'?lv<=-n:lv>=n)}
 function clePalier(Z,lv){const k=Z.id+'#'+((Z.mod||Z.id)==='RES'?'r':lv<0?'-':'+')+Math.abs(lv);return CK[k]?k:Z.id}
+/* fin de combat : le mana gagné par les cartes s'évapore (seules les Ressources remplissent la réserve durable) */
+function oublierManaDeCombat(C){if(!C||!C.mg)return;for(const t in C.mg)S.res[t]=Math.max(0,(S.res[t]||0)-C.mg[t])}

@@ -1013,22 +1013,17 @@ true,
 "nom": "La Lande brûlée trois fois",
 "cout": 2,
 "cible": 0,
-"effet": "Le feu efface les bornes. Tous les ennemis brûlent : 5 dégâts au début de chacun de leurs 3 prochains tours, et leur garde tombe à 0. La maison paie : gagnez 2 mana Vent, et la prochaine carte de zone jouée ce tour a son effet doublé. Pose Braise. Si Sceau est posée (consommée) : la loi est achetée, +1 de capacité ce tour, piochez 3 cartes, gagnez encore 2 mana Vent et tous les ennemis hésitent ce tour. Prix : le héros perd 3 PV.",
+"effet": "Le feu efface les bornes. Tous les ennemis brûlent : 6 dégâts au début de chacun de leurs 3 prochains tours, et leur garde tombe à 0. La prochaine carte de zone jouée ce tour a son effet doublé. Pose Braise. Si Sceau est posée (consommée) : la loi est achetée, +1 de capacité ce tour, piochez 3 cartes, gagnez encore 2 mana Vent et tous les ennemis hésitent ce tour. Prix : le héros perd 3 PV.",
 "ops": [
 [
 "brulure",
 "tous",
-5,
+6,
 3
 ],
 [
 "briseGarde",
 "tous"
-],
-[
-"mana",
-"Vent",
-2
 ],
 [
 "echo"
@@ -1501,7 +1496,7 @@ true,
 "nom": "Nuit close",
 "cout": 3,
 "cible": 0,
-"effet": "Toutes les lanternes s'éteignent. Deux Ballots luisants rejoignent le combat (6 PV, frappent 5 chacun) ; tous les ennemis hésitent ce tour et sont tachés de pourpre (+3 dégâts à chaque coup reçu). Piochez 1 carte. Le héros perd 5 PV ; la carte s'exile. Pose Abîme. Si Sang est posée (consommée) : la Reine Vespérine, affamée pour de bon, se retourne contre l'ennemi et rejoint le combat (24 PV, frappe 14).",
+"effet": "Toutes les lanternes s'éteignent. Deux Ballots luisants rejoignent le combat (6 PV, frappent 5 chacun) ; tous les ennemis hésitent ce tour et sont tachés de pourpre (+3 dégâts à chaque coup reçu). Piochez 1 carte. Le héros perd 5 PV ; la carte s'exile. Pose Abîme. Si Sang est posée (consommée) : la Reine Vespérine, affamée pour de bon, se retourne contre l'ennemi et rejoint le combat (30 PV, frappe 9), et la cible, éblouie, hésite ce tour.",
 "ops": [
 [
 "invoque",
@@ -1547,8 +1542,12 @@ true,
 [
 "invoque",
 "Reine Vespérine affamée",
-24,
-14
+30,
+9
+],
+[
+"hesite",
+"cible"
 ]
 ]
 ]
@@ -1615,6 +1614,316 @@ true,
 ]
 ],
 "ambiance": "Pourpre, safran, indigo passent sur l'eau : la reine tient l'aube, et la mangrove entière devient séchoir."
+},
+"m1": {
+"nom": "Chair vendue",
+"cout": 1,
+"cible": 1,
+"effet": "Une Larve affamée rejoint le combat (6 PV, frappe 3) ; la cible prend une tache pourpre (+1 dégât à chaque coup reçu). Le héros perd 1 PV.",
+"ops": [
+[
+"invoque",
+"Larve affamée",
+6,
+3
+],
+[
+"vulnerable",
+"cible",
+1
+],
+[
+"prixPV",
+1
+]
+],
+"ambiance": "L'exarque a vendu la chair aux saleurs ; la première larve sort de la ruche, et elle a faim."
+},
+"m2": {
+"nom": "Lanterne sourde",
+"cout": 1,
+"cible": 1,
+"effet": "On ferme les volets de cuir : la cible hésite ce tour et prend une tache pourpre (+1 dégât à chaque coup reçu). Piochez 1 carte.",
+"ops": [
+[
+"hesite",
+"cible"
+],
+[
+"vulnerable",
+"cible",
+1
+],
+[
+"pioche",
+1
+]
+],
+"ambiance": "Volets de cuir rabattus : le teinturier clandestin travaille, et l'ennemi ne voit plus rien."
+},
+"m3": {
+"nom": "Cuve recousue",
+"cout": 1,
+"cible": 1,
+"effet": "Une Larve de cuve s'installe dans les planches flottées (10 PV, frappe 5). Si la cible hésite, elle prend +2 dégâts à chaque coup reçu. Le héros perd 1 PV.",
+"ops": [
+[
+"invoque",
+"Larve de cuve",
+10,
+5
+],
+[
+"si",
+"hesite",
+[
+[
+"vulnerable",
+"cible",
+2
+]
+]
+],
+[
+"prixPV",
+1
+]
+],
+"ambiance": "Une cuve abandonnée, trois planches clouées dessus, et la larve y a mangé toute la teinture."
+},
+"m4": {
+"nom": "Éclats brefs",
+"cout": 2,
+"cible": 0,
+"effet": "Les adultes ne s'allument plus qu'une seconde : tous les ennemis hésitent ce tour et prennent +2 dégâts à chaque coup reçu. Si une bête est en jeu, piochez 2 cartes.",
+"ops": [
+[
+"hesite",
+"tous"
+],
+[
+"vulnerable",
+"tous",
+2
+],
+[
+"si",
+"bete",
+[
+[
+"pioche",
+2
+]
+]
+]
+],
+"ambiance": "Un éclat, puis le noir : les passeurs lisent la lueur, l'ennemi n'y voit qu'une menace."
+},
+"m5": {
+"nom": "Larve-de-Cuve",
+"cout": 2,
+"cible": 1,
+"effet": "La Larve-de-Cuve rejoint le combat (20 PV, frappe 6) ; la cible hésite ce tour et prend +3 dégâts à chaque coup reçu. Elle a faim : le héros perd 3 PV.",
+"ops": [
+[
+"invoque",
+"Larve-de-Cuve",
+20,
+6
+],
+[
+"hesite",
+"cible"
+],
+[
+"vulnerable",
+"cible",
+3
+],
+[
+"prixPV",
+3
+]
+],
+"ambiance": "Sous la bâche goudronnée, la larve a mangé la teinture ; maintenant elle vous mange les doigts."
+},
+"m6": {
+"nom": "Chenal de contrebande",
+"cout": 2,
+"cible": 0,
+"effet": "Une barque plate glisse sous les racines, chargée de larves (18 PV, frappe 6) ; tous les ennemis prennent +3 dégâts à chaque coup reçu. Le héros perd 4 PV.",
+"ops": [
+[
+"invoque",
+"Barque de larves",
+18,
+6
+],
+[
+"vulnerable",
+"tous",
+3
+],
+[
+"prixPV",
+4
+]
+],
+"ambiance": "Lambeaux d'étoffe luisants aux racines : le chenal est balisé, et les larves ont faim pour tout le monde."
+},
+"p1": {
+"nom": "Panier de murex",
+"cout": 1,
+"cible": 1,
+"effet": "Zoé remonte le chenal : la cible brûle de 2 pendant 3 tours. Piochez 1 carte.",
+"ops": [
+[
+"brulure",
+"cible",
+2,
+3
+],
+[
+"pioche",
+1
+]
+],
+"ambiance": "Le panier de Zoé se remplit à marée basse, entre les racines, de coquilles qui saignent la pourpre."
+},
+"p2": {
+"nom": "Nasse de chair",
+"cout": 1,
+"cible": 0,
+"effet": "Une Larve nourrie rejoint le combat (14 PV, frappe 2) ; le héros se soigne de 5. Une nasse à remplir : défaussez 1 carte au hasard.",
+"ops": [
+[
+"invoque",
+"Larve nourrie",
+14,
+2
+],
+[
+"soin",
+"heros",
+5
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Première nasse livrée sous la ruche depuis la rupture : la larve gonfle, et la lumière revient."
+},
+"p3": {
+"nom": "Grappes sous la ruche",
+"cout": 1,
+"cible": 0,
+"effet": "Tous vos alliés gagnent 6 de garde. Si une bête est en jeu, les grappes s'allument : tous les ennemis brûlent de 2 pendant 3 tours.",
+"ops": [
+[
+"garde",
+"allies",
+6
+],
+[
+"si",
+"bete",
+[
+[
+"brulure",
+"tous",
+2,
+3
+]
+]
+]
+],
+"ambiance": "Pré-aube rose garance : les larves s'allument en grappes, et la ruche éclaire à nouveau le chenal."
+},
+"p4": {
+"nom": "Pourpre sur les racines",
+"cout": 2,
+"cible": 0,
+"effet": "Les premières pièces sèchent comme des voiles : tous les ennemis brûlent de 3 pendant 3 tours, tous vos alliés se soignent de 6. Défaussez 1 carte au hasard.",
+"ops": [
+[
+"brulure",
+"tous",
+3,
+3
+],
+[
+"soin",
+"allies",
+6
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Les premières pièces de pourpre sèchent sur les racines ; sous la chaleur des adultes, elles tiennent."
+},
+"p5": {
+"nom": "Essaim-Fixeur",
+"cout": 2,
+"cible": 0,
+"effet": "Une Vespérine adulte rejoint le combat (24 PV, frappe 5) ; sa chaleur fixe la pourpre : tous les ennemis brûlent de 2 pendant 3 tours. Défaussez 1 carte au hasard.",
+"ops": [
+[
+"invoque",
+"Vespérine adulte",
+24,
+5
+],
+[
+"brulure",
+"tous",
+2,
+3
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Chaque Vespérine qui passe au ras des toiles fixe la pourpre ; il faut juste payer sa nasse."
+},
+"p6": {
+"nom": "Pourpre contre indigo",
+"cout": 2,
+"cible": 0,
+"effet": "Une Escouade de l'aube rejoint le combat (20 PV, frappe 6) ; tous les ennemis brûlent de 2 pendant 3 tours ; si une bête est en jeu, tous vos alliés se soignent de 10. Chaque ennemi se soigne de 2.",
+"ops": [
+[
+"invoque",
+"Escouade de l'aube",
+20,
+6
+],
+[
+"brulure",
+"tous",
+2,
+3
+],
+[
+"si",
+"bete",
+[
+[
+"soin",
+"allies",
+10
+]
+]
+],
+[
+"ennemiSoin",
+2
+]
+],
+"ambiance": "Les acheteurs d'une autre côte troquent leur indigo contre la pourpre ; le péage ne désemplit plus."
 }
 },
 "ASS150": {
@@ -1691,7 +2000,7 @@ true,
 ],
 [
 "si",
-"moitiePV",
+"blesse",
 [
 [
 "hesite",
@@ -1729,7 +2038,7 @@ true,
 "nom": "Loi du Partage",
 "cout": 2,
 "cible": 0,
-"effet": "Les quarante greniers s'ouvrent pour toute la vallée : piochez 3 cartes, tous vos alliés se soignent de 12 et gagnent 12 de garde, et la prochaine carte de zone jouée ce tour a son effet doublé. Chaque ennemi se soigne de 3. Pose Sceau. Si Racine est posée (gardée) : une Caravane de lamas descend des terrasses (24 PV, frappe 8) et tous vos alliés se soignent encore de 8.",
+"effet": "Les quarante greniers s'ouvrent pour toute la vallée : piochez 3 cartes, tous vos alliés se soignent de 12 et gagnent 12 de garde, et la prochaine carte de zone jouée ce tour a son effet doublé (jamais un réveil). Chaque ennemi se soigne de 3. Pose Sceau. Si Racine est posée (gardée) : une Caravane de lamas descend des terrasses (24 PV, frappe 8) et tous vos alliés se soignent encore de 8.",
 "ops": [
 [
 "pioche",
@@ -1776,6 +2085,326 @@ false,
 ]
 ],
 "ambiance": "On ouvre les greniers d'un coup ; la caravane descend des terrasses, et le cordon compte pour toute la vallée."
+},
+"m1": {
+"nom": "Digue fissurée",
+"cout": 1,
+"cible": 1,
+"effet": "La garde de la cible tombe, puis 8 dégâts. Le héros perd 1 PV.",
+"ops": [
+[
+"briseGarde",
+"cible"
+],
+[
+"deg",
+"cible",
+8
+],
+[
+"prixPV",
+1
+]
+],
+"ambiance": "Personne n'a recousu la digue depuis la dernière crue ; Huaman y glisse la main, l'eau suit."
+},
+"m2": {
+"nom": "Corvée fantôme",
+"cout": 0,
+"cible": 1,
+"effet": "5 dégâts à la cible (9 si le héros a moins de la moitié de ses PV). Le héros perd 2 PV.",
+"ops": [
+[
+"deg",
+"cible",
+5
+],
+[
+"si",
+"blesse",
+[
+[
+"deg",
+"cible",
+4
+]
+]
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Le cordon des bateliers compte les corvées payées et jamais faites ; c'est vous qui portez les sacs."
+},
+"m3": {
+"nom": "Sel en fraude",
+"cout": 1,
+"cible": 1,
+"effet": "6 dégâts à la cible qui ignorent sa garde ; elle prend +2 dégâts à chaque coup reçu.",
+"ops": [
+[
+"deg",
+"cible",
+6
+],
+[
+"ignoreGarde"
+],
+[
+"vulnerable",
+"cible",
+2
+]
+],
+"ambiance": "Chaque crue, quelques sacs de sel passent sous les quais ; le douanier regarde toujours l'autre rive."
+},
+"m4": {
+"nom": "Vote de la crue",
+"cout": 1,
+"cible": 0,
+"effet": "L'Assemblée vote l'ouverture des digues : la garde de tous les ennemis s'effondre, puis 6 dégâts à tous. Vos champs boivent aussi : le héros perd 2 PV.",
+"ops": [
+[
+"briseGarde",
+"tous"
+],
+[
+"deg",
+"tous",
+6
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Huaman a voté la crue : les champs du rival boivent, les siens aussi, mais la vase paie mieux."
+},
+"m5": {
+"nom": "Champs noyés",
+"cout": 2,
+"cible": 0,
+"effet": "8 dégâts à tous ; tous les ennemis perdent 1 d'attaque et prennent +1 dégât à chaque coup reçu. Si le héros a moins de la moitié de ses PV, ils hésitent ce tour. Le héros perd 3 PV.",
+"ops": [
+[
+"deg",
+"tous",
+8
+],
+[
+"affaiblit",
+"tous",
+1
+],
+[
+"vulnerable",
+"tous",
+1
+],
+[
+"si",
+"blesse",
+[
+[
+"hesite",
+"tous"
+]
+]
+],
+[
+"prixPV",
+3
+]
+],
+"ambiance": "Les greniers du rival flottent jusqu'au delta ; on repêche ce qu'on peut, à la perche."
+},
+"m6": {
+"nom": "Troc à la perche",
+"cout": 1,
+"cible": 1,
+"effet": "14 dégâts à la cible qui ignorent sa garde. Reprenez en main la dernière carte de la défausse ; si le héros a moins de la moitié de ses PV, piochez 1 carte.",
+"ops": [
+[
+"deg",
+"cible",
+14
+],
+[
+"ignoreGarde"
+],
+[
+"recup"
+],
+[
+"si",
+"blesse",
+[
+[
+"pioche",
+1
+]
+]
+]
+],
+"ambiance": "Plus de quai, plus de péage : on troque de barque à barque, perche contre perche, au plus offrant."
+},
+"p1": {
+"nom": "Corvée des digues",
+"cout": 1,
+"cible": 0,
+"effet": "Le héros gagne 8 de garde. Piochez 1 carte.",
+"ops": [
+[
+"garde",
+"heros",
+8
+],
+[
+"pioche",
+1
+]
+],
+"ambiance": "Tout le village porte la vase en paniers ; à midi, la digue tient, et le cordon gagne un nœud."
+},
+"p2": {
+"nom": "Cordon à nœuds rouges",
+"cout": 0,
+"cible": 0,
+"effet": "Piochez 1 carte et gagnez 1 mana d'Eau. Chaque ennemi se soigne de 1.",
+"ops": [
+[
+"pioche",
+1
+],
+[
+"mana",
+"Eau",
+1
+],
+[
+"ennemiSoin",
+1
+]
+],
+"ambiance": "Un nœud rouge par grenier plein ; Huaman les compte du pouce, et les rivaux aussi."
+},
+"p3": {
+"nom": "Tubercules gelés",
+"cout": 1,
+"cible": 0,
+"effet": "Le héros se soigne de 7 et gagne 8 de garde ; s'il a de la garde, piochez 1 carte.",
+"ops": [
+[
+"soin",
+"heros",
+7
+],
+[
+"garde",
+"heros",
+8
+],
+[
+"si",
+"garde",
+[
+[
+"pioche",
+1
+]
+]
+]
+],
+"ambiance": "Séchés au gel sur les terrasses, ils pèsent trois fois moins et nourrissent tout un hiver."
+},
+"p4": {
+"nom": "Caravane de lamas",
+"cout": 2,
+"cible": 0,
+"effet": "Un Lama de bât rejoint le combat (20 PV, frappe 4) ; tous vos alliés gagnent 8 de garde. Piochez 1 carte. Chaque ennemi gagne 2 de garde.",
+"ops": [
+[
+"invoque",
+"Lama de bât",
+20,
+4
+],
+[
+"garde",
+"allies",
+8
+],
+[
+"pioche",
+1
+],
+[
+"ennemiGarde",
+2
+]
+],
+"ambiance": "La file descend des terrasses, une clochette par bête, et chaque sac porte le nœud de son grenier."
+},
+"p5": {
+"nom": "Loi des greniers",
+"cout": 1,
+"cible": 0,
+"effet": "L'Assemblée vote la corvée et les greniers débordent : piochez 2 cartes, gagnez 2 mana d'Eau, tous vos alliés se soignent de 4, et la prochaine carte de zone jouée ce tour a son effet doublé (jamais un réveil). Chaque ennemi se soigne de 2.",
+"ops": [
+[
+"pioche",
+2
+],
+[
+"mana",
+"Eau",
+2
+],
+[
+"soin",
+"allies",
+4
+],
+[
+"echo"
+],
+[
+"ennemiSoin",
+2
+]
+],
+"ambiance": "Chaque nœud rouge du cordon compte un grenier plein ; quand ils débordent, même les rivaux mangent."
+},
+"p6": {
+"nom": "Délégués de la vallée",
+"cout": 2,
+"cible": 0,
+"effet": "Les délégués de toute la vallée descendent au conseil : piochez 2 cartes, tous vos alliés gagnent 12 de garde et se soignent de 8 ; reprenez en main la dernière carte de la défausse. Chaque ennemi se soigne de 2.",
+"ops": [
+[
+"pioche",
+2
+],
+[
+"garde",
+"allies",
+12
+],
+[
+"soin",
+"allies",
+8
+],
+[
+"recup"
+],
+[
+"ennemiSoin",
+2
+]
+],
+"ambiance": "De la source au delta, chaque village envoie son délégué et son cordon ; la table du conseil déborde."
 }
 },
 "ASS155": {
@@ -1828,12 +2457,8 @@ false,
 "nom": "Code de grès",
 "cout": 2,
 "cible": 0,
-"effet": "L'Assemblée se fige dans la pierre : tous les ennemis hésitent ce tour et perdent 2 d'attaque pour le combat ; le héros gagne 15 de garde et, jusqu'au prochain tour, renvoie 4 dégâts à chaque coup reçu. Piochez 1 carte. Pose Givre. Si Sceau est posée (consommée) : la loi est gravée pour toujours : tous les ennemis perdent encore 3 d'attaque et tous vos alliés gagnent 15 de garde.",
+"effet": "L'Assemblée scelle le prix de l'eau dans la pierre, payé d'avance : tous les ennemis perdent 2 d'attaque pour le combat ; le héros gagne 15 de garde et, jusqu'au prochain tour, renvoie 10 dégâts à chaque coup reçu. Piochez 1 carte. Le héros perd 4 PV. Pose Sang. Si Braise est posée (consommée) : le grès chauffé au soleil devient four : tous les ennemis brûlent de 4 pendant 3 tours et tous vos alliés gagnent 10 de garde.",
 "ops": [
-[
-"hesite",
-"tous"
-],
 [
 "affaiblit",
 "tous",
@@ -1846,35 +2471,40 @@ false,
 ],
 [
 "riposte",
-4
+10
 ],
 [
 "pioche",
 1
 ],
 [
+"prixPV",
+4
+],
+[
 "pose",
-"Givre"
+"Sang"
 ],
 [
 "reveil",
-"Sceau",
+"Braise",
 true,
 [
 [
-"affaiblit",
+"brulure",
 "tous",
+4,
 3
 ],
 [
 "garde",
 "allies",
-15
+10
 ]
 ]
 ]
 ],
-"ambiance": "Les anciens s'assoient au fond de la spirale de grès ; plus rien dans l'oasis ne bouge, pas même l'ennemi."
+"ambiance": "Au fond de la spirale, chaque goutte se paie d'avance ; qui frappe le mur paie dix fois."
 },
 "p7": {
 "nom": "Lentille de sel",
@@ -1930,6 +2560,331 @@ true,
 ]
 ],
 "ambiance": "Une barre de sel taillée en lentille, le soleil de l'oasis, et la plus vieille loi du désert prend feu."
+},
+"m1": {
+"nom": "Ancien tarif",
+"cout": 1,
+"cible": 0,
+"effet": "Le héros gagne 8 de garde et, jusqu'au prochain tour, renvoie 2 dégâts à chaque coup reçu.",
+"ops": [
+[
+"garde",
+"heros",
+8
+],
+[
+"riposte",
+2
+]
+],
+"ambiance": "Une jarre d'eau contre une barre de sel : le tarif n'a pas bougé depuis le grand-père de l'ancien."
+},
+"m2": {
+"nom": "Banc des anciens",
+"cout": 1,
+"cible": 1,
+"effet": "Le héros gagne 10 de garde et, jusqu'au prochain tour, renvoie 3 dégâts à chaque coup reçu ; s'il a de la garde, la cible perd 1 d'attaque. Défaussez 1 carte au hasard : la barre de sel du droit de parole.",
+"ops": [
+[
+"garde",
+"heros",
+10
+],
+[
+"riposte",
+3
+],
+[
+"si",
+"garde",
+[
+[
+"affaiblit",
+"cible",
+1
+]
+]
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Pour parler au banc des anciens, on pose d'abord une barre de sel sur le grès."
+},
+"m3": {
+"nom": "Tarif gravé",
+"cout": 1,
+"cible": 1,
+"effet": "La cible perd 2 d'attaque pour le combat ; le héros gagne 10 de garde ; s'il a de la garde, il renvoie 2 dégâts à chaque coup reçu. Défaussez 1 carte au hasard.",
+"ops": [
+[
+"affaiblit",
+"cible",
+2
+],
+[
+"garde",
+"heros",
+10
+],
+[
+"si",
+"garde",
+[
+[
+"riposte",
+2
+]
+]
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Le ciseau mord le grès : le prix de l'eau est gravé, et la vieille ardoise part au feu."
+},
+"m4": {
+"nom": "Spirale de grès",
+"cout": 2,
+"cible": 0,
+"effet": "Le héros gagne 18 de garde et, jusqu'au prochain tour, renvoie 5 dégâts à chaque coup reçu ; tous les ennemis perdent 1 d'attaque. Défaussez 1 carte au hasard.",
+"ops": [
+[
+"garde",
+"heros",
+18
+],
+[
+"riposte",
+5
+],
+[
+"affaiblit",
+"tous",
+1
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "La salle s'enfonce en spirale dans le grès rouge ; chaque marche descendue renvoie l'écho d'un ancien."
+},
+"m5": {
+"nom": "Prix de l'eau gravé",
+"cout": 1,
+"cible": 1,
+"effet": "Le prix de l'eau est gravé, qui frappe paie : le héros gagne 13 de garde et, jusqu'au prochain tour, renvoie 5 dégâts à chaque coup reçu ; s'il a de la garde, la cible perd 1 d'attaque. Défaussez 1 carte au hasard.",
+"ops": [
+[
+"garde",
+"heros",
+13
+],
+[
+"riposte",
+5
+],
+[
+"si",
+"garde",
+[
+[
+"affaiblit",
+"cible",
+1
+]
+]
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Ce qui est gravé dans le grès ne se discute plus : une jarre, une barre de sel, pas une de moins."
+},
+"m6": {
+"nom": "Porte de grès",
+"cout": 2,
+"cible": 0,
+"effet": "On roule la meule devant la source : tous les ennemis perdent 1 d'attaque pour le combat ; le héros gagne 24 de garde et, jusqu'au prochain tour, renvoie 6 dégâts à chaque coup reçu. Défaussez 1 carte au hasard.",
+"ops": [
+[
+"affaiblit",
+"tous",
+1
+],
+[
+"garde",
+"heros",
+24
+],
+[
+"riposte",
+6
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "La meule roule devant la source ; personne ne boit plus sans payer l'ancien prix, pas même vous."
+},
+"p1": {
+"nom": "Coup de hache sur le sel",
+"cout": 1,
+"cible": 1,
+"effet": "8 dégâts à la cible qui ignorent sa garde.",
+"ops": [
+[
+"deg",
+"cible",
+8
+],
+[
+"ignoreGarde"
+]
+],
+"ambiance": "Un coup de hache sur la plaine blanche, et la barre de sel sort nette, prête à voyager."
+},
+"p2": {
+"nom": "Plaine blanche",
+"cout": 0,
+"cible": 1,
+"effet": "La cible prend +1 dégât à chaque coup reçu. Piochez 1 carte. La réverbération brûle les yeux : le héros perd 2 PV.",
+"ops": [
+[
+"vulnerable",
+"cible",
+1
+],
+[
+"pioche",
+1
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Quarante chameaux sur le sel, pas une ombre ; Tsehay avance les yeux plissés, et voit tout."
+},
+"p3": {
+"nom": "De main en main",
+"cout": 1,
+"cible": 1,
+"effet": "Piochez 2 cartes ; 5 dégâts à la cible qui ignorent sa garde.",
+"ops": [
+[
+"pioche",
+2
+],
+[
+"deg",
+"cible",
+5
+],
+[
+"ignoreGarde"
+]
+],
+"ambiance": "La barre passe du chamelier au palmier, du palmier au potier : la loi voyage avec la monnaie."
+},
+"p4": {
+"nom": "Pluie sur le sel",
+"cout": 1,
+"cible": 0,
+"effet": "La première pluie dissout tout : la garde de tous les ennemis tombe et ils prennent +2 dégâts à chaque coup reçu. Le héros perd 2 PV.",
+"ops": [
+[
+"briseGarde",
+"tous"
+],
+[
+"vulnerable",
+"tous",
+2
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Une averse sur l'oasis, et les vieilles lois de sel fondent ; il faut en tailler de nouvelles."
+},
+"p5": {
+"nom": "Barre de sel",
+"cout": 1,
+"cible": 1,
+"effet": "14 dégâts à la cible qui ignorent sa garde (+4 s'il ne reste qu'un ennemi). Piochez 1 carte. Le héros perd 2 PV.",
+"ops": [
+[
+"deg",
+"cible",
+14
+],
+[
+"ignoreGarde"
+],
+[
+"si",
+"seul",
+[
+[
+"deg",
+"cible",
+4
+]
+]
+],
+[
+"pioche",
+1
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Tsehay paie avec une barre de sel qui passe de main en main ; la loi suit, claire comme elle."
+},
+"p6": {
+"nom": "Vendu au double",
+"cout": 2,
+"cible": 1,
+"effet": "20 dégâts à la cible qui ignorent sa garde ; elle prend +2 dégâts à chaque coup reçu et brûle de 3 pendant 2 tours. Piochez 1 carte. Le héros perd 2 PV.",
+"ops": [
+[
+"deg",
+"cible",
+20
+],
+[
+"ignoreGarde"
+],
+[
+"vulnerable",
+"cible",
+2
+],
+[
+"brulure",
+"cible",
+3,
+2
+],
+[
+"pioche",
+1
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Tsehay a vendu ses barres au double la veille du vote ; le soleil chauffe déjà le sel."
 }
 },
 "DON": {
@@ -2090,6 +3045,314 @@ true,
 ]
 ],
 "ambiance": "Plus de margelle, plus d'étages : la lave jaillit en fontaines, et le céladon marque où."
+},
+"m1": {
+"nom": "Le Portique vermillon",
+"cout": 1,
+"cible": 1,
+"effet": "7 dégâts à la cible, qui devient Vulnérable 1.",
+"ops": [
+[
+"deg",
+"cible",
+7
+],
+[
+"vulnerable",
+"cible",
+1
+]
+],
+"ambiance": "Sous le portique, on vous tamponne la main : l'encre vermillon désigne aussi celui qu'on frappe."
+},
+"m2": {
+"nom": "Nul ne courra",
+"cout": 1,
+"cible": 1,
+"effet": "9 dégâts à la cible, qui hésite ce tour. Clause : le héros perd 2 PV.",
+"ops": [
+[
+"deg",
+"cible",
+9
+],
+[
+"hesite",
+"cible"
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Premier étage, premier Édit : nul ne courra. Pas même vous, qui l'avez fait respecter."
+},
+"m3": {
+"nom": "Les Dalles céladon",
+"cout": 1,
+"cible": 1,
+"effet": "Vous gagnez 8 de garde. Si la cible hésite : 12 dégâts et elle devient Vulnérable 1.",
+"ops": [
+[
+"garde",
+"heros",
+8
+],
+[
+"si",
+"hesite",
+[
+[
+"deg",
+"cible",
+12
+],
+[
+"vulnerable",
+"cible",
+1
+]
+]
+]
+],
+"ambiance": "Deux verts presque pareils : celui qui marche sur le céladon frappe celui qui a glissé sur le jade."
+},
+"m4": {
+"nom": "L'Enclos des Tesselés",
+"cout": 2,
+"cible": 1,
+"effet": "16 dégâts à la cible, qui ignorent la garde ; elle hésite et perd 2 d'attaque. Clause : le héros perd 3 PV.",
+"ops": [
+[
+"deg",
+"cible",
+16
+],
+[
+"ignoreGarde"
+],
+[
+"hesite",
+"cible"
+],
+[
+"affaiblit",
+"cible",
+2
+],
+[
+"prixPV",
+3
+]
+],
+"ambiance": "Les dominos d'os se soudent en cercle autour de l'infraction, et se referment sur ce qu'ils gardent."
+},
+"m5": {
+"nom": "L'Inspecteur à la lanterne",
+"cout": 2,
+"cible": 1,
+"effet": "Tous les ennemis deviennent Vulnérables 2. 16 dégâts à la cible, qui hésite. Clause : le héros perd 3 PV.",
+"ops": [
+[
+"vulnerable",
+"tous",
+2
+],
+[
+"deg",
+"cible",
+16
+],
+[
+"hesite",
+"cible"
+],
+[
+"prixPV",
+3
+]
+],
+"ambiance": "La lanterne de corne passe sur chaque visage ; ceux qu'elle a vus portent la marque jusqu'au soir."
+},
+"m6": {
+"nom": "Huit Édits ensemble",
+"cout": 2,
+"cible": 1,
+"effet": "Tous les ennemis perdent 2 d'attaque. 18 dégâts à la cible, qui ignorent la garde ; elle hésite. Clause : le héros perd 4 PV.",
+"ops": [
+[
+"affaiblit",
+"tous",
+2
+],
+[
+"deg",
+"cible",
+18
+],
+[
+"ignoreGarde"
+],
+[
+"hesite",
+"cible"
+],
+[
+"prixPV",
+4
+]
+],
+"ambiance": "À l'étage neuf, les huit premiers Édits valent ensemble ; la main qui les porte saigne de tous."
+},
+"p1": {
+"nom": "La Cangue ouverte",
+"cout": 1,
+"cible": 1,
+"effet": "La garde de la cible tombe à 0, puis 3 dégâts. Reprenez en main la dernière carte défaussée.",
+"ops": [
+[
+"briseGarde",
+"cible"
+],
+[
+"deg",
+"cible",
+3
+],
+[
+"recup"
+]
+],
+"ambiance": "Un forçat ouvre sa cangue de basalte : ce qui l'entravait devient la première chose qu'il ramasse."
+},
+"p2": {
+"nom": "Première fissure",
+"cout": 1,
+"cible": 0,
+"effet": "Brisez la garde de tous les ennemis ; ils brûlent 2 par tour pendant 2 tours. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"briseGarde",
+"tous"
+],
+[
+"brulure",
+"tous",
+2,
+2
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "La croûte se fend sous les tablettes retournées ; on lâche ce qu'on tient pour ne pas tomber."
+},
+"p3": {
+"nom": "Rigoles sinueuses",
+"cout": 1,
+"cible": 1,
+"effet": "La cible brûle 3 par tour pendant 3 tours. La prochaine carte de zone jouée ce tour a son effet doublé.",
+"ops": [
+[
+"brulure",
+"cible",
+3,
+3
+],
+[
+"echo"
+]
+],
+"ambiance": "La lave coule entre les dalles soulevées et ne suit aucun Édit : elle double ce qu'elle touche."
+},
+"p4": {
+"nom": "Dominos en chaîne",
+"cout": 2,
+"cible": 0,
+"effet": "4 coups de 5 dégâts au hasard. Brisez la garde de tous les ennemis ; reprenez la dernière carte défaussée. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"deg",
+"hasard",
+5,
+4
+],
+[
+"briseGarde",
+"tous"
+],
+[
+"recup"
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Les Tesselés tombent l'un sur l'autre et tracent une passerelle qu'aucune règle n'avait prévue."
+},
+"p5": {
+"nom": "Le riz cuit sur la lave",
+"cout": 2,
+"cible": 0,
+"effet": "Tous les ennemis brûlent 3 par tour pendant 3 tours. Le héros se soigne de 8. +2 mana Feu. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"brulure",
+"tous",
+3,
+3
+],
+[
+"soin",
+"heros",
+8
+],
+[
+"mana",
+"Feu",
+2
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Les évadés cuisent leur riz sur la coulée tiède et jouent aux osselets avec les débris des sceaux."
+},
+"p6": {
+"nom": "Le radeau de cangue",
+"cout": 2,
+"cible": 0,
+"effet": "Tous les ennemis perdent leur garde et brûlent 4 pendant 2 tours. Écho, reprenez la dernière défaussée, piochez 1. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"briseGarde",
+"tous"
+],
+[
+"brulure",
+"tous",
+4,
+2
+],
+[
+"echo"
+],
+[
+"recup"
+],
+[
+"pioche",
+1
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Sur le lac de lave, une cangue sert de radeau : elle ramène ce que le puits voulait garder."
 }
 },
 "MAR": {
@@ -2198,7 +3461,7 @@ true,
 "nom": "Le Treizième Carton",
 "cout": 2,
 "cible": 1,
-"effet": "Le carton sans trou défile : la cible hésite et devient Vulnérable 3, puis subit 12 dégâts. Piochez 3 cartes ; la prochaine carte de zone est doublée ; boost : +1 de capacité ce tour. Prix : défaussez 1 carte. Pose Sceau. Si Sang est posée (consommée) : la Maison rend la part du sang versé, le héros se soigne de 15, piochez 2, +3 mana Glace.",
+"effet": "Le carton sans trou défile : la cible hésite, perd 2 d'attaque et devient Vulnérable 3, puis subit 12 dégâts. Piochez 3 cartes ; la prochaine carte de zone est doublée. Prix : défaussez 1 carte. Pose Sceau. Si Sang est posée (consommée) : la Maison rend la part du sang versé, le héros se soigne de 15, piochez 2, +1 mana Glace.",
 "ops": [
 [
 "hesite",
@@ -2208,6 +3471,11 @@ true,
 "vulnerable",
 "cible",
 3
+],
+[
+"affaiblit",
+"cible",
+2
 ],
 [
 "deg",
@@ -2220,9 +3488,6 @@ true,
 ],
 [
 "echo"
-],
-[
-"boost"
 ],
 [
 "prixDefausse",
@@ -2249,12 +3514,299 @@ true,
 [
 "mana",
 "Glace",
-3
+1
 ]
 ]
 ]
 ],
 "ambiance": "Le treizième carton n'a aucun trou : l'orgue se tait pendant qu'il défile, et c'est là qu'on frappe."
+},
+"m1": {
+"nom": "Brume des crevasses",
+"cout": 0,
+"cible": 0,
+"effet": "Vous gagnez 5 de garde.",
+"ops": [
+[
+"garde",
+"heros",
+5
+]
+],
+"ambiance": "La brume monte des crevasses jusqu'aux genoux ; dans la séance, on ne voit plus qui se lève."
+},
+"m2": {
+"nom": "Housse de Fil-de-Brume",
+"cout": 1,
+"cible": 1,
+"effet": "La cible hésite ce tour. Vous gagnez 10 de garde et piochez 1 carte. Prix : chaque ennemi gagne 2 de garde.",
+"ops": [
+[
+"hesite",
+"cible"
+],
+[
+"garde",
+"heros",
+10
+],
+[
+"pioche",
+1
+],
+[
+"ennemiGarde",
+2
+]
+],
+"ambiance": "Les Fil-de-Brume tricotent une housse autour de la motion ; personne ne sait plus ce qu'elle cache."
+},
+"m3": {
+"nom": "Lanternes de corne",
+"cout": 1,
+"cible": 1,
+"effet": "La cible perd 2 d'attaque. Vous gagnez 8 de garde et reprenez la dernière carte défaussée. Prix : chaque ennemi gagne 1 de garde.",
+"ops": [
+[
+"affaiblit",
+"cible",
+2
+],
+[
+"garde",
+"heros",
+8
+],
+[
+"recup"
+],
+[
+"ennemiGarde",
+1
+]
+],
+"ambiance": "À la lueur brune des lanternes, on retrouve son bulletin ; l'adversaire, lui, a perdu le sien."
+},
+"m4": {
+"nom": "Le bulletin plié",
+"cout": 1,
+"cible": 1,
+"effet": "La cible hésite ce tour. Piochez 2 cartes et gagnez 6 de garde.",
+"ops": [
+[
+"hesite",
+"cible"
+],
+[
+"pioche",
+2
+],
+[
+"garde",
+"heros",
+6
+]
+],
+"ambiance": "Plié en quatre et glissé sous la glace dépolie : le vote compte, mais nul ne sait pour qui."
+},
+"m5": {
+"nom": "Crécelles des chanoines",
+"cout": 2,
+"cible": 0,
+"effet": "Tous les ennemis hésitent et perdent 1 d'attaque. Vous gagnez 18 de garde et reprenez la dernière défaussée. Prix : chaque ennemi gagne 1 de garde.",
+"ops": [
+[
+"hesite",
+"tous"
+],
+[
+"affaiblit",
+"tous",
+1
+],
+[
+"garde",
+"heros",
+18
+],
+[
+"recup"
+],
+[
+"ennemiGarde",
+1
+]
+],
+"ambiance": "Les chanoines appellent les votes à la crécelle, sans quitter leur capuche ; la salle attend, figée."
+},
+"m6": {
+"nom": "Le feutre de mousse givrée",
+"cout": 2,
+"cible": 0,
+"effet": "Vous gagnez 20 de garde. Tous les ennemis hésitent et deviennent Vulnérables 1. Piochez 2. Prix : chaque ennemi gagne 2 de garde.",
+"ops": [
+[
+"garde",
+"heros",
+20
+],
+[
+"hesite",
+"tous"
+],
+[
+"vulnerable",
+"tous",
+1
+],
+[
+"pioche",
+2
+],
+[
+"ennemiGarde",
+2
+]
+],
+"ambiance": "Deux feutres presque du même vert : la vraie table tient, l'autre couvre la crevasse. Ils ont choisi l'autre."
+},
+"p1": {
+"nom": "Ciel dégagé",
+"cout": 0,
+"cible": 0,
+"effet": "Piochez 1 carte.",
+"ops": [
+[
+"pioche",
+1
+]
+],
+"ambiance": "La brume tombe, le soleil bas éclaire la nef : on relit enfin l'ordre du jour."
+},
+"p2": {
+"nom": "La règle à la craie",
+"cout": 1,
+"cible": 1,
+"effet": "La cible devient Vulnérable 2, puis subit 8 dégâts. Prix : la Maison prend sa part, défaussez 1 carte au hasard.",
+"ops": [
+[
+"vulnerable",
+"cible",
+2
+],
+[
+"deg",
+"cible",
+8
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Les règles sont redessinées en grandes lettres au-dessus des tables : toutes justes, sauf la treizième."
+},
+"p3": {
+"nom": "Ardoises de séance",
+"cout": 1,
+"cible": 1,
+"effet": "Piochez 2 cartes. La prochaine carte de zone est doublée. La cible devient Vulnérable 1. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"pioche",
+2
+],
+[
+"echo"
+],
+[
+"vulnerable",
+"cible",
+1
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Chacun note les votes sur son ardoise ; deux colonnes justes valent une motion doublée."
+},
+"p4": {
+"nom": "Cordeaux blancs",
+"cout": 1,
+"cible": 1,
+"effet": "La garde de la cible tombe à 0. 12 dégâts, et elle devient Vulnérable 1.",
+"ops": [
+[
+"briseGarde",
+"cible"
+],
+[
+"deg",
+"cible",
+12
+],
+[
+"vulnerable",
+"cible",
+1
+]
+],
+"ambiance": "Les Fil-de-Brume tendent leurs fils en cordeaux : chaque case de la séance a un bord net."
+},
+"p5": {
+"nom": "Bouliers d'os",
+"cout": 2,
+"cible": 1,
+"effet": "Piochez 3 cartes. 14 dégâts à la cible, qui devient Vulnérable 2. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"pioche",
+3
+],
+[
+"deg",
+"cible",
+14
+],
+[
+"vulnerable",
+"cible",
+2
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Les parieurs comptent sur leurs bouliers d'os ; à ce compte-là, la Maison n'a plus besoin de tricher."
+},
+"p6": {
+"nom": "Les comptes en public",
+"cout": 2,
+"cible": 0,
+"effet": "Tous les ennemis deviennent Vulnérables 2 et subissent 8 dégâts. Piochez 2. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"vulnerable",
+"tous",
+2
+],
+[
+"deg",
+"tous",
+8
+],
+[
+"pioche",
+2
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Les chanoines tiennent les comptes devant tous, au boulier ; chaque erreur se lit, et chaque menteur."
 }
 },
 "ASS152": {
@@ -2432,6 +3984,322 @@ true,
 ]
 ],
 "ambiance": "Les échos ne repartent plus : ils descendent de la paroi, prennent pied, et chantent avec vous."
+},
+"m1": {
+"nom": "Brasero couvert",
+"cout": 0,
+"cible": 0,
+"effet": "Jusqu'au prochain tour, chaque coup reçu renvoie 2 dégâts.",
+"ops": [
+[
+"riposte",
+2
+]
+],
+"ambiance": "On couvre le brasero de la pierre-de-parole : la chaleur reste, la flamme se tait."
+},
+"m2": {
+"nom": "Le tison posé",
+"cout": 1,
+"cible": 0,
+"effet": "Riposte 3 jusqu'au prochain tour. Vous gagnez 8 de garde.",
+"ops": [
+[
+"riposte",
+3
+],
+[
+"garde",
+"heros",
+8
+]
+],
+"ambiance": "Un ancien pose le tison au pied de la pierre et se tait : à vous de ne rien dire."
+},
+"m3": {
+"nom": "Premier souffle",
+"cout": 1,
+"cible": 1,
+"effet": "Vous gagnez 10 de garde ; la cible perd 1 d'attaque. Si vous avez de la garde : riposte 4. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"garde",
+"heros",
+10
+],
+[
+"affaiblit",
+"cible",
+1
+],
+[
+"si",
+"garde",
+[
+[
+"riposte",
+4
+]
+]
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Un souffle : le tison rougit encore. Ce que vous auriez dit, vous le gardez pour le rendre."
+},
+"m4": {
+"nom": "Deuxième souffle",
+"cout": 1,
+"cible": 1,
+"effet": "Riposte 5 jusqu'au prochain tour. Vous gagnez 9 de garde ; la cible perd 1 d'attaque. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"riposte",
+5
+],
+[
+"garde",
+"heros",
+9
+],
+[
+"affaiblit",
+"cible",
+1
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Deux souffles : la braise noircit au bord. Qui ouvre la bouche maintenant se brûle la langue."
+},
+"m5": {
+"nom": "Les anciens muets",
+"cout": 2,
+"cible": 1,
+"effet": "Tous les ennemis hésitent. Riposte 6, 12 de garde ; la cible perd 1 d'attaque. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"hesite",
+"tous"
+],
+[
+"riposte",
+6
+],
+[
+"garde",
+"heros",
+12
+],
+[
+"affaiblit",
+"cible",
+1
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Les anciens se tiennent autour de la pierre sans un mot ; l'assemblée entière retient son tour."
+},
+"m6": {
+"nom": "La pierre froide",
+"cout": 2,
+"cible": 1,
+"effet": "Riposte 8 et 15 de garde. 8 dégâts à la cible, qui ignorent la garde. Prix : défaussez 1 carte au hasard.",
+"ops": [
+[
+"riposte",
+8
+],
+[
+"garde",
+"heros",
+15
+],
+[
+"deg",
+"cible",
+8
+],
+[
+"ignoreGarde"
+],
+[
+"prixDefausse",
+1
+]
+],
+"ambiance": "Le tison est éteint, la pierre-de-parole a refroidi : la loi est passée, et nul ne la contredira."
+},
+"p1": {
+"nom": "Premier vers",
+"cout": 0,
+"cible": 0,
+"effet": "Vous et vos bêtes gagnez 5 de garde.",
+"ops": [
+[
+"garde",
+"allies",
+5
+]
+],
+"ambiance": "Vous montez sur la pierre rouge et lancez un vers ; la paroi le garde un instant avant de répondre."
+},
+"p2": {
+"nom": "La paroi répond",
+"cout": 1,
+"cible": 0,
+"effet": "La prochaine carte de zone est doublée. Vous et vos bêtes gagnez 6 de garde. Piochez 1. Prix : la gorge brûle, le héros perd 2 PV.",
+"ops": [
+[
+"echo"
+],
+[
+"garde",
+"allies",
+6
+],
+[
+"pioche",
+1
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Une fois, deux fois, trois fois : la paroi rend le vers, et le braséro vous racle la gorge."
+},
+"p3": {
+"nom": "Deuxième voix",
+"cout": 1,
+"cible": 0,
+"effet": "Un Écho-Chanteur descend de la paroi (8 PV, frappe 3). Vous et vos bêtes gagnez 8 de garde.",
+"ops": [
+[
+"invoque",
+"Écho-Chanteur",
+8,
+3
+],
+[
+"garde",
+"allies",
+8
+]
+],
+"ambiance": "La deuxième voix ne repart pas : elle prend forme sur la corniche et chante au-dessus de vous."
+},
+"p4": {
+"nom": "Braseros rallumés",
+"cout": 1,
+"cible": 1,
+"effet": "Écho. La cible brûle 3 pendant 2 tours. Vous et vos bêtes gagnez 6 de garde. Si une bête est en jeu, piochez 1. Prix : le héros perd 2 PV.",
+"ops": [
+[
+"echo"
+],
+[
+"brulure",
+"cible",
+3,
+2
+],
+[
+"garde",
+"allies",
+6
+],
+[
+"si",
+"bete",
+[
+[
+"pioche",
+1
+]
+]
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Le chant attise les braseros de l'assemblée ; la paroi rouge renvoie la chaleur avec la voix."
+},
+"p5": {
+"nom": "La troisième voix, plus forte",
+"cout": 2,
+"cible": 0,
+"effet": "Un Écho-Chanteur descend (12 PV, frappe 5). Écho. Vous et vos bêtes gagnez 10 de garde. Piochez 1. Prix : le héros perd 2 PV.",
+"ops": [
+[
+"invoque",
+"Écho-Chanteur",
+12,
+5
+],
+[
+"echo"
+],
+[
+"garde",
+"allies",
+10
+],
+[
+"pioche",
+1
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "La loi est juste : la troisième voix revient plus forte que la vôtre, et elle a des pieds."
+},
+"p6": {
+"nom": "Toute l'assemblée chante",
+"cout": 2,
+"cible": 0,
+"effet": "Un Écho-Chanteur descend (12 PV, frappe 5). Vous et vos bêtes gagnez 14 de garde. Écho. Si une bête est en jeu, piochez 2. Prix : le héros perd 3 PV.",
+"ops": [
+[
+"invoque",
+"Écho-Chanteur",
+12,
+5
+],
+[
+"garde",
+"allies",
+14
+],
+[
+"echo"
+],
+[
+"si",
+"bete",
+[
+[
+"pioche",
+2
+]
+]
+],
+[
+"prixPV",
+3
+]
+],
+"ambiance": "Tout le canyon vote à l'écho ; chaque loi chantée revient trois fois, et l'assemblée triple."
 }
 },
 "ANT120": {
@@ -2627,6 +4495,378 @@ true,
 ]
 ],
 "ambiance": "À midi, la quatrième bête boit à votre place, et toute la meute plonge dans l'eau qui bout."
+},
+"m1": {
+"nom": "Pierres sèches de l'enclos",
+"cout": 1,
+"cible": 1,
+"effet": "Vous et vos bêtes gagnez 8 de garde. La cible perd 1 d'attaque.",
+"ops": [
+[
+"garde",
+"allies",
+8
+],
+[
+"affaiblit",
+"cible",
+1
+]
+],
+"ambiance": "Les bergers montent l'enclos rond pierre à pierre ; la porte de l'aube regarde l'est."
+},
+"m2": {
+"nom": "Nuit sur l'oasis",
+"cout": 1,
+"cible": 1,
+"effet": "Un veau de givre entre (8 PV, frappe 2). Vous gagnez 5 de garde ; la cible perd 1 d'attaque. Prix : le froid coûte 2 PV.",
+"ops": [
+[
+"invoque",
+"Veau de givre",
+8,
+2
+],
+[
+"garde",
+"heros",
+5
+],
+[
+"affaiblit",
+"cible",
+1
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "La nuit tombe sur Maulu ; un veau blanc de givre passe la porte, seul, et s'arrête à l'auge."
+},
+"m3": {
+"nom": "Dalles bleues",
+"cout": 1,
+"cible": 0,
+"effet": "Vous et vos bêtes gagnez 8 de garde. Tous les ennemis perdent 1 d'attaque. Si une bête est en jeu, la cible hésite.",
+"ops": [
+[
+"garde",
+"allies",
+8
+],
+[
+"affaiblit",
+"tous",
+1
+],
+[
+"si",
+"bete",
+[
+[
+"hesite",
+"cible"
+]
+]
+]
+],
+"ambiance": "L'eau gèle en dalles bleues ; tant qu'une bête y boit, nul ne s'approche de l'auge sans glisser."
+},
+"m4": {
+"nom": "Le premier bœuf",
+"cout": 2,
+"cible": 1,
+"effet": "Un bœuf de givre entre (20 PV, frappe 4). Vous gagnez 5 de garde. Si une bête est en jeu, la cible hésite et perd 1 d'attaque. Prix : 2 PV.",
+"ops": [
+[
+"invoque",
+"Bœuf de givre",
+20,
+4
+],
+[
+"garde",
+"heros",
+5
+],
+[
+"si",
+"bete",
+[
+[
+"hesite",
+"cible"
+],
+[
+"affaiblit",
+"cible",
+1
+]
+]
+],
+[
+"prixPV",
+2
+]
+],
+"ambiance": "Le premier bœuf de l'aube entre lent et lourd ; il a choisi sa place, il ne la rendra pas."
+},
+"m5": {
+"nom": "Le deuxième bœuf",
+"cout": 2,
+"cible": 1,
+"effet": "Un bœuf de givre entre (20 PV, frappe 4). Vous et vos bêtes gagnez 10 de garde. La cible hésite ; tous les ennemis perdent 1 d'attaque. Prix : 3 PV.",
+"ops": [
+[
+"invoque",
+"Bœuf de givre",
+20,
+4
+],
+[
+"garde",
+"allies",
+10
+],
+[
+"hesite",
+"cible"
+],
+[
+"affaiblit",
+"tous",
+1
+],
+[
+"prixPV",
+3
+]
+],
+"ambiance": "Deux bœufs à l'auge, flanc contre flanc ; la source n'en abreuve que trois, et l'aube compte."
+},
+"m6": {
+"nom": "La porte de l'aube se ferme",
+"cout": 2,
+"cible": 0,
+"effet": "Vous et vos bêtes gagnez 15 de garde et vous soignez de 6. Tous les ennemis hésitent et perdent 2 d'attaque. Prix : 4 PV.",
+"ops": [
+[
+"garde",
+"allies",
+15
+],
+[
+"soin",
+"allies",
+6
+],
+[
+"hesite",
+"tous"
+],
+[
+"affaiblit",
+"tous",
+2
+],
+[
+"prixPV",
+4
+]
+],
+"ambiance": "La porte de l'aube se referme sur le troupeau ; dehors, la nuit gèle tout ce qui voulait boire."
+},
+"p1": {
+"nom": "Midi monte",
+"cout": 1,
+"cible": 1,
+"effet": "4 dégâts à la cible, qui brûle 2 pendant 3 tours.",
+"ops": [
+[
+"deg",
+"cible",
+4
+],
+[
+"brulure",
+"cible",
+2,
+3
+]
+],
+"ambiance": "Le soleil grimpe au-dessus de l'enclos ; la porte de midi chauffe avant même d'être ouverte."
+},
+"p2": {
+"nom": "L'eau bout",
+"cout": 1,
+"cible": 1,
+"effet": "Tous les ennemis brûlent 2 pendant 2 tours ; 4 dégâts à la cible. Si une bête est en jeu : 6 dégâts de plus. Prix : votre bête la plus faible perd 2 PV.",
+"ops": [
+[
+"brulure",
+"tous",
+2,
+2
+],
+[
+"deg",
+"cible",
+4
+],
+[
+"si",
+"bete",
+[
+[
+"deg",
+"cible",
+6
+]
+]
+],
+[
+"prixBete",
+2
+]
+],
+"ambiance": "À midi, la source bout dans l'auge ; qui boit se brûle, qui attaque ébouillante."
+},
+"p3": {
+"nom": "Le premier chacal",
+"cout": 1,
+"cible": 1,
+"effet": "Un chacal de braise entre (4 PV, frappe 4). 6 dégâts à la cible, qui brûle 1 pendant 2 tours. Prix : votre bête la plus faible perd 2 PV.",
+"ops": [
+[
+"invoque",
+"Chacal de braise",
+4,
+4
+],
+[
+"deg",
+"cible",
+6
+],
+[
+"brulure",
+"cible",
+1,
+2
+],
+[
+"prixBete",
+2
+]
+],
+"ambiance": "Le premier chacal passe la porte de midi en courant ; il mord vite, il ne durera pas."
+},
+"p4": {
+"nom": "La quatrième boit",
+"cout": 1,
+"cible": 1,
+"effet": "3 dégâts ; la cible devient Vulnérable 1 et brûle 3 pendant 2 tours. Si une bête est en jeu : 14 dégâts de plus.",
+"ops": [
+[
+"deg",
+"cible",
+3
+],
+[
+"vulnerable",
+"cible",
+1
+],
+[
+"brulure",
+"cible",
+3,
+2
+],
+[
+"si",
+"bete",
+[
+[
+"deg",
+"cible",
+14
+]
+]
+]
+],
+"ambiance": "La source n'abreuve que trois bêtes ; la quatrième boit à votre place, et c'est vous qui brûlez."
+},
+"p5": {
+"nom": "Meute de midi",
+"cout": 2,
+"cible": 0,
+"effet": "Deux chacals de braise entrent (5 PV, frappent 5). 6 dégâts à tous les ennemis. Prix : votre bête la plus faible perd 3 PV.",
+"ops": [
+[
+"invoque",
+"Chacal de braise",
+5,
+5
+],
+[
+"invoque",
+"Chacal de braise",
+5,
+5
+],
+[
+"deg",
+"tous",
+6
+],
+[
+"prixBete",
+3
+]
+],
+"ambiance": "La meute du soleil entre d'un coup ; l'enclos sent le poil roussi et la pierre chaude."
+},
+"p6": {
+"nom": "L'auge se vide",
+"cout": 2,
+"cible": 1,
+"effet": "8 dégâts à tous ; ils brûlent 3 pendant 2 tours ; 6 dégâts à la cible. Si une bête est en jeu, tous deviennent Vulnérables 1. Prix : votre bête la plus faible perd 4 PV.",
+"ops": [
+[
+"deg",
+"tous",
+8
+],
+[
+"brulure",
+"tous",
+3,
+2
+],
+[
+"deg",
+"cible",
+6
+],
+[
+"si",
+"bete",
+[
+[
+"vulnerable",
+"tous",
+1
+]
+]
+],
+[
+"prixBete",
+4
+]
+],
+"ambiance": "L'auge s'évapore jusqu'à la pierre ; les bêtes de midi n'ont plus rien à boire que la lumière."
 }
 },
 "DON024": {
@@ -3839,7 +6079,61 @@ true,
 1
 ]
 ],
-"ambiance": "Onze jours sur l'écorce, une larme ambrée décollée au couteau d'os : elle panse avant de partir en fumée."
+"ambiance": "Onze jours sur l'écorce, une larme ambrée décollée au couteau d'os : elle panse avant de partir en fumée.",
+"n1": {
+"nom": "Incision",
+"cout": 0,
+"cible": 0,
+"effet": "Le héros se soigne de 4 et gagne 1 mana de Sève.",
+"ops": [
+[
+"soin",
+"heros",
+4
+],
+[
+"mana",
+"Sève",
+1
+]
+],
+"ambiance": "Mekdes entaille l'écorce tordue ; la première larme perle au bord de la source."
+},
+"n2": {
+"nom": "Panier tressé",
+"cout": 0,
+"cible": 0,
+"effet": "Reprenez en main la dernière carte de la défausse ; le héros se soigne de 5.",
+"ops": [
+[
+"recup"
+],
+[
+"soin",
+"heros",
+5
+]
+],
+"ambiance": "Onze jours de séchage, puis la larme ambrée tombe dans le panier, décollée au couteau d'os."
+},
+"n3": {
+"nom": "Fumée bleue",
+"cout": 0,
+"cible": 1,
+"effet": "La cible hésite ce tour, perdue dans la fumée ; le héros se soigne de 6.",
+"ops": [
+[
+"hesite",
+"cible"
+],
+[
+"soin",
+"heros",
+6
+]
+],
+"ambiance": "Dans un port lointain, la récolte de Mekdes part en fumée bleue, et tout le marché s'arrête."
+}
 },
 "RES122": {
 "nom": "Branche de corail",
@@ -3860,7 +6154,71 @@ true,
 ]
 ]
 ],
-"ambiance": "Alvise pèse le corail brin par brin ; qui le vole s'écorche les mains sur les têtes rouges."
+"ambiance": "Alvise pèse le corail brin par brin ; qui le vole s'écorche les mains sur les têtes rouges.",
+"n1": {
+"nom": "Tête de corail",
+"cout": 0,
+"cible": 1,
+"effet": "1 dégât à la cible ; jusqu'au prochain tour, le héros renvoie 3 dégâts à chaque coup reçu.",
+"ops": [
+[
+"deg",
+"cible",
+1
+],
+[
+"riposte",
+3
+]
+],
+"ambiance": "Les barques accostent sur les têtes rouges ; qui y pose le pied sans regarder s'écorche jusqu'au sang."
+},
+"n2": {
+"nom": "Filet lesté",
+"cout": 0,
+"cible": 1,
+"effet": "2 dégâts à la cible, qui prend +1 dégât à chaque coup reçu. Piochez 1 carte.",
+"ops": [
+[
+"deg",
+"cible",
+2
+],
+[
+"vulnerable",
+"cible",
+1
+],
+[
+"pioche",
+1
+]
+],
+"ambiance": "Les plongeurs remontent les branches rouges dans des filets lestés, avant que la marée ne revienne."
+},
+"n3": {
+"nom": "Balance de laiton",
+"cout": 0,
+"cible": 1,
+"effet": "2 dégâts à la cible ; le héros renvoie 3 dégâts à chaque coup reçu jusqu'au prochain tour ; gagnez 1 mana d'Eau.",
+"ops": [
+[
+"deg",
+"cible",
+2
+],
+[
+"riposte",
+3
+],
+[
+"mana",
+"Eau",
+1
+]
+],
+"ambiance": "Alvise pèse le corail brin par brin ; à midi, l'eau remonte et la balance se referme."
+}
 },
 "RES136": {
 "nom": "Nid de salangane",
@@ -3880,7 +6238,71 @@ true,
 ]
 ]
 ],
-"ambiance": "Le vieux Vann redescend l'échelle de rotin avec le nid que vous aviez laissé tomber, sans un mot."
+"ambiance": "Le vieux Vann redescend l'échelle de rotin avec le nid que vous aviez laissé tomber, sans un mot.",
+"n1": {
+"nom": "Échelle de rotin",
+"cout": 0,
+"cible": 0,
+"effet": "Le héros gagne 4 de garde. Piochez 1 carte.",
+"ops": [
+[
+"garde",
+"heros",
+4
+],
+[
+"pioche",
+1
+]
+],
+"ambiance": "Une torche entre les dents, le cueilleur monte l'échelle de rotin dans le vent qui siffle."
+},
+"n2": {
+"nom": "Nid de salangane",
+"cout": 0,
+"cible": 0,
+"effet": "Le héros gagne 8 de garde ; s'il avait déjà de la garde, piochez 1 carte.",
+"ops": [
+[
+"garde",
+"heros",
+8
+],
+[
+"si",
+"garde",
+[
+[
+"pioche",
+1
+]
+]
+]
+],
+"ambiance": "Un panier de nids pèse moins qu'une poule et vaut une barque ; Vann le cale contre la paroi."
+},
+"n3": {
+"nom": "Grotte de Vann",
+"cout": 0,
+"cible": 1,
+"effet": "La cible hésite ce tour ; le héros gagne 3 de garde. Piochez 1 carte.",
+"ops": [
+[
+"hesite",
+"cible"
+],
+[
+"garde",
+"heros",
+3
+],
+[
+"pioche",
+1
+]
+],
+"ambiance": "Vann repart vers une grotte qu'il n'a montrée à personne ; le vent y couvre tous les bruits."
+}
 },
 "RES227": {
 "nom": "Poignée de Balo",
@@ -3903,7 +6325,65 @@ true,
 1
 ]
 ],
-"ambiance": "Une poignée dans la paume, une dans le feu : le sable de Balo mord deux fois avant la nuit."
+"ambiance": "Une poignée dans la paume, une dans le feu : le sable de Balo mord deux fois avant la nuit.",
+"n1": {
+"nom": "Poignée de verre",
+"cout": 0,
+"cible": 1,
+"effet": "La cible brûle 2 pendant 2 tours. +1 mana Feu.",
+"ops": [
+[
+"brulure",
+"cible",
+2,
+2
+],
+[
+"mana",
+"Feu",
+1
+]
+],
+"ambiance": "Une poignée dans la paume, une dans le feu : le sable de Balo mord deux fois."
+},
+"n2": {
+"nom": "Tube de foudre",
+"cout": 0,
+"cible": 1,
+"effet": "5 dégâts à la cible. Piochez 1 carte.",
+"ops": [
+[
+"deg",
+"cible",
+5
+],
+[
+"pioche",
+1
+]
+],
+"ambiance": "Là où la foudre est tombée, un tube de verre creux siffle quand on le lance."
+},
+"n3": {
+"nom": "Dune avant la nuit",
+"cout": 0,
+"cible": 0,
+"effet": "Tous les ennemis brûlent 2 pendant 2 tours. +1 mana Feu.",
+"ops": [
+[
+"brulure",
+"tous",
+2,
+2
+],
+[
+"mana",
+"Feu",
+1
+]
+],
+"ambiance": "La chaleur ne quitte pas la dune avant la nuit : elle mord tout ce qui y reste."
+}
 },
 "RES": {
 "nom": "Galette du premier grain",
@@ -4385,11 +6865,15 @@ true,
 "nom": "Le Sceau imprimé",
 "cout": 1,
 "cible": 0,
-"effet": "Posez la résonance Sceau. Cette carte quitte le combat.",
+"effet": "Posez la résonance Sceau ; défaussez 1 carte au hasard. Cette carte quitte le combat.",
 "ops": [
 [
 "pose",
 "Sceau"
+],
+[
+"prixDefausse",
+1
 ],
 [
 "exil"
@@ -4431,15 +6915,12 @@ true,
 "nom": "Panier de soufre",
 "cout": 0,
 "cible": 0,
-"effet": "+3 mana Feu. Cette carte quitte le combat.",
+"effet": "+2 mana Feu (mana de combat).",
 "ops": [
 [
 "mana",
 "Feu",
-3
-],
-[
-"exil"
+2
 ]
 ],
 "ambiance": "Les soufriers l'ont laissé sur la pagode de guet : jaune, sec, et prêt à prendre feu."
@@ -4518,11 +6999,15 @@ true,
 "nom": "Le carton sans trou",
 "cout": 1,
 "cible": 0,
-"effet": "Posez la résonance Abîme. Cette carte quitte le combat.",
+"effet": "Posez la résonance Abîme ; défaussez 1 carte au hasard. Cette carte quitte le combat.",
 "ops": [
 [
 "pose",
 "Abîme"
+],
+[
+"prixDefausse",
+1
 ],
 [
 "exil"
@@ -4672,11 +7157,15 @@ true,
 "nom": "Les sandales dans les racines",
 "cout": 1,
 "cible": 0,
-"effet": "Pose la résonance Abîme pour le combat. Exil.",
+"effet": "Pose la résonance Abîme pour le combat (réveil à moitié). Prix : défaussez 1 carte. Exil.",
 "ops": [
 [
 "pose",
 "Abîme"
+],
+[
+"prixDefausse",
+1
 ],
 [
 "exil"
