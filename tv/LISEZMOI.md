@@ -72,6 +72,12 @@ L'utilisateur a branché une manette Xbox sur la Bravia. La WebView d'Android ne
 Mana confirmé par l'utilisateur le même jour (déjà en place depuis la 1.7) : la limite de dépense par tour est commune à tous les types, et les cartes communes se paient avec n'importe quel type.
 APK : `MozaWorld-TV-1.9-manette.apk`, versionCode 11, s'installe par-dessus la 1.8.
 
+## Version 2.1-grimoire : le Grimoire des cartes (17 novembre)
+
+Ce que l'utilisateur a demandé : « ajoute un menu dans le jeu pour y mettre le grimoire ». Le menu pause a maintenant une entrée **Grimoire des cartes** (`src/grimoire.js`). On y trouve les règles des cartes, les cartes communes, puis une page par zone. Chaque page dit où gagner la carte (la Pierre d'éveil et son épreuve), le mana, le niveau actuel de la zone et le nombre de copies dans le paquet. Elle montre aussi la carte de chaque pôle au palier actuel, puis aux paliers 4 et 7. Tout est lu dans les cartes elles-mêmes, au niveau voulu, donc le Grimoire suit les cartes 2.2 sans retouche. Les longues listes (Voyager, Grimoire) défilent maintenant à la manette.
+
+APK : `MozaWorld-TV-2.1-grimoire.apk`, versionCode 14.
+
 ## Version 2.1 : une carte par pôle, un effet par tuile (17 novembre)
 
 Ce que l'utilisateur a demandé : « les cartes doivent être différentes selon le pôle choisi », liées à l'histoire de la zone et du pôle, et chaque tuile doit avoir un effet unique.

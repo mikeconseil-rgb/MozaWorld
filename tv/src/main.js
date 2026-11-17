@@ -164,7 +164,7 @@ function ui(host,o){UI=Object.assign({host,f:0},o);if(host==='menu'){$('toast').
   o.opts.forEach((p,i)=>{const d=document.createElement('div');d.className='opt'+(p.cls?' '+p.cls:'')+(p.off?' off':'');
     d.innerHTML=(p.ic?`<span class="ic">${p.ic}</span>`:'')+`<span>${p.l}</span>`+(p.d?`<span class="d">${p.d}</span>`:'');box.appendChild(d)});
   UI.f=Math.max(0,o.opts.findIndex(p=>!p.off));if(o.f!==undefined&&!o.opts[o.f].off)UI.f=o.f;uiDraw()}
-function uiDraw(){[...$(UI.host+'-choix').children].forEach((d,i)=>d.classList.toggle('f',i===UI.f))}
+function uiDraw(){[...$(UI.host+'-choix').children].forEach((d,i)=>{d.classList.toggle('f',i===UI.f);if(i===UI.f&&d.scrollIntoView)try{d.scrollIntoView({block:'nearest'})}catch(_){}})}
 function uiAct(a,rep){if(!UI)return;const n=UI.opts.length,st=UI.deux&&(a==='left'||a==='right')?1:UI.deux?2:1;
   const mv=d=>{let i=UI.f;for(let k=0;k<n;k++){i=(i+d+n)%n;if(!UI.opts[i].off){UI.f=i;break}}uiDraw();tick()};
   if(a==='down'||(a==='right'&&!UI.deux))mv(st);else if(a==='up'||(a==='left'&&!UI.deux))mv(-st);
@@ -193,6 +193,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Paquet de cartes',ic:'▤',d:S.cards.length+' carte(s)',go:openPaquet},
+    {l:'Grimoire des cartes',ic:'✦',d:'toutes les cartes, pôle par pôle',go:()=>openGrimoire(0)},
     {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+resTot()+' mana',go:openCombatPaquet},
     {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
