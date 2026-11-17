@@ -420,7 +420,7 @@ function camMue(dt){const Z=mue.Z,a=Z.alt,ang=a.yaw+PI+mue.t*.32,R=38+mue.t*2.5,
 
 /* ---------- Interface du monde ---------- */
 const pips=$('h-pips');for(let i=-7;i<=7;i++){const s=document.createElement('span');s.className='pip'+(i===0?' z':'');pips.appendChild(s)}
-function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+S.own[Z.id]+S.emp[Z.id];if(key===hudKey)return;hudKey=key;const I=Z.info;
+function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+S.own[Z.id]+S.emp[Z.id];if(key===hudKey)return;hudKey=key;if(typeof bandeau==='function')bandeau();const I=Z.info;
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
   $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
