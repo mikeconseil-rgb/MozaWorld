@@ -39,12 +39,26 @@ function execOp(o,c){const L=c.L,x=c.x,n=v=>Math.max(0,Math.round(val(v,L)*x)),o
       execOps(o[3],Object.assign({},c,{x:c.x/(c.dbl?2:1)*(plein?1:.5),ig:false,vv:false}))}break;
     case'si':if(condition(o[1],c))execOps(o[2],c);break;
     case'prixPV':perdPV(Math.round(val(o[1],L)));break;
-    case'prixDefausse':for(let i=0;i<val(o[1],L)&&CB.main.length;i++){const j=Math.floor(Math.random()*CB.main.length);CB.defausse.push(CB.main.splice(j,1)[0])}break;
+    case'prixDefausse':for(let i=0;i<val(o[1],L)&&CB.main.length;i++){CB.defPrix=(CB.defPrix||0)+1;const j=Math.floor(Math.random()*CB.main.length);CB.defausse.push(CB.main.splice(j,1)[0])}break;
     case'prixBete':{const b=CB.allies.filter(u=>u.bete&&u.pv>0).sort((p,q)=>p.pv-q.pv)[0];if(b)frappe(b,Math.round(val(o[1],L)),CB.hero);break}
     case'ennemiGarde':tous().forEach(m=>{m.g+=Math.round(val(o[1],L));pop(m,'+garde','g')});break;
     case'ennemiSoin':tous().forEach(m=>soigner(m,Math.round(val(o[1],L))));break;
   }}
-function condition(q,c){const t=c.t;switch(q){
+function condition(q,c){const t=c.t||(CB?vivants(CB.foes)[0]:null),I=t&&t.int?t.int.a:'';switch(q){
+  /* conditions ajoutées après la revue « impact » (17 nov.) : terrain, intentions ennemies, brûlure, défausse */
+  case'vol':return I==='v';
+  case'elan':return I==='c';
+  case'pietine':return I==='f'||I==='c';
+  case'brule':case'defausseBrule':return!!(t&&t.br&&t.br.length);
+  case'hesiteAvant':return I==='h';
+  case'cibleGarde':return!!(t&&t.g>0);
+  case'vulnerable':return!!(t&&t.vul>0);
+  case'soinEnnemi':return vivants(CB.foes).some(m=>m.int&&m.int.a==='s');
+  case'defausseAPrix':case'repriseParPrix':return(CB.defPrix||0)>0;
+  case'defausseCommune':case'recupCommune':return CB.defausse.some(k=>CK[k]&&!CK[k].z&&!CK[k].secret);
+  case'piocheCout0':return CB.main.some(k=>CK[k]&&CK[k].cout===0);
+  case'troisCartes':return(CB.nJoues||0)>=3;
+  case'cartesJouees':return(CB.nJoues||0)>=2;
   case'bete':return CB.allies.some(u=>u.bete&&u.pv>0);
   case'blesse':case'mipv':case'moitiePV':return CB.hero.pv*2<CB.hero.max;
   case'seul':return vivants(CB.foes).length===1;

@@ -43,7 +43,7 @@ def comb(ops):
   p=[o[1] for o in ops if o[0]=='pose'];r=[o for o in ops if o[0]=='reveil']
   return {'pose':p[0] if p else None,'reveil':r[0][1] if r else None}
 cards=[]
-for f in sorted(glob.glob(os.path.join(D,'conteur_[A-D].md'))+glob.glob(os.path.join(D,'conteur_[A-D]_paliers.md'))):
+for f in sorted(glob.glob(os.path.join(D,'conteur_[A-D].md'))+glob.glob(os.path.join(D,'conteur_[A-D]_paliers.md')))+sorted(glob.glob(os.path.join(D,'conteur_[A-D]_impact.md'))):  # revue impact (17 nov.) : lue en dernier, elle remplace
   who=os.path.basename(f)[8];txt=open(f).read()
   for blk in re.findall(r'```json\s*(.*?)```',txt,re.S):
     try: arr=json.loads(blk)
