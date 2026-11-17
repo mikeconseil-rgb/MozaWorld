@@ -118,7 +118,7 @@ const hesite=m=>{if(!m||m.pv<=0)return;const t=CB?CB.tour:0;
   if(m.chef&&m.hesT===t-1){if(m.int&&m.int.a==='c'){m.int={a:'a',v:m.atk,ic:'⚔',t:'attaque'};pop(m,'perd son élan','g')}else pop(m,'s\'habitue','g');m.hesT=-9;return}
   m.hesT=t;m.int={a:'h',v:0,ic:'?',t:'hésite'};pop(m,'hésite','g')};
 const tous=()=>vivants(CB.foes);
-const perdPV=n=>{CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');majUnites()};
+const perdPV=n=>{if(CB.sr)n=Math.max(1,Math.ceil(n/3));CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');majUnites()};
 const bete2=(nom,pv,atk)=>({nom,pv,max:pv,atk,g:0,bete:1});
 /* chaque entrée : [nom, coût, cible, texte(L,x), jeu(L,x,t)] */
 const POLES={
