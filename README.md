@@ -9,7 +9,7 @@ Le joueur commence faible, prend possession des zones une à une et tire ses pou
 ## État (17 novembre 2026)
 
 - **Moteur visé pour le jeu final :** Unreal Engine 5 (choisi le 10 novembre). Le passage à Unreal attend que les règles soient éprouvées.
-- **Version jouable actuelle :** une page web (Three.js) qui sert de banc d'essai des règles, dans le dossier `tv/`. Elle est publiée par GitHub Pages à partir de la branche `main` : https://mikeconseil-rgb.github.io/MozaWorld/ . Elle se joue à la manette dans Edge sur Xbox Series S, ou au clavier sur PC. La version Google TV (APK) est arrêtée depuis le 17 novembre.
+- **Version jouable actuelle :** une page web (Three.js), dans le dossier `tv/`. Décision du 17 novembre : c'est le jeu pour l'instant, Unreal reste la dernière étape. Elle est publiée par GitHub Pages à partir de la branche `main` : https://mikeconseil-rgb.github.io/MozaWorld/ . Elle se joue à la manette dans Edge sur Xbox Series S, ou au clavier sur PC. La version Google TV (APK) est arrêtée depuis le 17 novembre.
 - **Après chaque changement dans `tv/src/` :** lancer `sh tv/build.sh` pour reconstruire `tv/index.html`, sinon la page publiée ne change pas.
 
 ## Où trouver quoi
