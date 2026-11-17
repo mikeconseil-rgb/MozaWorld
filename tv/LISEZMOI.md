@@ -178,3 +178,9 @@ le style bascule exactement à la frontière, même quand on regarde une zone de
 - **Chinampas** : manga. Traits d'encre (contours tirés de la profondeur), aplats, trame de points dans les ombres. Côté Folie, encre lourde et trame dense ; côté Raison, trait fin et pastel.
 
 Menu → « Styles par zone » pour comparer avec et sans. Planches : `node tools/styles-capture.js index.html <dossier>`.
+
+### 2.4 · Territoire de départ et zones scellées (17 nov.)
+- Territoire de départ : les 5 zones d'origine et leurs voisines (17 zones), au niveau 0. Avec les 5 communes, ses zones non-Ressource donnent de quoi bâtir un paquet d'environ 15 cartes.
+- Au-delà : l'anneau suivant part à ±3, le plus lointain à ±5 (pôle tiré par zone). Les Ressources restent à 0.
+- Les Ressources ne donnent pas de carte de combat (elles produisent du mana).
+- Zones scellées : une zone hors du territoire de départ ne peut pas être activée tant que toutes les zones de départ ne sont pas à vous (une zone où vous avez une empreinte reste reprenable). Le bandeau montre « ⌂ x/17 départ ».

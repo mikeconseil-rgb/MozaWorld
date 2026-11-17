@@ -10,11 +10,16 @@ const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
 /* ---------- Partie : niveaux, maîtrise, empreintes, repos, cartes, blessures ---------- */
 const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},deck:DEPART.slice(),renc:1};
 /* Niveau de départ selon l'éloignement (idée du 17 nov. : « les zones au-delà pourraient être niveau 5, avec des combats impossibles
-   à gagner avant d'avoir établi son premier territoire ») : les 5 zones de départ à 0, leurs voisines à ±2, puis ±4, puis ±5.
+   à gagner avant d'avoir établi son premier territoire ») : la zone de départ (les 5 zones d'origine et leurs voisines, de quoi bâtir un paquet de 15 cartes) à 0, puis ±3, puis ±5.
    Les Ressources restent à 0 (il faut du mana pour bâtir son paquet). Le pôle est tiré une fois pour toutes par zone. */
-const NIV_DEP=(()=>{const o={},d={},file=[];for(const id of['CIT','DON','RES','ANT','MAR']){d[id]=0;file.push(id)}
+const DIST_DEP={};
+const NIV_DEP=(()=>{const o={},d=DIST_DEP,file=[];for(const id of['CIT','DON','RES','ANT','MAR']){d[id]=0;file.push(id)}
   while(file.length){const z=file.shift();for(const v of (typeof VOISINES!=='undefined'?VOISINES[z]:[])||[])if(d[v]===undefined){d[v]=d[z]+1;file.push(v)}}
-  for(const Z of ZN){const k=d[Z.id]===undefined?3:d[Z.id],n=[0,2,4,5][Math.min(3,k)],sg=hash(Z.c[0]*.01,Z.c[1]*.01)<.5?-1:1;o[Z.id]=(Z.mod||Z.id)==='RES'?0:n*sg}return o})();
+  for(const Z of ZN){const k=d[Z.id]===undefined?3:d[Z.id],n=[0,0,3,5][Math.min(3,k)],sg=hash(Z.c[0]*.01,Z.c[1]*.01)<.5?-1:1;o[Z.id]=(Z.mod||Z.id)==='RES'?0:n*sg}return o})();
+/* Règle du 17 nov. : les zones autour du territoire de départ ne cèdent qu'une fois toutes les zones de départ prises. */
+const ZONES_DEP=ZN.filter(Z=>DIST_DEP[Z.id]!==undefined&&DIST_DEP[Z.id]<=1).map(Z=>Z.id);
+const departPris=()=>ZONES_DEP.filter(id=>S.own[id]).length;
+const verrouLoin=Z=>(DIST_DEP[Z.id]===undefined||DIST_DEP[Z.id]>1)&&!S.own[Z.id]&&!S.emp[Z.id]&&departPris()<ZONES_DEP.length;
 for(const id of IDS){S.lv[id]=NIV_DEP[id]||0;S.own[id]=false;S.emp[id]=false;S.rest[id]=0}
 let hasSave=false;
 try{const j=JSON.parse(localStorage.getItem('mz-tv-1')||'null');if(j&&j.lv){Object.assign(S,j);hasSave=true}}catch(_){}
@@ -226,7 +231,8 @@ let carteOn=true;
 function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ci=bestCard(Z),emp=S.emp[Z.id];
   const diff=t=>{const b=Math.abs(t)-(emp?1:0)-(carteOn&&ci>=0?S.cards[ci].pw:0);return'Épreuve '+['très facile','facile','facile','moyenne','dure','dure','très dure','redoutable'][clamp(b,0,7)]};
   const o=[],res=(Z.mod||Z.id)==='RES',cap=res?3:7;
-  if(!S.act[Z.id]){o.push({l:'Activer la zone : affronter ses gardiens',ic:'⚔',cls:'p',d:(emp?'empreinte : gardiens affaiblis · ':'')+'combat',go:()=>startCombat(Z,'eveil')});
+  if(!S.act[Z.id]&&verrouLoin(Z)){o.push({l:'Zone scellée : elle ne cède pas encore',ic:'⛓',off:true,d:`prenez d'abord tout votre territoire de départ (${departPris()}/${ZONES_DEP.length})`})}
+  else if(!S.act[Z.id]){o.push({l:'Activer la zone : affronter ses gardiens',ic:'⚔',cls:'p',d:(emp?'empreinte : gardiens affaiblis · ':'')+'combat',go:()=>startCombat(Z,'eveil')});
     o.push({l:'Éveil verrouillé',ic:'▲',off:true,d:'activez d\'abord la zone'})}
   else{
   if(res&&lv<3)o.push({l:`Niveau ${lv+1} sur 3`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
@@ -239,7 +245,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(typeof optionsRoutes==='function')o.push(...optionsRoutes(Z));
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
-    corps:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
+    corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
     corps2:`<p class="petit">Niveau actuel ${sgn(lv)||'0'} · ${S.own[Z.id]?'zone à vous':emp?'zone sauvage, votre empreinte la rend plus facile à reprendre':'zone sauvage'}${r>0?` · <b style="color:var(--laiton2)">la zone se repose encore ${fmt(r)}</b>`:''}</p>`,
     back:toMonde,opts:o});$('menu-corps').innerHTML+=UI.corps2}
 /* Repérage : la zone montre brièvement ses deux paliers voisins, puis revient */
@@ -249,7 +255,7 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 /* ---------- Mue : le bond d'un palier, caméra qui tourne autour de la Pierre ---------- */
 let mue=null;
 function startMue(Z,lv,card){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
-  const I=Z.info;ui('menu',{sur:'Mue · deux cartes',t:card.nom,corps:`<div class="cartes">${carteHTML(Z.id)}${cardHTML(card)}</div><p class="petit">La carte de combat « ${CK[Z.id].nom()} » rejoint votre paquet ; la carte de pouvoir facilite une autre épreuve.</p><p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${REPOS} secondes avant le prochain bond.</p>`,
+  const I=Z.info,rs=(Z.mod||Z.id)==='RES';ui('menu',{sur:rs?'Mue · Ressource':'Mue · deux cartes',t:card.nom,corps:rs?`<div class="cartes">${cardHTML(card)}</div><p class="petit">Une Ressource ne donne pas de carte de combat : elle produit davantage de mana. La carte de pouvoir facilite une autre épreuve.</p>`:`<div class="cartes">${carteHTML(Z.id)}${cardHTML(card)}</div><p class="petit">La carte de combat « ${CK[Z.id].nom()} » rejoint votre paquet ; la carte de pouvoir facilite une autre épreuve.</p><p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${REPOS} secondes avant le prochain bond.</p>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});mode='menu'}};
   toast(`Palier ${sgn(lv)} · ${lv>0?I_(Z).pp:lv<0?I_(Z).pm:'Équilibre'}`,Z.info.nom,palTxt(Z,lv));fanfare(lv)}
 const I_=Z=>Z.info;
@@ -270,7 +276,7 @@ function startEpreuve(Z,target){const ci=bestCard(Z),useC=carteOn&&ci>=0;let pw=
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+REPOS;S.hurt=Math.max(0,S.hurt-1);const c=newCard(Z,target);S.cards.push(c);if(S.deck.length<PAQUET_MAX)S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);save();etatHud();hudKey='';startMue(Z,target,c)}
+  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+REPOS;S.hurt=Math.max(0,S.hurt-1);const c=newCard(Z,target);S.cards.push(c);if((Z.mod||Z.id)!=='RES'&&S.deck.length<PAQUET_MAX)S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);save();etatHud();hudKey='';startMue(Z,target,c)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
