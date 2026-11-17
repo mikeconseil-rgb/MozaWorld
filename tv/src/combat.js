@@ -13,7 +13,11 @@ const ZPTS={CIT:10,DON:5,RES:6,ANT:8,MAR:4};
 const Lz=z=>Math.abs(S.lv[z]||0);
 const poleN=(z,a,b)=>(S.lv[z]||0)<0?a:b;
 /* Une carte de zone a un effet doublé dans la zone qu'elle contre (même cycle que les épreuves). */
-const contreX=(k)=>CB&&CK[k].z&&CONTRE[CK[k].z]===CB.Z.id?2:1;
+const contreX=(k)=>CB&&!CB.gris&&CK[k].z&&CONTRE[CK[k].z]===CB.Z.id?2:1;
+/* Mana gris (2.0) : base infinie. Les cartes communes se paient en gris. Une carte de zone sans assez de mana de son type
+   se paie aussi en gris, mais affaiblie : effet −25 %, pas de contre-pouvoir. */
+const GRIS_MALUS=.75;
+const enGris=k=>!!mtype(k)&&!peutPayer(mtype(k),CK[k].cout);
 
 /* ---------- Cartes de combat ---------- */
 const CK={
@@ -43,9 +47,9 @@ function monstre(Z,i,faible){const m=MON[Z.id][i],L=Lz(Z.id),k=faible?.7:1,pv=Ma
   return{nom:m.nom,pv,max:pv,atk:m.atk+L,g:0,mv:m.mv,mi:m.chef?0:Math.floor(Math.random()*m.mv.length),chef:m.chef,z:Z.id}}
 
 /* ---------- Puissance du héros : elle vient des zones possédées ---------- */
-const sourceMana=()=>!S.act.RES?0:Lz('RES')>=2?2:1;          /* tuile Ressource : 1, puis 2, puis 2 + un bonus */
+const sourceMana=()=>prodRessource();          /* tuile Ressource : 1, puis 2, puis 2 + un bonus */
 const manaMax=()=>2+sourceMana();
-const mainMax=()=>S.act.RES&&Lz('RES')>=3?6:5;                  /* le bonus du niveau 3 : une carte de plus en main */
+const mainMax=()=>ZN.some(Z=>(Z.mod||Z.id)==='RES'&&S.act[Z.id]&&Lz(Z.id)>=3)?6:5;                  /* le bonus du niveau 3 : une carte de plus en main */
 const pvMax=()=>30+(S.act.CIT?6+2*Lz('CIT'):0);
 
 /* ---------- Déroulement ---------- */
@@ -53,7 +57,7 @@ const pvMax=()=>30+(S.act.CIT?6+2*Lz('CIT'):0);
 /* la capacité de dépense par tour est commune à tous les types ; chaque carte se paie dans la réserve de son type */
 const mtype=k=>CK[k].z?ZMANA[CK[k].z]:null;
 const dispo=()=>CB?Math.max(0,CB.mana):0;
-const jouable=k=>CK[k].cout<=dispo()&&peutPayer(mtype(k),CK[k].cout);
+const jouable=k=>CK[k].cout<=dispo();
 let CB=null;
 const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function startCombat(Z,kind){
@@ -77,8 +81,8 @@ function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.mana=CB.capT=CB.tour
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
-function jouer(i,t){const k=CB.main[i],c=CK[k];CB.mana-=c.cout;payer(mtype(k),c.cout);CB.main.splice(i,1);CB.defausse.push(k);
-  journal(`Vous jouez « ${c.nom()} »${contreX(k)>1?' : contre-pouvoir, effet doublé !':'.'}`);c.jeu(k,t);clack();
+function jouer(i,t){const k=CB.main[i],c=CK[k],g=enGris(k);CB.mana-=c.cout;if(mtype(k)&&!g)payer(mtype(k),c.cout);CB.main.splice(i,1);CB.defausse.push(k);
+  journal(`Vous jouez « ${c.nom()} »${g?' en mana gris : effet affaibli.':contreX(k)>1?' : contre-pouvoir, effet doublé !':'.'}`);CB.gris=g;try{c.jeu(k,t)}finally{CB.gris=false}clack();
   CB.f=Math.min(CB.f,CB.main.length);CB.sel=null;majUnites();dessinerMain();finSiFini()}
 function finTour(){CB.busy=true;CB.sel=null;CB.defausse.push(...CB.main);CB.main=[];dessinerMain();
   /* les bêtes frappent d'abord, puis chaque monstre fait ce qu'il a annoncé */
@@ -92,12 +96,12 @@ function finSiFini(){if(!CB)return false;
 
 /* ---------- Effets ---------- */
 function pop(u,txt,cls){if(!u.el)return;const s=document.createElement('span');s.className='pop '+(cls||'');s.textContent=txt;u.el.appendChild(s);setTimeout(()=>s.remove(),1000)}
-function frappe(u,n,src){if(!u||u.pv<=0)return;const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
+function frappe(u,n,src){if(!u||u.pv<=0)return;if(CB&&CB.gris&&!src)n=Math.max(1,Math.round(n*GRIS_MALUS));const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
   pop(u,n>0?'−'+n:'garde',n>0?'deg':'g');if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}
   if(AX&&soundOn)n>0?perc(AX.currentTime,'t',.9):note(AX.currentTime,523,SIN,.2,.07);
   if(u.pv<=0){journal(u.nom+(u.hero?' tombe.':' est vaincu.'));if(u.bete){CB.allies.splice(CB.allies.indexOf(u),1);const e=u.el;if(e){e.classList.add('mort');e.querySelector('.bar i').style.width='0%'}setTimeout(()=>e&&e.remove(),900)}}majUnites()}
-function garder(u,n){u.g+=n;pop(u,'+'+n+' garde','g');majUnites()}
-function soigner(u,n){const a=Math.min(n,u.max-u.pv);u.pv+=a;pop(u,'+'+a,'soin');majUnites()}
+function garder(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));u.g+=n;pop(u,'+'+n+' garde','g');majUnites()}
+function soigner(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));const a=Math.min(n,u.max-u.pv);u.pv+=a;pop(u,'+'+a,'soin');majUnites()}
 function invoquer(b){const nb=CB.allies.filter(u=>u.bete).length;if(nb>=3){const w=CB.allies.filter(u=>u.bete).sort((p,q)=>p.pv-q.pv)[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove()}
   CB.allies.push(b);uniteEl(b,'cb-allies');pop(b,'arrive','soin');journal(b.nom+' rejoint le combat et encaisse les coups à la place du héros.')}
 /* les monstres visent la première bête vivante : les bêtes protègent le héros */
@@ -110,6 +114,7 @@ function agir(m){const I=m.int;if(!I)return;m.el&&(m.el.classList.remove('agit')
   else if(I.a==='t'){journal(`${m.nom} frappe tout le monde (${I.v}).`);for(const u of vivants(CB.allies))frappe(u,I.v,m)}
   else if(I.a==='g'){garder(m,I.v);journal(`${m.nom} se met en garde.`)}
   else if(I.a==='s'){const w=vivants(CB.foes).sort((p,q)=>p.pv/p.max-q.pv/q.max)[0];soigner(w,I.v);journal(`${m.nom} soigne ${w===m?'ses plaies':w.nom}.`)}
+  else if(I.a==='h')journal(`${m.nom} hésite et ne fait rien.`)
   else journal(`${m.nom} prend son élan : le prochain coup sera fort.`)}
 
 /* ---------- Fin du combat : récompenses ---------- */
@@ -124,15 +129,13 @@ function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
     ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3).${retour} À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
       back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
   S.hurt=Math.max(0,S.hurt-(C.kind==='eveil'?1:0));
-  if(C.kind==='eveil'){if(Z.id==='DON')S.dernierAssaut=S.nc;S.act[Z.id]=true;S.own[Z.id]=true;S.emp[Z.id]=false;if(S.deck.length<PAQUET_MAX)S.deck.push(Z.id);save();etatHud();hudKey='';fanfare(S.lv[Z.id]||1);
-    ui('menu',{sur:'Zone activée',t:Z.info.nom,corps:`<p>La zone est à vous. Vous gagnez la carte « ${CK[Z.id].nom()} ».${retour}</p><div class="cartes" style="grid-template-columns:1fr">${carteHTML(Z.id)}</div><p class="petit" style="margin-top:1em">${RECO[Z.id]} Vous pouvez maintenant éveiller cette zone : plus elle s'éloigne de zéro, plus sa carte devient forte.</p>`,
+  if(C.kind==='eveil'){if(Z.id==='DON')S.dernierAssaut=S.nc;S.act[Z.id]=true;S.own[Z.id]=true;S.emp[Z.id]=false;save();etatHud();hudKey='';fanfare(S.lv[Z.id]||1);
+    ui('menu',{sur:'Zone activée',t:Z.info.nom,corps:`<p>La zone est à vous.${retour}</p><p class="petit" style="margin-top:1em">${RECO[Z.id]} Vous pouvez maintenant éveiller cette zone : chaque montée de niveau vous donne sa carte de combat « ${CK[Z.id].nom()} », plus forte à mesure que la zone s'éloigne de zéro.</p>`,
       back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});return}
-  /* rencontre : choisir une carte à ajouter au paquet de combat */
-  const offre=[S.act[Z.id]?Z.id:['coup','garde','souffle'][Math.floor(Math.random()*3)],['coup','garde','souffle'][Math.floor(Math.random()*3)]];
-  if(offre[0]===offre[1])offre[1]=offre[0]==='coup'?'garde':'coup';
-  const plein=S.deck.length>=PAQUET_MAX;save();sfx('hit');
-  ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${plein?'Votre paquet de combat est plein ('+PAQUET_MAX+' cartes).':'Choisissez une carte à ajouter à votre paquet de combat.'}${retour}${S.act[Z.id]?'':' Activez la zone à sa Pierre d\'éveil pour que ses rencontres offrent sa carte.'}</p><div class="cartes">${offre.map(carteHTML).join('')}</div>`,
-    back:toMonde,opts:[...offre.map(k=>({l:'Prendre « '+CK[k].nom()+' »',ic:'+',off:plein,go:()=>{S.deck.push(k);save();toMonde()}})),{l:'Ne rien prendre',ic:'◆',go:toMonde}]})}
+  /* rencontre (2.0) : plus de carte en combat ; les cartes viennent de l'activation et des mues des zones */
+  save();sfx('hit');
+  ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${retour}</p><p class="petit">Les combats ne donnent pas de cartes : on gagne une carte de combat à chaque montée de niveau d'une zone.</p>`,
+    back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]})}
 function fuir(){const C=CB;fermerCombat();toMonde();toast('Fuite',C.kind==='renc'?'Vous semez les créatures':'Les gardiens attendront',`Réserve : ${resTexte()}.`)}
 function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas ; le mana déjà dépensé est perdu. Les gardiens d\'une Pierre attendront votre retour.</p>',
   back:reprendreCombat,opts:[{l:'Continuer le combat',ic:'▲',go:reprendreCombat},{l:'Fuir',ic:'◆',go:fuir}]})}
@@ -150,7 +153,7 @@ function cbInput(a,rep){const C=CB;if(!C)return;
   else if(a==='down'){C.f=C.main.length;tick();dessinerMain()}
   else if(a==='up'&&C.f===C.main.length&&C.main.length){C.f=0;tick();dessinerMain()}
   else if(a==='ok'&&!rep){if(C.f===C.main.length){clack();finTour();return}
-    const k=C.main[C.f],c=CK[k];if(!jouable(k)){sfx('miss');journal(c.cout>dispo()?'Capacité de dépense atteinte ce tour pour « '+c.nom()+' ».':'Pas assez de mana '+(mtype(k)||'')+' en réserve pour « '+c.nom()+' ».');return}
+    const k=C.main[C.f],c=CK[k];if(!jouable(k)){sfx('miss');journal('Capacité de dépense atteinte ce tour pour « '+c.nom()+' ».');return}
     if(c.cible){const v=vivants(C.foes);if(v.length>1){C.sel='cible';C.ti=0;dessinerMain();majUnites();journal('Choisissez la cible avec ◀ ▶, puis OK.');return}jouer(C.f,v[0])}
     else jouer(C.f)}}
 

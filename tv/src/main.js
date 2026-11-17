@@ -1,6 +1,7 @@
 /* MozaWorld TV : héros, Pierres d'éveil, épreuves, cartes, télécommande, musique, boucle. */
 const $=id=>document.getElementById(id);
-const IDS=['CIT','DON','RES','ANT','MAR'];
+const IDS=ZN.map(Z=>Z.id);   /* 2.0 : les cinq zones d'origine et les tuiles de la carte agrandie */
+const MODZ=id=>{const Z=ZN.find(q=>q.id===id);return Z&&Z.mod||id};
 const ZB=Object.fromEntries(ZN.map(Z=>[Z.id,Z]));
 const REPOS=40;            /* secondes de repos d'une zone après un éveil (le « délai » du jeu complet, raccourci ici) */
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
@@ -11,6 +12,8 @@ const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},dec
 for(const id of IDS){S.lv[id]=0;S.own[id]=false;S.emp[id]=false;S.rest[id]=0}
 let hasSave=false;
 try{const j=JSON.parse(localStorage.getItem('mz-tv-1')||'null');if(j&&j.lv){Object.assign(S,j);hasSave=true}}catch(_){}
+/* 2.0 : une partie de la 1.9 ne connaît pas les nouvelles tuiles */
+for(const id of IDS){if(S.lv[id]===undefined)S.lv[id]=0;if(S.own[id]===undefined)S.own[id]=false;if(S.emp[id]===undefined)S.emp[id]=false;if(S.rest[id]===undefined)S.rest[id]=0}
 /* Parties enregistrées avant le combat : les zones déjà à vous comptent comme activées */
 for(const id of IDS)if(S.act[id]===undefined)S.act[id]=!!S.own[id];
 if(!Array.isArray(S.deck)||!S.deck.length)S.deck=DEPART.concat(IDS.filter(id=>S.act[id]));
@@ -49,16 +52,18 @@ const hero=new THREE.Group();
  const hat=new THREE.Mesh(new THREE.ConeGeometry(.42,.5,8),M(0x2a2630));hat.position.y=2.05;
  const lamp=new THREE.Mesh(new THREE.SphereGeometry(.11,6,5),new THREE.MeshBasicMaterial({color:new THREE.Color(3,2,.8)}));lamp.position.set(.45,1.05,.25);
  for(const m of[robe,cape,head,hat])m.castShadow=true;hero.add(robe,cape,head,hat,lamp);
- const pl=hero.userData.pl=new THREE.PointLight(0xffd9a0,.55,18,1.8);pl.position.set(.45,1.3,.25);hero.add(pl);scene.add(hero)}
-const P={x:-65,y:5,z:89,vy:0,g:false,yaw:Math.atan2(.59,-.81),pitch:.3,dist:15,face:0,walked:0,run:0};
+ const pl=hero.userData.pl=new THREE.PointLight(0xffd9a0,.55,18,1.8);pl.position.set(.45,1.3,.25);hero.add(pl);scene.add(hero);
+ /* 2.0 : héros et caméra 30 % plus petits, le décor paraît 30 % plus grand sans toucher aux niveaux */hero.scale.setScalar(1/1.3)}
+const P={x:-65,y:5,z:89,vy:0,g:false,yaw:Math.atan2(.59,-.81),pitch:.3,dist:11.5,face:0,walked:0,run:0};
 const SPOTS={CIT:[-65,89,Math.atan2(.59,-.81)]};
 {const sp=(Z,u,v)=>{const p=Z.w(u,v),q=Z.w(u+10,v);return[p[0],p[1],Math.atan2(q[0]-p[0],q[1]-p[1])]};
- SPOTS.DON=sp(DON,-58,0);SPOTS.RES=sp(RES,-52,-10);SPOTS.ANT=sp(ANT,-84,13);SPOTS.MAR=sp(MAR,-60,0)}
+ SPOTS.DON=sp(DON,-58,0);SPOTS.RES=sp(RES,-52,-10);SPOTS.ANT=sp(ANT,-84,13);SPOTS.MAR=sp(MAR,-60,0);
+ for(const Z of ZN)if(Z.plus)SPOTS[Z.id]=sp(Z,-27,0)}
 function stand(x,z,feet){let g=ground(x,z),blocked=false,ramp=false,on=null;const Zz=zoneAt(x,z);
   if(Zz===ANT)g=Math.max(g,ANT.wy(ANT.lv)-1.05);
   for(let i=0;i<solids.length;i++){const s=solids[i];if(!s.on||(Zz&&s.Z!==Zz&&s.Z!==null)||!inSolid(s,x,z))continue;
     let top=s.y1;if(s.k)top+=s.k*((x-s.x)*s.cs+(z-s.z)*s.sn);
-    if(feet>=top-.8){if(top>g){g=top;on=s}if(s.ramp)ramp=true}else if(s.y1-s.y0>.85&&feet+1.7>s.y0)blocked=true}
+    if(feet>=top-1.35){if(top>g){g=top;on=s}if(s.ramp)ramp=true}else if(s.y1-s.y0>1.4&&feet+1.7>s.y0)blocked=true}   /* 2.0 : marches jusqu'à 1,35 m franchies sans sauter */
   return{g,blocked:blocked&&!ramp,on}}
 /* Le héros arrive devant la Pierre, un peu en retrait */
 function tp(id){const s=SPOTS[id],Z=ZB[id],a=Z.alt;let x=s[0],z=s[1],yaw=s[2];
@@ -69,15 +74,45 @@ function tp(id){const s=SPOTS[id],Z=ZB[id],a=Z.alt;let x=s[0],z=s[1],yaw=s[2];
 const altStone=M(0x2b2731,{roughness:.6,metalness:.2}),altGold=M(0xc9a45c,{roughness:.35,metalness:.8});
 const altGlow=new THREE.MeshBasicMaterial({color:new THREE.Color(3,2.1,.8)}),altRest=new THREE.MeshBasicMaterial({color:new THREE.Color(.5,.45,.4)});
 function starShape(r1,r2,n){const s=new THREE.Shape();for(let i=0;i<n*2;i++){const r=i%2?r2:r1,a=i*PI/n;i?s.lineTo(Math.cos(a)*r,Math.sin(a)*r):s.moveTo(Math.cos(a)*r,Math.sin(a)*r)}return s}
-for(const Z of ZN){const s=SPOTS[Z.id],x=s[0]+Math.sin(s[2])*7,z=s[1]+Math.cos(s[2])*7,g=new THREE.Group();
-  const base=new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.6,.6,10),altStone);base.position.y=.3;
-  const col=new THREE.Mesh(new THREE.CylinderGeometry(.55,.75,3.4,10),altStone);col.position.y=2.2;
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(1.3,.08,6,30),altGold);ring.rotation.x=PI/2;ring.position.y=.65;
-  const st=new THREE.Mesh(new THREE.ExtrudeGeometry(starShape(1.15,.62,10),{depth:.18,bevelEnabled:false}),altGold);st.position.y=4.4;
-  const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.42),altGlow);gem.position.y=4.5;
-  for(const m of[base,col,st])m.castShadow=true;g.add(base,col,ring,st,gem);scene.add(g);
-  const li=new THREE.PointLight(0xffc977,1.2,22,1.6);li.position.y=4.6;g.add(li);
-  Z.alt={x,z,yaw:s[2],g,st,gem,li,y:0}}
+const ALT_R=11;   /* 2.0 : zone d'activation plus grande (7 m avant) */
+/* 2.0 : un monument par type de zone au lieu de la simple lumière (retour du 17 nov. : « obélisque, trône, cadavre, PNJ »).
+   Pas de lampe ponctuelle (trop coûteux sur la télé) : une gemme lumineuse qui tourne au-dessus, et un anneau d'or au sol. */
+const monBois=M(0x4a3426),monNoir=M(0x17141a,{roughness:.4,metalness:.3}),monOs=M(0xd9cfb6,{roughness:.8}),monPierre=M(0x6d6458),monGlace=M(0x9fc4dc,{roughness:.2,metalness:.1}),monChair=M(0x5a2a2a);
+const altGlyph=new THREE.MeshBasicMaterial({color:new THREE.Color(2.4,1.2,.5)});
+function monument(kind){const g=new THREE.Group(),add=(geo,mat,x,y,z,ry,rx,rz)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);m.rotation.set(rx||0,ry||0,rz||0);m.castShadow=true;g.add(m);return m};
+  let top=5,col=3;
+  if(kind==='CIT'){ /* Trône du Voïvode : siège de bois sculpté, haut dossier en bulbe */
+    add(new THREE.BoxGeometry(5,.6,4),monPierre,0,.3,0);add(new THREE.BoxGeometry(4,.5,3.4),monPierre,0,.85,0);
+    add(new THREE.BoxGeometry(2.4,.5,2),monBois,0,1.9,0);add(new THREE.BoxGeometry(2.4,4.2,.4),monBois,0,3.9,-.9);
+    add(new THREE.BoxGeometry(.4,1.2,2),monBois,-1.2,2.5,0);add(new THREE.BoxGeometry(.4,1.2,2),monBois,1.2,2.5,0);
+    add(new THREE.SphereGeometry(.9,10,8),altGold,0,6.3,-.9).scale.set(1,1.3,1);add(new THREE.ConeGeometry(.35,1.1,8),altGold,0,7.6,-.9);top=8.6;col=3.4}
+  else if(kind==='DON'){ /* Obélisque des Neuf Édits : pierre noire, glyphes de lave */
+    add(new THREE.BoxGeometry(3.6,.8,3.6),monPierre,0,.4,0);add(new THREE.CylinderGeometry(.85,1.35,8,4),monNoir,0,4.8,0,PI/4);
+    add(new THREE.ConeGeometry(.9,1.4,4),monNoir,0,9.5,0,PI/4);
+    for(let i=0;i<5;i++)add(new THREE.BoxGeometry(.9-i*.08,.16,.05),altGlyph,0,2.4+i*1.25,1.0-i*.06);top=11.2;col=2.6}
+  else if(kind==='RES'){ /* Idole des Gerbes : statue à degrés, coiffe de rayons dorés */
+    add(new THREE.BoxGeometry(4.4,.8,4.4),monPierre,0,.4,0);add(new THREE.BoxGeometry(3.4,.8,3.4),monPierre,0,1.2,0);
+    add(new THREE.BoxGeometry(2,3,1.6),M(0x7d7a5a),0,3.1,0);add(new THREE.BoxGeometry(1.6,1.4,1.4),M(0x8a8462),0,5.3,0);
+    add(new THREE.BoxGeometry(.3,.2,.1),altGlyph,-.4,5.4,.72);add(new THREE.BoxGeometry(.3,.2,.1),altGlyph,.4,5.4,.72);
+    for(let i=0;i<9;i++){const a=-PI/2+(i-4)*.3;add(new THREE.BoxGeometry(.18,1.8,.12),altGold,Math.cos(a)*1.4,6.4+Math.sin(-a)*1.0,-.3,0,0,a+PI/2)}top=8.4;col=3.2}
+  else if(kind==='ANT'){ /* Cadavre d'une bête géante : côtes arquées, crâne, mousse luminescente */
+    for(let i=0;i<6;i++){const r=add(new THREE.TorusGeometry(2.6-i*.18,.16,6,14,PI),monOs,0,.2,-3+i*1.2);r.rotation.y=0}
+    add(new THREE.CylinderGeometry(.22,.22,7.4,6),monOs,0,.25,0,0,PI/2);
+    const sk=add(new THREE.SphereGeometry(1.2,10,8),monOs,0,1,4.4);sk.scale.set(1,.8,1.4);
+    add(new THREE.ConeGeometry(.25,1.6,6),monOs,-.7,1.9,4.6,0,-.5,.5);add(new THREE.ConeGeometry(.25,1.6,6),monOs,.7,1.9,4.6,0,-.5,-.5);
+    add(new THREE.SphereGeometry(.18,6,5),altGlyph,-.45,1.1,5.6);add(new THREE.SphereGeometry(.18,6,5),altGlyph,.45,1.1,5.6);top=5;col=3.8}
+  else { /* MAR : le Crieur de la Foire, un PNJ immobile sous sa cloche */
+    add(new THREE.CylinderGeometry(2.2,2.4,.5,10),monPierre,0,.25,0);
+    add(new THREE.ConeGeometry(.9,2.6,8),M(0x2a3542),0,1.8,0);add(new THREE.SphereGeometry(.42,10,8),M(0xd8b48a),0,3.4,0);
+    add(new THREE.CylinderGeometry(.75,.75,.12,12),M(0x1d232c),0,3.75,0);add(new THREE.CylinderGeometry(.4,.45,.6,10),M(0x1d232c),0,4.1,0);
+    add(new THREE.CylinderGeometry(.07,.07,6,6),altGold,1.1,3,0);add(new THREE.CylinderGeometry(.25,.6,.8,10,1,true),altGold,1.1,6.2,0);
+    add(new THREE.SphereGeometry(.5,8,6),monGlace,-1.6,.9,.6);top=7.6;col=2.8}
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(ALT_R*.62,.07,6,48),altGold);ring.rotation.x=PI/2;ring.position.y=.12;g.add(ring);
+  const st=new THREE.Mesh(new THREE.ExtrudeGeometry(starShape(.9,.48,10),{depth:.12,bevelEnabled:false}),altGold);st.position.y=top;g.add(st);
+  const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.36),altGlow);gem.position.y=top+.1;g.add(gem);
+  return{g,st,gem,col}}
+for(const Z of ZN){const s=SPOTS[Z.id],x=s[0]+Math.sin(s[2])*7,z=s[1]+Math.cos(s[2])*7,m=monument(Z.mod||Z.id);m.g.rotation.y=s[2]+PI;scene.add(m.g);
+  Z.alt={x,z,yaw:s[2],g:m.g,st:m.st,gem:m.gem,li:{intensity:0},col:m.col,y:0}}
 function placeAlt(Z){const a=Z.alt;a.y=stand(a.x,a.z,1e3).g;a.g.position.set(a.x,a.y,a.z)}
 ZN.forEach(placeAlt);
 
@@ -119,7 +154,7 @@ function act(a,rep){
   if(mode==='epreuve'){if(a==='back'&&!rep){pauseEpreuve();return}if(E&&E.input)E.input(a,rep);return}
   if(mode==='mue'){if(a==='ok'&&!rep&&mue.t>2.5)mue.t=99}
   if(mode==='combat'){cbInput(a,rep)}}
-const nearAlt=()=>curZ&&Math.hypot(curZ.alt.x-P.x,curZ.alt.z-P.z)<7;
+const nearAlt=()=>curZ&&Math.hypot(curZ.alt.x-P.x,curZ.alt.z-P.z)<ALT_R;
 
 /* ---------- Menus à la télécommande ---------- */
 let UI=null;
@@ -144,7 +179,7 @@ function titre(){mode='titre';const o=[];
   o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
   ui('seuil',{opts:o})}
-function startGame(neuf){if(neuf){for(const Z of ZN){S.lv[Z.id]=0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=0;rebuild(Z);Z.update(0);placeAlt(Z)}
+function startGame(neuf){if(neuf){for(const Z of ZN){S.lv[Z.id]=0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=0;rebuild(Z);Z.update(0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
     S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
@@ -153,7 +188,7 @@ function startGame(neuf){if(neuf){for(const Z of ZN){S.lv[Z.id]=0;S.own[Z.id]=fa
   if(neuf)setTimeout(()=>toast('Berestograd · niveau 0','Cherchez la Pierre d\'éveil','Suivez la flèche dorée en bas de l\'écran, puis appuyez sur OK devant la Pierre.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
-  ui('menu',{sur:'Pause',t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.cards.length} carte(s) · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]),0)} sur 31 · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
+  ui('menu',{sur:'Pause',t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.cards.length} carte(s) · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
@@ -166,15 +201,15 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%3;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize();openMenu()}},
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
-    {l:'Recommencer à zéro',ic:'↺',go:()=>ui('menu',{sur:'Recommencer',t:'Tout effacer ?',corps:'<p>Les cinq zones reviennent au niveau 0, vos cartes et vos secrets sont perdus.</p>',back:openMenu,
+    {l:'Recommencer à zéro',ic:'↺',go:()=>ui('menu',{sur:'Recommencer',t:'Tout effacer ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets sont perdus.</p>',back:openMenu,
       opts:[{l:'Non, revenir',ic:'◆',go:openMenu},{l:'Oui, tout recommencer',ic:'↺',go:()=>{startGame(true)}}]})}]})}
-function openVoyage(){ui('menu',{sur:'Voyager',t:'Les cinq zones',corps:'<p class="petit">Le héros réapparaît devant la Pierre d\'éveil de la zone. Vous pouvez aussi marcher : les zones se touchent.</p>',back:openMenu,
+function openVoyage(){ui('menu',{sur:'Voyager',t:`Les ${ZN.length} zones`,corps:'<p class="petit">Le héros réapparaît devant la Pierre d\'éveil de la zone. Vous pouvez aussi marcher : les zones se touchent.</p>',back:openMenu,
   opts:ZN.map(Z=>({l:Z.info.nom,ic:sgn(S.lv[Z.id])||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',d:TYPE[Z.id].ep+(restLeft(Z)>0?' · repos '+fmt(restLeft(Z)):''),go:()=>{tp(Z.id);toMonde()}}))})}
 function cardHTML(c){return`<div class="kc ${c.pole?'p':'m'}"><div class="k1">${c.rang} · ${ZB[c.z].info.nom.split(',')[0]} ${sgn(c.lv)}</div><div class="k2">${c.nom}</div><div class="k3">${c.txt}</div></div>`}
 function openPaquet(){ui('menu',{sur:'Paquet',t:'Vos cartes de pouvoir',corps:S.cards.length?`<div class="cartes">${S.cards.slice(-8).map(cardHTML).join('')}</div>`:'<p>Aucune carte encore. Chaque éveil réussi en donne une. Une carte facilite l\'épreuve d\'une autre zone : c\'est un contre-pouvoir.</p>',
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
-  ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve : ${resHTML()}${prodRessource()?' (la Ressource ajoute '+prodRessource()+' '+ZMANA.RES+' par cycle)':''} · en combat, on dépense la réserve : 1 mana au tour 1, 2 au tour 2, et ainsi de suite (certaines cartes donnent un boost) · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
+  ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve : ${resHTML()}${prodRessource()?' (vos Ressources ajoutent '+prodTexte()+' par cycle)':''} · en combat, on dépense la réserve : 1 mana au tour 1, 2 au tour 2, et ainsi de suite (certaines cartes donnent un boost) · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
 <p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
@@ -187,7 +222,7 @@ function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',c
 let carteOn=true;
 function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ci=bestCard(Z),emp=S.emp[Z.id];
   const diff=t=>{const b=Math.abs(t)-(emp?1:0)-(carteOn&&ci>=0?S.cards[ci].pw:0);return'Épreuve '+['très facile','facile','facile','moyenne','dure','dure','très dure','redoutable'][clamp(b,0,7)]};
-  const o=[],cap=Z.id==='RES'?3:7,res=Z.id==='RES';
+  const o=[],res=(Z.mod||Z.id)==='RES',cap=res?3:7;
   if(!S.act[Z.id]){o.push({l:'Activer la zone : affronter ses gardiens',ic:'⚔',cls:'p',d:(emp?'empreinte : gardiens affaiblis · ':'')+'combat',go:()=>startCombat(Z,'eveil')});
     o.push({l:'Éveil verrouillé',ic:'▲',off:true,d:'activez d\'abord la zone'})}
   else{
@@ -210,7 +245,7 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 /* ---------- Mue : le bond d'un palier, caméra qui tourne autour de la Pierre ---------- */
 let mue=null;
 function startMue(Z,lv,card){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
-  const I=Z.info;ui('menu',{sur:'Nouvelle carte',t:card.nom,corps:`<div class="cartes" style="grid-template-columns:1fr">${cardHTML(card)}</div><p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${REPOS} secondes avant le prochain bond.</p>`,
+  const I=Z.info;ui('menu',{sur:'Mue · deux cartes',t:card.nom,corps:`<div class="cartes">${carteHTML(Z.id)}${cardHTML(card)}</div><p class="petit">La carte de combat « ${CK[Z.id].nom()} » rejoint votre paquet ; la carte de pouvoir facilite une autre épreuve.</p><p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${REPOS} secondes avant le prochain bond.</p>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});mode='menu'}};
   toast(`Palier ${sgn(lv)} · ${lv>0?I_(Z).pp:lv<0?I_(Z).pm:'Équilibre'}`,Z.info.nom,palTxt(Z,lv));fanfare(lv)}
 const I_=Z=>Z.info;
@@ -231,7 +266,7 @@ function startEpreuve(Z,target){const ci=bestCard(Z),useC=carteOn&&ci>=0;let pw=
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+REPOS;S.hurt=Math.max(0,S.hurt-1);const c=newCard(Z,target);S.cards.push(c);save();etatHud();hudKey='';startMue(Z,target,c)}
+  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+REPOS;S.hurt=Math.max(0,S.hurt-1);const c=newCard(Z,target);S.cards.push(c);if(S.deck.length<PAQUET_MAX)S.deck.push(Z.id);save();etatHud();hudKey='';startMue(Z,target,c)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
@@ -355,13 +390,13 @@ function move(dt){const t=performance.now();
   if(pm){P.sp=pm.sp;dx=Math.sin(pm.m)*pm.sp*dt;dz=Math.cos(pm.m)*pm.sp*dt;P.face=pm.m}
   else if(ff){dx=fx*ff*sp*dt;dz=fz*ff*sp*dt;P.face=P.yaw}
   if(dx||dz){
-    const tryMove=(nx,nz)=>{if(!zoneAt(nx,nz))return false;for(const Z of ZN)if(Math.hypot(Z.alt.x-nx,Z.alt.z-nz)<2.6)return false;const s=stand(nx,nz,P.y+.05);if(s.blocked)return false;P.x=nx;P.z=nz;return true};
+    const tryMove=(nx,nz)=>{if(!zoneAt(nx,nz))return false;for(const Z of ZN)if(Math.hypot(Z.alt.x-nx,Z.alt.z-nz)<(Z.alt.col||2.6))return false;const s=stand(nx,nz,P.y+.05);if(s.blocked)return false;P.x=nx;P.z=nz;return true};
     if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=Math.hypot(dx,dz)*.55}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
   if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true}}
   hero.position.set(P.x,P.y,P.z);hero.rotation.y+=((((P.face-hero.rotation.y)%TAU)+TAU+PI)%TAU-PI)*Math.min(1,dt*10)}
-function camFollow(dt){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),cp=Math.cos(P.pitch),tx=P.x,ty=P.y+1.9,tz=P.z;
+function camFollow(dt){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),cp=Math.cos(P.pitch),tx=P.x,ty=P.y+1.45,tz=P.z;
   let cx=tx-fx*cp*P.dist,cy=ty+Math.sin(P.pitch)*P.dist,cz=tz-fz*cp*P.dist;const gy=ground(cx,cz)+.7;if(cy<gy)cy=gy;camGo(cx,cy,cz,tx,ty,tz,dt,8)}
 const camP=new THREE.Vector3(),camT=new THREE.Vector3();let camInit=false;
 function camGo(cx,cy,cz,tx,ty,tz,dt,k){const a=camInit?1-Math.exp(-dt*k):1;camInit=true;camP.x+=(cx-camP.x)*a;camP.y+=(cy-camP.y)*a;camP.z+=(cz-camP.z)*a;camT.x+=(tx-camT.x)*a;camT.y+=(ty-camT.y)*a;camT.z+=(tz-camT.z)*a;camera.position.copy(camP);camera.lookAt(camT)}
@@ -378,7 +413,7 @@ function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.h
 let invKey='';
 function invite(){let h='',cls='';const el=$('invite');
   if(mode==='monde'&&curZ){const a=curZ.alt,d=Math.hypot(a.x-P.x,a.z-P.z),r=restLeft(curZ);
-    if(d<7)h=r>0?(cls='attente','La Pierre se repose encore '+fmt(r)):`<span class="ok">OK</span>${S.act[curZ.id]?'Éveiller':'Activer'} ${curZ.info.nom.split(',')[0]}`;
+    if(d<ALT_R)h=r>0?(cls='attente','La Pierre se repose encore '+fmt(r)):`<span class="ok">OK</span>${S.act[curZ.id]?'Éveiller':'Activer'} ${curZ.info.nom.split(',')[0]}`;
     else{const rel=((Math.atan2(a.x-P.x,a.z-P.z)-P.yaw)%TAU+TAU+PI)%TAU-PI;h=`<span class="fl" style="transform:rotate(${(-rel*180/PI).toFixed(0)}deg)">▲</span>Pierre d'éveil · ${Math.round(d)} m`+(r>0?' · repos '+fmt(r):'')}}
   else if(mode==='epreuve'&&E&&E.monde){const o=E.orbs.filter(o=>!o.got).sort((p,q)=>Math.hypot(p.x-P.x,p.z-P.z)-Math.hypot(q.x-P.x,q.z-P.z))[0];
     if(o){const rel=((Math.atan2(o.x-P.x,o.z-P.z)-P.yaw)%TAU+TAU+PI)%TAU-PI;h=`<span class="fl" style="transform:rotate(${(-rel*180/PI).toFixed(0)}deg)">▲</span>Gerbe la plus proche · ${Math.round(Math.hypot(o.x-P.x,o.z-P.z))} m`}}
@@ -445,7 +480,7 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   const rate=mode==='mue'?(mue&&mue.rep?1.4:.42):3.2;let rebuilt=false;
   for(const Z of ZN){if(Math.abs(Z.lv-Z.lvT)>1e-4){Z.acc=(Z.acc||0)+dt;
       if(!rebuilt&&(Z.acc>=.45||Math.abs(Z.lvT-Z.lv)<=Z.acc*rate+1e-4)){const d=Z.lvT-Z.lv,s=Math.sign(d)*Math.min(Math.abs(d),Z.acc*rate);Z.lv+=s;Z.acc=0;
-        if(Math.abs(Z.lvT-Z.lv)<1e-4)Z.lv=Z.lvT;rebuild(Z);Z.update(Z.lv);placeAlt(Z);rebuilt=true}}else Z.acc=0;Z.tick(T,dt)}
+        if(Math.abs(Z.lvT-Z.lv)<1e-4)Z.lv=Z.lvT;rebuild(Z);Z.update(Z.lv);placeAlt(Z);rebuilt=true;CULL.dirty=true}}else Z.acc=0;Z.tick(T,dt)}
   for(const Z of ZN){const a=Z.alt,r=restLeft(Z)>0;a.st.rotation.z=T*.4;a.gem.rotation.y=T*1.2;a.gem.material=r?altRest:altGlow;a.li.intensity=r?.25:1.1+.3*Math.sin(T*2.2+Z.i)}
   if(CB)cbTick(dt);verifierRencontre();
   if(mode==='mue'&&mue){stepMue(dt);if(mue)camMue(dt);else camFollow(dt)}
@@ -463,8 +498,8 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(frame%120===0&&started){S.pos=[P.x,P.z,P.yaw];save()}
   /* qualité automatique : si l'image tombe sous 22 images/s pendant 5 s, on baisse la résolution */
   if(autoQ&&T>3){fpsT+=dt;fpsN++;if(fpsT>5){const fps=fpsN/fpsT;fpsT=0;fpsN=0;if(CB){fpsT=0;fpsN=0}else if(fps<22&&QI>0){QI--;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize()}else if(fps>=22)autoQ=false}}
-  if(!CB)draw(T)}   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
+  if(!CB){cullScene();draw(T)}}   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
-titre();requestAnimationFrame(loop);
-window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z)},A};
+plusTables();titre();requestAnimationFrame(loop);
+window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};
