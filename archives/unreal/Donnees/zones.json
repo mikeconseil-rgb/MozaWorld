@@ -1,0 +1,563 @@
+{
+ "x0": -307.7683537175254,
+ "x1": 248.98982848827802,
+ "z0": -273.606797749979,
+ "z1": 161.8033988749895,
+ "zones": [
+  {
+   "id": "CIT",
+   "nom": "Berestograd, la Ville-Écorce",
+   "sur": "Citadelle · Décagone · Forêt boréale · Inspiration slave",
+   "poleMoins": "Oubli",
+   "polePlus": "Mémoire",
+   "centre": [
+    7.105427357601002e-15,
+    -1.7763568394002505e-15
+   ],
+   "axe": -1.5707963267948966,
+   "polygone": [
+    [
+     -153.8841768587627,
+     -50.00000000000002
+    ],
+    [
+     -95.10565162951535,
+     -130.90169943749476
+    ],
+    [
+     9.907600726170918e-15,
+     -161.8033988749895
+    ],
+    [
+     95.10565162951538,
+     -130.90169943749476
+    ],
+    [
+     153.8841768587627,
+     -50.00000000000001
+    ],
+    [
+     153.8841768587627,
+     50.00000000000001
+    ],
+    [
+     95.10565162951538,
+     130.90169943749476
+    ],
+    [
+     9.907600726170918e-15,
+     161.8033988749895
+    ],
+    [
+     -95.10565162951535,
+     130.90169943749476
+    ],
+    [
+     -153.8841768587627,
+     50.00000000000002
+    ]
+   ],
+   "paliers": [
+    "Rondins lessivés jusqu'au beige d'écorce morte. La neige efface les contours, les places sont trop vastes pour les rares feux.",
+    "Bouleaux pelés, tas de copeaux blancs, ciel bas et lumière de lampe à suif.",
+    "Palissade de mélèze brun, bulbes de bois, taïga vert sapin sous une lumière d'étain.",
+    "Écorces lisibles cousues aux murs comme des écailles, lumière de cire derrière les volets.",
+    "Chaque rondin gravé et repeint en minium, ocre et malachite. Aube froide et claire, lucioles d'ambre."
+   ],
+   "recit": "Ouliana racla des écorces pendant onze hivers, pour trois mesures de seigle par saison et le droit de dormir dans la tour de la porte. On les lui apportait par paniers, tirées de la boue où les gens de Berestograd jetaient tout ce qu'ils avaient écrit. Elle ne savait pas lire. On l'avait choisie pour cela. À sa mort, on trouva sous sa paillasse une seule écorce intacte, pliée en huit, que personne ne déplia."
+  },
+  {
+   "id": "ANT",
+   "nom": "L'Exarchat des Lucioles",
+   "sur": "Antre · Nœud papillon · Mangrove · Inspiration byzantine",
+   "poleMoins": "Nuit",
+   "polePlus": "Aurore",
+   "centre": [
+    -201.43700267352034,
+    -146.35254915624213
+   ],
+   "axe": -2.5132741228718345,
+   "polygone": [
+    [
+     -95.10565162951535,
+     -130.90169943749476
+    ],
+    [
+     -153.8841768587627,
+     -50.00000000000002
+    ],
+    [
+     -212.66270208801,
+     -130.90169943749476
+    ],
+    [
+     -307.7683537175254,
+     -161.80339887498948
+    ],
+    [
+     -248.98982848827808,
+     -242.70509831248424
+    ],
+    [
+     -190.21130325903073,
+     -161.8033988749895
+    ]
+   ],
+   "paliers": [
+    "Nuit close sur des chenaux couleur de goudron, sans une étoile. Seules luisent les larves affamées, bleu-vert, à travers les ballots de contrebande.",
+    "Crépuscule figé couleur de prune, pluie tiède. La ruche ne s'allume plus qu'une seconde, en éclats brefs.",
+    "Mangrove à marée basse, vase brune, racines-échasses vert sombre, lumière d'après-midi tamisée.",
+    "Pré-aube rose de garance, brume basse. Les premières pièces de pourpre sèchent sur les racines.",
+    "Aurore tenue en permanence par la reine. Des lieues d'étoffes pourpres, safran et indigo tendues de racine en racine."
+   ],
+   "recit": "Le panier de Zoé Kalliganis se remplit à marée basse, entre les racines des palétuviers : des murex, ces coquillages à épines qui saignent la pourpre. La chair descend dans des nasses suspendues sous la ruche de la reine Vespérine. C'est le contrat, peint au minium sur le pilotis du péage : la ruche éclaire le chenal de nuit, l'Exarchat nourrit les larves. Puis un exarque a vendu la chair aux saleurs. La reine a fermé sa lumière. Zoé a gardé ses nasses. Elle attend qu'on rouvre le contrat."
+  },
+  {
+   "id": "RES",
+   "nom": "Les Chinampas Dérivantes de Tezcamixtli",
+   "sur": "Ressource · Hexagone allongé · Îles flottantes · Inspiration aztèque",
+   "poleMoins": "Folie",
+   "polePlus": "Raison",
+   "centre": [
+    -65.71638901489172,
+    -202.25424859373686
+   ],
+   "axe": -1.884955592153876,
+   "polygone": [
+    [
+     9.907600726170918e-15,
+     -161.8033988749895
+    ],
+    [
+     -95.10565162951535,
+     -130.90169943749476
+    ],
+    [
+     -190.21130325903073,
+     -161.80339887498948
+    ],
+    [
+     -131.43277802978344,
+     -242.70509831248424
+    ],
+    [
+     -36.327126400268085,
+     -273.606797749979
+    ],
+    [
+     58.77852522924728,
+     -242.7050983124843
+    ]
+   ],
+   "paliers": [
+    "Îles qui s'entrechoquent sous un ciel vert de bile. Épis couverts de galles gonflées, ponts d'agave pourris qui pendent dans le vide.",
+    "Nuages en lambeaux jaunâtres, premières galles, la terre des îles s'émiette et tombe en pluie fine.",
+    "Jardins flottants vert et bleu, temples à degrés de tuf rose, canaux qui débordent en cascades dans le vide.",
+    "Maïs vert vif plus haut que les hommes. Chaque matin, une île bourgeonne au flanc d'une autre.",
+    "L'archipel a doublé. Vert acide du jeune maïs, rouge d'amarante, nuées de pollen jaune pâle. Les bourgeons montent jusqu'à l'Île-Mère."
+   ],
+   "recit": "Depuis que le lac de Tezcamixtli s'est évaporé vers le haut en emportant ses jardins, les chinampas flottent à hauteur de nuage, reliées par des ponts de fibre d'agave, et la récolte se fait comme avant, avec les mêmes paniers. Le soir, les vieux refont le compte sur leurs baguettes : l'île du nord a un rang de plus que la veille, et un cultivateur de moins. Personne ne le cherche."
+  },
+  {
+   "id": "MAR",
+   "nom": "La Foire de Givrecloche",
+   "sur": "Marché · Losange · Glacier · Inspiration gothique",
+   "poleMoins": "Brume",
+   "polePlus": "Clarté",
+   "centre": [
+    76.94208842938134,
+    -186.8033988749895
+   ],
+   "axe": -0.31415926535897953,
+   "polygone": [
+    [
+     95.10565162951538,
+     -130.90169943749476
+    ],
+    [
+     9.907600726170918e-15,
+     -161.8033988749895
+    ],
+    [
+     58.77852522924732,
+     -242.70509831248427
+    ],
+    [
+     153.88417685876266,
+     -211.80339887498954
+    ]
+   ],
+   "paliers": [
+    "Une brume laiteuse monte au-dessus des têtes. Lots scellés dans la glace dépolie, posés sur deux feutres presque du même vert. Grimpez au clocher : il dépasse.",
+    "Brume jusqu'à la taille, lanternes de corne sur des étals de bois brun, neige mouillée.",
+    "Glacier bleu, cathédrale prise dans la glace jusqu'aux arcs-boutants, étals de bois sombre.",
+    "Ciel dégagé, soleil bas et franc. Les lots sortent de leurs blocs, les règles sont redessinées à la craie.",
+    "Midi de glacier sous un ciel bleu dur. Terrasses de glace sablée, feutre blanc, un seul carré vert par table. La cathédrale est dégagée jusqu'à la nef."
+   ],
+   "recit": "Sous le clocher qui dépasse du glacier, la foire n'a qu'une banque : le Chapitre, douze chanoines-croupiers en chasuble. Ils ne mentent jamais. Leurs règles sont justes, sauf une, qui est seulement vraie : la Maison prend le treizième lot. Quand la brume monte des crevasses, les lots arrivent enfermés dans des blocs de glace dépolie, et vous misez sans voir. Sur le parvis, un orgue de barbarie tire ses airs des cartons qui numérotent les lots. Et le treizième carton n'a aucun trou."
+  },
+  {
+   "id": "DON",
+   "nom": "Le Puits des Neuf Édits",
+   "sur": "Donjon · Pentagone · Volcan · Inspiration chinoise impériale",
+   "poleMoins": "Tyrannie",
+   "polePlus": "Liberté",
+   "centre": [
+    180.17073246471935,
+    -130.90169943749478
+   ],
+   "axe": -0.6283185307179588,
+   "polygone": [
+    [
+     153.8841768587627,
+     -50.00000000000001
+    ],
+    [
+     95.10565162951538,
+     -130.90169943749476
+    ],
+    [
+     153.8841768587627,
+     -211.8033988749895
+    ],
+    [
+     248.98982848827802,
+     -180.90169943749478
+    ],
+    [
+     248.98982848827802,
+     -80.90169943749478
+    ]
+   ],
+   "paliers": [
+    "Croûte brun-violet laquée d'empreintes vermillon. Dalles céladon et dalles de jade fondu, presque du même vert. Pluie tiède de lapilli.",
+    "Fumerolles rabattues en voiles jaune soufre, auvents de laque rouge, une tablette clouée à chaque palier.",
+    "Cratère de basalte brun, pagodes de tuf à demi fondues, lueurs orange, fumerolles libres.",
+    "La croûte se fend, la lave coule en rigoles. Les tablettes sont retournées face contre terre.",
+    "Le puits est ouvert sur le ciel. Fontaines de lave vermillon, panaches jaune soufre, et une passerelle de dominos que nulle règle ne prévoit."
+   ],
+   "recit": "Il était une fois un empereur qui voulait des lois auxquelles la lave elle-même obéirait. Il fit creuser au fond du cratère un puits de neuf étages et grava un Édit à chacun. Le neuvième, il le fit tailler dans un sceau de jade céladon, à l'envers, comme tous les sceaux. La lave obéit et durcit en croûte. L'empereur, lui, ne remonta jamais. Le puits a sa morale, gravée sous la margelle : un ordre s'applique d'abord à la main qui le grave."
+  }
+ ],
+ "secrets": [
+  {
+   "zone": "CIT",
+   "titre": "L'écorce pliée en huit",
+   "texte": "Tout en haut, au pied du bulbe. Personne ne l'a jamais dépliée, et vous non plus.",
+   "pos": [
+    1.9,
+    26.05,
+    2.8
+   ]
+  },
+  {
+   "zone": "CIT",
+   "titre": "Le racloir d'Ouliana",
+   "texte": "Sur le chemin de ronde, au-dessus de la porte où elle dormait. Le tesson est encore blanc d'aubier.",
+   "pos": [
+    32.31,
+    11.65,
+    44.47
+   ]
+  },
+  {
+   "zone": "CIT",
+   "titre": "Le nom du frère noyé",
+   "texte": "Sous les copeaux, une écorce que la racleuse a oublié de gratter. Elle n'apparaît que lorsque la ville oublie.",
+   "pos": [
+    -96,
+    9.5,
+    -58
+   ]
+  },
+  {
+   "zone": "CIT",
+   "titre": "La cave sous la palissade",
+   "texte": "Là où les rondins se sont effacés, la terre s'est ouverte. On n'entre par la brèche que lorsque la ville oublie ses murs.",
+   "pos": [
+    29.4,
+    4.1,
+    -40.5
+   ]
+  },
+  {
+   "zone": "CIT",
+   "titre": "La généalogie d'origine",
+   "texte": "Sur le balcon d'une tour que la mémoire a rebâtie. Les noms y sont dans le bon ordre.",
+   "pos": [
+    67,
+    13.5,
+    0
+   ]
+  },
+  {
+   "zone": "CIT",
+   "titre": "La niche aux lettres",
+   "texte": "Les écorces cousues le long du rempart forment une phrase. Elle s'arrête ici.",
+   "pos": [
+    -32.33,
+    9.1,
+    -44.5
+   ]
+  },
+  {
+   "zone": "CIT",
+   "titre": "Une lettre dans la boue",
+   "texte": "Sur le toit d'une isba, une écorce blanche que personne n'a encore ni grattée ni recopiée.",
+   "pos": [
+    -13.68,
+    7.95,
+    -37.59
+   ]
+  },
+  {
+   "zone": "ANT",
+   "titre": "Le contrat peint au minium",
+   "texte": "Sous la ruche de la reine, là où pendaient les nasses. La ruche éclaire le chenal, l'Exarchat nourrit les larves.",
+   "pos": [
+    -201.44,
+    16.6,
+    -146.35
+   ]
+  },
+  {
+   "zone": "ANT",
+   "titre": "Quatre langues de comptoir",
+   "texte": "Au troisième étage du comptoir sur pilotis. Il ne s'élève que lorsque l'aurore tient.",
+   "pos": [
+    -272.4,
+    12.8,
+    -169.48
+   ]
+  },
+  {
+   "zone": "ANT",
+   "titre": "Larve-de-Cuve",
+   "texte": "Sous une bâche goudronnée, un ballot qui luit. On ne le voit que dans la nuit close.",
+   "pos": [
+    -164.76,
+    0.9,
+    -106.15
+   ]
+  },
+  {
+   "zone": "ANT",
+   "titre": "Le signal des passeurs",
+   "texte": "Sur une plateforme de la canopée. On n'y lit les éclats de la ruche que dans le crépuscule prune.",
+   "pos": [
+    -212.11,
+    10.5,
+    -177.59
+   ]
+  },
+  {
+   "zone": "ANT",
+   "titre": "Le baril de saumure",
+   "texte": "En haut de l'échelle des contrebandiers. Elle n'est accrochée au mât que dans la nuit.",
+   "pos": [
+    -218.59,
+    16.6,
+    -140.77
+   ]
+  },
+  {
+   "zone": "ANT",
+   "titre": "La nasse de Zoé",
+   "texte": "Dans une cuve noyée du chenal. Elle n'affleure qu'à marée basse, quand la mangrove n'est ni nuit ni aurore.",
+   "pos": [
+    -251.3,
+    -1.9,
+    -176.4
+   ]
+  },
+  {
+   "zone": "RES",
+   "titre": "La baguette entaillée",
+   "texte": "Sur l'île du temple. Les vieux y comptent les tiges. Il y a une entaille de plus que de cultivateurs.",
+   "pos": [
+    -4.13,
+    31.71,
+    -221.4
+   ]
+  },
+  {
+   "zone": "RES",
+   "titre": "Bouture de l'Île-Mère",
+   "texte": "Tout en haut. Les bourgeons n'y mènent que lorsque la raison a gagné l'archipel.",
+   "pos": [
+    -80.03,
+    58.54,
+    -233.35
+   ]
+  },
+  {
+   "zone": "RES",
+   "titre": "Galle de Tezcamixtli",
+   "texte": "Au sommet de la pyramide, contre la Grande Galle. Elle ne gonfle que lorsque les îles dansent à rebours.",
+   "pos": [
+    -109.49,
+    12.72,
+    -207.37
+   ]
+  },
+  {
+   "zone": "RES",
+   "titre": "La danse à rebours",
+   "texte": "Une île où l'on n'arrive que porté par une autre. Elle ne fait la navette que lorsque les ponts sont rompus.",
+   "pos": [
+    -19.09,
+    22.56,
+    -178.5
+   ]
+  },
+  {
+   "zone": "RES",
+   "titre": "Le panier du cultivateur manquant",
+   "texte": "Suspendu sous l'île du nord, là où personne ne le cherche. Il est encore plein.",
+   "pos": [
+    -82.74,
+    20.23,
+    -209.34
+   ]
+  },
+  {
+   "zone": "RES",
+   "titre": "Le rang de plus",
+   "texte": "Sur l'île-relais, entre le jardin du milieu et le temple. Un rang de maïs que personne n'a semé, et une lanterne pour le retrouver.",
+   "pos": [
+    -41.98,
+    25.07,
+    -245.71
+   ]
+  },
+  {
+   "zone": "RES",
+   "titre": "La crypte de racines",
+   "texte": "Sous l'île du temple, dans ses racines. On y descend par la passerelle qui plonge depuis l'île-relais. Le cultivateur manquant y a laissé ses sandales.",
+   "pos": [
+    -20.59,
+    18.06,
+    -231.64
+   ]
+  },
+  {
+   "zone": "MAR",
+   "titre": "La cloche misée",
+   "texte": "Au sommet du clocher. L'abbesse l'a perdue un soir de brelan. Par temps de brume, on monte ici pour revoir le soleil.",
+   "pos": [
+    48.51,
+    38.4,
+    -177.56
+   ]
+  },
+  {
+   "zone": "MAR",
+   "titre": "Lot scellé numéro treize",
+   "texte": "Au fond d'une crevasse, sous un feutre vert de mousse givrée. La brume ouvre la glace, la clarté la referme.",
+   "pos": [
+    116.23,
+    6.69,
+    -200.97
+   ]
+  },
+  {
+   "zone": "MAR",
+   "titre": "Le treizième carton",
+   "texte": "Sur le toit du bas-côté, derrière un pinacle. Il n'a aucun trou. Il faut que la cathédrale soit sortie de la glace.",
+   "pos": [
+    85.28,
+    6.4,
+    -180.57
+   ]
+  },
+  {
+   "zone": "MAR",
+   "titre": "Le brelan de l'abbesse",
+   "texte": "Sur l'autel, dans la nef. Par temps clair on entre par la baie brisée du mur sud ; dans la brume, on se laisse glisser entre la glace et le toit.",
+   "pos": [
+    91.58,
+    -0.2,
+    -190.3
+   ]
+  },
+  {
+   "zone": "MAR",
+   "titre": "La gargouille qui compte",
+   "texte": "Sur l'égout du toit de la nef. On n'y monte par les arcs-boutants que lorsque la glace arrive à leur pied.",
+   "pos": [
+    82.85,
+    14.4,
+    -194.51
+   ]
+  },
+  {
+   "zone": "DON",
+   "titre": "Le sceau de jade céladon",
+   "texte": "Au fond du neuvième étage, sur son coussin de basalte. Il ne se lit qu'imprimé. Sous la lave, il est hors d'atteinte.",
+   "pos": [
+    180.17,
+    -24.3,
+    -130.9
+   ]
+  },
+  {
+   "zone": "DON",
+   "titre": "L'Édit que personne n'a gravé",
+   "texte": "Au milieu de la passerelle de dominos, au-dessus de la fontaine. Les Tesselés ne la tendent que lorsque le puits est libre.",
+   "pos": [
+    186.05,
+    19.98,
+    -122.81
+   ]
+  },
+  {
+   "zone": "DON",
+   "titre": "Une main tamponnée",
+   "texte": "Au centre d'un enclos de Tesselés. Ils ne font cercle que sous la tyrannie, et ils se referment sur ce qu'ils gardent.",
+   "pos": [
+    159.02,
+    -9.78,
+    -124.86
+   ]
+  },
+  {
+   "zone": "DON",
+   "titre": "Panier de fleurs de soufre",
+   "texte": "Sur la pagode de guet. Les soufriers ne montent ici que lorsque le puits n'appartient à personne.",
+   "pos": [
+    152.51,
+    26.29,
+    -91.67
+   ]
+  },
+  {
+   "zone": "DON",
+   "titre": "La dalle qui ne ment pas",
+   "texte": "Parmi toutes les dalles presque du même vert, une seule est vraiment de jade. Elle luit un peu plus que les autres.",
+   "pos": [
+    160.11,
+    -10.4,
+    -135.6
+   ]
+  },
+  {
+   "zone": "DON",
+   "titre": "La cangue qui flotte",
+   "texte": "Un évadé s'en est servi de radeau sur le lac de lave. Elle n'est là que lorsque le puits est libre.",
+   "pos": [
+    189.02,
+    -24.3,
+    -127.45
+   ]
+  }
+ ],
+ "relief": {
+  "taille": 1009,
+  "pasMetres": 0.592,
+  "origineX": -327.77,
+  "origineZ": -354.28,
+  "hMin": -40,
+  "hMax": 88,
+  "note": "pixel(i,j) = monde(origineX+i*pas, origineZ+j*pas) ; hauteur = hMin + valeur/65535*(hMax-hMin) ; echelle Z du Landscape Unreal = (hMax-hMin)*100/512"
+ }
+}

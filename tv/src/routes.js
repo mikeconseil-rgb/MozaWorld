@@ -28,9 +28,15 @@ const estRES=Z=>(Z.mod||Z.id)==='RES';
 const VOISINES={};
 (()=>{const pr=p=>Math.round(p[0])+','+Math.round(p[1]);const S1={};for(const Z of ZN)S1[Z.id]=new Set(Z.poly.map(pr));
   for(const A of ZN){VOISINES[A.id]=[];for(const B of ZN){if(A===B)continue;let n=0;for(const p of B.poly)if(S1[A.id].has(pr(p)))n++;if(n>=2)VOISINES[A.id].push(B.id)}}})();
+const estCIT=Z=>!!Z&&(Z.mod||Z.id)==='CIT',estDON=Z=>!!Z&&(Z.mod||Z.id)==='DON';
+const tient=id=>!!(S.own[id]&&S.act[id]);
+/* rempart (17 nov.) : route ouverte par une Citadelle tenue et éveillée (palier 1 ou plus) vers une Citadelle ou un Donjon tenu et voisin */
+const rempartOK=(a,b)=>tient(a)&&tient(b)&&Math.abs(S.lv[a]||0)>=1&&(estDON(ZB[b])||estCIT(ZB[b]));
 function etatRoutes(){S.routes=S.routes||{};S.atout=S.atout||{};
-  /* route coupée si la Ressource est sous le niveau 2 */
-  for(const r in S.routes)if(Math.abs(S.lv[r]||0)<2)delete S.routes[r]}
+  for(const r in S.routes){
+    if(estCIT(ZB[r])){S.routes[r]=S.routes[r].filter(b=>rempartOK(r,b));if(!S.routes[r].length)delete S.routes[r];continue}
+    /* route coupée si la Ressource est sous le niveau 2 */
+    if(Math.abs(S.lv[r]||0)<2)delete S.routes[r]}}
 const routesVers=id=>{etatRoutes();return Object.keys(S.routes).filter(r=>S.routes[r].indexOf(id)>=0)};
 const nbCotes=id=>ZB[id]?ZB[id].poly.length:4;
 /* atouts actifs sur une tuile : un par type de mana, d'une Ressource au niveau 3 reliée */
@@ -44,8 +50,20 @@ function optionsRoutes(Z){etatRoutes();const o=[],lv=Math.abs(S.lv[Z.id]||0);
       o.push({l:a?`Atout choisi : ${a}`:'Choisir l\'atout du niveau 3',ic:'✦',cls:'p',d:a?'changer':'trois atouts '+ZMANA[Z.id],go:()=>openAtouts(Z)})}
     if(lv>=2)o.push({l:'Routes',ic:'⟋',cls:'p',d:`${(S.routes[Z.id]||[]).length} route(s) · ${lv>=3?'atout greffé':'atout au niveau 3'}`,go:()=>openRoutes(Z)});
     else o.push({l:'Routes',ic:'⟋',off:true,d:'ouvertes au niveau 2'})}
-  else{const at=atoutsDe(Z.id);if(at.length)o.push({l:'Atouts greffés',ic:'✦',off:true,d:at.map(a=>a.nom).join(', ')})}
+  else if(estCIT(Z)&&S.act[Z.id]){const n=(S.routes[Z.id]||[]).length;
+    if(Math.abs(S.lv[Z.id]||0)>=1)o.push({l:'Remparts',ic:'▥',cls:'p',d:`${n} rempart(s) · route vers une Citadelle ou un Donjon à vous, voisin`,go:()=>openRemparts(Z)});
+    else o.push({l:'Remparts',ic:'▥',off:true,d:'ouverts au palier 1'})}
+  if(!estRES(Z)){const at=atoutsDe(Z.id);if(at.length)o.push({l:'Atouts greffés',ic:'✦',off:true,d:at.map(a=>a.nom).join(', ')})}
   return o}
+function openRemparts(Z,f){etatRoutes();const mes=S.routes[Z.id]||[],max=nbCotes(Z.id);
+  const cand=VOISINES[Z.id].filter(id=>estCIT(ZB[id])||estDON(ZB[id]));
+  const opts=cand.map(id=>{const B=ZB[id],on=mes.indexOf(id)>=0,ok=rempartOK(Z.id,id),pleine=!on&&routesVers(id).length>=nbCotes(id);
+    return{l:(on?'✓ ':'')+B.info.nom,ic:on?'▥':'·',cls:on?'p':'',off:!on&&(!ok||pleine||mes.length>=max),
+      d:on?'rempart debout · OK pour le défaire':!ok?`${estDON(B)?'Donjon':'Citadelle'} pas encore à vous`:pleine?'tuile déjà pleine de routes':(estDON(B)?'Donjon':'Citadelle')+' voisin',
+      go:()=>{const r=S.routes[Z.id]=S.routes[Z.id]||[];if(on)r.splice(r.indexOf(id),1);else r.push(id);save();openRemparts(Z,UI.f)}}});
+  ui('menu',{sur:'Remparts · '+Z.info.nom,t:'Relier la Citadelle',f:f||0,
+    corps:`<p class="petit">Une route entre cette Citadelle et une Citadelle ou un Donjon voisin qui est à vous devient un rempart. Il pose un bloqueur de 10 PV au début des combats dans les deux zones et leurs voisines (2 au plus), et bloque l'abri des chemins pour vos adversaires. Si l'une des deux zones est perdue, le rempart tombe.${cand.length?'':' <b>Aucune Citadelle ni aucun Donjon voisin.</b>'}</p>`,
+    back:()=>openEveil(Z),opts:opts.concat([{l:'Retour',ic:'◆',go:()=>openEveil(Z)}])})}
 function openAtouts(Z,f){const t=ZMANA[Z.id],L=ATOUTS[t]||[];
   ui('menu',{sur:'Ressource niveau 3 · mana '+t,t:'Choisir un atout',f:f||0,
     corps:'<p class="petit">L\'atout choisi tient lieu de pôle. Chaque route vers une tuile voisine le greffe sur les cartes de cette tuile. Deux atouts du même mana sur une tuile : un seul compte.</p>',
