@@ -252,6 +252,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
   if(ci>=0)o.push({l:`Jouer « ${S.cards[ci].nom} »`,ic:carteOn?'☑':'☐',d:carteOn?`épreuve −${S.cards[ci].pw}, carte dépensée`:'carte gardée',go:()=>{carteOn=!carteOn;openEveil(Z,UI.f)}});
   if(typeof optionsRoutes==='function')o.push(...optionsRoutes(Z));
+  if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
     corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
@@ -285,7 +286,7 @@ function startEpreuve(Z,target){const ci=bestCard(Z),useC=carteOn&&ci>=0;let pw=
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+REPOS;S.hurt=Math.max(0,S.hurt-1);const c=newCard(Z,target);S.cards.push(c);if(S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target,c)}
+  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);const c=newCard(Z,target);S.cards.push(c);if(S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target,c)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
@@ -461,7 +462,9 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
     const g=dispo?6+2*pulse:S.own[Z.id]?5:3.5;mc.fillStyle=r?'#7d7466':dispo?`rgba(255,217,138,${.6+.4*pulse})`:'rgba(201,164,92,.7)';mc.beginPath();mc.moveTo(x,y-g);mc.lineTo(x+g*.7,y);mc.lineTo(x,y+g);mc.lineTo(x-g*.7,y);mc.fill();
     if(dispo){mc.strokeStyle=`rgba(255,217,138,${.5*pulse})`;mc.lineWidth=1.5;mc.beginPath();mc.arc(x,y,g+4,0,TAU);mc.stroke()}}
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
-  for(const q of secrets){if(q.found||!q.cond(q.Z.lv))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
+  const CL=typeof clarte==='function'?clarte():null;
+  if(CL)for(const Z of ZN)if(CL[Z.id]!==undefined&&!S.own[Z.id]){const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 13px sans-serif';mc.textAlign='center';mc.fillStyle='#bfe3ff';mc.fillText(sgn(S.lv[Z.id])||'0',cx,cy-10)}
+  for(const q of secrets){if(q.found||!q.cond(q.Z.lv)&&!(CL&&CL[q.Z.id]!==undefined))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
   if(E&&E.monde)for(const o of E.orbs)if(!o.got){mc.fillStyle='#b8ff9a';mc.beginPath();mc.arc((o.x+ox)*s,(o.z+oz)*s,3.4+Math.sin(T*6),0,TAU);mc.fill()}
   const x=(P.x+ox)*s,y=(P.z+oz)*s,fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);mc.fillStyle='#fff';mc.beginPath();mc.moveTo(x+fx*10,y+fz*10);mc.lineTo(x-fz*5-fx*5,y+fx*5-fz*5);mc.lineTo(x+fz*5-fx*5,y-fx*5-fz*5);mc.fill()}
 
@@ -538,5 +541,5 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(!CB){cullScene();draw(T)}}   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
-plusTables();titre();requestAnimationFrame(loop);
+plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);
 window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};

@@ -64,8 +64,10 @@ function cycle(){S.nc++;const lignes=[];
   if(donjonAVous()&&nbPieges()&&S.ent===0){let paye=0,dorment=0;
     for(const x of S.pieges){if(!x)continue;const m=PIEGES[x.k].m;if(peutPayer(m,1)){payer(m,1);paye++;x.dort=false}else{x.dort=true;dorment++}}
     lignes.push(`−${paye} mana d'entretien${dorment?`, ${dorment} piège(s) endormi(s)`:''}`)}
+  if(typeof peages==='function')peages(lignes);
   save();etatHud();
-  if(donjonAVous()&&S.nc-S.dernierAssaut>=ASSAUT_CYCLES){S.dernierAssaut=S.nc;assaut(lignes);return}
+  if(donjonAVous()&&S.nc-S.dernierAssaut>=(typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES)){S.dernierAssaut=S.nc;
+    if(typeof cacheParBrume==='function'&&cacheParBrume('DON')){lignes.push('Une horde rôde, mais la Brume de Givrecloche cache le Donjon : elle passe son chemin')}else{assaut(lignes);return}}
   if(lignes.length&&started&&mode==='monde')toast('Cycle '+S.nc,'Réserve : '+resTexte(),lignes.join(' · '))}
 setInterval(()=>{if(!started||mode==='titre')return;S.tc++;if(S.tc>=CYCLE){S.tc=0;cycle()}},1000);
 
@@ -82,7 +84,8 @@ function assaut(avant){let h=forceHorde();const h0=h,l=[];
   const ok=h<=0;
   if(ok){S.assauts.ok++;gagner('Feu',2);l.push('La horde se brise dans vos salles : +2 Feu pris sur les vaincus.')}
   else{S.assauts.ko++;const i=S.pieges.findIndex(Boolean);if(i>=0){l.push(`La horde passe (reste ${h}) et saccage ${SALLES[i]}.`);S.pieges[i]=null}else l.push(`La horde passe (reste ${h}) : aucune salle ne la retient.`);
-    if(S.lv.DON!==0){const n=S.lv.DON-Math.sign(S.lv.DON);S.lv.DON=n;DON.lvT=n;l.push(`Le Donjon recule d'un palier (${sgn(n)||'0'}).`)}}
+    if(S.lv.DON!==0&&typeof borne==='function'&&borne('DON'))l.push('La Pierre de bornage de Raak tient : le Donjon ne recule pas.');
+    else if(S.lv.DON!==0){const n=S.lv.DON-Math.sign(S.lv.DON);S.lv.DON=n;DON.lvT=n;l.push(`Le Donjon recule d'un palier (${sgn(n)||'0'}).`)}}
   save();etatHud();hudKey='';
   ecoRapport.push({ok,h0,lignes:[...(avant||[]),...l]});montrerRapport()}
 function montrerRapport(){if(!ecoRapport.length||mode!=='monde')return;const r=ecoRapport.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
@@ -97,7 +100,7 @@ function openDonjon(f){mode='menu';document.body.classList.add('jeu-ouvert');
   o.push({l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openDonjon(UI.f)}});
   o.push({l:'Provoquer un assaut maintenant (test)',ic:'⚔',go:()=>{closeUI();mode='monde';S.dernierAssaut=S.nc;assaut([])}});
   o.push({l:'Retour',ic:'◆',go:toMonde});
-  const prochain=Math.max(0,(S.dernierAssaut+ASSAUT_CYCLES-S.nc-1)*CYCLE+(CYCLE-S.tc));
+  const prochain=Math.max(0,(S.dernierAssaut+(typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES)-S.nc-1)*CYCLE+(CYCLE-S.tc));
   ui('menu',{sur:'Donjon à vous · aménager',t:'Les salles des Neuf Édits',f,
     corps:`<p class="petit">Réserve : ${resHTML()}.</p><p class="petit">Chaque salle reçoit un piège ; chaque piège a son type de mana, pour la pose comme pour l'entretien. Un type que votre paquet n'utilise pas peut servir ici. Prochain assaut du sauvage dans environ ${fmt(prochain)} ; la horde traverse les salles dans l'ordre.</p><p class="petit">${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:o})}
