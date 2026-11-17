@@ -200,3 +200,7 @@ Code : tv/src/assemblees.js. Une Assemblée n'agit pas en combat : sa loi agit s
 4. Delta de Pama (ASS150) : les assauts du sauvage arrivent deux fois plus tard.
 5. Canyon de Fjorhel (ASS152) : Silence, deux fois moins de rencontres dans vos zones ; Chant, rencontres plus fréquentes, +1 mana par victoire.
 6. Oasis de Raak (ASS155) : « Borner une zone » à sa Pierre ; la zone bornée ne recule pas face à une horde (et plus tard un rival).
+
+### 2.4 · Une seule sorte de carte (17 nov., décision 2a)
+- La « carte de pouvoir » de la 1.0 est retirée (S.cards, newCard, rangs Mineure/Majeure/Ultime, menu Paquet, compteur Cartes du HUD). La mue montre seulement la carte de combat du palier, et rien pour une Ressource.
+- Le cycle des contre-pouvoirs (CONTRE) passe par la possession : si vous possédez et avez activé la zone qui en contre une autre, l'épreuve de celle-ci est plus facile, −1, puis −2 dès le palier 4 et −3 dès le palier 6 de la zone qui contre. En combat, la carte de la zone qui contre reste doublée (contreX).
