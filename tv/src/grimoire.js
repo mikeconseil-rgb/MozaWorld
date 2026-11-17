@@ -15,7 +15,7 @@ function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
         d:(estRes(Z)?'Ressource':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+2)})),
       {l:'Retour',ic:'◆',go:openMenu}]})}
 function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:()=>openGrimoire(0),
-  corps:`<p class="petit">· Le paquet de départ : 10 cartes communes, les mêmes pour tous.</p>
+  corps:`<p class="petit">· Le paquet de départ : 5 cartes communes, les mêmes pour tous (3 Coup de bâton, 2 Pas de côté).</p>
 <p class="petit">· Une carte de zone se gagne à chaque palier réussi à la Pierre d'éveil de sa zone. Ni les combats ni l'activation n'en donnent.</p>
 <p class="petit">· Toutes vos copies suivent le niveau actuel de leur zone : si la zone passe de +2 à +3, vos cartes se renforcent ; si elle passe du côté −, elles deviennent la carte de l'autre pôle.</p>
 <p class="petit">· En combat, la capacité de dépense monte de 1 par tour (1, 2, 3…), tous types confondus. Une carte de zone se paie avec le mana de sa zone ; les cartes communes en mana gris, infini. Sans assez du bon mana, une carte de zone se joue en gris : effet −25 %, pas de contre-pouvoir.</p>

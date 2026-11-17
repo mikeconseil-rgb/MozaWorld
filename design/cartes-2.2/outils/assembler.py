@@ -81,7 +81,7 @@ for c in reversed(cards):
   if key in seen: continue
   seen.add(key);keep.append(c)
 cards_g=keep[::-1]
-for n,co,e,mc,k in [('Coup de bâton',1,'6 dégâts.',['Dégâts'],5),('Pas de côté',1,'Le héros gagne 5 de garde.',['Garde'],3),('Souffle court',0,'Piochez 1 carte, 2 de garde.',['Pioche','Garde'],2)]:
+for n,co,e,mc,k in [('Coup de bâton',1,'6 dégâts.',['Dégâts'],3),('Pas de côté',1,'Le héros gagne 5 de garde.',['Garde'],2)]:
   G.append(dict(nom=n,zone='Paquet de départ',tuile='Commune',mana='Gris',pole='',polenom=f'×{k}',cout=co,e1=e,genre='Commune',mec=mc))
 order={'m':0,'p':1,'m7':2,'p7':3}
 def zkey(z):return (list(META).index(z))
