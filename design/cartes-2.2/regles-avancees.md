@@ -27,6 +27,14 @@ Direction choisie par l'utilisateur : « bloqueurs sur le terrain », dans l'esp
 - Le territoire de départ compte donc **environ 9 tuiles**.
 - Les zones qui l'entourent sont au niveau ±5. Elles **ne cèdent** (Pierre d'éveil fermée, combats mortels) **qu'une fois toutes les zones de départ prises** et le royaume assez développé : paquet d'au moins 15 cartes.
 
+## 1 quater. Passifs du royaume et gardiens mortels (17 nov.)
+
+Le royaume donne des **passifs de combat**, dans l'esprit des artefacts de Monster Train. Ils ne sont pas copiés.
+- **Citadelles : endurance.** Chaque Citadelle possédée et activée donne +6 PV, plus 2 PV par palier. Elle lève aussi la Garde au début du combat, avec 5 PV plus 1 par palier. La Garde ne perd alors qu'un tiers de ses PV par tour au lieu de la moitié.
+- **Donjons : résistance.** Chaque Donjon retire 1 dégât à chaque coup reçu par le héros (jamais sous 1). Chaque Donjon arme aussi un piège : tous les ennemis brûlent de 2 sur 2 tours, et les pièges se cumulent.
+- **Gardiens mortels.** Si une zone dépasse de 5 niveaux ou plus la plus haute de vos zones, ses gardiens ont 3 fois leurs PV et 2 fois leur attaque. La mort est alors assurée sans un royaume développé.
+- **À venir :** les remparts posent un bloqueur au début du combat. Traverser une zone en restant sur une route évite les rencontres, sauf dans une Citadelle ou sur un rempart actif que l'on ne possède pas.
+
 ## 2. D'où viennent les cartes
 
 | Sorte | Comment on l'obtient | Combien | Mana |
