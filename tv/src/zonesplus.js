@@ -170,4 +170,5 @@ function cartesPoles(){
     CK[id]={z:id,nom:()=>side()[0],get cout(){return side()[1]},get cible(){return side()[2]},
       txt:k=>side()[3](L(),contreX(k)),jeu:(k,t)=>side()[4](L(),contreX(k),t),poles:P}}
   for(const id in GERBES){if(!ZB[id])continue;const G=GERBES[id],L=()=>Math.max(1,Lz(id)),nom=CK[id].nom;
-    CK[id]={z:id,nom,cout:0,cible:G[1],txt:k=>G[3](L()),jeu:(k,t)=>G[2](L(),contreX(k),t)}}}
+    CK[id]={z:id,nom,cout:0,cible:G[1],txt:k=>G[3](L()),jeu:(k,t)=>G[2](L(),contreX(k),t)}}
+  if(typeof installerCartes22==='function')installerCartes22()}
