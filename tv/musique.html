@@ -1,0 +1,39 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Juke-box MozaWorld</title>
+<style>
+:root{--fond:#0d0c0f;--texte:#efe7d6;--or:#e8c77f;--carte:#1a171d;--ligne:#3a3340}
+body{margin:0;background:var(--fond);color:var(--texte);font:18px/1.45 Georgia,serif}
+main{max-width:760px;margin:auto;padding:24px 16px}
+h1{color:var(--or);font-weight:normal;margin:.2em 0}p.n{opacity:.75;margin-top:0}
+.z{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin:16px 0}
+button{font:inherit;color:var(--texte);background:var(--carte);border:1px solid var(--ligne);border-radius:8px;padding:10px 12px;text-align:left;cursor:pointer}
+button:focus,button.on{outline:2px solid var(--or)}button small{display:block;opacity:.7;font-size:14px}
+.niv{display:flex;align-items:center;gap:12px;margin:18px 0}input[type=range]{flex:1;accent-color:var(--or)}
+#lv{font-size:28px;color:var(--or);min-width:2.5em;text-align:center}#air{min-height:3em}
+</style></head><body><main>
+<h1>Juke-box MozaWorld</h1>
+<p class="n">Choisis une zone, puis fais glisser le niveau de −7 à +7 : au niveau 0 on n'entend que l'air, chaque palier ajoute une couche. À la manette : flèches pour choisir, A pour jouer, gâchettes LB / RB pour le niveau.</p>
+<div class="niv"><button id="moins">−</button><input id="r" type="range" min="-7" max="7" step="1" value="0"><button id="plus">+</button><span id="lv">0</span></div>
+<div id="air">Appuie sur une zone pour lancer la musique.</div>
+<div class="z" id="zones"></div>
+<button id="stop">■ Arrêter</button>
+</main>
+<script src="src/carte.js"></script>
+<script src="src/musique.js"></script>
+<script>
+const ZMANA={CIT:'Glace',DON:'Feu',RES:'Vent',ANT:'Eau',MAR:'Glace'};
+const BASE=[['CIT','Berestograd, la Ville-Écorce','Citadelle'],['ANT',"L'Exarchat des Lucioles",'Antre'],['RES','Les Chinampas Dérivantes','Ressource'],['MAR','La Foire de Givrecloche','Assemblée'],['DON','Le Puits des Neuf Édits','Donjon']];
+const ZS=BASE.map(([id,nom,t])=>({id,nom,t,Z:{id}})).concat(CARTE_PLUS.map(d=>({id:d.id,nom:d.nom,t:d.type,Z:{id:d.id,mod:d.mod,d}})));
+let X=null,sel=null,lv=0,tm=null;const $=i=>document.getElementById(i);
+function niveau(v){lv=Math.max(-7,Math.min(7,v));$('r').value=lv;$('lv').textContent=lv>0?'+'+lv:lv}
+function jouer(z){if(!X){X=new(window.AudioContext||window.webkitAudioContext)();const c=X.createDynamicsCompressor(),g=X.createGain();g.gain.value=.55;g.connect(c);c.connect(X.destination);musBrancher(X,g,null)}
+  X.resume();sel=z;document.querySelectorAll('.z button').forEach(b=>b.classList.toggle('on',b.dataset.id===z.id));
+  const F=musZone(z.Z),A=MUS_AIRS[F.air];$('air').innerHTML='<b>'+z.nom+'</b> · '+z.t+(F.mana?' · mana '+F.mana:'')+'<br>♪ '+A.nom+' — '+A.src;
+  if(!tm)tm=setInterval(()=>{if(sel)musLecture(musZone(sel.Z),lv,X.currentTime)},60)}
+for(const z of ZS){const b=document.createElement('button');b.dataset.id=z.id;b.innerHTML=z.nom+'<small>'+z.t+' · '+MUS_AIRS[musZone(z.Z).air].nom+'</small>';b.onclick=()=>jouer(z);$('zones').appendChild(b)}
+$('r').oninput=e=>niveau(+e.target.value);$('moins').onclick=()=>niveau(lv-1);$('plus').onclick=()=>niveau(lv+1);
+$('stop').onclick=()=>{sel=null;MUS.cur=null;if(X)X.suspend()};
+let pb={};(function pad(){const g=navigator.getGamepads&&navigator.getGamepads()[0];if(g){const p=i=>g.buttons[i]&&g.buttons[i].pressed;
+  if(p(4)&&!pb[4])niveau(lv-1);if(p(5)&&!pb[5])niveau(lv+1);pb={4:p(4),5:p(5)}}requestAnimationFrame(pad)})();
+document.querySelector('.z button').focus();
+</script></body></html>

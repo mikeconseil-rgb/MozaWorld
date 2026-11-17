@@ -210,7 +210,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
     {l:'Blessures (prototype)',ic:'✚',d:S.sr===false?'Points de vie':'Façon Shadowrun : L, M, S, D',go:()=>{S.sr=S.sr===false;save();openMenu(UI.f)}},
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
-    {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
+    {l:'Musique',ic:'♪',d:(soundOn?'activée':'coupée')+(typeof musiqueTitre==='function'&&curZ?' · '+musiqueTitre(curZ):''),go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%QUALS.length;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize();openMenu()}},
     {l:'Comment jouer',ic:'?',go:openAide},
@@ -486,8 +486,10 @@ function perc(t,ty,v){v=v||1;if(ty==='t'){const o=AX.createOscillator(),g=AX.cre
   const s=AX.createBufferSource(),f=AX.createBiquadFilter(),g=AX.createGain();s.buffer=noiseBuf;f.type=ty==='c'?'bandpass':'highpass';f.frequency.value=ty==='c'?1900:6200;f.Q.value=ty==='c'?6:1;
   env(g,t,.002,ty==='c'?.06:.045,(ty==='c'?.5:.16)*v);s.connect(f);f.connect(g);g.connect(master);g.connect(delayIn);s.start(t,Math.random());s.stop(t+.2)}
 function sched(){if(!AX||!curZ)return;const cfg=ZA[curZ.id],lv=curZ.lv,now=AX.currentTime;
-  droneA.frequency.setTargetAtTime(cfg.root/4,now,.5);droneB.frequency.setTargetAtTime(cfg.root/4*1.498,now,.5);droneG.gain.setTargetAtTime(cfg.drone(lv)*1.6*(mode==='epreuve'&&!(E&&E.monde)?.5:1),now,.6);
-  windF.frequency.setTargetAtTime(cfg.wf,now,.5);windG.gain.setTargetAtTime(cfg.wind(lv)*1.5,now,.6);
+  /* 17 nov. : la musique de zone (musique.js) remplace les notes au hasard ; le vent reste, le bourdon se tait */
+  const mz=typeof musiqueTick==='function'&&musiqueTick(curZ,lv,now);
+  droneA.frequency.setTargetAtTime(cfg.root/4,now,.5);droneB.frequency.setTargetAtTime(cfg.root/4*1.498,now,.5);droneG.gain.setTargetAtTime(mz?0:cfg.drone(lv)*1.6*(mode==='epreuve'&&!(E&&E.monde)?.5:1),now,.6);
+  windF.frequency.setTargetAtTime(cfg.wf,now,.5);windG.gain.setTargetAtTime(cfg.wind(lv)*1.5,now,.6);if(mz)return;
   if(nextT<now-.5)nextT=now+.05;
   while(nextT<now+.25){const sc=lv<-2?cfg.n:lv>2?cfg.p:cfg.z,pat=cfg.pat[lv<-2?0:lv>2?2:1],ch=pat[stepI%pat.length];
     if(ch!=='.')perc(nextT,ch,.8);
