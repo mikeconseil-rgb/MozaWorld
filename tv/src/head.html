@@ -243,6 +243,16 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 .boite .cartes{grid-template-columns:repeat(auto-fill,calc(var(--u)*12));justify-content:center;gap:calc(var(--u)*1.4);padding-top:calc(var(--u)*1)}
 .boite .cc.kcarte{width:calc(var(--u)*12)}
 .boite .cc.kcarte .co{top:calc(var(--u)*-.9);left:calc(var(--u)*-.9);right:auto;width:calc(var(--u)*2.6);height:calc(var(--u)*2.6);font-size:calc(var(--u)*1.55)}
+
+/* ===== Manette (17 nov.) : boutons A B X Y à leurs couleurs, aide qui change quand la manette sert ===== */
+.bt{display:inline-grid;place-items:center;min-width:1.5em;height:1.5em;padding:0 .2em;box-sizing:border-box;border-radius:50%;font-family:var(--texte);font-weight:600;font-size:.85em;line-height:1;vertical-align:middle;color:#0d0c0f;font-style:normal;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
+.bt.a{background:#6fc24a}.bt.b{background:#e0533f}.bt.x{background:#3f8fe0}.bt.y{background:#e8c33a}
+.bt.rt{border-radius:.35em;background:#d9cfb8;min-width:2em}
+.invite .bt{margin-right:.45em;font-size:.8em}
+.aide-pad{display:none}
+body.manette .aide-pad{display:block}
+body.manette .aide:not(.aide-pad){display:none}
+body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6);left:50%;transform:translateX(-50%);width:calc(var(--u)*1.8);height:calc(var(--u)*1.8);display:grid;place-items:center;border-radius:50%;background:#3f8fe0;color:#0d0c0f;font-weight:600;font-size:calc(var(--u)*1)}
 </style>
 
 <canvas id="vue" tabindex="0"></canvas>
@@ -277,6 +287,11 @@ body.jeu-ouvert .hud.mondain{opacity:0}
   <div><i>▲ ▼</i> marcher (tenir pour courir)</div>
   <div><i>◀ ▶</i> tourner</div>
   <div><i>OK</i> agir · <i>Retour</i> menu</div>
+</div>
+<div class="hud mondain aide aide-pad cadre">
+  <div><i>stick G</i> marcher · <span class="bt rt">RT</span> courir</div>
+  <div><i>stick D</i> caméra · <span class="bt x">X</span> marche auto</div>
+  <div><span class="bt a">A</span> agir · <span class="bt y">Y</span> cartes · <span class="bt b">B</span> menu</div>
 </div>
 
 <div class="hud toast" id="toast"><div class="t1" id="t1"></div><div class="t2" id="t2"></div><div class="t3" id="t3"></div></div>

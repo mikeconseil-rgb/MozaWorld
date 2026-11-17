@@ -3,6 +3,9 @@ package com.mozaworld.tv;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.ViewGroup;
@@ -79,6 +82,59 @@ public class MainActivity extends Activity {
 
     @Override
     public void onWindowFocusChanged(boolean f) { super.onWindowFocusChanged(f); if (f) plein(); }
+
+    /* Manette (Xbox, etc.) : la WebView ne voit pas les sticks analogiques ; on relaie nous-mêmes
+       les axes et les boutons à la page (window.MZpad), et on les garde pour que le système n'en fasse pas des flèches. */
+    private float[] ax = new float[8];
+    private static float lis(MotionEvent e, int a) { float v = e.getAxisValue(a); return Math.abs(v) < 0.12f ? 0f : v; }
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent e) {
+        int src = e.getSource();
+        if (web != null && e.getAction() == MotionEvent.ACTION_MOVE
+            && ((src & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK || (src & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)) {
+            float lt = Math.max(lis(e, MotionEvent.AXIS_LTRIGGER), lis(e, MotionEvent.AXIS_BRAKE));
+            float rt = Math.max(lis(e, MotionEvent.AXIS_RTRIGGER), lis(e, MotionEvent.AXIS_GAS));
+            float[] n = { lis(e, MotionEvent.AXIS_X), lis(e, MotionEvent.AXIS_Y), lis(e, MotionEvent.AXIS_Z), lis(e, MotionEvent.AXIS_RZ),
+                lt, rt, e.getAxisValue(MotionEvent.AXIS_HAT_X), e.getAxisValue(MotionEvent.AXIS_HAT_Y) };
+            boolean ch = false;
+            for (int i = 0; i < 8; i++) if (Math.abs(n[i] - ax[i]) > 0.02f || (n[i] == 0f && ax[i] != 0f)) ch = true;
+            if (ch) {
+                ax = n;
+                StringBuilder b = new StringBuilder("window.MZpad&&MZpad.axes([");
+                for (int i = 0; i < 8; i++) { if (i > 0) b.append(','); b.append(Math.round(n[i] * 1000) / 1000f); }
+                web.evaluateJavascript(b.append("])").toString(), null);
+            }
+            return true;
+        }
+        return super.dispatchGenericMotionEvent(e);
+    }
+    private static String bouton(int k) {
+        switch (k) {
+            case KeyEvent.KEYCODE_BUTTON_A: return "a";
+            case KeyEvent.KEYCODE_BUTTON_B: return "b";
+            case KeyEvent.KEYCODE_BUTTON_X: return "x";
+            case KeyEvent.KEYCODE_BUTTON_Y: return "y";
+            case KeyEvent.KEYCODE_BUTTON_L1: return "lb";
+            case KeyEvent.KEYCODE_BUTTON_R1: return "rb";
+            case KeyEvent.KEYCODE_BUTTON_L2: return "lt";
+            case KeyEvent.KEYCODE_BUTTON_R2: return "rt";
+            case KeyEvent.KEYCODE_BUTTON_START: return "start";
+            case KeyEvent.KEYCODE_BUTTON_SELECT: return "select";
+            case KeyEvent.KEYCODE_BUTTON_THUMBL: return "ls";
+            case KeyEvent.KEYCODE_BUTTON_THUMBR: return "rs";
+            default: return null;
+        }
+    }
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        String n = bouton(e.getKeyCode());
+        if (n != null && web != null) {
+            if (e.getRepeatCount() == 0 && (e.getAction() == KeyEvent.ACTION_DOWN || e.getAction() == KeyEvent.ACTION_UP))
+                web.evaluateJavascript("window.MZpad&&MZpad.btn('" + n + "'," + (e.getAction() == KeyEvent.ACTION_DOWN) + ")", null);
+            return true;
+        }
+        return super.dispatchKeyEvent(e);
+    }
 
     @Override
     public void onBackPressed() {

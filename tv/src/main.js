@@ -90,22 +90,13 @@ function keyAct(e){const k=e.key,c=e.keyCode;
   if(k==='Escape'||k==='Backspace'||k==='GoBack'||k==='BrowserBack'||c===4||c===8||c===27||c===461||c===10009)return'back';
   if(e.code==='KeyM'||k==='MediaPlayPause'||c===179)return'son';return null}
 addEventListener('keydown',e=>{const a=keyAct(e);if(!a)return;e.preventDefault();
+  if((a==='ok'||a==='back')&&!e.repeat)padInactif();
   if(a in held){if(!held[a])heldT[a]=performance.now();held[a]=performance.now()}
   act(a,e.repeat)},{capture:true});
 addEventListener('keyup',e=>{const a=keyAct(e);if(a in held)held[a]=0});
 /* Le bouton Retour de la télécommande recule dans l'historique : on le retient et on en fait « menu » */
 try{history.pushState({mz:1},'');addEventListener('popstate',()=>{history.pushState({mz:1},'');act('back',false)})}catch(_){}
-let padPrev={};
-function pollPad(){const ps=navigator.getGamepads?navigator.getGamepads():[];let cur={};
-  for(const p of ps){if(!p)continue;const b=i=>p.buttons[i]&&p.buttons[i].pressed,ax=i=>p.axes[i]||0;
-    if(b(12)||ax(1)<-.5)cur.up=1;if(b(13)||ax(1)>.5)cur.down=1;if(b(14)||ax(0)<-.5)cur.left=1;if(b(15)||ax(0)>.5)cur.right=1;
-    if(b(0))cur.ok=1;if(b(1)||b(9)||b(8))cur.back=1}
-  const t=performance.now();
-  for(const a of['up','down','left','right','ok','back']){
-    if(cur[a]&&!padPrev[a]){if(a in held){held[a]=t;heldT[a]=t}act(a,false)}
-    else if(cur[a]&&a in held)held[a]=t;
-    else if(!cur[a]&&padPrev[a]&&a in held)held[a]=0}
-  padPrev=cur}
+/* La manette (Xbox) est gérée dans manette.js : pollPad(), padMarche() */
 /* Filet de sécurité : une touche dont on ne reçoit plus rien depuis 1,2 s est relâchée */
 const isHeld=a=>held[a]&&performance.now()-held[a]<1200;
 
@@ -186,6 +177,7 @@ function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
   ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve : ${resHTML()}${prodRessource()?' (la Ressource ajoute '+prodRessource()+' '+ZMANA.RES+' par cycle)':''} · en combat, on dépense la réserve : 1 mana au tour 1, 2 au tour 2, et ainsi de suite (certaines cartes donnent un boost) · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
+<p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
 <p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; une carte commune avec n'importe quel type. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure et plus la carte gagnée est forte (Mineure, Majeure, Ultime).</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
@@ -359,9 +351,12 @@ function move(dt){const t=performance.now();
   const live=(mode==='monde'||(mode==='epreuve'&&E&&E.monde));const ff=live?f:0;
   P.sp=(P.sp||0)+((ff?(P.run?27:14)*(ff<0?.6:1):0)-(P.sp||0))*Math.min(1,dt*6);
   const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),sp=P.sp;
-  if(ff){const dx=fx*ff*sp*dt,dz=fz*ff*sp*dt;P.face=P.yaw;
+  const pm=live?padMarche(dt):null;let dx=0,dz=0;
+  if(pm){P.sp=pm.sp;dx=Math.sin(pm.m)*pm.sp*dt;dz=Math.cos(pm.m)*pm.sp*dt;P.face=pm.m}
+  else if(ff){dx=fx*ff*sp*dt;dz=fz*ff*sp*dt;P.face=P.yaw}
+  if(dx||dz){
     const tryMove=(nx,nz)=>{if(!zoneAt(nx,nz))return false;for(const Z of ZN)if(Math.hypot(Z.alt.x-nx,Z.alt.z-nz)<2.6)return false;const s=stand(nx,nz,P.y+.05);if(s.blocked)return false;P.x=nx;P.z=nz;return true};
-    if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=sp*dt*.55}
+    if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=Math.hypot(dx,dz)*.55}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
   if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true}}

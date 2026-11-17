@@ -58,6 +58,20 @@ Retour de l'utilisateur après essai sur la Bravia : l'écran de combat et les c
 - **Marche automatique** : ▲ deux fois de suite, le héros court tout seul ; ◀ ▶ pour diriger, ▼ ou OK pour s'arrêter.
 - APK : `MozaWorld-TV-1.8-interface.apk`, versionCode 10, s'installe par-dessus la 1.7.
 
+## Version 1.9 : manette Xbox (17 novembre)
+
+L'utilisateur a branché une manette Xbox sur la Bravia. La WebView d'Android ne voit pas les sticks : l'appli (`MainActivity.java`) relaie elle-même les axes et les boutons à la page (`window.MZpad`) ; sur PC, `src/manette.js` lit l'API Gamepad du navigateur. La télécommande et le clavier marchent toujours, et l'aide à l'écran affiche les boutons de la manette dès qu'on s'en sert.
+
+| Où | Commandes à la manette |
+|---|---|
+| Monde | stick gauche : marcher dans la direction poussée (vitesse selon l'inclinaison ; à fond plus d'une demi-seconde, ou gâchette RT, ou clic du stick : courir) · stick droit : caméra · A : sauter, agir devant une Pierre · X : marche automatique · Y : paquet de combat · Vue : voyager · B ou Menu : menu |
+| Combat | stick, croix ou LB / RB : choisir la carte ou la cible · A : jouer · X : fin du tour · B : annuler la cible ou pause |
+| Menus | stick ou croix (maintenu, ça défile) · A : valider · B : retour |
+| Épreuves | stick ou croix, A pour OK ; la Récolte se joue au stick comme le monde |
+
+Mana confirmé par l'utilisateur le même jour (déjà en place depuis la 1.7) : la limite de dépense par tour est commune à tous les types, et les cartes communes se paient avec n'importe quel type.
+APK : `MozaWorld-TV-1.9-manette.apk`, versionCode 11, s'installe par-dessus la 1.8.
+
 ## Suggestions du projet intégrées
 
 - Une épreuve par type de zone, chaque réussite = **+1 palier** avec un gros changement visible (mue).
