@@ -1,5 +1,14 @@
 # Gameplay des cinq tuiles Girih
 
+> **Mise à jour du 17 novembre 2026.** Cette fiche date du 16 novembre. Les points suivants ont été remplacés depuis par des décisions de l'utilisateur ; en cas de doute, `design/cartes-2.2/regles-avancees.md` fait foi pour le combat.
+> - Ressources : elles ne donnent **aucune carte** (ni carte d'équipement, ni Gerbe), seulement du mana et, au niveau 3, un atout greffé par les routes. On ne commence plus « sur une Ressource de niveau 1 » : le territoire de départ compte 12 tuiles au niveau 0 (1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée, 6 Ressources).
+> - Mana (question 2) : plus de réserve unique ni de mise de départ. Une réserve par type de mana, une capacité de dépense de 1, 2, 3… par tour commune à tous les types, un mana gris infini à −25 % d'effet. La « réserve de 2 mana » de la Citadelle ne s'applique plus. L'entretien des pièges reste à trancher par des tests.
+> - Paquet (question 1) : départ avec 5 communes toutes différentes ; les cartes se gagnent une par palier de zone et par les secrets, jamais après un combat ; 15 cartes est le seuil pour sortir du territoire de départ, 40 le maximum. La forge du paquet en Citadelle n'est pas faite ; son maintien est à confirmer.
+> - Assemblée : s'ajoutent, « pour l'instant », des pouvoirs sur la carte du monde propres à chaque Assemblée (règles, section 1 sexies). Le duel d'arguments et les voix pondérées ne sont pas encore dans le jeu.
+> - Remparts : ils naissent de deux Citadelles, ou d'une Citadelle et d'un Donjon, possédées et voisines (et non plus seulement d'une route entre deux Citadelles) ; point à confirmer.
+> - Citadelles et Donjons donnent des passifs de combat (endurance, Garde levée, résistance, piège) ; les Antres un passif propre à chaque zone et à chaque pôle.
+> - Combat : champ de bataille « le Nœud », la Garde et les bloqueurs, prototype de blessures façon Shadowrun (provisoire).
+
 Copie de référence du 16 novembre 2026. Document vivant (version complète, avec débats et options étudiées) : https://claude.ai/artifact/UCXWVpwr7ZqH9VsApnLh27
 
 ## Décisions validées le 16 novembre 2026

@@ -1,6 +1,6 @@
 # MozaWorld : règles avancées du jeu de cartes (version 2.2)
 
-Ces règles complètent le combat au tour par tour de la version télé. Elles s'appliquent à toutes les cartes du Grimoire.
+Ces règles complètent le combat au tour par tour du jeu (page web jouée dans Edge sur Xbox depuis le 17 novembre ; la version télé est arrêtée). Elles s'appliquent à toutes les cartes du Grimoire.
 
 ## 1. Le tour de jeu
 
@@ -22,9 +22,8 @@ Direction choisie par l'utilisateur : « bloqueurs sur le terrain », dans l'esp
 ## 1 ter. Le territoire de départ (17 nov.)
 
 - Le paquet visé avant de sortir du territoire de départ compte **15 cartes** : les 5 communes et 10 cartes de zone.
-- Les Ressources ne donnent pas de carte. Les 10 cartes viennent donc d'environ **5 zones à cartes montées au palier 2** : 1 Citadelle, 1 Donjon, 1 Antre et 2 Assemblées.
-- Il faut aussi environ **4 Ressources** pour le mana et les premiers atouts.
-- Le territoire de départ compte donc **environ 9 tuiles**.
+- Les Ressources ne donnent pas de carte. Les 10 cartes viennent donc des zones à cartes montées au palier 2.
+- Le territoire de départ compte **12 tuiles au niveau 0** (choix C2 de l'utilisateur, 17 nov. ; la première version de cette section disait environ 9) : **6 zones à cartes** (1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée) et **6 Ressources** pour le mana et les premiers atouts.
 - Les zones qui l'entourent sont au niveau ±5. Elles **ne cèdent** (Pierre d'éveil fermée, combats mortels) **qu'une fois toutes les zones de départ prises** et le royaume assez développé : paquet d'au moins 15 cartes.
 
 ## 1 quater. Passifs du royaume et gardiens mortels (17 nov.)
@@ -176,6 +175,6 @@ Points : 1 dégât = 1 ; 1 garde = 0,8 ; 1 soin = 1 ; pioche = 4 ; hésitation =
 
 - Carte de pôle : (4 + 6 × coût) × (1 + 0,25 × (L − 1)), tolérance ±15 %. Palier 1, coût 2 ≈ 16 ; palier 6 ≈ 36.
 - Forme du palier 7 : 45 à 55 points, plus 60 à 100 % au réveil d'une résonance.
-- Gerbe : 7, 9 et 11 points aux niveaux 1, 2, 3.
+- Gerbe : 7, 9 et 11 points aux niveaux 1, 2, 3. (Hors jeu depuis le 17 nov. : les Ressources ne donnent plus de carte ; les Gerbes écrites restent dans les données, en attente d'une décision.)
 - Secret : 6 à 10 points.
 - Atout : 2 à 4 points par usage.
