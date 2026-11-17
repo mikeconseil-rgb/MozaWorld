@@ -113,15 +113,18 @@ function terrainAll(){const a=terrain.geometry.attributes;for(const n of['positi
 
 /* ---------- Modes ---------- */
 let mode='titre',curZ=null,hudKey='',started=false;
-let lastBack=0;
+let lastBack=0,lastUp=0;
 function act(a,rep){
   if(AX&&AX.state==='suspended')AX.resume();
   if(a==='back'){const t=performance.now();if(t-lastBack<250)return;lastBack=t}
   if(a==='son'){toggleSound();return}
   if(mode==='titre'||mode==='menu'){uiAct(a,rep);return}
   if(mode==='monde'){if(rep)return;
-    if(a==='ok'){if(nearAlt())openEveil(curZ);else if(P.g){P.vy=11.5;P.g=false}}
-    if(a==='back')openMenu();return}
+    /* marche automatique : ▲ deux fois de suite, le héros avance seul (◀ ▶ pour diriger, ▼ ou OK pour s'arrêter) */
+    if(a==='up'){const t=performance.now();if(t-lastUp<450)P.auto=1;lastUp=t}
+    if(a==='down'&&P.auto){P.auto=0;held.down=0}
+    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else if(P.g){P.vy=11.5;P.g=false}}
+    if(a==='back'){P.auto=0;openMenu()}return}
   if(mode==='epreuve'){if(a==='back'&&!rep){pauseEpreuve();return}if(E&&E.input)E.input(a,rep);return}
   if(mode==='mue'){if(a==='ok'&&!rep&&mue.t>2.5)mue.t=99}
   if(mode==='combat'){cbInput(a,rep)}}
@@ -182,7 +185,7 @@ function openPaquet(){ui('menu',{sur:'Paquet',t:'Vos cartes de pouvoir',corps:S.
 function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
   ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve : ${resHTML()}${prodRessource()?' (la Ressource ajoute '+prodRessource()+' '+ZMANA.RES+' par cycle)':''} · en combat, on dépense la réserve : 1 mana au tour 1, 2 au tour 2, et ainsi de suite (certaines cartes donnent un boost) · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
-function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
+function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
 <p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; une carte commune avec n'importe quel type. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure et plus la carte gagnée est forte (Mineure, Majeure, Ultime).</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
@@ -348,13 +351,17 @@ function step(){if(AX&&soundOn)perc(AX.currentTime,'c',.35)}
 
 /* ---------- Déplacement : ▲▼ avancer/reculer, ◀▶ tourner ---------- */
 function move(dt){const t=performance.now();
-  const f=(isHeld('up')?1:0)-(isHeld('down')?1:0),r=(isHeld('right')?1:0)-(isHeld('left')?1:0);
-  if(mode==='monde'||(mode==='epreuve'&&E&&E.monde)){P.yaw-=r*dt*1.9;P.run=f>0&&t-heldT.up>1100?1:0}else{P.run=0}
+  /* Plus rapide (retour du 17 nov.) : marche 14, course 27 au bout de 0,35 s ; virage qui s'accélère quand on tient ◀ ▶ */
+  if(mode!=='monde')P.auto=0;
+  const f=P.auto?1:(isHeld('up')?1:0)-(isHeld('down')?1:0),r=(isHeld('right')?1:0)-(isHeld('left')?1:0);
+  const tr=r?Math.min(1,(t-Math.max(heldT.left||0,heldT.right||0))/450):0;
+  if(mode==='monde'||(mode==='epreuve'&&E&&E.monde)){P.yaw-=r*dt*(1.7+1.5*tr);P.run=f>0&&(P.auto||t-heldT.up>350)?1:0}else{P.run=0}
   const live=(mode==='monde'||(mode==='epreuve'&&E&&E.monde));const ff=live?f:0;
-  const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),sp=(P.run?17:8.5)*(ff<0?.6:1);
+  P.sp=(P.sp||0)+((ff?(P.run?27:14)*(ff<0?.6:1):0)-(P.sp||0))*Math.min(1,dt*6);
+  const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),sp=P.sp;
   if(ff){const dx=fx*ff*sp*dt,dz=fz*ff*sp*dt;P.face=P.yaw;
     const tryMove=(nx,nz)=>{if(!zoneAt(nx,nz))return false;for(const Z of ZN)if(Math.hypot(Z.alt.x-nx,Z.alt.z-nz)<2.6)return false;const s=stand(nx,nz,P.y+.05);if(s.blocked)return false;P.x=nx;P.z=nz;return true};
-    if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=sp*dt}
+    if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=sp*dt*.55}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
   if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true}}

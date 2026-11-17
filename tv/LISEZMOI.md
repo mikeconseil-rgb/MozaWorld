@@ -47,6 +47,17 @@ Premier test décidé le 16 novembre : un combat payé avec le mana des Ressourc
 - **Assauts** : tous les 3 cycles, le monde sauvage attaque le Donjon. La horde (force 6 + 3 par palier du Donjon + 2 par assaut déjà repoussé + hasard) traverse les salles dans l'ordre. Repoussée : +2 Feu. Passée : une salle est saccagée et le Donjon recule d'un palier. « Provoquer un assaut maintenant » sert à tester vite.
 - **Trois rythmes d'entretien à comparer** (menu, ou écran du Donjon) : à chaque cycle (1 mana par piège, sinon il dort), à l'assaut (2 mana par piège quand l'assaut arrive, sinon il ne se déclenche pas), usure (pas d'entretien, chaque piège sert 3 assauts puis casse).
 
+## Version 1.8 : interface du combat et déplacement (17 novembre)
+
+Retour de l'utilisateur après essai sur la Bravia : l'écran de combat et les cartes étaient « vraiment moches », et le déplacement trop lent et « plate » à la télécommande.
+
+- **Cartes illustrées** (`src/habillage.js`) : vrai cadre de carte, pastille de coût à la couleur du mana, une illustration par sorte de carte (les trois communes partagent chacune la leur, comme convenu : « un type commun au début, c'est ok »), nom, ligne de type (Attaque, Défense, Technique, Boost, Invocation · type de mana) et texte.
+- **Écran de combat** : un décor peint par zone (forêt et palissade de Berestograd, voûtes et lave des Neuf Édits, canaux de Tezcamixtli, grotte aux lucioles, foire enneigée de Givrecloche), le héros et ses bêtes à gauche, les monstres à droite, chaque créature avec son propre portrait, une plaque de nom et de vie, et son intention en médaillon. Le journal passe sous le titre ; « Fin du tour » devient un sceau rond ; le mana du tour en gemmes.
+- Tout est dessiné en vecteurs (SVG) dans le code : gratuit, rien à télécharger, net sur une grande télé. La logique du combat (`combat.js`) n'est pas touchée : `habillage.js` redéfinit seulement `portrait()`, `carteHTML()` et `uniteEl()`.
+- **Déplacement plus rapide** : marche 14 au lieu de 8,5, course 27 au lieu de 17, et la course part au bout de 0,35 s au lieu de 1,1 s ; le virage accélère quand on tient ◀ ou ▶. Les rencontres gardent la même fréquence dans le temps.
+- **Marche automatique** : ▲ deux fois de suite, le héros court tout seul ; ◀ ▶ pour diriger, ▼ ou OK pour s'arrêter.
+- APK : `MozaWorld-TV-1.8-interface.apk`, versionCode 10, s'installe par-dessus la 1.7.
+
 ## Suggestions du projet intégrées
 
 - Une épreuve par type de zone, chaque réussite = **+1 palier** avec un gros changement visible (mue).
