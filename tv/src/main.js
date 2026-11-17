@@ -185,7 +185,7 @@ function uiAct(a,rep){if(!UI)return;const n=UI.opts.length,st=UI.deux&&(a==='lef
 function closeUI(){if(UI){$(UI.host).hidden=true;UI=null}}
 function toMonde(){closeUI();mode='monde';document.body.classList.remove('jeu-ouvert')}
 
-function titre(){mode='titre';const o=[];
+function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textContent='version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:'');
   if(hasSave)o.push({l:'Reprendre la partie',ic:'◆',go:()=>{startGame(false)}});
   o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
@@ -199,7 +199,7 @@ function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_D
   if(neuf)setTimeout(()=>toast('Berestograd · niveau 0','Cherchez la Pierre d\'éveil','Suivez la flèche dorée en bas de l\'écran, puis appuyez sur OK devant la Pierre.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
-  ui('menu',{sur:'Pause',t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
+  ui('menu',{sur:'Pause · version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:''),t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
@@ -212,7 +212,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
     {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
-    {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%3;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize();openMenu()}},
+    {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%QUALS.length;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize();openMenu()}},
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
@@ -259,7 +259,7 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 let mue=null;
 function startMue(Z,lv){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
   const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${typeof reposZone==='function'?reposZone(Z.id):REPOS} secondes avant le prochain bond.</p>`;
-  ui('menu',{sur:rs?'Mue · Ressource':'Mue · nouvelle carte',t:I.nom,corps:rs?`<p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}`:`<div class="cartes">${carteHTML(Z.id)}</div><p class="petit">La carte de combat « ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}`,
+  ui('menu',{sur:rs?'Mue · Ressource':'Mue · nouvelle carte',t:I.nom,corps:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});mode='menu'}};
   toast(`Palier ${sgn(lv)} · ${lv>0?I_(Z).pp:lv<0?I_(Z).pm:'Équilibre'}`,Z.info.nom,palTxt(Z,lv));fanfare(lv)}
 const I_=Z=>Z.info;
@@ -528,10 +528,11 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
     if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const cn=typeof carteDeSecret==='function'?carteDeSecret(q):'';toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(cn?` Carte utilitaire gagnée : « ${cn} ».`:''))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
   for(let i=hi;i<32;i++)secHalo.P[i*3+1]=-999;secHalo.up();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('vu')}
+  if(typeof majPoussiere==='function')majPoussiere(dt,T);
   if(frame%6===0)drawMini(T);
   if(frame%120===0&&started){S.pos=[P.x,P.z,P.yaw];save()}
   /* qualité automatique : si l'image tombe sous 22 images/s pendant 5 s, on baisse la résolution */
-  if(autoQ&&T>3){fpsT+=dt;fpsN++;if(fpsT>5){const fps=fpsN/fpsT;fpsT=0;fpsN=0;if(CB){fpsT=0;fpsN=0}else if(fps<22&&QI>0){QI--;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize()}else if(fps>=22)autoQ=false}}
+  if(autoQ&&T>3){fpsT+=dt;fpsN++;if(fpsT>5){const fps=fpsN/fpsT;fpsT=0;fpsN=0;if(CB){fpsT=0;fpsN=0}else if(fps<(QI>=2?27:22)&&QI>0){QI--;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize()}else autoQ=false}}
   if(!CB){cullScene();draw(T)}}   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
