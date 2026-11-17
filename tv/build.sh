@@ -5,6 +5,6 @@ cd "$(dirname "$0")"
   cat src/head.html
   echo '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>'
   echo '<script>'
-  cat src/core.js src/zones1.js src/zones2.js src/zones3.js src/mutations.js src/styles.js src/combat.js src/economie.js src/habillage.js src/manette.js src/main.js
+  cat src/carte.js src/core.js src/zones1.js src/zones2.js src/zones3.js src/zonesplus.js src/mutations.js src/styles.js src/combat.js src/economie.js src/habillage.js src/manette.js src/fluidite.js src/main.js
   echo '</script></body></html>'; } > index.html
 wc -c index.html

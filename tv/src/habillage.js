@@ -174,4 +174,5 @@ function artCarte(k){const a=ART[k]||ART.coup,z=CK[k].z,col=z?ZCOL[z]:null;
 function carteHTML(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,a=ART[k]||ART.coup;
   const bord=z?ZCOL[z]:'#c9a45c';
   const ligne=z?`${a.sorte} · ${typeof ZMANA!=='undefined'?ZMANA[z]:ZCOURT[z]}`:`${a.sorte} · Commune`;
-  return`<div class="cc kcarte ${z?'z':'base'}" style="--kb:${bord};--kcA:${rgba(bord,.28)};--kcB:${rgba(bord,.8)}"><div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${c.txt(k)}</div></div>`}
+  const gris=typeof enGris==='function'&&enGris(k);
+  return`<div class="cc kcarte ${z?'z':'base'}${gris?' gris':''}" style="--kb:${bord};--kcA:${rgba(bord,.28)};--kcB:${rgba(bord,.8)}"><div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${c.txt(k)}</div>${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`}

@@ -21,7 +21,8 @@ const peutPayer=(t,n)=>t?resN(t)>=n:resTot()>=n;
 function payer(t,n){if(t){S.res[t]=resN(t)-n;return}for(let i=0;i<n;i++){const b=MTYPES.reduce((m,x)=>resN(x)>resN(m)?x:m,MTYPES[0]);S.res[b]=resN(b)-1}}
 function gagner(t,n){S.res[t]=resN(t)+n}
 const pastille=(t,n)=>`<span class="mana-p" style="--mc:${t?MCOL[t]:'#d9cfb8'}">${n!==undefined?n:''}</span>`;
-const resHTML=()=>MTYPES.filter(t=>resN(t)>0||Object.values(ZMANA).includes(t)).map(t=>`${pastille(t,resN(t))} ${t}`).join(' · ');
+/* Mana gris (2.0) : réserve de base infinie, sans bonus ; voir combat.js (GRIS_MALUS) */
+const resHTML=()=>`<span class="mana-p" style="--mc:#8d8a86">∞</span> Gris · `+MTYPES.filter(t=>resN(t)>0||Object.values(ZMANA).includes(t)).map(t=>`${pastille(t,resN(t))} ${t}`).join(' · ');
 const resTexte=()=>MTYPES.filter(t=>resN(t)>0).map(t=>t+' '+resN(t)).join(', ')||'vide';
 
 const PIEGES={
@@ -48,13 +49,18 @@ function initEco(){
 
 const piegeDe=p=>p&&(typeof p==='string'?{k:p,u:3,dort:false}:p);
 const nbPieges=()=>S.pieges.filter(Boolean).length;
-const prodRessource=()=>!S.act.RES?0:Lz('RES')>=2?2:1;
+/* 2.0 : chaque Ressource activée produit son propre mana (1, puis 2 au niveau 2 et plus) */
+const ressources=()=>ZN.filter(Z=>(Z.mod||Z.id)==='RES'&&S.act[Z.id]);
+const prodZone=Z=>Lz(Z.id)>=2?2:1;
+const prodParType=()=>{const o={};for(const Z of ressources()){const t=ZMANA[Z.id];o[t]=(o[t]||0)+prodZone(Z)}return o};
+const prodRessource=()=>ressources().reduce((a,Z)=>a+prodZone(Z),0);
+const prodTexte=()=>Object.entries(prodParType()).map(([t,n])=>`${n} ${t}`).join(', ');
 const donjonAVous=()=>!!(S.act.DON&&S.own.DON);
 
 /* ---------- Cycle : production, entretien, assaut ---------- */
 let ecoRapport=[];
 function cycle(){S.nc++;const lignes=[];
-  const p=prodRessource();if(p){gagner(ZMANA.RES,p);lignes.push(`+${p} ${ZMANA.RES} de la Ressource`)}
+  const pt=prodParType();for(const t in pt){gagner(t,pt[t]);lignes.push(`+${pt[t]} ${t} des Ressources`)}
   if(donjonAVous()&&nbPieges()&&S.ent===0){let paye=0,dorment=0;
     for(const x of S.pieges){if(!x)continue;const m=PIEGES[x.k].m;if(peutPayer(m,1)){payer(m,1);paye++;x.dort=false}else{x.dort=true;dorment++}}
     lignes.push(`−${paye} mana d'entretien${dorment?`, ${dorment} piège(s) endormi(s)`:''}`)}

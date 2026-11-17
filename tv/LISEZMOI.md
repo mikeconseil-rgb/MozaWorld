@@ -72,6 +72,20 @@ L'utilisateur a branché une manette Xbox sur la Bravia. La WebView d'Android ne
 Mana confirmé par l'utilisateur le même jour (déjà en place depuis la 1.7) : la limite de dépense par tour est commune à tous les types, et les cartes communes se paient avec n'importe quel type.
 APK : `MozaWorld-TV-1.9-manette.apk`, versionCode 11, s'installe par-dessus la 1.8.
 
+## Version 2.0 : fluidité, monuments, mana gris, carte agrandie (17 novembre)
+
+Retour de test de la 1.9 : déplacements laborieux, « ça rame », marches dures à monter, activation peu claire, manque de mana.
+
+- **Fluidité** (`src/fluidite.js`) : la scène envoyait ~630 000 triangles à chaque image, car les objets en série n'étaient jamais écartés. Chaque série a maintenant une sphère qui couvre tous ses exemplaires, et le terrain est découpé en carreaux : on ne dessine que ce qui est devant la caméra et pas perdu dans la brume.
+- **Marches** : on franchit sans sauter tout ce qui fait moins de 1,35 m. Le héros et la caméra sont 30 % plus petits : les décors paraissent 30 % plus grands, sans toucher aux niveaux.
+- **Monuments** : chaque Pierre d'éveil devient un monument selon le type (trône pour la Citadelle, obélisque gravé pour le Donjon, idole à rayons pour la Ressource, carcasse géante pour l'Antre, crieur pour l'Assemblée). La zone d'activation passe de 7 à 11 m.
+- **Mana gris** : base infinie. Les cartes communes se paient en gris ; une carte de zone sans assez de mana de son type se joue quand même en gris, avec un effet affaibli (−25 %, pas de contre-pouvoir), signalé par un ruban gris sur la carte. Les réserves par type restent.
+- **Cartes** : les combats ne donnent plus de cartes. Une carte de combat vient de la zone : l'activation la donne, et chaque mue en ajoute une (en plus de la carte de pouvoir).
+- **Carte agrandie** (`src/carte.js`, `src/zonesplus.js`, générateur dans `tools/carte/`) : 16 nouvelles tuiles Girih exactes (graine 12) autour des cinq zones, 21 en tout, dont 8 Ressources (tous les types de mana). Chaque tuile tire une sous-zone de la liste des 986 : nom, biome, mana, culture, pôles. Relief, couleurs, ciel et végétation viennent du biome ; le pôle négatif assombrit et crevasse, le pôle positif soulève en gradins lumineux. Une tuile reprend l'épreuve, les gardiens et la carte de combat de son type, à son nom (une Ressource passe le Chantier, la Récolte restant propre à Tezcamixtli). Chaque Ressource activée produit son propre mana à chaque cycle.
+- Prévu : de nouvelles tuiles chaque jour jusqu'à environ 50 ; l'interface qui relie à la mue les bonus des tuiles reliées par des routes viendra avec les routes, qui n'existent pas encore dans la version télé.
+
+APK : `MozaWorld-TV-2.0.apk`, versionCode 12, s'installe par-dessus la 1.9 (la partie en cours est gardée, les nouvelles tuiles s'ajoutent au niveau 0).
+
 ## Suggestions du projet intégrées
 
 - Une épreuve par type de zone, chaque réussite = **+1 palier** avec un gros changement visible (mue).
