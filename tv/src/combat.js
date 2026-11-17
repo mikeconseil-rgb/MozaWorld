@@ -217,6 +217,7 @@ let CBwalk=0,CBnext=0;
 const prochaineRencontre=()=>{const f=RENC[S.renc||1][1];return f?(110+Math.random()*90)*f:1e9};
 function verifierRencontre(){if(mode!=='monde'||!started||!curZ||!RENC[S.renc||1][1])return;
   if(!CBnext)CBnext=prochaineRencontre();
+  if(typeof majChemins==='function'){majChemins();if(abriChemin()){CBwalk=Math.max(CBwalk,P.walked-CBnext+5);return}}
   if(P.walked-CBwalk<CBnext)return;
   if(Math.hypot(curZ.alt.x-P.x,curZ.alt.z-P.z)<16){CBwalk=P.walked-CBnext+15;return}
   startCombat(curZ,'renc')}
