@@ -234,6 +234,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(Z.id==='DON'&&S.act.DON&&S.own.DON)o.unshift({l:'Aménager le Donjon',ic:'⛬',cls:'p',d:`${nbPieges()} piège(s) · réserve ${resTot()}`,go:()=>openDonjon()});
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
   if(ci>=0)o.push({l:`Jouer « ${S.cards[ci].nom} »`,ic:carteOn?'☑':'☐',d:carteOn?`épreuve −${S.cards[ci].pw}, carte dépensée`:'carte gardée',go:()=>{carteOn=!carteOn;openEveil(Z,UI.f)}});
+  if(typeof optionsRoutes==='function')o.push(...optionsRoutes(Z));
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
     corps:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
@@ -425,6 +426,7 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
   for(const Z of ZN){mc.beginPath();Z.poly.forEach((p,i)=>{const x=(p[0]+ox)*s,y=(p[1]+oz)*s;i?mc.lineTo(x,y):mc.moveTo(x,y)});mc.closePath();
     const k=Z.lv/7;mc.fillStyle=k<0?`rgba(127,176,200,${.12+.6*-k})`:`rgba(230,162,90,${.12+.6*k})`;mc.fill();mc.lineWidth=Z===curZ?3:1.5;mc.strokeStyle=Z===curZ?'#efe7d6':'#c9a45c';mc.stroke();
     const a=Z.alt,x=(a.x+ox)*s,y=(a.z+oz)*s,r=restLeft(Z)>0;mc.fillStyle=r?'#7d7466':'#ffd98a';mc.beginPath();mc.moveTo(x,y-7);mc.lineTo(x+5,y);mc.lineTo(x,y+7);mc.lineTo(x-5,y);mc.fill()}
+  if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
   for(const q of secrets){if(q.found||!q.cond(q.Z.lv))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
   if(E&&E.monde)for(const o of E.orbs)if(!o.got){mc.fillStyle='#b8ff9a';mc.beginPath();mc.arc((o.x+ox)*s,(o.z+oz)*s,3.4+Math.sin(T*6),0,TAU);mc.fill()}
   const x=(P.x+ox)*s,y=(P.z+oz)*s,fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);mc.fillStyle='#fff';mc.beginPath();mc.moveTo(x+fx*10,y+fz*10);mc.lineTo(x-fz*5-fx*5,y+fx*5-fz*5);mc.lineTo(x+fz*5-fx*5,y-fx*5-fz*5);mc.fill()}

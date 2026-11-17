@@ -72,6 +72,16 @@ L'utilisateur a branché une manette Xbox sur la Bravia. La WebView d'Android ne
 Mana confirmé par l'utilisateur le même jour (déjà en place depuis la 1.7) : la limite de dépense par tour est commune à tous les types, et les cartes communes se paient avec n'importe quel type.
 APK : `MozaWorld-TV-1.9-manette.apk`, versionCode 11, s'installe par-dessus la 1.8.
 
+## Version 2.3 : les routes forgent les pouvoirs (17 novembre)
+
+- Une Ressource au **niveau 3** propose trois **atouts** de son mana (menu « Choisir l'atout » de sa Pierre d'éveil) ; le choix tient lieu de pôle.
+- Dès le **niveau 2**, le menu « Routes » relie la Ressource à une tuile voisine (qui partage un côté). Au niveau 3, l'atout se greffe sur **toutes les cartes de la tuile reliée** ; le texte de la carte l'affiche.
+- Une tuile reçoit au plus autant de routes qu'elle a de côtés. Atouts de mana différents : cumulés ; même mana : un seul compte. Si la Ressource redescend sous le niveau 2, ses routes sont coupées.
+- Minicarte : route en pointillés (atout pas encore greffé) ou pleine (atout actif).
+- 18 atouts (3 par mana), codés dans `src/routes.js` : Tison, Soufflet, Cendre chaude, Givre aux tempes, Gel lent, Conserve, Marée, Source, Reflux, Bouture, Sève lente, Greffe, Assise, Poids, Remploi, Rafale, Vent porteur, Girouette.
+
+APK : `MozaWorld-TV-2.3-routes.apk`, versionCode 16.
+
 ## Version 2.2 : les cartes des conteurs (17 novembre)
 
 Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au background de la zone ; une carte différente à chaque palier ; au palier 7, une carte qui change de nature et permet des combos forts ; une carte utilitaire pour chaque secret.
