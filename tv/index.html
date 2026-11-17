@@ -396,8 +396,8 @@ const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
 const canvas=document.getElementById('vue');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
 /* Version télé : on rend l'image à une largeur fixe (QUAL.w) puis la télé l'agrandit. Trois réglages, ajustés seuls si l'image saccade. */
-const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4}];
-let QI=window.Android?0:1;try{const q=+localStorage.getItem('mz-tv-q');if(q>=0&&q<3)QI=q}catch(_){}
+const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4},{nom:'Splendide',w:1920,sh:2048,ms:4}];
+let QI=window.Android?0:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
 const QUAL=()=>QUALS[QI];
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,QUAL().w/Math.max(320,innerWidth)));
 renderer.shadowMap.enabled=QUAL().sh>0;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -10694,6 +10694,21 @@ function surChemin(x,z){for(const s of CHseg){const dx=s.x2-s.x1,dz=s.z2-s.z1,L2
   if(Math.hypot(x-s.x1-dx*t,z-s.z1-dz*t)<3.2)return true}return false}
 /* À l'abri sur un chemin : pas de rencontre, sauf dans une Citadelle */
 const abriChemin=()=>curZ&&(curZ.mod||curZ.id)!=='CIT'&&surChemin(P.x,P.z);
+/* MozaWorld 2.5 : un peu plus de vie dans le monde (17 nov., « le jeu est fluide, tu peux améliorer un peu les graphiques »).
+   Des poussières de lumière flottent autour du héros, de la couleur de la zone ; le bloom les fait briller. Coût : 260 points, un seul appel de dessin.
+   Rien en qualité « Fluide ». */
+const POUSS=(()=>{const n=260,g=new THREE.BufferGeometry(),p=new Float32Array(n*3),v=[];
+  for(let i=0;i<n;i++){p[i*3]=(Math.random()-.5)*70;p[i*3+1]=Math.random()*14;p[i*3+2]=(Math.random()-.5)*70;v.push([Math.random()*6.28,.3+Math.random()*.6])}
+  g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  const m=new THREE.PointsMaterial({size:.5,map:halo,color:0xffe2a0,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false,fog:true});
+  const o=new THREE.Points(g,m);o.frustumCulled=false;scene.add(o);return{o,g,p,v,n,m,col:new THREE.Color(),zc:''}})();
+function majPoussiere(dt,T){const U=POUSS,vis=QI>0&&mode==='monde';U.o.visible=vis;if(!vis)return;
+  const id=curZ?curZ.id:'',c=(typeof ZCOL!=='undefined'&&ZCOL[id])||'#e8c77f';if(c!==U.zc){U.zc=c;U.col.set(c).lerp(new THREE.Color(0xfff0c8),.45)}U.m.color.lerp(U.col,Math.min(1,dt*1.5));
+  const p=U.p;for(let i=0;i<U.n;i++){const k=i*3,w=U.v[i];w[0]+=dt*w[1];
+    p[k]+=Math.sin(w[0])*dt*.6;p[k+1]+=Math.cos(w[0]*.7)*dt*.35;p[k+2]+=Math.cos(w[0])*dt*.6;
+    let dx=p[k]-P.x,dz=p[k+2]-P.z;if(dx>35)p[k]-=70;else if(dx<-35)p[k]+=70;if(dz>35)p[k+2]-=70;else if(dz<-35)p[k+2]+=70;
+    const gy=P.y-2;if(p[k+1]<gy)p[k+1]+=16;else if(p[k+1]>gy+16)p[k+1]-=16}
+  U.g.attributes.position.needsUpdate=true;U.m.opacity=.55+.2*Math.sin(T*.8)}
 /* MozaWorld TV : héros, Pierres d'éveil, épreuves, cartes, télécommande, musique, boucle. */
 const $=id=>document.getElementById(id);
 const IDS=ZN.map(Z=>Z.id);   /* 2.0 : les cinq zones d'origine et les tuiles de la carte agrandie */
@@ -10907,7 +10922,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
     {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
-    {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%3;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize();openMenu()}},
+    {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%QUALS.length;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize();openMenu()}},
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
@@ -11222,10 +11237,11 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
     if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const cn=typeof carteDeSecret==='function'?carteDeSecret(q):'';toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(cn?` Carte utilitaire gagnée : « ${cn} ».`:''))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
   for(let i=hi;i<32;i++)secHalo.P[i*3+1]=-999;secHalo.up();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('vu')}
+  if(typeof majPoussiere==='function')majPoussiere(dt,T);
   if(frame%6===0)drawMini(T);
   if(frame%120===0&&started){S.pos=[P.x,P.z,P.yaw];save()}
   /* qualité automatique : si l'image tombe sous 22 images/s pendant 5 s, on baisse la résolution */
-  if(autoQ&&T>3){fpsT+=dt;fpsN++;if(fpsT>5){const fps=fpsN/fpsT;fpsT=0;fpsN=0;if(CB){fpsT=0;fpsN=0}else if(fps<22&&QI>0){QI--;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize()}else if(fps>=22)autoQ=false}}
+  if(autoQ&&T>3){fpsT+=dt;fpsN++;if(fpsT>5){const fps=fpsN/fpsT;fpsT=0;fpsN=0;if(CB){fpsT=0;fpsN=0}else if(fps<(QI>=2?27:22)&&QI>0){QI--;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize()}else autoQ=false}}
   if(!CB){cullScene();draw(T)}}   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}

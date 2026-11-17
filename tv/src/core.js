@@ -51,8 +51,8 @@ const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
 const canvas=document.getElementById('vue');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
 /* Version télé : on rend l'image à une largeur fixe (QUAL.w) puis la télé l'agrandit. Trois réglages, ajustés seuls si l'image saccade. */
-const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4}];
-let QI=window.Android?0:1;try{const q=+localStorage.getItem('mz-tv-q');if(q>=0&&q<3)QI=q}catch(_){}
+const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4},{nom:'Splendide',w:1920,sh:2048,ms:4}];
+let QI=window.Android?0:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
 const QUAL=()=>QUALS[QI];
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,QUAL().w/Math.max(320,innerWidth)));
 renderer.shadowMap.enabled=QUAL().sh>0;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
