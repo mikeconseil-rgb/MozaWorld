@@ -9932,7 +9932,7 @@ const CULT=[['slave','slave'],['egypt','egypte'],['nord','nordique'],['zoulou','
 const ckey=c=>{c=sansAcc(c);for(const [m,k] of CULT)if(c.includes(m))return k;return'girih'};
 
 /* ---------- Ciel : même luminosité aux deux pôles (règle d'équité du brief) ; seule la teinte d'accent et l'astre changent ---------- */
-function ciel(P,r,uid){const a=P.acc,m=P.m[0];
+function ciel(P,r,uid){const a=P.teinte||P.acc,m=P.m[0];
   const astre=P.pole==='neg'?`<circle cx="${f1(20+r()*120)}" cy="22" r="10" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2"/><circle cx="${f1(20+r()*120)}" cy="22" r="4" fill="#fff" opacity="0"/>`
     :`<circle cx="${f1(25+r()*110)}" cy="${P.pole==='zero'?60:22}" r="26" fill="url(#vs${uid})"/>`;
   return`<defs><linearGradient id="vc${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mix(a,'#ffffff',.5)}"/><stop offset=".65" stop-color="${mix(a,m,.35)}"/><stop offset="1" stop-color="${mix(m,a,.3)}"/></linearGradient>
@@ -10099,7 +10099,8 @@ figure:(c,r)=>{const v=Math.floor(r()*4);const tete=`<circle cx="0" cy="-40" r="
    `<path d="M-7 -28 L-18 -38 M7 -28 L18 -38" stroke="${c.f}" stroke-width="2.4"/><circle cx="0" cy="-46" r="9" fill="none" stroke="${c.g}" opacity=".7"/>`][v];return corps+tete+ext},
 chanteur:(c,r)=>SJ.figure(c,()=>.6)+[10,18,26].map(q=>`<path d="M${q} -46 Q${q+6} -36 ${q} -26" stroke="${c.g}" stroke-width="1.6" fill="none" opacity=".85"/>`).join(''),
 masque:(c,r)=>`<path d="M-18 -46 Q0 -54 18 -46 Q20 -20 0 -8 Q-20 -20 -18 -46Z" fill="${c.l}" stroke="${c.f}" stroke-width="2"/><path d="M-11 -34 q5 -4 9 0 q-5 3 -9 0Z M2 -34 q5 -4 9 0 q-5 3 -9 0Z" fill="${c.f}"/><path d="M-6 -20 Q0 -16 6 -20" stroke="${c.f}" stroke-width="1.6" fill="none"/><path d="M0 -8 V0" stroke="${c.f}" stroke-width="2"/>`,
-document:(c,r)=>`<path d="M-18 -4 V-44 Q-18 -48 -14 -48 H16 V-8 Q16 -4 12 -4Z" fill="${c.l}" stroke="${c.f}" stroke-width="1.6"/>${[0,1,2,3,4].map(i=>`<path d="M-12 ${-40+i*6} H${8-i%2*6}" stroke="${c.f}" stroke-width="1.4"/>`).join('')}<circle cx="10" cy="-10" r="6" fill="${c.g}" stroke="${c.f}"/>`,
+document:(c,r)=>[SJ.rouleau,SJ.ardoise,SJ.lettre,SJ.feuillet][Math.floor(r()*4)](c,r),
+feuillet:(c,r)=>`<path d="M-18 -4 V-44 Q-18 -48 -14 -48 H16 V-8 Q16 -4 12 -4Z" fill="${c.l}" stroke="${c.f}" stroke-width="1.6"/>${[0,1,2,3,4].map(i=>`<path d="M-12 ${-40+i*6} H${8-i%2*6}" stroke="${c.f}" stroke-width="1.4"/>`).join('')}<circle cx="10" cy="-10" r="6" fill="${c.g}" stroke="${c.f}"/>`,
 coffre:(c,r)=>`<path d="M-22 0 V-20 H22 V0Z" fill="${c.f}"/><path d="M-22 -20 Q0 -36 22 -20Z" fill="${c.f}" stroke="${c.l}"/><rect x="-4" y="-18" width="8" height="8" fill="${c.g}"/><path d="M-22 -10 H22" stroke="${c.l}" stroke-width="1.2"/>`,
 lanterne:(c,r)=>`<path d="M0 -54 V-48" stroke="${c.f}" stroke-width="2"/><path d="M-8 -48 H8 L10 -42 V-16 L8 -12 H-8 L-10 -16 V-42Z" fill="${c.f}"/><rect x="-6" y="-40" width="12" height="22" fill="${c.g}" filter="url(#mz-lueur)"/><circle cx="0" cy="-30" r="16" fill="${c.g}" opacity=".25" filter="url(#mz-flou)"/><path d="M-4 -12 L-6 0 M4 -12 L6 0" stroke="${c.f}" stroke-width="2"/>`,
 flamme:(c,r)=>`<path d="M0 0 C-22 0 -22 -24 -8 -36 C-8 -26 -2 -24 -2 -24 C-4 -38 6 -46 6 -54 C14 -40 24 -30 18 -14 C16 -6 10 0 0 0Z" fill="${c.g}" filter="url(#mz-lueur)"/><path d="M0 0 C-10 0 -10 -12 -2 -18 C0 -12 6 -10 6 -14 C10 -8 8 0 0 0Z" fill="#fff6d0"/>`,
@@ -10126,21 +10127,26 @@ fumee:(c,r)=>[0,1,2].map(i=>`<path d="M${-10+i*10} 0 Q${-20+i*10} -14 ${-8+i*10}
 noeud:(c,r)=>`<path d="M-24 -46 H24" stroke="${c.f}" stroke-width="3"/>${Array.from({length:7},(_,i)=>`<path d="M${-20+i*7} -46 V${f1(-20+r()*16)}" stroke="${['#c2412f','#e8c33a',c.l,c.f][i%4]}" stroke-width="2"/>${[0,1].map(j=>`<circle cx="${-20+i*7}" cy="${f1(-38+j*8+r()*4)}" r="1.8" fill="${c.f}"/>`).join('')}`).join('')}`,
 pont:(c,r)=>`<path d="M-30 0 V-16 Q0 -42 30 -16 V0 H22 V-12 Q0 -30 -22 -12 V0Z" fill="${c.f}"/><path d="M-30 -18 Q0 -44 30 -18" stroke="${c.l}" fill="none"/>`,
 gerbe:(c,r)=>Array.from({length:9},(_,i)=>{const a=-PI/2+(i-4)*.16;return`<path d="M0 0 Q${f1(Math.cos(a)*8)} -20 ${f1(Math.cos(a)*24)} ${f1(Math.sin(a)*48)}" stroke="${c.l}" stroke-width="2" fill="none"/><ellipse cx="${f1(Math.cos(a)*24)}" cy="${f1(Math.sin(a)*48)}" rx="2" ry="4.5" fill="${c.g}"/>`}).join('')+`<path d="M-6 -14 Q0 -10 6 -14" stroke="${c.f}" stroke-width="3" fill="none"/>`,
-bouclier:(c,r)=>`<path d="M0 -52 L22 -44 Q22 -14 0 0 Q-22 -14 -22 -44Z" fill="${c.f}" stroke="${c.l}" stroke-width="2"/><path d="M0 -42 V-10 M-12 -30 H12" stroke="${c.g}" stroke-width="2.4"/>`,
+bouclier:(c,r)=>r()<.5?SJ.ecu(c,r):SJ.rondache(c,r),
+ecu:(c,r)=>`<path d="M0 -52 L22 -44 Q22 -14 0 0 Q-22 -14 -22 -44Z" fill="${c.f}" stroke="${c.l}" stroke-width="2"/><path d="M0 -42 V-10 M-12 -30 H12" stroke="${c.g}" stroke-width="2.4"/>`,
 brise:(c,r)=>`<path d="M-2 -52 L-22 -44 Q-22 -14 -4 0 L2 -20 L-6 -30Z" fill="${c.f}" stroke="${c.l}" stroke-width="1.6"/><path d="M4 -54 L24 -46 Q24 -16 6 2 L10 -18 L2 -32Z" fill="${c.f}" stroke="${c.l}" stroke-width="1.6" transform="rotate(10 6 -20)"/>`,
+rondache:(c,r)=>`<circle cx="0" cy="-26" r="24" fill="${c.f}" stroke="${c.l}" stroke-width="2"/><circle cx="0" cy="-26" r="7" fill="${c.g}"/>${[0,45,90,135,180,225,270,315].map(a=>`<circle cx="${f1(Math.cos(a*PI/180)*16)}" cy="${f1(-26+Math.sin(a*PI/180)*16)}" r="2" fill="${c.l}"/>`).join('')}`,
+rouleau:(c,r)=>`<rect x="-16" y="-46" width="32" height="38" fill="${c.l}" stroke="${c.f}" stroke-width="1.6"/><rect x="-20" y="-50" width="40" height="6" rx="3" fill="${c.f}"/><rect x="-20" y="-10" width="40" height="6" rx="3" fill="${c.f}"/>${[0,1,2,3].map(i=>`<path d="M-11 ${-38+i*7} H${11-i%2*7}" stroke="${c.f}" stroke-width="1.4"/>`).join('')}<path d="M-4 -4 V4 L0 1 L4 4 V-4" fill="${c.g}"/>`,
+ardoise:(c,r)=>`<rect x="-22" y="-48" width="44" height="34" rx="2" fill="#24303a" stroke="${c.f}" stroke-width="2.4"/>${[0,1,2].map(i=>`<path d="M-16 ${-40+i*9} H${14-i*6}" stroke="#fff" stroke-width="1.6" opacity=".85"/>`).join('')}<path d="M10 -22 l4 4 l8 -10" stroke="${c.g}" stroke-width="2.2" fill="none"/><path d="M-16 -14 L-20 0 M16 -14 L20 0" stroke="${c.f}" stroke-width="2.4"/>`,
+lettre:(c,r)=>`<path d="M-24 -10 L-20 -40 L22 -44 L24 -14Z" fill="${c.l}" stroke="${c.f}" stroke-width="1.6"/><path d="M-20 -40 L2 -24 L22 -44" stroke="${c.f}" fill="none" stroke-width="1.4"/><circle cx="2" cy="-22" r="6" fill="#b3261e" stroke="${c.f}"/>`,
 spirale:(c,r)=>`<path d="M0 -28 m-2 0a2 2 0 1 1 4 0a6 6 0 1 1 -12 0a10 10 0 1 1 20 0a14 14 0 1 1 -28 0a18 18 0 1 1 36 0" stroke="${c.g}" stroke-width="2.2" fill="none"/>`,
 goutte:(c,r)=>`<path d="M0 -52 Q20 -24 20 -16 A20 20 0 0 1 -20 -16 Q-20 -24 0 -52Z" fill="${c.g}" stroke="${c.f}" stroke-width="1.6"/><path d="M-8 -20 Q-8 -10 2 -8" stroke="#fff" stroke-opacity=".6" fill="none" stroke-width="2"/>`,
 feuille:(c,r)=>`<path d="M-20 0 Q-24 -40 18 -50 Q24 -10 -20 0Z" fill="${c.g}" stroke="${c.f}" stroke-width="1.6"/><path d="M-20 0 Q0 -24 18 -50" stroke="${c.f}" fill="none"/>`,
 flocon:(c,r)=>`<g transform="translate(0 -28)" stroke="${c.l}" stroke-width="2.6" stroke-linecap="round">${[0,60,120].map(a=>`<path d="M0 -24 V24 M-5 -18 L0 -13 L5 -18 M-5 18 L0 13 L5 18" transform="rotate(${a})"/>`).join('')}</g>`};
 /* mots du nom → sujet (on cherche dans le nom sans accents) */
-const MOTS=[['chien|meute|loup|mâtin|matin','chien'],['oiseau|corbeau|aigle|hibou|plume|heron|ibis|grue','oiseau'],['serpent|anguille|ver ','serpent'],['poisson|carpe|requin','poisson'],
+const MOTS=[['vernis|peint|teint|pinceau|encre','pinceau'],['neige|givre|flocon|gel ','flocon'],['chien|meute|loup|matin|chacal|renard|hyene|chiot','chien'],['oiseau|corbeau|aigle|hibou|plume|heron|ibis|grue','oiseau'],['serpent|anguille|ver ','serpent'],['poisson|carpe|requin','poisson'],
  ['cerf|boeuf|taureau|bouc|elan|renne|belier','cornu'],['tortue','tortue'],['luciole|essaim|abeille|nuee','essaim'],['salamandre|lezard|gecko','lezard'],
  ['echo|voix|chant|choeur|hymne|cri','chanteur'],['masque|visage rabot','masque'],['coffre|cle |clef|serrure','coffre'],['lanterne|lampe|ambre|braise|brasier|bougie|torche','lanterne'],
  ['flamme|feu|brul|cendre ard|incend','flamme'],['cristal|joyau|gemme','cristal'],['cloche|carillon','cloche'],['trone|couronne|tribunal|cour |roi|reine|prevot','trone'],
  ['icone|portrait|effigie','icone'],['main|paume|doigt','main'],['oeil|regard|yeux','oeil'],['rempart|muraille|creneau|mur|tour |palissade','muraille'],
  ['arbre|bouleau|racine|seve|foret|sapin|ecorce','arbre'],['fleur|floraison|lotus|bourgeon|rose','fleur'],['stele|pierre|bloc|borne','stele'],['barque|rame|bateau|gondole|radeau','barque'],
  ['lame|epee|hache|lance|couteau|poignard','lame'],['chaine|fer |entrave','chaine'],['balance|vote|urne|bulletin|scrutin|assemblee|loi ','balance'],['jarre|vase|amphore|coupe|urne','jarre'],
- ['tesson|eclat|debris','tesson'],['vernis|peint|teint|pinceau|encre','pinceau'],['paravent|voile|rideau','paravent'],['dorm|reve|sommeil|songe','dormeur'],['fumee|brume|cendre|vapeur','fumee'],
+ ['tesson|eclat|debris','tesson'],['paravent|voile|rideau','paravent'],['dorm|reve|sommeil|songe','dormeur'],['fumee|brume|cendre|vapeur','fumee'],
  ['corde|noeud|quipu|fil ','noeud'],['pont|passerelle','pont'],['riz|grain|epi|grenier|gerbe|recolte','gerbe'],['sceau|edit|lettre|registre|livre|parchemin|genealogie|archive|decret|cousue','document'],
  ['temoin|veilleu|garde|sentinelle|gardien|trappeur|inspecteur|conteu|lanciere|heros|vieille|pretre|scribe|juge|marchand|enfant|mere|pere|frere|soeur','figure']];
 /* effet principal → sujet, quand le nom n'en donne pas */
@@ -10182,13 +10188,16 @@ function cadreCarte(k,coul,nP,ult){const r=rng(k+'|cadre'),coin=Math.floor(r()*4
   return`<svg class="kcadre" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${coul}" stroke-width="${nP>=5||ult?2:1.5}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/>${med}</svg>`}
 
 /* ---------- Texte de la carte : chiffres, prix et résonances mis en valeur ---------- */
+function texteCoupe(t){t=String(t);const m=t.slice(25).search(/[.;:]\s/);if(m<0||t.length<70)return texteRiche(t);const i=25+m+1;
+  return`<span class="kt1">${texteRiche(t.slice(0,i))}</span><span class="ktr"> ${texteRiche(t.slice(i).trim())}</span><span class="ksuite">…</span>`}
 function texteRiche(t){t=String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  t=t.replace(/(Prix\s*:[^.]*\.?)/g,'<span class="kprix">$1</span>');
+  t=t.replace(/(Prix\s*:[^.]*\.?)/g,'<span class="kprix">◆ $1</span>');
   t=t.replace(/\b(Braise|Givre|Sang|Racine|Sceau|Abîme)\b/g,(m)=>{const R=RES[sansAcc(m)];return R?`<span class="kreso" style="color:${R[0]}">${m}</span>`:m});
   return t.replace(/(\d+)/g,'<b>$1</b>')}
 
 /* ---------- Scène complète d'une zone : ciel du pôle, biome, monument de la culture, élément du pôle ---------- */
-function scene(P,uid,k,cc){const r=rng((k||P.id)+'|'+P.pole),[m,l,d]=P.m,a=P.acc,bk=bkey(P.biome),B=BIO[bk]||BIO.collines,neg=P.pole==='neg';
+const HEURES=['#f2a0b0','#3a3f8a','#c8ccd6','#ffe9a0','#e0884a','#7ac0b0','#b07ad0'];
+function scene(P,uid,k,cc){const r=rng((k||P.id)+'|'+P.pole);if(cc&&k)P.teinte=mix(P.acc,HEURES[hsh(k)%HEURES.length],.38);[m,l,d]=P.m,a=P.acc,bk=bkey(P.biome),B=BIO[bk]||BIO.collines,neg=P.pole==='neg';
   const c={loin:mix(a,d,.45),mi:mix(m,a,.4),pres:mix(d,a,.22),acc:mix(a,'#ffffff',.45),eau:mix(m,a,.35),emb:mix(d,a,.2),embL:mix(a,'#ffffff',.35),mid:mix(d,'#000000',.4),feu:mix(a,'#fff3c0',.5),fx:mix(a,'#ffffff',.15)};
   const sj=cc?sujetDe(k,cc):null,cote=r()<.5?-1:1;
   const x=sj?80-cote*(26+r()*14):58+r()*44,mon=(MON_C[ckeyL(P.cult)]||MON_C.girih)(c);
@@ -10200,8 +10209,8 @@ function scene(P,uid,k,cc){const r=rng((k||P.id)+'|'+P.pole),[m,l,d]=P.m,a=P.acc
   const frise=P.ult?`<rect x="2" y="2" width="156" height="96" fill="none" stroke="${l}" stroke-width="3" stroke-dasharray="6 3 2 3"/><rect width="160" height="100" fill="url(#mz-girih)" opacity=".9"/>`:'';
   const halo=P.L>=4?`<ellipse cx="${f1(x)}" cy="56" rx="38" ry="30" fill="${P.L>=6?'#ffffff':a}" opacity="${P.L>=6?.45:.35}" filter="url(#mz-flou)"/>`:'';
   const pw=P.mod==='RES'?'':P.pole==='neg'?P.pm:P.pole==='pos'?P.pp:'';
-  return ciel(P,r,uid)+rayons+B.loin(r,c)+halo+`<g transform="translate(${f1(x)} ${f1(90-82*sc)}) scale(${sc})" stroke="${mix(d,'#000000',.5)}" stroke-width="1.1" stroke-linejoin="round" paint-order="stroke" opacity="${sj?.72:1}">${mon}</g>`+B.pres(r,c)+effetPole(pw,c,r,P.L)+
-    (sj?`<g transform="translate(${f1(80+cote*(12+r()*12))} ${f1(96+r()*2)}) scale(${f1((P.ult?1.4:1.22)*(r()<.5?-1:1)*(.94+r()*.12))} ${f1((P.ult?1.4:1.22)*(.94+r()*.1))})" stroke="${cs.l}" stroke-width="1.3" stroke-linejoin="round" paint-order="stroke"><ellipse cx="0" cy="1" rx="22" ry="3.5" fill="#000" opacity=".35" stroke="none"/>${(SJ[sj]||SJ.spirale)(cs,r)}</g>`:'')+
+  return ciel(P,r,uid)+rayons+B.loin(r,c)+halo+`<g transform="translate(${f1(x)} ${f1(90-82*sc)}) scale(${sc})" stroke="${mix(d,'#000000',.5)}" stroke-width="1.1" stroke-linejoin="round" paint-order="stroke" opacity="${sj?.5:1}">${mon}</g>`+B.pres(r,c)+effetPole(pw,c,r,P.L)+
+    (sj?`<ellipse cx="${f1(80+cote*6)}" cy="58" rx="40" ry="34" fill="${cs.g}" opacity=".45" filter="url(#mz-flou)"/><g transform="translate(${f1(80+cote*(6+r()*8))} ${f1(97+r()*2)}) scale(${f1((P.ult?1.6:1.5)*(r()<.5?-1:1)*(.94+r()*.12))} ${f1((P.ult?1.6:1.5)*(.94+r()*.1))})" stroke="${cs.l}" stroke-width="1.3" stroke-linejoin="round" paint-order="stroke"><ellipse cx="0" cy="1" rx="22" ry="3.5" fill="#000" opacity=".35" stroke="none"/>${(SJ[sj]||SJ.spirale)(cs,r)}</g>`:'')+
     (cc?effetsCarte(cc,k,cs):'')+tex+frise}
 
 /* ---------- Illustration d'une carte de secret : dessin au trait sur papier kraft, objet trouvé au centre ---------- */
@@ -10234,7 +10243,7 @@ const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'
 const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>290?' t5':n>210?' t4':n>140?' t3':n>85?' t2':n>45?' t1':''};
 window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,uid='h'+(uidN++),txt=c.txt(k),lg=longueur(txt);
   const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
-  const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">« ${amb} »</div>`:'';const txtR=texteRiche(txt);
+  const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">« ${amb} »</div>`:'';const txtR=texteCoupe(txt);
   /* carte de secret */
   if(c.secret||(c.zs&&!z)){const P=c.zs?infoZone(c.zs):null;
     return`<div class="cc kcarte secret${lg}${gris?' gris':''}">${co}<div class="ksceau" title="Secret">✦</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div>
@@ -10249,7 +10258,7 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const coulP=res?'#e0a040':accent(P);
   const crest=pw?`<div class="kblason ${P.pole}" title="Pôle ${pw}"><svg viewBox="0 0 20 20" fill="currentColor" stroke="currentColor">${glypheP(pw)}</svg></div>`:'';
   const sorte=(ART[k]&&ART[k].sorte&&P.mod!=='MAR')?ART[k].sorte:SORTE[P.mod]||'';
-  const ligne=[sorte,P.mana,pw||(res?'Niv. '+nP:'')].filter(Boolean).join(' · ');
+  const ligne=[P.mana,pw||(res?'Niv. '+nP:'')].filter(Boolean).join(' · ');
   const resH=(c.pose||c.reveille)?`<div class="kresos">${c.pose?glypheR(c.pose,1):''}${c.pose&&c.reveille?'<b></b>':''}${c.reveille?glypheR(c.reveille,0):''}</div>`:'';
   const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
   const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
@@ -10341,7 +10350,7 @@ const css=document.createElement('style');css.textContent=`
 .cc.kcarte .cn{font-style:normal}.cc.kcarte.p-neg .cn{font-style:normal}
 .kcadre{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;filter:drop-shadow(0 0 1px #000)}
 .ct b{font-weight:600;color:#fff}
-.ct .kprix{display:block;margin-top:.15em;color:#f0a090;font-style:italic}
+.ct .kprix{display:block;margin-top:.15em;color:#ffc6b8;font-weight:600}
 .ct .kprix b{color:#ffb8a8}
 .ct .kreso{font-weight:600}
 .cc.kcarte.secret .ct b{color:#2a1f1a}
@@ -10369,6 +10378,12 @@ const css=document.createElement('style');css.textContent=`
 .fx-fissure{opacity:0;animation:fxFissure 3s ease-in-out infinite}
 @keyframes fxFissure{0%,70%{opacity:0}75%{opacity:.9}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.fx *{animation:none!important}}
+.ksuite{display:none}
+#cb-main .cc.kcarte:not(.f) .ktr{display:none}
+#cb-main .cc.kcarte:not(.f) .ksuite{display:inline;color:var(--kl)}
+#cb-main .cc.kcarte:not(.f) .art{height:calc(var(--u)*7.6)}
+#cb-main .cc.kcarte:not(.f) .ct{font-size:calc(var(--u)*.9);line-height:1.25}
+.kcadre path{stroke-width:2.2}
 `;document.head.appendChild(css);
 })();
 /* MozaWorld TV : manette (17 novembre). L'utilisateur a branché une manette Xbox sur la Bravia.

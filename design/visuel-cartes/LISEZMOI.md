@@ -18,3 +18,12 @@ Le texte se réduit par crans selon sa longueur ; dans la main, la carte choisie
 Lecture des données (fil cartes 2.2) : `ultime`, `pose`, `reveille`, `amb()`, `secret`, `zs`, clés de palier `ZONE#-3`, `ZONE#+5`, `RES079#r2`.
 
 Critique (avant corrections) : personnalisation 7/10, équité des pôles 6, paliers 3, ultime/secrets 5, lisibilité 4, beauté 6. Corrigé ensuite : sujet agrandi et cerné, losanges de palier lisibles, scène qui évolue avec le palier, sceau de résonance hors de l'image, badge « mana gris » au-dessus de la carte, marque de pôle plus épaisse, objet du secret dessiné en grand, coins réservés aux paliers 5+.
+
+## Rendu unique par carte (17 nov. au soir)
+
+Demande : « retravaille les cartes, leur bordure, leurs effets ; le texte et le dessin doivent donner un rendu unique par carte ».
+- **Dessin** : un sujet au premier plan tiré du nom de la carte (environ 40 mots-clés : chien, masque, lanterne, lettre, ardoise, flocon, trône…), sinon de son effet principal. La couleur du ciel et la mise en place de la scène dépendent de la carte, et le monument de la zone passe au fond.
+- **Bordure** : chaque carte a son propre filet (4 formes de coins, 5 rythmes de trait) et ses médaillons en étoile (5, 6, 8 ou 10 branches), plus nombreux aux hauts paliers.
+- **Effets animés** selon ce que fait la carte : braises, coup, lustre, brume, pages, onde, pouls, yeux, fissure. Ils jouent sur la carte choisie, dans les menus et sur les formes ultimes ; le reste de la main reste calme.
+- **Texte** : chiffres en gras, « ◆ Prix » en rose clair, résonances en couleur. Dans la main, seule la première phrase s'affiche et la carte choisie montre tout. La phrase d'ambiance du conteur apparaît sur la carte choisie et dans les menus.
+- Critique : avant corrections, reconnaissable 5/10 et texte 4/10. Ensuite : sujet agrandi avec un halo, fond estompé, teinte propre à chaque carte, variantes de document et de bouclier, plus aucun texte coupé dans la main.
