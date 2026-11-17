@@ -45,15 +45,7 @@ function newCard(Z,lv){const p=lv>0?1:0,[rn,pw]=rang(Math.abs(lv)),cible=ZB[CONT
 const bestCard=Z=>{let b=-1;S.cards.forEach((c,i)=>{if(c.cible===Z.id&&(b<0||c.pw>S.cards[b].pw))b=i});return b};
 
 /* ---------- Héros ---------- */
-const hero=new THREE.Group();
-{const robe=new THREE.Mesh(new THREE.CylinderGeometry(.28,.62,1.5,8),M(0xe9dfc8,{flatShading:false}));robe.position.y=.75;
- const cape=new THREE.Mesh(new THREE.ConeGeometry(.78,1.7,8,1,true),M(0x7a1f2a,{side:THREE.DoubleSide,flatShading:false}));cape.position.set(0,1,-.12);
- const head=new THREE.Mesh(new THREE.SphereGeometry(.27,10,8),M(0xd8b48a,{flatShading:false}));head.position.y=1.72;
- const hat=new THREE.Mesh(new THREE.ConeGeometry(.42,.5,8),M(0x2a2630));hat.position.y=2.05;
- const lamp=new THREE.Mesh(new THREE.SphereGeometry(.11,6,5),new THREE.MeshBasicMaterial({color:new THREE.Color(3,2,.8)}));lamp.position.set(.45,1.05,.25);
- for(const m of[robe,cape,head,hat])m.castShadow=true;hero.add(robe,cape,head,hat,lamp);
- const pl=hero.userData.pl=new THREE.PointLight(0xffd9a0,.55,18,1.8);pl.position.set(.45,1.3,.25);hero.add(pl);scene.add(hero);
- /* 2.0 : héros et caméra 30 % plus petits, le décor paraît 30 % plus grand sans toucher aux niveaux */hero.scale.setScalar(1/1.3)}
+const hero=creerHeros();scene.add(hero);hero.scale.setScalar(1/1.3);   /* 2.0 : héros à l'échelle 1/1,3 ; personnage articulé dans heros.js */
 const P={x:-65,y:5,z:89,vy:0,g:false,yaw:Math.atan2(.59,-.81),pitch:.3,dist:11.5,face:0,walked:0,run:0};
 const SPOTS={CIT:[-65,89,Math.atan2(.59,-.81)]};
 {const sp=(Z,u,v)=>{const p=Z.w(u,v),q=Z.w(u+10,v);return[p[0],p[1],Math.atan2(q[0]-p[0],q[1]-p[1])]};
@@ -149,7 +141,7 @@ function act(a,rep){
     /* marche automatique : ▲ deux fois de suite, le héros avance seul (◀ ▶ pour diriger, ▼ ou OK pour s'arrêter) */
     if(a==='up'){const t=performance.now();if(t-lastUp<450)P.auto=1;lastUp=t}
     if(a==='down'&&P.auto){P.auto=0;held.down=0}
-    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else if(P.g){P.vy=11.5;P.g=false}}
+    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else sauter()}
     if(a==='back'){P.auto=0;openMenu()}return}
   if(mode==='epreuve'){if(a==='back'&&!rep){pauseEpreuve();return}if(E&&E.input)E.input(a,rep);return}
   if(mode==='mue'){if(a==='ok'&&!rep&&mue.t>2.5)mue.t=99}
@@ -164,7 +156,9 @@ function ui(host,o){UI=Object.assign({host,f:0},o);if(host==='menu'){$('toast').
   o.opts.forEach((p,i)=>{const d=document.createElement('div');d.className='opt'+(p.cls?' '+p.cls:'')+(p.off?' off':'');
     d.innerHTML=(p.ic?`<span class="ic">${p.ic}</span>`:'')+`<span>${p.l}</span>`+(p.d?`<span class="d">${p.d}</span>`:'');box.appendChild(d)});
   UI.f=Math.max(0,o.opts.findIndex(p=>!p.off));if(o.f!==undefined&&!o.opts[o.f].off)UI.f=o.f;uiDraw()}
-function uiDraw(){[...$(UI.host+'-choix').children].forEach((d,i)=>{d.classList.toggle('f',i===UI.f);if(i===UI.f&&d.scrollIntoView)try{d.scrollIntoView({block:'nearest'})}catch(_){}})}
+/* la liste défile pour garder le choix visible (Xbox : marge de sécurité de l'écran télé) */
+function uiDraw(){const c=$(UI.host+'-choix');[...c.children].forEach((d,i)=>{d.classList.toggle('f',i===UI.f);if(i!==UI.f)return;
+  const m=8,top=d.offsetParent===c?d.offsetTop:d.offsetTop-c.offsetTop,bot=top+d.offsetHeight;if(c.scrollHeight>c.clientHeight){if(top-m<c.scrollTop)c.scrollTop=Math.max(0,top-m);else if(bot+m>c.scrollTop+c.clientHeight)c.scrollTop=bot+m-c.clientHeight}})}
 function uiAct(a,rep){if(!UI)return;const n=UI.opts.length,st=UI.deux&&(a==='left'||a==='right')?1:UI.deux?2:1;
   const mv=d=>{let i=UI.f;for(let k=0;k<n;k++){i=(i+d+n)%n;if(!UI.opts[i].off){UI.f=i;break}}uiDraw();tick()};
   if(a==='down'||(a==='right'&&!UI.deux))mv(st);else if(a==='up'||(a==='left'&&!UI.deux))mv(-st);
@@ -193,6 +187,8 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Paquet de cartes',ic:'▤',d:S.cards.length+' carte(s)',go:openPaquet},
+    {l:'Sauvegarder',ic:'▣',d:'20 emplacements',go:()=>openSauver(0)},
+    {l:'Charger une partie',ic:'▤',go:openCharger},
     {l:'Grimoire des cartes',ic:'✦',d:'toutes les cartes, pôle par pôle',go:()=>openGrimoire(0)},
     {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+resTot()+' mana',go:openCombatPaquet},
     {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
@@ -202,7 +198,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%3;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize();openMenu()}},
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
-    {l:'Recommencer à zéro',ic:'↺',go:()=>ui('menu',{sur:'Recommencer',t:'Tout effacer ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets sont perdus.</p>',back:openMenu,
+    {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
       opts:[{l:'Non, revenir',ic:'◆',go:openMenu},{l:'Oui, tout recommencer',ic:'↺',go:()=>{startGame(true)}}]})}]})}
 function openVoyage(){ui('menu',{sur:'Voyager',t:`Les ${ZN.length} zones`,corps:'<p class="petit">Le héros réapparaît devant la Pierre d\'éveil de la zone. Vous pouvez aussi marcher : les zones se touchent.</p>',back:openMenu,
   opts:ZN.map(Z=>({l:Z.info.nom,ic:sgn(S.lv[Z.id])||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',d:TYPE[Z.id].ep+(restLeft(Z)>0?' · repos '+fmt(restLeft(Z)):''),go:()=>{tp(Z.id);toMonde()}}))})}
@@ -212,8 +208,8 @@ function openPaquet(){ui('menu',{sur:'Paquet',t:'Vos cartes de pouvoir',corps:S.
 function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
   ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve : ${resHTML()}${prodRessource()?' (vos Ressources ajoutent '+prodTexte()+' par cycle)':''} · en combat, on dépense la réserve : 1 mana au tour 1, 2 au tour 2, et ainsi de suite (certaines cartes donnent un boost) · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
-function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
-<p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
+function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter (deux fois : double saut), ou agir devant une Pierre · Retour : menu.</p>
+<p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter (deux fois : double saut) ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
 <p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; une carte commune avec n'importe quel type. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure et plus la carte gagnée est forte (Mineure, Majeure, Ultime).</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
@@ -372,12 +368,15 @@ RES(eff){const Z=RES,K=4+eff,a=Z.alt,orbs=[];let time=38+K*8-eff*2;
       move(dt);for(const o of orbs){if(o.got)continue;o.m.position.y=o.y+Math.sin(T*2.4+o.x)*.3;o.m.rotation.y=T*1.5;
         if(Math.hypot(o.x-P.x,o.z-P.z)<2.6&&Math.abs(o.y-P.y-1)<4){o.got=1;o.m.visible=false;sfx('hit');this.compte()}}
       if(orbs.every(o=>o.got))endEpreuve(true)},
-    input(a,rep){if(a==='ok'&&!rep&&P.g){P.vy=11.5;P.g=false}},
+    input(a,rep){if(a==='ok'&&!rep)sauter()},
     fin(){for(const m of gerbes)m.visible=false},draw(){}}}};
 const gerbeMat=new THREE.MeshBasicMaterial({color:new THREE.Color(1.6,3,1.2)}),gerbes=[];
 for(let i=0;i<12;i++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.7,0),gerbeMat);m.visible=false;scene.add(m);gerbes.push(m)}
 function step(){if(AX&&soundOn)perc(AX.currentTime,'c',.35)}
 
+/* Saut, puis double saut en l'air (demande du 17 nov.) : un second appui relance le héros, avec une culbute */
+function sauter(){if(P.g){P.vy=11.5;P.g=false;P.saut2=1;sfxSaut(0)}else if(P.saut2){P.vy=10.5;P.saut2=0;hero.userData.flip=1;sfxSaut(1)}}
+function sfxSaut(n){if(AX&&soundOn)try{note(AX.currentTime,n?660:440,SIN,.12,.05)}catch(_){}}
 /* ---------- Déplacement : ▲▼ avancer/reculer, ◀▶ tourner ---------- */
 function move(dt){const t=performance.now();
   /* Plus rapide (retour du 17 nov.) : marche 14, course 27 au bout de 0,35 s ; virage qui s'accélère quand on tient ◀ ▶ */
@@ -386,7 +385,7 @@ function move(dt){const t=performance.now();
   const tr=r?Math.min(1,(t-Math.max(heldT.left||0,heldT.right||0))/450):0;
   if(mode==='monde'||(mode==='epreuve'&&E&&E.monde)){P.yaw-=r*dt*(1.7+1.5*tr);P.run=f>0&&(P.auto||t-heldT.up>350)?1:0}else{P.run=0}
   const live=(mode==='monde'||(mode==='epreuve'&&E&&E.monde));const ff=live?f:0;
-  P.sp=(P.sp||0)+((ff?(P.run?27:14)*(ff<0?.6:1):0)-(P.sp||0))*Math.min(1,dt*6);
+  P.sp=(P.sp||0)+((ff?(P.run?31:16)*(ff<0?.6:1):0)-(P.sp||0))*Math.min(1,dt*6);
   const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),sp=P.sp;
   const pm=live?padMarche(dt):null;let dx=0,dz=0;
   if(pm){P.sp=pm.sp;dx=Math.sin(pm.m)*pm.sp*dt;dz=Math.cos(pm.m)*pm.sp*dt;P.face=pm.m}
@@ -396,7 +395,9 @@ function move(dt){const t=performance.now();
     if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=Math.hypot(dx,dz)*.55}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
-  if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true}}
+  if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true;P.saut2=0}}
+  P.v=lerp(P.v||0,(Math.hypot(P.x-(P.px===undefined?P.x:P.px),P.z-(P.pz===undefined?P.z:P.pz)))/Math.max(dt,1e-3),Math.min(1,dt*10));P.px=P.x;P.pz=P.z;
+  animHeros(hero,dt,P.v,P.g,P.vy,performance.now()/1000);
   hero.position.set(P.x,P.y,P.z);hero.rotation.y+=((((P.face-hero.rotation.y)%TAU)+TAU+PI)%TAU-PI)*Math.min(1,dt*10)}
 function camFollow(dt){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),cp=Math.cos(P.pitch),tx=P.x,ty=P.y+1.45,tz=P.z;
   let cx=tx-fx*cp*P.dist,cy=ty+Math.sin(P.pitch)*P.dist,cz=tz-fz*cp*P.dist;const gy=ground(cx,cz)+.7;if(cy<gy)cy=gy;camGo(cx,cy,cz,tx,ty,tz,dt,8)}
@@ -411,7 +412,7 @@ function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
   $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
-function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-cartes').textContent=S.cards.length;$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length}
+function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-cartes').textContent=S.cards.length;$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length;if(typeof bandeau==='function')bandeau()}
 let invKey='';
 function invite(){let h='',cls='';const el=$('invite');
   if(mode==='monde'&&curZ){const a=curZ.alt,d=Math.hypot(a.x-P.x,a.z-P.z),r=restLeft(curZ);
@@ -422,10 +423,22 @@ function invite(){let h='',cls='';const el=$('invite');
   const k=h+cls;if(k!==invKey){invKey=k;el.innerHTML=h;el.className='hud invite '+cls}}
 let toastT=0;function toast(a,b,c){$('t1').textContent=a;$('t2').textContent=b;$('t3').textContent=c||'';$('toast').classList.add('vu');toastT=6}
 const mini=$('mini'),mc=mini.getContext('2d');
+const TYPEG={CIT:'⛫',DON:'⬟',RES:'⬢',ANT:'✦',MAR:'⚖'};
 function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)/2,oz=sp/2-(Z0+Z1)/2;mc.clearRect(0,0,300,300);
+  /* 2.4 : vos zones bien visibles (fond plein, bord d'or épais, fanion), zones sauvages sombres ; un symbole par type ;
+     les Pierres où une activité vous attend clignotent */
+  const pulse=.6+.4*Math.sin(T*4);
   for(const Z of ZN){mc.beginPath();Z.poly.forEach((p,i)=>{const x=(p[0]+ox)*s,y=(p[1]+oz)*s;i?mc.lineTo(x,y):mc.moveTo(x,y)});mc.closePath();
-    const k=Z.lv/7;mc.fillStyle=k<0?`rgba(127,176,200,${.12+.6*-k})`:`rgba(230,162,90,${.12+.6*k})`;mc.fill();mc.lineWidth=Z===curZ?3:1.5;mc.strokeStyle=Z===curZ?'#efe7d6':'#c9a45c';mc.stroke();
-    const a=Z.alt,x=(a.x+ox)*s,y=(a.z+oz)*s,r=restLeft(Z)>0;mc.fillStyle=r?'#7d7466':'#ffd98a';mc.beginPath();mc.moveTo(x,y-7);mc.lineTo(x+5,y);mc.lineTo(x,y+7);mc.lineTo(x-5,y);mc.fill()}
+    const own=S.own[Z.id],k=(S.lv[Z.id]||0)/7;
+    mc.fillStyle=own?(k<0?`rgba(110,160,200,${.45+.4*-k})`:k>0?`rgba(232,170,90,${.45+.4*k})`:'rgba(201,164,92,.42)'):`rgba(30,26,30,${.55})`;mc.fill();
+    if(!own&&k){mc.fillStyle=k<0?`rgba(127,176,200,${.25*-k})`:`rgba(230,162,90,${.25*k})`;mc.fill()}
+    mc.lineWidth=Z===curZ?3.5:own?3:1;mc.strokeStyle=Z===curZ?'#ffffff':own?'#ffd98a':'rgba(201,164,92,.45)';mc.stroke();
+    const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 15px sans-serif';mc.textAlign='center';mc.textBaseline='middle';
+    mc.fillStyle=own?'#1a1410':'rgba(239,231,214,.55)';mc.fillText(TYPEG[Z.mod||Z.id]||'·',cx,cy+9);
+    if(own){mc.fillStyle='#ffd98a';mc.fillRect(cx-1,cy-17,2,12);mc.beginPath();mc.moveTo(cx+1,cy-17);mc.lineTo(cx+9,cy-14);mc.lineTo(cx+1,cy-11);mc.fill()}
+    const a=Z.alt,x=(a.x+ox)*s,y=(a.z+oz)*s,r=restLeft(Z)>0,dispo=!r&&S.own[Z.id]&&!((Z.mod||Z.id)==='RES'&&(S.lv[Z.id]||0)>=3);
+    const g=dispo?6+2*pulse:S.own[Z.id]?5:3.5;mc.fillStyle=r?'#7d7466':dispo?`rgba(255,217,138,${.6+.4*pulse})`:'rgba(201,164,92,.7)';mc.beginPath();mc.moveTo(x,y-g);mc.lineTo(x+g*.7,y);mc.lineTo(x,y+g);mc.lineTo(x-g*.7,y);mc.fill();
+    if(dispo){mc.strokeStyle=`rgba(255,217,138,${.5*pulse})`;mc.lineWidth=1.5;mc.beginPath();mc.arc(x,y,g+4,0,TAU);mc.stroke()}}
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
   for(const q of secrets){if(q.found||!q.cond(q.Z.lv))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
   if(E&&E.monde)for(const o of E.orbs)if(!o.got){mc.fillStyle='#b8ff9a';mc.beginPath();mc.arc((o.x+ox)*s,(o.z+oz)*s,3.4+Math.sin(T*6),0,TAU);mc.fill()}

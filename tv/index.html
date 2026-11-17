@@ -58,7 +58,8 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 
 /* Mini-carte et légende */
 .carte{left:var(--mx);bottom:var(--my);padding:calc(var(--u)*.6)}
-.carte canvas{display:block;width:calc(var(--u)*13);height:calc(var(--u)*13)}
+.carte canvas{display:block;width:calc(var(--u)*17);height:calc(var(--u)*17)}
+.carte .lg{font-size:calc(var(--u)*.85);color:var(--sable);text-align:center;padding-top:calc(var(--u)*.3);letter-spacing:.04em}.carte .lg b{color:#ffd98a;font-weight:400}
 .aide{right:var(--mx);bottom:var(--my);padding:calc(var(--u)*.7) calc(var(--u)*1.1);font-size:calc(var(--u)*1);line-height:1.8;color:var(--sable);text-align:right}
 .aide i{font-style:normal;color:var(--ivoire);font-weight:500}
 
@@ -257,7 +258,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
 .kgris{position:absolute;left:8%;right:8%;bottom:calc(var(--u)*-.7);padding:.15em .3em;border-radius:1em;background:#8d8a86;color:#111;font-size:calc(var(--u)*.7);font-weight:600;text-align:center;white-space:nowrap}
 .cc.kcarte.gris .co{--mc:#8d8a86}
 /* 2.1 : longues listes (Voyager, Grimoire) : les choix défilent, le texte au-dessus reste */
-#menu .boite{display:flex;flex-direction:column}#menu-corps{flex:0 1 auto;overflow:hidden;min-height:0}#menu .choix{flex:0 1 auto;overflow-y:auto;min-height:calc(var(--u)*8);padding:4px 6px}
+#menu .boite{display:flex;flex-direction:column;max-height:84vh}#menu-choix{position:relative}#menu-corps{flex:0 1 auto;overflow:hidden;min-height:0}#menu .choix{flex:0 1 auto;overflow-y:auto;min-height:calc(var(--u)*8);padding:4px 6px}
 .cartes.grim{grid-template-columns:repeat(2,calc(var(--u)*12));justify-content:center;max-height:none}
 </style>
 
@@ -287,7 +288,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
   <span class="niv" id="h-niv">0</span>
 </div>
 
-<div class="hud mondain carte cadre"><canvas id="mini" width="300" height="300"></canvas></div>
+<div class="hud mondain carte cadre"><canvas id="mini" width="300" height="300"></canvas><div class="lg"><b>⚑</b> à vous · <b>◆</b> activité · ⛫ ⬟ ⬢ ✦ ⚖</div></div>
 
 <div class="hud mondain aide cadre">
   <div><i>▲ ▼</i> marcher (tenir pour courir)</div>
@@ -334,7 +335,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
 const CARTE_PLUS=[{"id": "DON045", "sz": "DON-045", "mod": "DON", "type": "Donjon", "biome": "Forêt boréale", "mana": "Glace", "culture": "Slave", "pm": "Mensonge", "pp": "Vérité", "nom": "La Taïga de Kobor", "poly": [[307.768, 100.0], [307.768, -100.0], [497.98, -161.803], [615.537, 0.0], [497.98, 161.803]]}, {"id": "DON024", "sz": "DON-024", "mod": "DON", "type": "Donjon", "biome": "Fjord", "mana": "Glace", "culture": "Égyptienne", "pm": "Cauchemar", "pp": "Rêve", "nom": "Le Fjord de Rames", "poly": [[307.768, -423.607], [117.557, -485.41], [117.557, -685.41], [307.768, -747.214], [425.325, -585.41]]}, {"id": "ASS152", "sz": "ASS-152", "mod": "MAR", "type": "Assemblée", "biome": "Canyon", "mana": "Feu", "culture": "Nordique", "pm": "Silence", "pp": "Chant", "nom": "Le Canyon de Fjorhel", "poly": [[497.98, -361.803], [307.768, -423.607], [425.325, -585.41], [615.537, -523.607]]}, {"id": "RES227", "sz": "RES-227", "mod": "RES", "type": "Ressource", "biome": "Désert de sable", "mana": "Feu", "culture": "Zouloue", "pm": "", "pp": "", "nom": "Les Dunes de Balo", "poly": [[117.557, -685.41], [117.557, -485.41], [-72.654, -547.214], [-190.211, -709.017], [-190.211, -909.017], [0.0, -847.214]]}, {"id": "ASS155", "sz": "ASS-155", "mod": "MAR", "type": "Assemblée", "biome": "Oasis", "mana": "Sève", "culture": "Éthiopienne", "pm": "Pierre", "pp": "Cristal", "nom": "L'Oasis de Raak", "poly": [[307.768, -747.214], [117.557, -685.41], [0.0, -847.214], [190.211, -909.017]]}, {"id": "RES079", "sz": "RES-079", "mod": "RES", "type": "Ressource", "biome": "Cité en ruines", "mana": "Pierre", "culture": "Aztèque", "pm": "", "pp": "", "nom": "Les Ruines de Teoco", "poly": [[-190.211, -709.017], [-72.654, -547.214], [-262.866, -485.41], [-453.077, -547.214], [-570.634, -709.017], [-380.423, -770.82]]}, {"id": "ANT120", "sz": "ANT-120", "mod": "ANT", "type": "Antre", "biome": "Oasis", "mana": "Sève", "culture": "Zouloue", "pm": "Glace", "pp": "Feu", "nom": "L'Oasis de Maulu", "poly": [[-453.077, -547.214], [-262.866, -485.41], [-380.423, -323.607], [-497.98, -485.41], [-688.191, -547.214], [-570.634, -709.017]]}, {"id": "RES374", "sz": "RES-374", "mod": "RES", "type": "Ressource", "biome": "Forêt boréale", "mana": "Glace", "culture": "Maya", "pm": "", "pp": "", "nom": "La Taïga de Chika", "poly": [[-425.325, -261.803], [-307.768, -100.0], [-497.98, -38.197], [-688.191, -100.0], [-805.748, -261.803], [-615.537, -323.607]]}, {"id": "RES122", "sz": "RES-122", "mod": "RES", "type": "Ressource", "biome": "Récif", "mana": "Eau", "culture": "Vénitienne", "pm": "", "pp": "", "nom": "Le Récif de Cezo", "poly": [[-497.98, -38.197], [-307.768, -100.0], [-307.768, 100.0], [-425.325, 261.803], [-615.537, 323.607], [-615.537, 123.607]]}, {"id": "ASS012", "sz": "ASS-012", "mod": "MAR", "type": "Assemblée", "biome": "Cavernes cristallines", "mana": "Pierre", "culture": "Maya", "pm": "Cendre", "pp": "Floraison", "nom": "Les Cavernes de cristal de Balpak", "poly": [[-425.325, 261.803], [-307.768, 100.0], [-190.211, 261.803], [-307.768, 423.607]]}, {"id": "ASS006", "sz": "ASS-006", "mod": "MAR", "type": "Assemblée", "biome": "Lande", "mana": "Vent", "culture": "Vénitienne", "pm": "Corruption", "pp": "Pureté", "nom": "La Lande de Cezo", "poly": [[-190.211, 261.803], [-0.0, 323.607], [-117.557, 485.41], [-307.768, 423.607]]}, {"id": "RES021", "sz": "RES-021", "mod": "RES", "type": "Ressource", "biome": "Oasis", "mana": "Sève", "culture": "Éthiopienne", "pm": "", "pp": "", "nom": "L'Oasis de Sumak", "poly": [[-688.191, -100.0], [-497.98, -38.197], [-615.537, 123.607], [-805.748, 185.41], [-995.959, 123.607], [-878.402, -38.197]]}, {"id": "RES212", "sz": "RES-212", "mod": "RES", "type": "Ressource", "biome": "Steppe", "mana": "Vent", "culture": "Slave", "pm": "", "pp": "", "nom": "La Steppe de Gramir", "poly": [[497.98, -161.803], [497.98, -361.803], [615.537, -523.607], [805.748, -585.41], [805.748, -385.41], [688.191, -223.607]]}, {"id": "RES345", "sz": "RES-345", "mod": "RES", "type": "Ressource", "biome": "Canyon", "mana": "Feu", "culture": "Zouloue", "pm": "", "pp": "", "nom": "Le Canyon de Zima", "poly": [[-0.0, 323.607], [190.211, 261.803], [190.211, 461.803], [72.654, 623.607], [-117.557, 685.41], [-117.557, 485.41]]}, {"id": "ASS150", "sz": "ASS-150", "mod": "MAR", "type": "Assemblée", "biome": "Delta fluvial", "mana": "Eau", "culture": "Inca", "pm": "Ruine", "pp": "Abondance", "nom": "Le Delta de Pama", "poly": [[190.211, -909.017], [0.0, -847.214], [0.0, -1047.214], [190.211, -1109.017]]}, {"id": "RES136", "sz": "RES-136", "mod": "RES", "type": "Ressource", "biome": "Falaise côtière", "mana": "Vent", "culture": "Khmère", "pm": "", "pp": "", "nom": "Les Falaises de Srekor", "poly": [[0.0, -1047.214], [0.0, -847.214], [-190.211, -909.017], [-307.768, -1070.82], [-307.768, -1270.82], [-117.557, -1209.017]]}];
 'use strict';
 /* MozaWorld, démo « Cinq Tuiles ». Noyau : mosaïque, terrain, ciel, météo, rendu, physique du héros. */
-const PI=Math.PI,TAU=PI*2,D2R=PI/180,SC=2,L=100*SC; /* SC : agrandissement des tuiles (arête 100 m → 200 m) */
+const PI=Math.PI,TAU=PI*2,D2R=PI/180,SC=3,L=100*SC; /* SC : agrandissement des tuiles (arête 100 m → 300 m ; 2.4 : +50 % à la demande du 17 nov.) */
 const clamp=(x,a,b)=>x<a?a:x>b?b:x,lerp=(a,b,t)=>a+(b-a)*t;
 const sst=(a,b,x)=>{x=clamp((x-a)/(b-a),0,1);return x*x*(3-2*x)};
 let _s=20261110;const rnd=()=>{_s=(_s*1664525+1013904223)>>>0;return _s/4294967296},rr=(a,b)=>a+(b-a)*rnd();
@@ -376,7 +377,7 @@ const RES=zone('RES',walk(VX[2],VX[1],[144,72,144,144]));
 const MAR=zone('MAR',walk(VX[3],VX[2],[72,108]),P=>Math.atan2(P[3][1]-P[1][1],P[3][0]-P[1][0]));
 const DON=zone('DON',walk(VX[4],VX[3],[108,108,108]));
 /* 2.0 : la carte s'agrandit, tuiles Girih exactes autour des cinq zones (carte.js, zonesplus.js) */
-for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const Z=zone(d.id,d.poly);Z.mod=d.mod;Z.d=d;Z.plus=true}
+for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const Z=zone(d.id,d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]));Z.mod=d.mod;Z.d=d;Z.plus=true}
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
@@ -444,7 +445,7 @@ function secret(Z,pos,titre,texte,cond){const m=new THREE.Mesh(secGeo,secMat);sc
 const secHalo=points(32,7,{opacity:.8});
 
 /* ---------- Terrain ---------- */
-const CELL=3; /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
+const CELL=3.6; /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
 for(const Z of ZN)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
 X0-=64;X1+=64;Z0-=64;Z1+=64;
 const GW=Math.ceil((X1-X0)/CELL)+1,GH=Math.ceil((Z1-Z0)/CELL)+1,GN=GW*GH;
@@ -1230,7 +1231,7 @@ for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B=BIO[d.biome]||BIO['Steppe'],[neg
   /* végétation : posée au hasard dans la tuile, loin de la Pierre ; elle grandit, se ternit ou s'illumine selon le pôle */
   const R=Math.max(...Z.poly.map(p=>{const q=Z.loc(p[0],p[1]);return Math.hypot(q[0],q[1])}));Z.props=[];
   Z.build=()=>{for(const[k,n]of B.props){const it=inst(PG[k],k==='cristal'?PMAT.cristal:PG[k].attributes.color?PMAT.vc:PMAT.plein);it.k=k;let t=0;
-      while(it.a.length<n&&t++<n*30){const u=rr(-R,R),v=rr(-R,R);if(!Z.inside(u,v,12)||Math.hypot(u+20,v)<32)continue;const p=Z.w(u,v);
+      const nn=Math.round(n*SC*SC/4*.75);while(it.a.length<nn&&t++<nn*30){const u=rr(-R,R),v=rr(-R,R);if(!Z.inside(u,v,12)||Math.hypot(u+20,v)<32)continue;const p=Z.w(u,v);
         if(k!=='roseau'&&k!=='corail'&&B.f(u,v,N1(p[0],p[1]),N2(p[0],p[1]),N3(p[0],p[1]))<-.8)continue;
         const s=rr(.75,1.35);it.add(p[0],0,p[1],s,s,s,rr(0,TAU),k==='mur'||k==='colonne'?rr(-.08,.08):0,0,{u,v});}
       it.make();Z.props.push(it)}};
@@ -9788,7 +9789,7 @@ function padMarche(dt){if(!PAD.on)return null;
   const m=P.yaw-Math.atan2(str,fwd);
   /* la caméra se replace doucement derrière le héros quand on avance sans toucher au stick droit */
   if(!PAD.rx&&fwd>-.2){const df=((m-P.yaw)%TAU+TAU+PI)%TAU-PI;P.yaw+=df*Math.min(1,dt*1.1*mag)}
-  return{m,sp:(court?27:15)*Math.max(.35,mag)}}
+  return{m,sp:(court?31:17)*Math.max(.35,mag)}}
 
 /* ---------- Aide à l'écran : quand la manette sert, OK devient A, Retour devient B, etc. ---------- */
 const BT=(l,c)=>`<span class="bt ${c}">${l}</span>`;
@@ -9938,6 +9939,116 @@ function grimoireZone(Z,fi){const id=Z.id,I=Z.info,lv=S.lv[id]||0,L=Math.abs(lv)
   ui('menu',{sur:`Grimoire · ${I.sur.split(' · ')[0]}`,t:I.nom,back:()=>openGrimoire(fi),
     corps:`${ou}<div class="cartes grim">${cartes}</div>${res?'':`<p class="petit" style="margin-top:.6em">À gauche le pôle ${I.pm} (−), à droite le pôle ${I.pp} (+).</p>`}${lignes}`,
     opts:[{l:'Voyager vers cette zone',ic:'✧',go:()=>{tp(id);toMonde()}},{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(fi)}]})}
+/* MozaWorld : le héros (17 nov., « améliore le personnage, visuel et un minimum d'animation »).
+   Un voyageur articulé, tout en formes simples : chapeau pointu à large bord, écharpe, tunique ceinturée, cape rouge,
+   bâton à lanterne. Marche, course, saut, atterrissage et repos animés à la main (aucun fichier externe). */
+function creerHeros(){const g=new THREE.Group(),S_=(geo,col,o)=>{const m=new THREE.Mesh(geo,M(col,Object.assign({flatShading:false},o||{})));m.castShadow=true;return m};
+  const piv=(par,x,y,z)=>{const p=new THREE.Group();p.position.set(x,y,z);par.add(p);return p};
+  const cyl_=(rt,rb,h,col,n)=>{const m=S_(new THREE.CylinderGeometry(rt,rb,h,n||8),col);m.position.y=-h/2;return m};
+  const peau=0xd8b48a,tunique=0x3e5a6e,pantalon=0x3a3028,botte=0x2a1d16,cuir=0x6a4628,capeC=0x6a1824,chapeau=0x2a2630,echarpe=0xd9b25a;
+  const R={};
+  /* bassin */
+  const bassin=R.bassin=piv(g,0,.98,0);
+  /* jambes : hanche → genou → pied */
+  R.j=[-1,1].map(s=>{const h=piv(bassin,s*.15,0,0);h.add(cyl_(.12,.1,.48,pantalon));const k=piv(h,0,-.48,0);k.add(cyl_(.1,.085,.44,pantalon));
+    const b=S_(new THREE.BoxGeometry(.17,.14,.3),botte);b.position.set(0,-.47,.05);k.add(b);return{h,k}});
+  /* buste */
+  const buste=R.buste=piv(bassin,0,.02,0);
+  const corps=S_(new THREE.CylinderGeometry(.27,.33,.66,10),tunique);corps.position.y=.33;buste.add(corps);
+  const jupe=S_(new THREE.CylinderGeometry(.33,.42,.28,10,1,true),tunique,{side:THREE.DoubleSide});jupe.position.y=-.1;buste.add(jupe);
+  const ceinture=S_(new THREE.CylinderGeometry(.335,.335,.09,10),cuir);ceinture.position.y=.06;buste.add(ceinture);
+  const boucle=S_(new THREE.BoxGeometry(.1,.08,.03),0xc9a45c,{metalness:.7,roughness:.35});boucle.position.set(0,.06,.33);buste.add(boucle);
+  const sac=S_(new THREE.BoxGeometry(.16,.18,.1),cuir);sac.position.set(-.3,.0,.12);sac.rotation.y=-.5;buste.add(sac);
+  /* écharpe */
+  const ech=S_(new THREE.TorusGeometry(.2,.07,6,12),echarpe);ech.rotation.x=PI/2;ech.position.y=.66;buste.add(ech);
+  const pan=S_(new THREE.BoxGeometry(.1,.32,.04),echarpe);pan.position.set(.1,.5,.27);pan.rotation.z=.12;buste.add(pan);
+  /* tête */
+  const tete=R.tete=piv(buste,0,.72,0);
+  const crane=S_(new THREE.SphereGeometry(.21,14,10),peau);crane.position.y=.2;tete.add(crane);
+  const nez=S_(new THREE.ConeGeometry(.04,.1,6),peau);nez.rotation.x=PI/2;nez.position.set(0,.19,.21);tete.add(nez);
+  for(const s of[-1,1]){const o=new THREE.Mesh(new THREE.SphereGeometry(.025,6,5),new THREE.MeshBasicMaterial({color:0x1a1210}));o.position.set(s*.075,.24,.185);tete.add(o)}
+  const barbe=S_(new THREE.ConeGeometry(.13,.2,8),0x8a7a6a);barbe.rotation.x=PI;barbe.position.set(0,.04,.11);tete.add(barbe);
+  const bord=S_(new THREE.CylinderGeometry(.44,.44,.04,16),chapeau);bord.position.y=.33;tete.add(bord);
+  R.pointe=S_(new THREE.ConeGeometry(.24,.62,12),chapeau);R.pointe.position.y=.64;R.pointe.rotation.z=-.18;tete.add(R.pointe);
+  const ruban=S_(new THREE.CylinderGeometry(.235,.25,.07,12),capeC);ruban.position.y=.39;tete.add(ruban);
+  /* bras : épaule → coude → main ; la main droite tient le bâton à lanterne */
+  R.b=[-1,1].map(s=>{const e=piv(buste,s*.36,.6,0);e.add(cyl_(.08,.07,.36,tunique));const c=piv(e,0,-.36,0);c.add(cyl_(.07,.06,.32,tunique));
+    const m=S_(new THREE.SphereGeometry(.07,8,6),peau);m.position.y=-.36;c.add(m);return{e,c}});
+  const baton=piv(R.b[1].c,0,-.36,.02);baton.rotation.x=-.25;
+  const bois=S_(new THREE.CylinderGeometry(.03,.035,1.9,6),0x5a3c24);bois.position.y=.35;baton.add(bois);
+  const crochet=S_(new THREE.TorusGeometry(.1,.02,5,10,PI),0x3a2a1c);crochet.position.set(.08,1.3,0);baton.add(crochet);
+  const lant=piv(baton,.18,1.22,0);R.lant=lant;
+  const cage=S_(new THREE.CylinderGeometry(.08,.1,.18,6),0x2a2228,{metalness:.5,roughness:.4});cage.position.y=-.12;lant.add(cage);
+  const feu=new THREE.Mesh(new THREE.SphereGeometry(.07,8,6),new THREE.MeshBasicMaterial({color:new THREE.Color(3,2,.8)}));feu.position.y=-.12;lant.add(feu);R.feu=feu;
+  /* cape : accrochée aux épaules, elle s'envole avec la vitesse */
+  const capeP=R.cape=piv(buste,0,.66,-.2);
+  const cp=new THREE.CylinderGeometry(.26,.42,1.0,10,4,true,PI*.7,PI*.6);cp.translate(0,-.5,0);
+  const cape=new THREE.Mesh(cp,M(capeC,{side:THREE.DoubleSide,flatShading:false}));cape.castShadow=true;cape.position.z=.2;capeP.add(cape);
+  g.userData.R=R;g.userData.ph=0;g.userData.air=0;g.userData.land=0;
+  /* la lumière de la lanterne (même lampe qu'avant) */
+  const pl=g.userData.pl=new THREE.PointLight(0xffd9a0,.55,18,1.8);pl.position.set(.5,1.4,.3);g.add(pl);
+  return g}
+/* v : vitesse au sol (m/s), sol : au sol ou non, vy : vitesse verticale */
+function animHeros(h,dt,v,sol,vy,t){const R=h.userData.R,U=h.userData;if(!R)return;
+  const k=clamp(v/14,0,1),run=clamp((v-15)/10,0,1);
+  U.ph+=dt*(v>.3?(3.2+v*.42):0);const s=Math.sin(U.ph),c=Math.cos(U.ph);
+  if(!sol)U.air=Math.min(1,U.air+dt*6);else{if(U.air>.5)U.land=1;U.air=Math.max(0,U.air-dt*8)}
+  U.land=Math.max(0,U.land-dt*5);
+  /* double saut : une culbute avant en 0,45 s, corps groupé */
+  if(U.flip>0){U.flip=Math.max(0,U.flip-dt/.45);if(sol)U.flip=0}const fl_=U.flip>0?1-U.flip:0,grp=U.flip>0?Math.sin(fl_*PI):0;
+  R.bassin.rotation.x=U.flip>0?fl_*TAU:0;
+  const a=Math.min(1,U.air+grp),sw=(.55+.35*run)*k*(1-a),idle=1-k;
+  /* jambes : balancier, le genou plie quand la jambe revient */
+  R.j.forEach((J,i)=>{const sg=i?1:-1,ph=s*sg;J.h.rotation.x=-ph*sw+a*(i?-.9:-.35);J.k.rotation.x=Math.max(0,(sg*c))*sw*1.3+a*(i?1.2:.5)+U.land*.6});
+  /* bras opposés aux jambes ; le bras droit garde le bâton */
+  R.b[0].e.rotation.x=s*sw*.9-a*.9;R.b[0].e.rotation.z=-.12-a*.5;R.b[0].c.rotation.x=-.25-run*.6;
+  R.b[1].e.rotation.x=-.35-s*sw*.35-a*.4;R.b[1].e.rotation.z=.1;R.b[1].c.rotation.x=-.55-run*.3;
+  /* buste : rebond, penché en course, respiration au repos */
+  R.bassin.position.y=.98+Math.abs(c)*.07*k-U.land*.18+idle*Math.sin(t*1.8)*.012;
+  R.buste.rotation.x=.08*k+.22*run+a*.12-U.land*.1;R.buste.rotation.y=-s*.12*k;
+  R.tete.rotation.x=-.06*k-.12*run+idle*Math.sin(t*.9)*.03;R.tete.rotation.y=idle*Math.sin(t*.37)*.25;
+  /* cape et pointe du chapeau qui flottent */
+  R.cape.rotation.x=-(.08+.55*k+.35*run+(vy>0?.2:-.25)*a)-Math.sin(t*6+U.ph)*.04*k-Math.sin(t*1.3)*.03;
+  R.pointe.rotation.x=-.1*k-.15*run;R.lant.rotation.z=-s*.25*k+Math.sin(t*2)*.05;R.lant.rotation.x=-.3*k;
+  const fl=.85+.15*Math.sin(t*13)+.08*Math.sin(t*31);R.feu.material.color.setRGB(3*fl,2*fl,.8*fl)}
+/* MozaWorld 2.4 : bandeau d'état (demande du 17 nov. : « un bandeau bien intégré dans l'interface affiche l'état des manas
+   et d'autres états, comme le nombre de Citadelles et de Donjons possédés »). Il s'ajoute en tête du cadre d'état, en haut à droite. */
+const BTYPES=[['CIT','⛫','Citadelles'],['DON','⬟','Donjons'],['RES','⬢','Ressources'],['ANT','✦','Antres'],['MAR','⚖','Assemblées']];
+(function(){const st=document.createElement('style');st.textContent=`
+.bandeau{display:grid;gap:calc(var(--u)*.5);padding-bottom:calc(var(--u)*.6);margin-bottom:calc(var(--u)*.2);border-bottom:1px solid rgba(201,164,92,.3)}
+.bandeau .ligne{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:calc(var(--u)*.35) calc(var(--u)*.7);align-items:center}
+.bandeau .m{display:inline-flex;align-items:center;gap:.3em;font-family:var(--titre);font-size:calc(var(--u)*1.35);color:var(--ivoire);font-variant-numeric:tabular-nums}
+.bandeau .m i{display:inline-block;width:.85em;height:.85em;border-radius:50%;background:var(--mc);box-shadow:0 0 .4em var(--mc)}
+.bandeau .m.vide{opacity:.4}
+.bandeau .d{display:inline-flex;align-items:center;gap:.25em;font-size:calc(var(--u)*1.25);color:var(--ivoire)}
+.bandeau .d span{color:#ffd98a;font-size:1.1em}.bandeau .d small{color:var(--sable);font-size:.75em}
+.bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}`;document.head.appendChild(st)})();
+function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;let b=document.getElementById('bandeau');
+  if(!b){b=document.createElement('div');b.id='bandeau';b.className='bandeau';box.prepend(b)}
+  const mana=`<span class="m"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');
+  const dom=BTYPES.map(([m,ic,nom])=>{const tot=ZN.filter(Z=>(Z.mod||Z.id)===m),own=tot.filter(Z=>S.own[Z.id]).length;
+    return`<span class="d" title="${nom}"><span>${ic}</span>${own}<small>/${tot.length}</small></span>`}).join('');
+  const prod=typeof prodTexte==='function'&&prodRessource()?`<span class="titre">+ ${prodTexte()} par cycle</span>`:'';
+  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}</div>`}
+/* MozaWorld 2.4 : sauvegardes (demande du 17 nov. : « nouvelle partie, sauvegarde et recharge, juste 20 sauvegardes »).
+   20 emplacements dans le stockage du navigateur (Edge sur Xbox). Charger recopie l'emplacement dans la partie en cours puis recharge la page. */
+const NSAUV=20,cleSauv=i=>'mz-sauv-'+i;
+const lireSauv=i=>{try{return JSON.parse(localStorage.getItem(cleSauv(i))||'null')}catch(_){return null}};
+const dateSauv=t=>{try{return new Date(t).toLocaleString('fr-CA',{dateStyle:'short',timeStyle:'short'})}catch(_){return''}};
+function resumeSauv(){const own=ZN.filter(Z=>S.own[Z.id]).length,niv=ZN.reduce((a,Z)=>a+Math.abs(S.lv[Z.id]||0),0);
+  const z=zoneAt(P.x,P.z);return`${own} zone(s) · niveaux ${niv} · ${S.deck.length} cartes${z?' · '+z.info.nom.split(',')[0]:''}`}
+function listeSauv(mode_,f){const o=[];for(let i=1;i<=NSAUV;i++){const s=lireSauv(i);
+    o.push({l:`Emplacement ${i}`+(s?` · ${dateSauv(s.t)}`:''),ic:s?'▣':'□',d:s?s.r:'vide',off:mode_==='charger'&&!s,go:()=>mode_==='charger'?chargerSauv(i):ecrireSauv(i,!!s)})}
+  o.push({l:'Retour',ic:'◆',go:openMenu});return o}
+function openSauver(f){ui('menu',{sur:'Sauvegarder',t:'Choisir un emplacement',deux:true,f:f||0,corps:`<p class="petit">${NSAUV} emplacements. Partie en cours : ${resumeSauv()}.</p>`,back:openMenu,opts:listeSauv('sauver')})}
+function openCharger(){ui('menu',{sur:'Charger',t:'Reprendre une partie',deux:true,corps:'<p class="petit">La partie en cours est remplacée par celle de l\'emplacement choisi (sauvegardez-la d\'abord si vous voulez la garder).</p>',back:openMenu,opts:listeSauv('charger')})}
+function ecrireSauv(i,ecraser){const go=()=>{S.pos=[P.x,P.z,P.yaw];save();try{localStorage.setItem(cleSauv(i),JSON.stringify({t:Date.now(),r:resumeSauv(),d:localStorage.getItem('mz-tv-1')}));
+      toast('Partie sauvegardée','Emplacement '+i,resumeSauv())}catch(e){toast('Sauvegarde impossible','Stockage plein ou bloqué',String(e.message||e))}openMenu()};
+  if(!ecraser)return go();
+  ui('menu',{sur:'Sauvegarder',t:`Écraser l'emplacement ${i} ?`,corps:`<p class="petit">${lireSauv(i).r}</p>`,back:()=>openSauver(i-1),opts:[{l:'Oui, écraser',ic:'▣',go},{l:'Non',ic:'◆',go:()=>openSauver(i-1)}]})}
+function chargerSauv(i){const s=lireSauv(i);if(!s)return;
+  ui('menu',{sur:'Charger',t:`Charger l'emplacement ${i} ?`,corps:`<p class="petit">${s.r} · ${dateSauv(s.t)}</p>`,back:openCharger,
+    opts:[{l:'Oui, charger',ic:'▲',go:()=>{try{localStorage.setItem('mz-tv-1',s.d);location.reload()}catch(e){toast('Chargement impossible','',String(e.message||e))}}},{l:'Non',ic:'◆',go:openCharger}]})}
 /* MozaWorld TV : héros, Pierres d'éveil, épreuves, cartes, télécommande, musique, boucle. */
 const $=id=>document.getElementById(id);
 const IDS=ZN.map(Z=>Z.id);   /* 2.0 : les cinq zones d'origine et les tuiles de la carte agrandie */
@@ -9985,15 +10096,7 @@ function newCard(Z,lv){const p=lv>0?1:0,[rn,pw]=rang(Math.abs(lv)),cible=ZB[CONT
 const bestCard=Z=>{let b=-1;S.cards.forEach((c,i)=>{if(c.cible===Z.id&&(b<0||c.pw>S.cards[b].pw))b=i});return b};
 
 /* ---------- Héros ---------- */
-const hero=new THREE.Group();
-{const robe=new THREE.Mesh(new THREE.CylinderGeometry(.28,.62,1.5,8),M(0xe9dfc8,{flatShading:false}));robe.position.y=.75;
- const cape=new THREE.Mesh(new THREE.ConeGeometry(.78,1.7,8,1,true),M(0x7a1f2a,{side:THREE.DoubleSide,flatShading:false}));cape.position.set(0,1,-.12);
- const head=new THREE.Mesh(new THREE.SphereGeometry(.27,10,8),M(0xd8b48a,{flatShading:false}));head.position.y=1.72;
- const hat=new THREE.Mesh(new THREE.ConeGeometry(.42,.5,8),M(0x2a2630));hat.position.y=2.05;
- const lamp=new THREE.Mesh(new THREE.SphereGeometry(.11,6,5),new THREE.MeshBasicMaterial({color:new THREE.Color(3,2,.8)}));lamp.position.set(.45,1.05,.25);
- for(const m of[robe,cape,head,hat])m.castShadow=true;hero.add(robe,cape,head,hat,lamp);
- const pl=hero.userData.pl=new THREE.PointLight(0xffd9a0,.55,18,1.8);pl.position.set(.45,1.3,.25);hero.add(pl);scene.add(hero);
- /* 2.0 : héros et caméra 30 % plus petits, le décor paraît 30 % plus grand sans toucher aux niveaux */hero.scale.setScalar(1/1.3)}
+const hero=creerHeros();scene.add(hero);hero.scale.setScalar(1/1.3);   /* 2.0 : héros à l'échelle 1/1,3 ; personnage articulé dans heros.js */
 const P={x:-65,y:5,z:89,vy:0,g:false,yaw:Math.atan2(.59,-.81),pitch:.3,dist:11.5,face:0,walked:0,run:0};
 const SPOTS={CIT:[-65,89,Math.atan2(.59,-.81)]};
 {const sp=(Z,u,v)=>{const p=Z.w(u,v),q=Z.w(u+10,v);return[p[0],p[1],Math.atan2(q[0]-p[0],q[1]-p[1])]};
@@ -10089,7 +10192,7 @@ function act(a,rep){
     /* marche automatique : ▲ deux fois de suite, le héros avance seul (◀ ▶ pour diriger, ▼ ou OK pour s'arrêter) */
     if(a==='up'){const t=performance.now();if(t-lastUp<450)P.auto=1;lastUp=t}
     if(a==='down'&&P.auto){P.auto=0;held.down=0}
-    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else if(P.g){P.vy=11.5;P.g=false}}
+    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else sauter()}
     if(a==='back'){P.auto=0;openMenu()}return}
   if(mode==='epreuve'){if(a==='back'&&!rep){pauseEpreuve();return}if(E&&E.input)E.input(a,rep);return}
   if(mode==='mue'){if(a==='ok'&&!rep&&mue.t>2.5)mue.t=99}
@@ -10104,7 +10207,9 @@ function ui(host,o){UI=Object.assign({host,f:0},o);if(host==='menu'){$('toast').
   o.opts.forEach((p,i)=>{const d=document.createElement('div');d.className='opt'+(p.cls?' '+p.cls:'')+(p.off?' off':'');
     d.innerHTML=(p.ic?`<span class="ic">${p.ic}</span>`:'')+`<span>${p.l}</span>`+(p.d?`<span class="d">${p.d}</span>`:'');box.appendChild(d)});
   UI.f=Math.max(0,o.opts.findIndex(p=>!p.off));if(o.f!==undefined&&!o.opts[o.f].off)UI.f=o.f;uiDraw()}
-function uiDraw(){[...$(UI.host+'-choix').children].forEach((d,i)=>{d.classList.toggle('f',i===UI.f);if(i===UI.f&&d.scrollIntoView)try{d.scrollIntoView({block:'nearest'})}catch(_){}})}
+/* la liste défile pour garder le choix visible (Xbox : marge de sécurité de l'écran télé) */
+function uiDraw(){const c=$(UI.host+'-choix');[...c.children].forEach((d,i)=>{d.classList.toggle('f',i===UI.f);if(i!==UI.f)return;
+  const m=8,top=d.offsetParent===c?d.offsetTop:d.offsetTop-c.offsetTop,bot=top+d.offsetHeight;if(c.scrollHeight>c.clientHeight){if(top-m<c.scrollTop)c.scrollTop=Math.max(0,top-m);else if(bot+m>c.scrollTop+c.clientHeight)c.scrollTop=bot+m-c.clientHeight}})}
 function uiAct(a,rep){if(!UI)return;const n=UI.opts.length,st=UI.deux&&(a==='left'||a==='right')?1:UI.deux?2:1;
   const mv=d=>{let i=UI.f;for(let k=0;k<n;k++){i=(i+d+n)%n;if(!UI.opts[i].off){UI.f=i;break}}uiDraw();tick()};
   if(a==='down'||(a==='right'&&!UI.deux))mv(st);else if(a==='up'||(a==='left'&&!UI.deux))mv(-st);
@@ -10133,6 +10238,8 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Paquet de cartes',ic:'▤',d:S.cards.length+' carte(s)',go:openPaquet},
+    {l:'Sauvegarder',ic:'▣',d:'20 emplacements',go:()=>openSauver(0)},
+    {l:'Charger une partie',ic:'▤',go:openCharger},
     {l:'Grimoire des cartes',ic:'✦',d:'toutes les cartes, pôle par pôle',go:()=>openGrimoire(0)},
     {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+resTot()+' mana',go:openCombatPaquet},
     {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
@@ -10142,7 +10249,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%3;try{localStorage.setItem('mz-tv-q',QI)}catch(_){}resize();openMenu()}},
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
-    {l:'Recommencer à zéro',ic:'↺',go:()=>ui('menu',{sur:'Recommencer',t:'Tout effacer ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets sont perdus.</p>',back:openMenu,
+    {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
       opts:[{l:'Non, revenir',ic:'◆',go:openMenu},{l:'Oui, tout recommencer',ic:'↺',go:()=>{startGame(true)}}]})}]})}
 function openVoyage(){ui('menu',{sur:'Voyager',t:`Les ${ZN.length} zones`,corps:'<p class="petit">Le héros réapparaît devant la Pierre d\'éveil de la zone. Vous pouvez aussi marcher : les zones se touchent.</p>',back:openMenu,
   opts:ZN.map(Z=>({l:Z.info.nom,ic:sgn(S.lv[Z.id])||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',d:TYPE[Z.id].ep+(restLeft(Z)>0?' · repos '+fmt(restLeft(Z)):''),go:()=>{tp(Z.id);toMonde()}}))})}
@@ -10152,8 +10259,8 @@ function openPaquet(){ui('menu',{sur:'Paquet',t:'Vos cartes de pouvoir',corps:S.
 function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
   ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve : ${resHTML()}${prodRessource()?' (vos Ressources ajoutent '+prodTexte()+' par cycle)':''} · en combat, on dépense la réserve : 1 mana au tour 1, 2 au tour 2, et ainsi de suite (certaines cartes donnent un boost) · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
-function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
-<p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
+function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter (deux fois : double saut), ou agir devant une Pierre · Retour : menu.</p>
+<p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter (deux fois : double saut) ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
 <p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; une carte commune avec n'importe quel type. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure et plus la carte gagnée est forte (Mineure, Majeure, Ultime).</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
@@ -10312,12 +10419,15 @@ RES(eff){const Z=RES,K=4+eff,a=Z.alt,orbs=[];let time=38+K*8-eff*2;
       move(dt);for(const o of orbs){if(o.got)continue;o.m.position.y=o.y+Math.sin(T*2.4+o.x)*.3;o.m.rotation.y=T*1.5;
         if(Math.hypot(o.x-P.x,o.z-P.z)<2.6&&Math.abs(o.y-P.y-1)<4){o.got=1;o.m.visible=false;sfx('hit');this.compte()}}
       if(orbs.every(o=>o.got))endEpreuve(true)},
-    input(a,rep){if(a==='ok'&&!rep&&P.g){P.vy=11.5;P.g=false}},
+    input(a,rep){if(a==='ok'&&!rep)sauter()},
     fin(){for(const m of gerbes)m.visible=false},draw(){}}}};
 const gerbeMat=new THREE.MeshBasicMaterial({color:new THREE.Color(1.6,3,1.2)}),gerbes=[];
 for(let i=0;i<12;i++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(.7,0),gerbeMat);m.visible=false;scene.add(m);gerbes.push(m)}
 function step(){if(AX&&soundOn)perc(AX.currentTime,'c',.35)}
 
+/* Saut, puis double saut en l'air (demande du 17 nov.) : un second appui relance le héros, avec une culbute */
+function sauter(){if(P.g){P.vy=11.5;P.g=false;P.saut2=1;sfxSaut(0)}else if(P.saut2){P.vy=10.5;P.saut2=0;hero.userData.flip=1;sfxSaut(1)}}
+function sfxSaut(n){if(AX&&soundOn)try{note(AX.currentTime,n?660:440,SIN,.12,.05)}catch(_){}}
 /* ---------- Déplacement : ▲▼ avancer/reculer, ◀▶ tourner ---------- */
 function move(dt){const t=performance.now();
   /* Plus rapide (retour du 17 nov.) : marche 14, course 27 au bout de 0,35 s ; virage qui s'accélère quand on tient ◀ ▶ */
@@ -10326,7 +10436,7 @@ function move(dt){const t=performance.now();
   const tr=r?Math.min(1,(t-Math.max(heldT.left||0,heldT.right||0))/450):0;
   if(mode==='monde'||(mode==='epreuve'&&E&&E.monde)){P.yaw-=r*dt*(1.7+1.5*tr);P.run=f>0&&(P.auto||t-heldT.up>350)?1:0}else{P.run=0}
   const live=(mode==='monde'||(mode==='epreuve'&&E&&E.monde));const ff=live?f:0;
-  P.sp=(P.sp||0)+((ff?(P.run?27:14)*(ff<0?.6:1):0)-(P.sp||0))*Math.min(1,dt*6);
+  P.sp=(P.sp||0)+((ff?(P.run?31:16)*(ff<0?.6:1):0)-(P.sp||0))*Math.min(1,dt*6);
   const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),sp=P.sp;
   const pm=live?padMarche(dt):null;let dx=0,dz=0;
   if(pm){P.sp=pm.sp;dx=Math.sin(pm.m)*pm.sp*dt;dz=Math.cos(pm.m)*pm.sp*dt;P.face=pm.m}
@@ -10336,7 +10446,9 @@ function move(dt){const t=performance.now();
     if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=Math.hypot(dx,dz)*.55}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
-  if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true}}
+  if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true;P.saut2=0}}
+  P.v=lerp(P.v||0,(Math.hypot(P.x-(P.px===undefined?P.x:P.px),P.z-(P.pz===undefined?P.z:P.pz)))/Math.max(dt,1e-3),Math.min(1,dt*10));P.px=P.x;P.pz=P.z;
+  animHeros(hero,dt,P.v,P.g,P.vy,performance.now()/1000);
   hero.position.set(P.x,P.y,P.z);hero.rotation.y+=((((P.face-hero.rotation.y)%TAU)+TAU+PI)%TAU-PI)*Math.min(1,dt*10)}
 function camFollow(dt){const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),cp=Math.cos(P.pitch),tx=P.x,ty=P.y+1.45,tz=P.z;
   let cx=tx-fx*cp*P.dist,cy=ty+Math.sin(P.pitch)*P.dist,cz=tz-fz*cp*P.dist;const gy=ground(cx,cz)+.7;if(cy<gy)cy=gy;camGo(cx,cy,cz,tx,ty,tz,dt,8)}
@@ -10351,7 +10463,7 @@ function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
   $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
-function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-cartes').textContent=S.cards.length;$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length}
+function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-cartes').textContent=S.cards.length;$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length;if(typeof bandeau==='function')bandeau()}
 let invKey='';
 function invite(){let h='',cls='';const el=$('invite');
   if(mode==='monde'&&curZ){const a=curZ.alt,d=Math.hypot(a.x-P.x,a.z-P.z),r=restLeft(curZ);
@@ -10362,10 +10474,22 @@ function invite(){let h='',cls='';const el=$('invite');
   const k=h+cls;if(k!==invKey){invKey=k;el.innerHTML=h;el.className='hud invite '+cls}}
 let toastT=0;function toast(a,b,c){$('t1').textContent=a;$('t2').textContent=b;$('t3').textContent=c||'';$('toast').classList.add('vu');toastT=6}
 const mini=$('mini'),mc=mini.getContext('2d');
+const TYPEG={CIT:'⛫',DON:'⬟',RES:'⬢',ANT:'✦',MAR:'⚖'};
 function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)/2,oz=sp/2-(Z0+Z1)/2;mc.clearRect(0,0,300,300);
+  /* 2.4 : vos zones bien visibles (fond plein, bord d'or épais, fanion), zones sauvages sombres ; un symbole par type ;
+     les Pierres où une activité vous attend clignotent */
+  const pulse=.6+.4*Math.sin(T*4);
   for(const Z of ZN){mc.beginPath();Z.poly.forEach((p,i)=>{const x=(p[0]+ox)*s,y=(p[1]+oz)*s;i?mc.lineTo(x,y):mc.moveTo(x,y)});mc.closePath();
-    const k=Z.lv/7;mc.fillStyle=k<0?`rgba(127,176,200,${.12+.6*-k})`:`rgba(230,162,90,${.12+.6*k})`;mc.fill();mc.lineWidth=Z===curZ?3:1.5;mc.strokeStyle=Z===curZ?'#efe7d6':'#c9a45c';mc.stroke();
-    const a=Z.alt,x=(a.x+ox)*s,y=(a.z+oz)*s,r=restLeft(Z)>0;mc.fillStyle=r?'#7d7466':'#ffd98a';mc.beginPath();mc.moveTo(x,y-7);mc.lineTo(x+5,y);mc.lineTo(x,y+7);mc.lineTo(x-5,y);mc.fill()}
+    const own=S.own[Z.id],k=(S.lv[Z.id]||0)/7;
+    mc.fillStyle=own?(k<0?`rgba(110,160,200,${.45+.4*-k})`:k>0?`rgba(232,170,90,${.45+.4*k})`:'rgba(201,164,92,.42)'):`rgba(30,26,30,${.55})`;mc.fill();
+    if(!own&&k){mc.fillStyle=k<0?`rgba(127,176,200,${.25*-k})`:`rgba(230,162,90,${.25*k})`;mc.fill()}
+    mc.lineWidth=Z===curZ?3.5:own?3:1;mc.strokeStyle=Z===curZ?'#ffffff':own?'#ffd98a':'rgba(201,164,92,.45)';mc.stroke();
+    const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 15px sans-serif';mc.textAlign='center';mc.textBaseline='middle';
+    mc.fillStyle=own?'#1a1410':'rgba(239,231,214,.55)';mc.fillText(TYPEG[Z.mod||Z.id]||'·',cx,cy+9);
+    if(own){mc.fillStyle='#ffd98a';mc.fillRect(cx-1,cy-17,2,12);mc.beginPath();mc.moveTo(cx+1,cy-17);mc.lineTo(cx+9,cy-14);mc.lineTo(cx+1,cy-11);mc.fill()}
+    const a=Z.alt,x=(a.x+ox)*s,y=(a.z+oz)*s,r=restLeft(Z)>0,dispo=!r&&S.own[Z.id]&&!((Z.mod||Z.id)==='RES'&&(S.lv[Z.id]||0)>=3);
+    const g=dispo?6+2*pulse:S.own[Z.id]?5:3.5;mc.fillStyle=r?'#7d7466':dispo?`rgba(255,217,138,${.6+.4*pulse})`:'rgba(201,164,92,.7)';mc.beginPath();mc.moveTo(x,y-g);mc.lineTo(x+g*.7,y);mc.lineTo(x,y+g);mc.lineTo(x-g*.7,y);mc.fill();
+    if(dispo){mc.strokeStyle=`rgba(255,217,138,${.5*pulse})`;mc.lineWidth=1.5;mc.beginPath();mc.arc(x,y,g+4,0,TAU);mc.stroke()}}
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
   for(const q of secrets){if(q.found||!q.cond(q.Z.lv))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
   if(E&&E.monde)for(const o of E.orbs)if(!o.got){mc.fillStyle='#b8ff9a';mc.beginPath();mc.arc((o.x+ox)*s,(o.z+oz)*s,3.4+Math.sin(T*6),0,TAU);mc.fill()}
