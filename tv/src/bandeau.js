@@ -16,4 +16,10 @@ function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;
   const dom=BTYPES.map(([m,ic,nom])=>{const tot=ZN.filter(Z=>(Z.mod||Z.id)===m),own=tot.filter(Z=>S.own[Z.id]).length;
     return`<span class="d" title="${nom}"><span>${ic}</span>${own}<small>/${tot.length}</small></span>`}).join('');
   const prod=typeof prodTexte==='function'&&prodRessource()?`<span class="titre">+ ${prodTexte()} par cycle</span>`:'';
-  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}</div>`}
+  /* territoire : zones à vous, et le plus grand bloc de zones voisines d'un seul tenant */
+  const mes=ZN.filter(Z=>S.own[Z.id]).map(Z=>Z.id),vu=new Set();let bloc=0;
+  if(typeof VOISINES!=='undefined')for(const id of mes){if(vu.has(id))continue;let n=0;const pile=[id];vu.add(id);
+    while(pile.length){const z=pile.pop();n++;for(const v of VOISINES[z]||[])if(S.own[v]&&!vu.has(v)){vu.add(v);pile.push(v)}}bloc=Math.max(bloc,n)}
+  const niv=ZN.reduce((a,Z)=>a+(S.own[Z.id]?Math.abs(S.lv[Z.id]||0):0),0);
+  const terr=`<span class="d" title="Zones à vous"><span>⚑</span>${mes.length}<small>/${ZN.length}</small></span><span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}<small> d'un tenant</small></span><span class="d" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}<small> niv.</small></span>`;
+  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}</div><div class="ligne"><span class="titre">Territoire</span>${terr}</div>`}
