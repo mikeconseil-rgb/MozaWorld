@@ -185,18 +185,130 @@ function coins(mana,coul,L){const g=COIN[mana]||COIN.Pierre,cl=L>=5?' brille':''
 /* ---------- Losanges de palier ---------- */
 function paliers(n,max,coul){return`<div class="kpal" style="--pc:${coul}">${Array.from({length:max},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('')}</div>`}
 
+/* ---------- Sujet propre à chaque carte (rendu unique, demande du 17 nov. au soir) ----------
+   Le sujet vient d'abord du NOM de la carte (chien, masque, lanterne, sceau…), sinon de son effet principal.
+   Il est dessiné au premier plan ; le monument de la zone passe derrière. Chaque sujet : pieds en (0,0), environ 50 unités de haut. */
+const SJ={
+chien:(c,r)=>`<path d="M-24 0 L-21 -14 Q-26 -20 -22 -24 L-16 -20 Q-4 -24 10 -22 L16 -30 L19 -24 Q26 -22 26 -16 L20 -14 L16 -10 L16 0 L11 0 L10 -9 L-12 -10 L-15 0Z" fill="${c.f}"/><circle cx="18" cy="-22" r="1.2" fill="${c.g}"/>`,
+oiseau:(c,r)=>`<path d="M0 -26 Q-14 -40 -30 -36 Q-18 -32 -10 -24 Q-14 -16 -4 -14 L0 -6 L4 -14 Q14 -16 10 -24 Q18 -32 30 -36 Q14 -40 0 -26Z" fill="${c.f}"/><path d="M-2 -6 L2 -6 L0 0Z" fill="${c.f}"/><circle cx="1" cy="-25" r="1" fill="${c.g}"/>`,
+serpent:(c,r)=>`<path d="M-26 0 Q-26 -10 -14 -10 Q-2 -10 -2 -20 Q-2 -30 10 -30 Q20 -30 20 -38 L26 -36 Q26 -24 12 -24 Q4 -24 4 -14 Q4 -4 -14 -4 Q-20 -4 -20 0Z" fill="${c.f}"/><circle cx="22" cy="-36" r="1.1" fill="${c.g}"/>`,
+poisson:(c,r)=>`<path d="M-24 -22 Q-4 -40 18 -24 L28 -32 L26 -18 L28 -6 L18 -14 Q-4 2 -24 -14Z" fill="${c.f}"/><circle cx="-16" cy="-20" r="1.4" fill="${c.g}"/><path d="M-6 -30 Q0 -20 -6 -8" stroke="${c.l}" fill="none"/>`,
+cornu:(c,r)=>`<path d="M-26 0 V-16 Q-26 -26 -10 -26 H12 L16 -34 Q12 -42 6 -44 Q18 -42 20 -32 L24 -36 Q30 -30 22 -26 Q28 -22 24 -16 L18 -16 V0 H13 V-12 H-14 V0Z" fill="${c.f}"/><circle cx="20" cy="-23" r="1.2" fill="${c.g}"/>`,
+tortue:(c,r)=>`<path d="M-26 0 Q-26 -26 0 -28 Q26 -26 26 0Z" fill="${c.f}"/><path d="M-14 -4 L-8 -18 L8 -18 L14 -4 M-8 -18 L0 -26 L8 -18" stroke="${c.l}" fill="none" stroke-width="1.4"/><path d="M26 -6 Q34 -10 32 -2 Z" fill="${c.f}"/>`,
+essaim:(c,r)=>Array.from({length:14},()=>`<circle cx="${f1(r()*50-25)}" cy="${f1(-4-r()*44)}" r="${f1(1+r()*1.6)}" fill="${c.g}" filter="url(#mz-lueur)"/>`).join(''),
+lezard:(c,r)=>`<path d="M-28 -4 Q-14 -2 -8 -8 L-12 -14 L-6 -12 L0 -14 Q8 -18 16 -14 L22 -20 L22 -12 Q28 -12 30 -8 Q20 -6 14 -8 L18 -2 L12 -4 Q0 -6 -8 -2 Q-18 4 -28 -4Z" fill="${c.f}"/><circle cx="25" cy="-10" r="1" fill="${c.g}"/>`,
+figure:(c,r)=>{const v=Math.floor(r()*4);const tete=`<circle cx="0" cy="-40" r="5" fill="${c.f}"/>`;
+  const corps=`<path d="M-9 0 L-7 -24 Q-8 -32 0 -34 Q8 -32 7 -24 L9 0Z" fill="${c.f}"/>`;
+  const ext=[`<path d="M8 -26 L14 -50" stroke="${c.f}" stroke-width="2.4"/><path d="M14 -50 L12 -58 L17 -52Z" fill="${c.l}"/>`,
+   `<path d="M-7 -26 L-14 -18" stroke="${c.f}" stroke-width="2.4"/><rect x="-18" y="-18" width="8" height="10" rx="2" fill="${c.g}" filter="url(#mz-lueur)"/>`,
+   `<path d="M-8 -44 Q0 -54 8 -44 L10 -30 L-10 -30Z" fill="${c.f}"/>`,
+   `<path d="M-7 -28 L-18 -38 M7 -28 L18 -38" stroke="${c.f}" stroke-width="2.4"/><circle cx="0" cy="-46" r="9" fill="none" stroke="${c.g}" opacity=".7"/>`][v];return corps+tete+ext},
+chanteur:(c,r)=>SJ.figure(c,()=>.6)+[10,18,26].map(q=>`<path d="M${q} -46 Q${q+6} -36 ${q} -26" stroke="${c.g}" stroke-width="1.6" fill="none" opacity=".85"/>`).join(''),
+masque:(c,r)=>`<path d="M-18 -46 Q0 -54 18 -46 Q20 -20 0 -8 Q-20 -20 -18 -46Z" fill="${c.l}" stroke="${c.f}" stroke-width="2"/><path d="M-11 -34 q5 -4 9 0 q-5 3 -9 0Z M2 -34 q5 -4 9 0 q-5 3 -9 0Z" fill="${c.f}"/><path d="M-6 -20 Q0 -16 6 -20" stroke="${c.f}" stroke-width="1.6" fill="none"/><path d="M0 -8 V0" stroke="${c.f}" stroke-width="2"/>`,
+document:(c,r)=>`<path d="M-18 -4 V-44 Q-18 -48 -14 -48 H16 V-8 Q16 -4 12 -4Z" fill="${c.l}" stroke="${c.f}" stroke-width="1.6"/>${[0,1,2,3,4].map(i=>`<path d="M-12 ${-40+i*6} H${8-i%2*6}" stroke="${c.f}" stroke-width="1.4"/>`).join('')}<circle cx="10" cy="-10" r="6" fill="${c.g}" stroke="${c.f}"/>`,
+coffre:(c,r)=>`<path d="M-22 0 V-20 H22 V0Z" fill="${c.f}"/><path d="M-22 -20 Q0 -36 22 -20Z" fill="${c.f}" stroke="${c.l}"/><rect x="-4" y="-18" width="8" height="8" fill="${c.g}"/><path d="M-22 -10 H22" stroke="${c.l}" stroke-width="1.2"/>`,
+lanterne:(c,r)=>`<path d="M0 -54 V-48" stroke="${c.f}" stroke-width="2"/><path d="M-8 -48 H8 L10 -42 V-16 L8 -12 H-8 L-10 -16 V-42Z" fill="${c.f}"/><rect x="-6" y="-40" width="12" height="22" fill="${c.g}" filter="url(#mz-lueur)"/><circle cx="0" cy="-30" r="16" fill="${c.g}" opacity=".25" filter="url(#mz-flou)"/><path d="M-4 -12 L-6 0 M4 -12 L6 0" stroke="${c.f}" stroke-width="2"/>`,
+flamme:(c,r)=>`<path d="M0 0 C-22 0 -22 -24 -8 -36 C-8 -26 -2 -24 -2 -24 C-4 -38 6 -46 6 -54 C14 -40 24 -30 18 -14 C16 -6 10 0 0 0Z" fill="${c.g}" filter="url(#mz-lueur)"/><path d="M0 0 C-10 0 -10 -12 -2 -18 C0 -12 6 -10 6 -14 C10 -8 8 0 0 0Z" fill="#fff6d0"/>`,
+cristal:(c,r)=>`<path d="M0 -54 L12 -30 L0 0 L-12 -30Z" fill="${c.l}" stroke="${c.f}" stroke-width="1.4"/><path d="M-12 -30 H12 M0 -54 V0" stroke="${c.f}" stroke-opacity=".5"/><path d="M-20 0 L-14 -18 L-8 0Z M8 0 L16 -22 L22 0Z" fill="${c.l}" stroke="${c.f}"/>`,
+cloche:(c,r)=>`<path d="M0 -54 V-48" stroke="${c.f}" stroke-width="2"/><path d="M-18 -10 Q-16 -46 0 -48 Q16 -46 18 -10 L22 -6 H-22Z" fill="${c.l}" stroke="${c.f}" stroke-width="1.6"/><circle cx="0" cy="-4" r="4" fill="${c.f}"/>`,
+trone:(c,r)=>`<path d="M-16 0 V-20 H16 V0 M-14 -20 V-50 L-8 -44 L0 -54 L8 -44 L14 -50 V-20" fill="${c.f}" stroke="${c.l}" stroke-width="1.2"/><path d="M-8 -48 L-4 -56 L0 -50 L4 -56 L8 -48Z" fill="${c.g}"/>`,
+icone:(c,r)=>`<rect x="-18" y="-50" width="36" height="46" rx="2" fill="${c.g}" stroke="${c.f}" stroke-width="2"/><circle cx="0" cy="-34" r="9" fill="${c.l}" stroke="${c.f}"/><circle cx="0" cy="-34" r="13" fill="none" stroke="${c.f}" stroke-dasharray="2 2"/><path d="M-10 -4 Q0 -20 10 -4" fill="${c.f}"/>`,
+main:(c,r)=>`<path d="M-10 0 V-24 L-14 -40 Q-12 -44 -9 -40 L-6 -30 V-46 Q-3 -50 0 -46 V-30 V-48 Q3 -52 6 -48 V-30 V-44 Q9 -48 12 -44 V-20 Q12 -6 4 0Z" fill="${c.f}" stroke="${c.l}" stroke-width="1"/>`,
+oeil:(c,r)=>`<path d="M-26 -26 Q0 -50 26 -26 Q0 -2 -26 -26Z" fill="${c.l}" stroke="${c.f}" stroke-width="2"/><circle cx="0" cy="-26" r="9" fill="${c.f}"/><circle cx="0" cy="-26" r="4" fill="${c.g}"/>`,
+muraille:(c,r)=>`<path d="M-28 0 V-30 H-22 V-36 H-14 V-30 H-6 V-36 H2 V-30 H10 V-36 H18 V-30 H28 V0Z" fill="${c.f}"/>${[-20,-6,8,20].map(x=>`<path d="M${x} -24 H${x+8} M${x-4} -14 H${x+6}" stroke="${c.l}" stroke-opacity=".6"/>`).join('')}`,
+arbre:(c,r)=>`<path d="M-3 0 L-2 -30 Q-18 -30 -20 -42 Q-10 -40 -2 -36 L-1 -54 L2 -54 L2 -38 Q12 -46 20 -44 Q16 -34 3 -30 L3 0Z" fill="${c.f}"/>${Array.from({length:6},()=>`<path d="M${f1(-2+r()*4)} ${f1(-6-r()*44)} h3" stroke="${c.l}" stroke-width="1.4"/>`).join('')}`,
+fleur:(c,r)=>`<path d="M0 0 Q-4 -20 0 -32" stroke="${c.f}" stroke-width="2.4" fill="none"/><path d="M0 -14 Q-12 -18 -14 -10 Q-6 -8 0 -14Z" fill="${c.f}"/><g transform="translate(0 -38)">${[0,60,120,180,240,300].map(a=>`<ellipse rx="4.5" ry="9" cy="-8" transform="rotate(${a})" fill="${c.g}" stroke="${c.f}"/>`).join('')}<circle r="4" fill="${c.l}"/></g>`,
+stele:(c,r)=>`<path d="M-14 0 V-44 Q0 -56 14 -44 V0Z" fill="${c.f}"/>${[0,1,2,3].map(i=>`<path d="M-8 ${-40+i*9} h16" stroke="${c.l}" stroke-width="1.6" stroke-dasharray="3 2"/>`).join('')}`,
+barque:(c,r)=>`<path d="M-30 -10 Q0 4 30 -10 L24 -2 Q0 8 -24 -2Z" fill="${c.f}"/><path d="M0 -10 V-46" stroke="${c.f}" stroke-width="2"/><path d="M2 -44 Q20 -30 2 -14Z" fill="${c.l}"/><path d="M-20 -6 L-30 6 M18 -6 L28 6" stroke="${c.f}" stroke-width="2"/>`,
+lame:(c,r)=>`<path d="M-2 0 V-10 H-8 V-13 H8 V-10 H2 V0Z" fill="${c.f}"/><path d="M-3 -13 L-3 -50 L0 -56 L3 -50 L3 -13Z" fill="${c.l}" stroke="${c.f}"/><path d="M-26 -20 Q0 -44 26 -50" stroke="${c.g}" stroke-width="2" fill="none" opacity=".8"/>`,
+chaine:(c,r)=>Array.from({length:6},(_,i)=>`<ellipse cx="${-18+i*7}" cy="${-8-i*7}" rx="5" ry="3.2" transform="rotate(${-45+i%2*90} ${-18+i*7} ${-8-i*7})" fill="none" stroke="${c.f}" stroke-width="2.6"/>`).join('')+`<path d="M16 -48 l4 -4 M18 -44 l5 -2" stroke="${c.g}" stroke-width="1.6"/>`,
+balance:(c,r)=>`<path d="M0 0 V-46 M-22 -40 H22" stroke="${c.f}" stroke-width="2.4"/><path d="M-6 0 H6" stroke="${c.f}" stroke-width="3"/><path d="M-22 -40 L-30 -24 H-14Z M22 -40 L14 -20 H30Z" fill="${c.l}" stroke="${c.f}"/><circle cx="0" cy="-48" r="3" fill="${c.g}"/>`,
+jarre:(c,r)=>`<path d="M-8 -44 H8 L6 -38 Q20 -30 18 -14 Q16 0 0 0 Q-16 0 -18 -14 Q-20 -30 -6 -38Z" fill="${c.f}" stroke="${c.l}"/><path d="M-16 -22 H16" stroke="${c.g}" stroke-width="2"/><path d="M-14 -16 l4 -4 l4 4 l4 -4 l4 4 l4 -4 l4 4" stroke="${c.l}" fill="none"/>`,
+tesson:(c,r)=>`<path d="M-20 0 L-14 -30 L0 -40 L10 -26 L20 -32 L16 0Z" fill="${c.l}" stroke="${c.f}" stroke-width="1.6"/><path d="M-10 -22 Q0 -30 10 -20" stroke="${c.f}" fill="none"/>`,
+pinceau:(c,r)=>`<path d="M-20 -6 L16 -46" stroke="${c.f}" stroke-width="4" stroke-linecap="round"/><path d="M16 -46 L24 -54 Q28 -50 22 -42Z" fill="${c.g}"/><path d="M-24 0 Q-10 -10 4 -2 Q16 4 26 -4" stroke="${c.g}" stroke-width="3" fill="none"/>`,
+paravent:(c,r)=>[0,1,2].map(i=>`<path d="M${-24+i*16} 0 V-42 L${-8+i*16} ${-46+i%2*4} V${-4+i%2*4}Z" fill="${i%2?c.l:c.f}" stroke="${c.f}"/>`).join('')+`<path d="M-18 -30 q8 -8 14 0 M10 -28 q6 -6 10 2" stroke="${c.g}" fill="none"/>`,
+dormeur:(c,r)=>`<path d="M-28 0 Q-28 -12 -16 -12 H20 Q28 -12 28 0Z" fill="${c.f}"/><circle cx="-18" cy="-16" r="5" fill="${c.f}"/><path d="M12 -44 a10 10 0 1 0 8 14 a8 8 0 0 1 -8 -14Z" fill="${c.g}"/><text x="-4" y="-26" font-size="9" fill="${c.l}" font-family="serif">z</text>`,
+fumee:(c,r)=>[0,1,2].map(i=>`<path d="M${-10+i*10} 0 Q${-20+i*10} -14 ${-8+i*10} -24 Q${4+i*10} -34 ${-6+i*10} -48" stroke="${c.l}" stroke-width="${4-i}" fill="none" opacity=".75" stroke-linecap="round"/>`).join(''),
+noeud:(c,r)=>`<path d="M-24 -46 H24" stroke="${c.f}" stroke-width="3"/>${Array.from({length:7},(_,i)=>`<path d="M${-20+i*7} -46 V${f1(-20+r()*16)}" stroke="${['#c2412f','#e8c33a',c.l,c.f][i%4]}" stroke-width="2"/>${[0,1].map(j=>`<circle cx="${-20+i*7}" cy="${f1(-38+j*8+r()*4)}" r="1.8" fill="${c.f}"/>`).join('')}`).join('')}`,
+pont:(c,r)=>`<path d="M-30 0 V-16 Q0 -42 30 -16 V0 H22 V-12 Q0 -30 -22 -12 V0Z" fill="${c.f}"/><path d="M-30 -18 Q0 -44 30 -18" stroke="${c.l}" fill="none"/>`,
+gerbe:(c,r)=>Array.from({length:9},(_,i)=>{const a=-PI/2+(i-4)*.16;return`<path d="M0 0 Q${f1(Math.cos(a)*8)} -20 ${f1(Math.cos(a)*24)} ${f1(Math.sin(a)*48)}" stroke="${c.l}" stroke-width="2" fill="none"/><ellipse cx="${f1(Math.cos(a)*24)}" cy="${f1(Math.sin(a)*48)}" rx="2" ry="4.5" fill="${c.g}"/>`}).join('')+`<path d="M-6 -14 Q0 -10 6 -14" stroke="${c.f}" stroke-width="3" fill="none"/>`,
+bouclier:(c,r)=>`<path d="M0 -52 L22 -44 Q22 -14 0 0 Q-22 -14 -22 -44Z" fill="${c.f}" stroke="${c.l}" stroke-width="2"/><path d="M0 -42 V-10 M-12 -30 H12" stroke="${c.g}" stroke-width="2.4"/>`,
+brise:(c,r)=>`<path d="M-2 -52 L-22 -44 Q-22 -14 -4 0 L2 -20 L-6 -30Z" fill="${c.f}" stroke="${c.l}" stroke-width="1.6"/><path d="M4 -54 L24 -46 Q24 -16 6 2 L10 -18 L2 -32Z" fill="${c.f}" stroke="${c.l}" stroke-width="1.6" transform="rotate(10 6 -20)"/>`,
+spirale:(c,r)=>`<path d="M0 -28 m-2 0a2 2 0 1 1 4 0a6 6 0 1 1 -12 0a10 10 0 1 1 20 0a14 14 0 1 1 -28 0a18 18 0 1 1 36 0" stroke="${c.g}" stroke-width="2.2" fill="none"/>`,
+goutte:(c,r)=>`<path d="M0 -52 Q20 -24 20 -16 A20 20 0 0 1 -20 -16 Q-20 -24 0 -52Z" fill="${c.g}" stroke="${c.f}" stroke-width="1.6"/><path d="M-8 -20 Q-8 -10 2 -8" stroke="#fff" stroke-opacity=".6" fill="none" stroke-width="2"/>`,
+feuille:(c,r)=>`<path d="M-20 0 Q-24 -40 18 -50 Q24 -10 -20 0Z" fill="${c.g}" stroke="${c.f}" stroke-width="1.6"/><path d="M-20 0 Q0 -24 18 -50" stroke="${c.f}" fill="none"/>`,
+flocon:(c,r)=>`<g transform="translate(0 -28)" stroke="${c.l}" stroke-width="2.6" stroke-linecap="round">${[0,60,120].map(a=>`<path d="M0 -24 V24 M-5 -18 L0 -13 L5 -18 M-5 18 L0 13 L5 18" transform="rotate(${a})"/>`).join('')}</g>`};
+/* mots du nom → sujet (on cherche dans le nom sans accents) */
+const MOTS=[['chien|meute|loup|matin|chacal|renard|hyene|chiot','chien'],['oiseau|corbeau|aigle|hibou|plume|heron|ibis|grue','oiseau'],['serpent|anguille|ver ','serpent'],['poisson|carpe|requin','poisson'],
+ ['cerf|boeuf|taureau|bouc|elan|renne|belier','cornu'],['tortue','tortue'],['luciole|essaim|abeille|nuee','essaim'],['salamandre|lezard|gecko','lezard'],
+ ['echo|voix|chant|choeur|hymne|cri','chanteur'],['masque|visage rabot','masque'],['coffre|cle |clef|serrure','coffre'],['lanterne|lampe|ambre|braise|brasier|bougie|torche','lanterne'],
+ ['flamme|feu|brul|cendre ard|incend','flamme'],['cristal|joyau|gemme','cristal'],['cloche|carillon','cloche'],['trone|couronne|tribunal|cour |roi|reine|prevot','trone'],
+ ['icone|portrait|effigie','icone'],['main|paume|doigt','main'],['oeil|regard|yeux','oeil'],['rempart|muraille|creneau|mur|tour |palissade','muraille'],
+ ['arbre|bouleau|racine|seve|foret|sapin|ecorce','arbre'],['fleur|floraison|lotus|bourgeon|rose','fleur'],['stele|pierre|bloc|borne','stele'],['barque|rame|bateau|gondole|radeau','barque'],
+ ['lame|epee|hache|lance|couteau|poignard','lame'],['chaine|fer |entrave','chaine'],['balance|vote|urne|bulletin|scrutin|assemblee|loi ','balance'],['jarre|vase|amphore|coupe|urne','jarre'],
+ ['tesson|eclat|debris','tesson'],['vernis|peint|teint|pinceau|encre','pinceau'],['paravent|voile|rideau','paravent'],['dorm|reve|sommeil|songe','dormeur'],['fumee|brume|cendre|vapeur','fumee'],
+ ['corde|noeud|quipu|fil ','noeud'],['pont|passerelle','pont'],['riz|grain|epi|grenier|gerbe|recolte','gerbe'],['sceau|edit|lettre|registre|livre|parchemin|genealogie|archive|decret|cousue','document'],
+ ['temoin|veilleu|garde|sentinelle|gardien|trappeur|inspecteur|conteu|lanciere|heros|vieille|pretre|scribe|juge|marchand|enfant|mere|pere|frere|soeur','figure']];
+/* effet principal → sujet, quand le nom n'en donne pas */
+const OPSJ={invoque:'chien',brulure:'flamme',deg:'lame',garde:'bouclier',pioche:'document',hesite:'oeil',affaiblit:'chaine',vulnerable:'brise',briseGarde:'brise',
+  ignoreGarde:'lame',riposte:'bouclier',echo:'spirale',recup:'spirale',soin:'feuille',mana:'goutte',volVie:'goutte',pose:'spirale',reveil:'spirale'};
+const opsDe=c=>{try{return(typeof c.ops==='function'?c.ops():c.ops)||[]}catch(e){return[]}};
+const opPrincipal=c=>{const o=opsDe(c).map(x=>x[0]).filter(x=>!/^prix|^si$|^pose$|^reveil$/.test(x));return o[0]||null};
+function sujetDe(k,c){const n=' '+sansAcc(typeof c.nom==='function'?c.nom():c.nom||'')+' ';
+  for(const [re,s] of MOTS)if(new RegExp(re).test(n))return s;
+  const o=opPrincipal(c);if(o==='invoque'){const t=sansAcc(String(c.txt?c.txt(k):''));for(const [re,s] of MOTS)if(new RegExp(re).test(t))return s;return['chien','cornu','oiseau','serpent'][hsh(k)%4]}
+  return OPSJ[o]||'spirale'}
+
+/* ---------- Effets visuels animés selon ce que fait la carte (au plus deux par carte) ---------- */
+const FXOP={brulure:'braise',deg:'coup',ignoreGarde:'coup',garde:'lustre',riposte:'lustre',hesite:'brume',affaiblit:'brume',pioche:'page',recup:'page',
+  echo:'onde',soin:'pouls',mana:'pouls',volVie:'pouls',invoque:'yeux',vulnerable:'fissure',briseGarde:'fissure'};
+function effetsCarte(c,k,col){const vus=[];for(const o of opsDe(c)){const f=FXOP[o[0]];if(f&&vus.indexOf(f)<0)vus.push(f);if(vus.length>=2)break}
+  const r=rng(k+'|fx');
+  const F={braise:()=>Array.from({length:9},(_,i)=>`<circle class="fx-braise" cx="${f1(10+r()*140)}" cy="${f1(80+r()*16)}" r="${f1(1+r()*1.5)}" fill="${col.g}" style="--d:${f1(r()*3)}s"/>`).join(''),
+    coup:()=>`<path class="fx-coup" d="M${f1(20+r()*30)} ${f1(20+r()*20)} L${f1(110+r()*30)} ${f1(60+r()*30)}" stroke="#fff" stroke-width="3" stroke-linecap="round" style="--d:${f1(r()*2)}s"/>`,
+    lustre:()=>`<rect class="fx-lustre" x="-40" y="0" width="26" height="100" fill="#fff" opacity=".0" transform="skewX(-20)"/>`,
+    brume:()=>[30,52,70].map((y,i)=>`<rect class="fx-brume" x="-20" y="${y}" width="120" height="7" rx="3.5" fill="#fff" style="--d:${i*1.3}s"/>`).join(''),
+    page:()=>Array.from({length:4},()=>`<rect class="fx-page" x="${f1(20+r()*120)}" y="${f1(60+r()*20)}" width="6" height="8" fill="${col.l}" style="--d:${f1(r()*3)}s"/>`).join(''),
+    onde:()=>`<circle class="fx-onde" cx="80" cy="56" r="10" fill="none" stroke="${col.g}" stroke-width="2"/><circle class="fx-onde" cx="80" cy="56" r="10" fill="none" stroke="${col.g}" stroke-width="2" style="--d:1.2s"/>`,
+    pouls:()=>`<circle class="fx-pouls" cx="80" cy="54" r="34" fill="${col.g}" filter="url(#mz-flou)"/>`,
+    yeux:()=>Array.from({length:3},()=>{const x=f1(15+r()*130),y=f1(30+r()*40);return`<g class="fx-yeux" style="--d:${f1(r()*3)}s"><circle cx="${x}" cy="${y}" r="1.4" fill="${col.g}"/><circle cx="${+x+5}" cy="${y}" r="1.4" fill="${col.g}"/></g>`}).join(''),
+    fissure:()=>`<path class="fx-fissure" d="M${f1(60+r()*40)} 0 l-6 18 l10 10 l-8 20 l6 14" stroke="#fff" stroke-width="1.6" fill="none"/>`};
+  return`<g class="fx">${vus.map(f=>F[f]()).join('')}</g>`}
+
+/* ---------- Bordure propre à chaque carte : coins, rythme du filet et médaillons tirés de la carte ---------- */
+function cadreCarte(k,coul,nP,ult){const r=rng(k+'|cadre'),coin=Math.floor(r()*4),dash=['', '4 2','1.2 2.4','8 2 2 2','2 1'][Math.floor(r()*5)],n=[5,6,8,10][Math.floor(r()*4)];
+  const i=3,W=110,H=158,c=6;
+  const d=coin===0?`M${i+c} ${i} H${W-i-c} Q${W-i} ${i} ${W-i} ${i+c} V${H-i-c} Q${W-i} ${H-i} ${W-i-c} ${H-i} H${i+c} Q${i} ${H-i} ${i} ${H-i-c} V${i+c} Q${i} ${i} ${i+c} ${i}Z`
+    :coin===1?`M${i+c} ${i} H${W-i-c} L${W-i} ${i+c} V${H-i-c} L${W-i-c} ${H-i} H${i+c} L${i} ${H-i-c} V${i+c}Z`
+    :coin===2?`M${i+c} ${i} H${W-i-c} V${i+c} H${W-i} V${H-i-c} H${W-i-c} V${H-i} H${i+c} V${H-i-c} H${i} V${i+c} H${i+c}Z`
+    :`M${i+c} ${i} H${W-i-c} Q${W-i-c} ${i+c} ${W-i} ${i+c} V${H-i-c} Q${W-i-c} ${H-i-c} ${W-i-c} ${H-i} H${i+c} Q${i+c} ${H-i-c} ${i} ${H-i-c} V${i+c} Q${i+c} ${i+c} ${i+c} ${i}Z`;
+  const etoile=(x,y,R)=>{let p='';for(let j=0;j<n*2;j++){const a=j*PI/n-PI/2,rr=j%2?R*.45:R;p+=(j?'L':'M')+f1(x+Math.cos(a)*rr)+' '+f1(y+Math.sin(a)*rr)}return`<path d="${p}Z" fill="${coul}"/>`};
+  const nm=nP>=6||ult?3:nP>=3?2:1,ys=Array.from({length:nm},(_,j)=>f1(70+(j-(nm-1)/2)*26+(r()-.5)*8));
+  const med=ys.map(y=>etoile(i,+y,3.4)+etoile(W-i,+y,3.4)).join('')+(nP>=4||ult?etoile(W/2,H-i,3.8):'');
+  return`<svg class="kcadre" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${coul}" stroke-width="${nP>=5||ult?2:1.5}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/>${med}</svg>`}
+
+/* ---------- Texte de la carte : chiffres, prix et résonances mis en valeur ---------- */
+function texteRiche(t){t=String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  t=t.replace(/(Prix\s*:[^.]*\.?)/g,'<span class="kprix">$1</span>');
+  t=t.replace(/\b(Braise|Givre|Sang|Racine|Sceau|Abîme)\b/g,(m)=>{const R=RES[sansAcc(m)];return R?`<span class="kreso" style="color:${R[0]}">${m}</span>`:m});
+  return t.replace(/(\d+)/g,'<b>$1</b>')}
+
 /* ---------- Scène complète d'une zone : ciel du pôle, biome, monument de la culture, élément du pôle ---------- */
-function scene(P,uid){const r=rng(P.id+'|'+P.pole),[m,l,d]=P.m,a=P.acc,bk=bkey(P.biome),B=BIO[bk]||BIO.collines,neg=P.pole==='neg';
+function scene(P,uid,k,cc){const r=rng((k||P.id)+'|'+P.pole),[m,l,d]=P.m,a=P.acc,bk=bkey(P.biome),B=BIO[bk]||BIO.collines,neg=P.pole==='neg';
   const c={loin:mix(a,d,.45),mi:mix(m,a,.4),pres:mix(d,a,.22),acc:mix(a,'#ffffff',.45),eau:mix(m,a,.35),emb:mix(d,a,.2),embL:mix(a,'#ffffff',.35),mid:mix(d,'#000000',.4),feu:mix(a,'#fff3c0',.5),fx:mix(a,'#ffffff',.15)};
-  const x=58+r()*44,mon=(MON_C[ckeyL(P.cult)]||MON_C.girih)(c);
-  const sc=P.ult?1.42:P.mod==='RES'?1.12+.08*Math.min(3,P.L):1.3;
+  const sj=cc?sujetDe(k,cc):null,cote=r()<.5?-1:1;
+  const x=sj?80-cote*(26+r()*14):58+r()*44,mon=(MON_C[ckeyL(P.cult)]||MON_C.girih)(c);
+  const cs={f:mix(d,'#000000',.35),l:mix(a,'#ffffff',.55),g:mix(a,'#fff3c0',.35)};
+  const sc=(P.ult?1.42:P.mod==='RES'?1.12+.08*Math.min(3,P.L):1.3)*(sj?.62:1);
   const tex=neg?`<defs><pattern id="vh${uid}" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path d="M0 0 V3" stroke="${d}" stroke-opacity=".28" stroke-width="1"/></pattern></defs><rect width="160" height="100" fill="url(#vh${uid})"/>`
     :`<rect width="160" height="100" fill="url(#mz-girih)" opacity=".3"/>`;
   const rayons=P.ult?`<g opacity=".55">${Array.from({length:18},(_,i)=>{const t=i*PI/9;return`<path d="M${f1(x)} 52 L${f1(x+Math.cos(t)*120)} ${f1(52+Math.sin(t)*120)} L${f1(x+Math.cos(t+.08)*120)} ${f1(52+Math.sin(t+.08)*120)}Z" fill="${l}"/>`}).join('')}</g>`:'';
   const frise=P.ult?`<rect x="2" y="2" width="156" height="96" fill="none" stroke="${l}" stroke-width="3" stroke-dasharray="6 3 2 3"/><rect width="160" height="100" fill="url(#mz-girih)" opacity=".9"/>`:'';
   const halo=P.L>=4?`<ellipse cx="${f1(x)}" cy="56" rx="38" ry="30" fill="${P.L>=6?'#ffffff':a}" opacity="${P.L>=6?.45:.35}" filter="url(#mz-flou)"/>`:'';
   const pw=P.mod==='RES'?'':P.pole==='neg'?P.pm:P.pole==='pos'?P.pp:'';
-  return ciel(P,r,uid)+rayons+B.loin(r,c)+halo+`<g transform="translate(${f1(x)} ${f1(90-82*sc)}) scale(${sc})" stroke="${mix(d,'#000000',.5)}" stroke-width="1.1" stroke-linejoin="round" paint-order="stroke">${mon}</g>`+B.pres(r,c)+effetPole(pw,c,r,P.L)+tex+frise}
+  return ciel(P,r,uid)+rayons+B.loin(r,c)+halo+`<g transform="translate(${f1(x)} ${f1(90-82*sc)}) scale(${sc})" stroke="${mix(d,'#000000',.5)}" stroke-width="1.1" stroke-linejoin="round" paint-order="stroke" opacity="${sj?.72:1}">${mon}</g>`+B.pres(r,c)+effetPole(pw,c,r,P.L)+
+    (sj?`<g transform="translate(${f1(80+cote*(12+r()*12))} ${f1(96+r()*2)}) scale(${f1((P.ult?1.4:1.22)*(r()<.5?-1:1)*(.94+r()*.12))} ${f1((P.ult?1.4:1.22)*(.94+r()*.1))})" stroke="${cs.l}" stroke-width="1.3" stroke-linejoin="round" paint-order="stroke"><ellipse cx="0" cy="1" rx="22" ry="3.5" fill="#000" opacity=".35" stroke="none"/>${(SJ[sj]||SJ.spirale)(cs,r)}</g>`:'')+
+    (cc?effetsCarte(cc,k,cs):'')+tex+frise}
 
 /* ---------- Illustration d'une carte de secret : dessin au trait sur papier kraft, objet trouvé au centre ---------- */
 function sceneSecret(c,P,uid){const r=rng(String(c.secret||uid)),bk=P?bkey(P.biome):'collines',B=BIO[bk]||BIO.collines,ink='#2a1f1a';
@@ -222,21 +334,21 @@ window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
   if(!P){const a=ART[k]||ART.coup;return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="vf${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0c0f"/><stop offset="1" stop-color="${a.fond?a.fond[1]:'#3a2a20'}"/></linearGradient></defs>
    <rect width="160" height="100" fill="url(#vf${uid})"/><rect width="160" height="100" fill="url(#mz-girih)"/>${a.d}</svg>`}
   P.m=VMANA[P.mana]||VMANA.Pierre;P.acc=accent(P);P.ult=!!c.ultime||(P.L>=7&&!!c.pose);
-  return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid)}</svg>`};
+  return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid,k,c)}</svg>`};
 
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
 const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>290?' t5':n>210?' t4':n>140?' t3':n>85?' t2':n>45?' t1':''};
 window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,uid='h'+(uidN++),txt=c.txt(k),lg=longueur(txt);
   const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
-  const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">${amb}</div>`:'';
+  const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">« ${amb} »</div>`:'';const txtR=texteRiche(txt);
   /* carte de secret */
   if(c.secret||(c.zs&&!z)){const P=c.zs?infoZone(c.zs):null;
     return`<div class="cc kcarte secret${lg}${gris?' gris':''}">${co}<div class="ksceau" title="Secret">✦</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div>
-     <div class="cz">Secret${P?' · '+P.nom.replace(/^(La |Le |Les |L')/,''):''}</div><div class="ct">${txt}</div>${ambH}</div>`}
+     <div class="cz">Secret${P?' · '+P.nom.replace(/^(La |Le |Les |L')/,''):''}</div><div class="ct">${txtR}</div>${ambH}</div>`}
   /* carte commune */
   const P=z?zoneDeCarte(k,c):null;
   if(!P){const a=ART[k]||ART.coup;
-    return`<div class="cc kcarte base${lg}${gris?' gris':''}" style="--kb:#c9a45c">${co}<div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${a.sorte||''} · Commune</div><div class="ct">${txt}</div></div>`}
+    return`<div class="cc kcarte base${lg}${gris?' gris':''}" style="--kb:#c9a45c">${co}<div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${a.sorte||''} · Commune</div><div class="ct">${txtR}</div></div>`}
   /* carte de zone */
   const V=VMANA[P.mana]||VMANA.Pierre,res=P.mod==='RES',ult=!res&&(!!c.ultime||(P.L>=7&&!!c.pose));
   const nP=res?Math.min(3,Math.max(1,P.L)):P.L,maxP=res?3:7,pw=res?'':(P.pole==='neg'?P.pm:P.pole==='pos'?P.pp:'');
@@ -248,8 +360,8 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
   const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
   return`<div class="${cls}" style="--kb:${V[0]};--kl:${V[1]};--kd:${V[2]};--kcA:${rgba(V[0],.28)};--kcB:${rgba(V[0],.8)};--pc:${coulP}">
-   ${nP>=5||ult?coins(P.mana,V[1],nP):''}${coZ}${crest}<div class="art">${artCarte(k)}${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
-   <div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${txt}</div>${nP>=4&&!ult?bandeau(ckey(P.cult),V[1],uid+'b').replace('kband','kband bas'):''}${ambH}${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`};
+   ${cadreCarte(k,V[1],nP,ult)}${nP>=5||ult?coins(P.mana,V[1],nP):''}${coZ}${crest}<div class="art">${artCarte(k)}${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
+   <div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${txtR}</div>${nP>=4&&!ult?bandeau(ckey(P.cult),V[1],uid+'b').replace('kband','kband bas'):''}${ambH}${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`};
 
 /* ---------- CSS propre au visuel 2.2 ---------- */
 const css=document.createElement('style');css.textContent=`
@@ -333,5 +445,35 @@ const css=document.createElement('style');css.textContent=`
 .cc.kcarte.ultime.t3 .art,.cc.kcarte.ultime.t4 .art,.cc.kcarte.ultime.t5 .art{height:calc(var(--u)*4.6)}
 .cc.kcarte .ksceau{bottom:calc(var(--u)*-.9);right:calc(var(--u)*-.9)}
 .cc.kcarte .cn{font-style:normal}.cc.kcarte.p-neg .cn{font-style:normal}
+.kcadre{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;filter:drop-shadow(0 0 1px #000)}
+.ct b{font-weight:600;color:#fff}
+.ct .kprix{display:block;margin-top:.15em;color:#f0a090;font-style:italic}
+.ct .kprix b{color:#ffb8a8}
+.ct .kreso{font-weight:600}
+.cc.kcarte.secret .ct b{color:#2a1f1a}
+.kamb{border-top:1px solid rgba(255,255,255,.12);margin-top:.3em}
+#cb-main .cc.kcarte.f .kamb{display:block}
+/* effets animés : la carte choisie, les menus et les formes ultimes bougent ; le reste de la main reste calme */
+.fx *{animation-play-state:paused}
+.cc.kcarte.f .fx *,.boite .cc.kcarte .fx *,.cc.kcarte.ultime .fx *,#galerie .fx *{animation-play-state:running}
+.fx-braise{animation:fxBraise 3s linear infinite;animation-delay:var(--d,0s)}
+@keyframes fxBraise{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-70px);opacity:0}}
+.fx-coup{stroke-dasharray:160;stroke-dashoffset:160;animation:fxCoup 2.6s ease-in infinite;animation-delay:var(--d,0s)}
+@keyframes fxCoup{0%,60%{stroke-dashoffset:160;opacity:0}70%{opacity:.9}85%{stroke-dashoffset:0;opacity:.6}100%{stroke-dashoffset:0;opacity:0}}
+.fx-lustre{animation:fxLustre 3.4s ease-in-out infinite}
+@keyframes fxLustre{0%,40%{transform:translateX(0) skewX(-20deg);opacity:0}50%{opacity:.35}100%{transform:translateX(240px) skewX(-20deg);opacity:0}}
+.fx-brume{opacity:.3;animation:fxBrume 7s ease-in-out infinite alternate;animation-delay:var(--d,0s)}
+@keyframes fxBrume{to{transform:translateX(50px);opacity:.55}}
+.fx-page{animation:fxPage 3.6s ease-out infinite;animation-delay:var(--d,0s);opacity:0}
+@keyframes fxPage{0%{transform:translate(0,0) rotate(0);opacity:0}20%{opacity:.9}100%{transform:translate(12px,-60px) rotate(40deg);opacity:0}}
+.fx-onde{transform-box:fill-box;transform-origin:center;animation:fxOnde 2.4s ease-out infinite;animation-delay:var(--d,0s)}
+@keyframes fxOnde{0%{transform:scale(.5);opacity:.9}100%{transform:scale(5);opacity:0}}
+.fx-pouls{animation:fxPouls 2.8s ease-in-out infinite;opacity:.15}
+@keyframes fxPouls{50%{opacity:.45}}
+.fx-yeux{animation:fxYeux 4s steps(1) infinite;animation-delay:var(--d,0s)}
+@keyframes fxYeux{0%,88%{opacity:1}90%,94%{opacity:0}96%{opacity:1}}
+.fx-fissure{opacity:0;animation:fxFissure 3s ease-in-out infinite}
+@keyframes fxFissure{0%,70%{opacity:0}75%{opacity:.9}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.fx *{animation:none!important}}
 `;document.head.appendChild(css);
 })();
