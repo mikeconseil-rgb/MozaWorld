@@ -48,14 +48,20 @@ const MON={
   RES:[{nom:'Glaneur hagard',pv:9,atk:3,mv:'as'},{nom:'Anguille des canaux',pv:9,atk:4,mv:'avg'},{nom:'Mère des Gerbes',pv:22,atk:4,mv:'sat',chef:1}],
   ANT:[{nom:'Luciole ardente',pv:6,atk:3,mv:'av'},{nom:'Crabe-racine',pv:14,atk:3,mv:'ga'},{nom:'Reine-luciole',pv:23,atk:3,mv:'tacf',chef:1}],
   MAR:[{nom:'Colporteur givré',pv:10,atk:3,mv:'abg'},{nom:'Mâtin de cloche',pv:12,atk:4,mv:'aacf'},{nom:'Prévôt de la Foire',pv:24,atk:5,mv:'gat',chef:1}]};
-function monstre(Z,i,faible){const m=MON[Z.id][i],L=Lz(Z.id),k=faible?.7:1,pv=Math.round(m.pv*(1+.4*L)*k);
-  return{nom:m.nom,pv,max:pv,atk:m.atk+L,g:0,mv:m.mv,mi:m.chef?0:Math.floor(Math.random()*m.mv.length),chef:m.chef,z:Z.id}}
+function monstre(Z,i,faible){const m=(MON[Z.id]||MON[Z.mod])[i],L=Lz(Z.id),mortel=ecartZone(Z)>=5,k=(faible?.7:1)*(mortel?3:1),pv=Math.round(m.pv*(1+.4*L)*k);
+  return{nom:m.nom,pv,max:pv,atk:(m.atk+L)*(mortel?2:1),g:0,mv:m.mv,mi:m.chef?0:Math.floor(Math.random()*m.mv.length),chef:m.chef,z:Z.id}}
 
 /* ---------- Puissance du héros : elle vient des zones possédées ---------- */
 const sourceMana=()=>prodRessource();          /* tuile Ressource : 1, puis 2, puis 2 + un bonus */
 const manaMax=()=>2+sourceMana();
 const mainMax=()=>ZN.some(Z=>(Z.mod||Z.id)==='RES'&&S.act[Z.id]&&Lz(Z.id)>=3)?6:5;                  /* le bonus du niveau 3 : une carte de plus en main */
-const pvMax=()=>30+(S.act.CIT?6+2*Lz('CIT'):0);
+/* Passifs du royaume (17 nov., « comme les artefacts et le brasier de Monster Train ») : chaque Citadelle possédée donne de l'endurance
+   (PV) et lève la Garde au début du combat ; chaque Donjon donne de la résistance (−1 à chaque coup reçu par le héros) et un piège. */
+const zonesA=t=>ZN.filter(Z=>(Z.mod||Z.id)===t&&S.own[Z.id]&&S.act[Z.id]);
+const pvMax=()=>30+zonesA('CIT').reduce((a,Z)=>a+6+2*Lz(Z.id),0);
+const niveauRoyaume=()=>ZN.reduce((a,Z)=>S.own[Z.id]?Math.max(a,Lz(Z.id)):a,0);
+/* « à +5 de différence, la mort doit être assurée » : écart entre la zone et la plus haute de vos zones */
+const ecartZone=Z=>Lz(Z.id)-niveauRoyaume();
 
 /* ---------- Déroulement ---------- */
 /* ce qu'on peut encore dépenser ce tour : la capacité du tour, sans dépasser la réserve */
@@ -77,7 +83,13 @@ function startCombat(Z,kind){
   $('cb-foes').innerHTML='';$('cb-allies').innerHTML='';
   for(const u of foes)uniteEl(u,'cb-foes');uniteEl(hero,'cb-allies');
   for(const u of foes)intention(u);
-  journal(kind==='eveil'?'Les gardiens se dressent devant la Pierre d\'éveil.':'Des créatures de la zone vous barrent la route.');
+  /* passifs du royaume */
+  hero.res=zonesA('DON').length;const cits=zonesA('CIT'),dons=zonesA('DON');CB.erosion=cits.length?2/3:1/2;
+  if(cits.length)leverGarde(cits.reduce((a,Z)=>a+5+Lz(Z.id),0));
+  if(dons.length)for(const m of foes)(m.br=m.br||[]).push([2*dons.length,2]);
+  const pas=[cits.length?`Endurance et Garde levée (${cits.length} Citadelle${cits.length>1?'s':''})`:'',dons.length?`Résistance ${hero.res} et piège (${dons.length} Donjon${dons.length>1?'s':''})`:''].filter(Boolean);
+  CB.passifs=pas;
+  journal((ecartZone(Z)>=5?'Gardiens mortels : cette zone dépasse votre royaume de 5 niveaux. ':'')+(kind==='eveil'?'Les gardiens se dressent devant la Pierre d\'éveil.':'Des créatures de la zone vous barrent la route.')+(pas.length?' Passifs : '+pas.join(' · ')+'.':''));
   if(AX&&soundOn)perc(AX.currentTime,'t',1.4);
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
@@ -102,7 +114,7 @@ function finSiFini(){if(!CB)return false;
 
 /* ---------- Effets ---------- */
 function pop(u,txt,cls){if(!u.el)return;const s=document.createElement('span');s.className='pop '+(cls||'');s.textContent=txt;u.el.appendChild(s);setTimeout(()=>s.remove(),1000)}
-function frappe(u,n,src){if(!u||u.pv<=0)return 0;if(CB&&CB.gris&&!src)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u.vul&&n>0)n+=u.vul;const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
+function frappe(u,n,src){if(!u||u.pv<=0)return 0;if(u.hero&&u.res&&src&&src!==u&&n>0)n=Math.max(1,n-u.res);if(CB&&CB.gris&&!src)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u.vul&&n>0)n+=u.vul;const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
   pop(u,n>0?'−'+n:'garde',n>0?'deg':'g');if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}
   if(AX&&soundOn)n>0?perc(AX.currentTime,'t',.9):note(AX.currentTime,523,SIN,.2,.07);
   if(u.pv<=0){journal(u.nom+(u.hero?' tombe.':u.garde?' cède.':u.mur?' est brisé.':' est vaincu.'));if(u.bete||u.garde){CB.allies.splice(CB.allies.indexOf(u),1);const e=u.el;if(e){e.classList.add('mort');e.querySelector('.bar i').style.width='0%'}setTimeout(()=>e&&e.remove(),900)}}majUnites();return n}
@@ -118,7 +130,7 @@ const cibleAlliee=()=>gardeU()||CB.allies.find(u=>u.bete&&u.pv>0)||CB.hero;
 function leverGarde(n){let G=gardeU();
   if(!G){G={nom:'La Garde',pv:0,max:0,g:0,garde:1,atk:0};CB.allies.splice(1,0,G);uniteEl(G,'cb-allies')}
   G.pv+=n;G.max=Math.max(G.max,G.pv);pop(G,'+'+n+' garde','g');majUnites()}
-function eroderGarde(){const G=gardeU();if(!G)return;if(CB.gardeTient){CB.gardeTient=0;pop(G,'tient bon','g');return}const p=Math.floor(G.pv/2);if(p<=0){G.pv=0;CB.allies.splice(CB.allies.indexOf(G),1);if(G.el)G.el.remove();journal('La Garde retombe.')}else{G.pv=p;pop(G,'s\'effrite','g')}}
+function eroderGarde(){const G=gardeU();if(!G)return;if(CB.gardeTient){CB.gardeTient=0;pop(G,'tient bon','g');return}const p=Math.floor(G.pv*(CB.erosion||.5));if(p<=0){G.pv=0;CB.allies.splice(CB.allies.indexOf(G),1);if(G.el)G.el.remove();journal('La Garde retombe.')}else{G.pv=p;pop(G,'s\'effrite','g')}}
 /* un coup qui piétine : ce que le bloqueur n'a pas absorbé passe au suivant */
 function coupSurTerrain(m,v,opt){let reste=v;for(let n=0;n<5&&reste>0;n++){const t=opt.vol?CB.hero:cibleAlliee();const avant=t.pv+t.g,x=opt.belier&&!t.hero?2:1;
   journal(`${m.nom} ${opt.vol?'passe par-dessus et frappe le héros':opt.belier&&!t.hero?'enfonce '+t.nom:'frappe '+(t.hero?'le héros':t.nom)} (${reste*x}).`);
