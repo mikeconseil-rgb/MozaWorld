@@ -11,8 +11,9 @@ function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
     back:openMenu,opts:[
       {l:'Règles des cartes',ic:'?',go:grimoireRegles},
       {l:'Cartes communes',ic:'▤',d:'paquet de départ',go:grimoireCommunes},
+      ...(typeof PV_COMMUNES!=='undefined'?[{l:'Paquet politique',ic:'⚖',d:'duel d\'arguments des Assemblées',go:grimoirePolitique}]:[]),
       ...ZN.map((Z,i)=>({l:Z.info.nom,ic:sgn(S.lv[Z.id]||0)||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',
-        d:(estRes(Z)?'Ressource · mana et atouts, pas de carte':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+2)})),
+        d:(estRes(Z)?'Ressource · mana et atouts, pas de carte':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+(typeof PV_COMMUNES!=="undefined"?3:2))})),
       {l:'Retour',ic:'◆',go:openMenu}]})}
 function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:()=>openGrimoire(0),
   corps:`<p class="petit">· Le paquet de départ : 5 cartes communes toutes différentes, les mêmes pour tous (Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche).</p>
@@ -32,6 +33,10 @@ function grimoireRessource(Z,fi){const id=Z.id,I=Z.info,t=ZMANA[id],L=(typeof AT
     corps:`<p class="petit">Ressource de mana ${t} : pas de carte. Niveau 1 : 1 mana ${t} ; niveau 2 : 2 mana et des routes ; niveau 3 : 2 mana et un atout au choix, greffé sur les cartes des tuiles reliées par route. Zone au niveau ${Math.abs(S.lv[id]||0)}${S.act[id]?'':', pas encore activée'}.</p>`+
       L.map((a,i)=>`<p class="petit">${S.atout&&S.atout[id]===i?'✓ ':''}<b>${a[0]}</b> : ${a[1]}</p>`).join(''),
     opts:[{l:'Voyager vers cette zone',ic:'✧',go:()=>{tp(id);toMonde()}},{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(fi)}]})}
+function grimoirePolitique(){const ks=PV_COMMUNES.concat(Object.values(PV_VOIX));
+  ui('menu',{sur:'Grimoire',t:'Paquet politique',back:()=>openGrimoire(2),
+    corps:`<p class="petit">Joué seulement au Duel d'arguments, l'épreuve des Assemblées, jamais en combat. Les 5 premières cartes sont à tous ; chaque autre carte s'ajoute quand vous tenez au moins une tuile de son type. Avant le duel, vos tuiles voisines de l'Assemblée votent pour vous (Assemblée 3, Citadelle 2, Ressource 2, Antre 1, Donjon 1) ; une tuile sauvage vote pour le pôle qui lui ressemble, contre l'autre. Chaque voix nette retire 3 de conviction au Conseil.</p><div class="cartes">${ks.map(k=>carteHTML(k)).join('')}</div>`,
+    opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(2)}]})}
 function grimoireZone(Z,fi){if(estRes(Z))return grimoireRessource(Z,fi);const id=Z.id,I=Z.info,lv=S.lv[id]||0,L=Math.abs(lv),c=CK[id];if(!c)return;
   const res=estRes(Z),txt=(l)=>avecNiveau(id,l,()=>`<b>${c.nom()}</b> (coût ${c.cout}) : ${c.txt(id)}`);
   let cartes,lignes;

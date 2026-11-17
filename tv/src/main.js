@@ -53,7 +53,8 @@ const TYPE={
   DON:{ep:'Le Grand Donjon',kind:'Pouvoir',txt:'Un labyrinthe sous le cratère. Trouvez le Sceau avant que la lave ne monte, sans croiser les gardiens.'},
   RES:{ep:'La Récolte',kind:'Ressource',txt:'Les gerbes lumineuses mûrissent dans les îles autour de la Pierre. Courez les cueillir avant la fin du temps.'},
   ANT:{ep:'La Chasse aux lucioles',kind:'Créature',txt:'La reine-luciole tourne autour de l\'antre. Frappez avec OK quand elle traverse votre affût.'},
-  MAR:{ep:'Le Chantier de la Foire',kind:'Ouvrage',txt:'Le maître d\'œuvre montre un plan de flèches. Rejouez-le sans erreur, de plus en plus long.'}};
+  MAR:{ep:'Le Duel d\'arguments',kind:'Assemblée',txt:'Le Conseil en place défend la loi actuelle. Affrontez-le avec votre paquet politique : vos tuiles voisines votent avant le duel.'}};
+const CHANTIER={ep:'Le Chantier de la Foire',kind:'Ouvrage',txt:'Le maître d\'œuvre montre un plan de flèches. Rejouez-le sans erreur, de plus en plus long.'};
 /* Cycle des contre-pouvoirs (2a, 17 nov. : une seule sorte de carte, la « carte de pouvoir » de la 1.0 est retirée).
    Posséder une zone qui en contre une autre facilite l'épreuve de celle-ci : −1, −2 dès le palier 4, −3 dès le palier 6 de la zone qui contre. */
 const CONTRE={DON:'CIT',CIT:'ANT',ANT:'MAR',MAR:'RES',RES:'DON'};
@@ -271,6 +272,7 @@ function stepMue(dt){const m=mue;m.t+=dt;
 let E=null;const jc=$('jcv'),jx=jc.getContext('2d');
 function startEpreuve(Z,target){const pw=contrePar(Z).pw;
   const eff=clamp(Math.abs(target)-pw-(S.emp[Z.id]?1:0),1,7);
+  if(typeof estAssemblee==='function'&&estAssemblee(Z))return startDuel(Z,target,eff);   /* 17 nov. : l'épreuve d'une Assemblée est le Duel d'arguments */
   closeUI();mode='epreuve';document.body.classList.add('jeu-ouvert');save();etatHud();
   E=GAMES[Z.id](eff);E.Z=Z;E.target=target;E.eff=eff;E.t=0;
   $('jeu').hidden=false;$('jeu').className='ecran'+(E.monde?' monde':'');
