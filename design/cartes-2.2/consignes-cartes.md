@@ -1,6 +1,6 @@
 # Consignes d'écriture des cartes (version 2.2)
 
-Ces consignes servent aux quatre conteurs (profils dans `/mnt/project-files/etape3/profils_agents.md`, consignes communes dans `etape3/consignes_conteurs.md`), au critique et au game design. Elles servent aussi de **méthode réutilisable** pour chaque nouvelle tuile ajoutée au jeu.
+Ces consignes servent aux quatre conteurs (profils dans `design/equipe/profils_agents.md`, consignes communes dans `design/equipe/consignes_conteurs.md`), au critique et au game design. Elles servent aussi de **méthode réutilisable** pour chaque nouvelle tuile ajoutée au jeu.
 
 ## 1. Règles du jeu à respecter (décisions de l'utilisateur)
 
