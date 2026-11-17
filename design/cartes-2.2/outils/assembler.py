@@ -81,8 +81,12 @@ for c in reversed(cards):
   if key in seen: continue
   seen.add(key);keep.append(c)
 cards_g=keep[::-1]
-for n,co,e,mc,k in [('Coup de bâton',1,'6 dégâts.',['Dégâts'],3),('Pas de côté',1,'Le héros gagne 5 de garde.',['Garde'],2)]:
-  G.append(dict(nom=n,zone='Paquet de départ',tuile='Commune',mana='Gris',pole='',polenom=f'×{k}',cout=co,e1=e,genre='Commune',mec=mc))
+for n,co,e,mc,k in [('Coup de bâton',1,'6 dégâts. Sur une cible qui brûle : 10.',['Dégâts','Combo'],1),
+  ('Pas de côté',1,"5 de garde : la Garde se dresse devant le héros. Si elle était déjà levée, elle ne s'effrite pas au prochain tour.",['Garde','Bloqueur'],1),
+  ('Pieu planté',1,'Un bloqueur de 6 PV prend place sur le terrain : il encaisse les coups et renvoie 2 dégâts à qui le frappe.',['Bloqueur','Riposte'],1),
+  ('Jet de pierre',0,"3 dégâts à l'ennemi qui prend son élan (sinon au hasard) : il perd son élan et hésite.",['Dégâts','Contrôle'],1),
+  ('Torche',1,'2 dégâts, puis 2 de brûlure sur 2 tours. Si la cible brûlait déjà, sa brûlure double.',['Dégâts','Brûlure','Combo'],1)]:
+  G.append(dict(nom=n,zone='Paquet de départ',tuile='Commune',mana='Gris',pole='',polenom='×1',cout=co,e1=e,genre='Commune',mec=mc))
 order={'m':0,'p':1,'m7':2,'p7':3}
 def zkey(z):return (list(META).index(z))
 for c in sorted(cards_g,key=lambda c:(zkey(c['zone']),{'res':0,'-':1,'+':2,'secret':9}.get(str(c.get('pole'))[:1] if str(c.get('pole'))!='secret' and str(c.get('pole'))!='res' else str(c.get('pole')),5),str(c.get('palier')))):

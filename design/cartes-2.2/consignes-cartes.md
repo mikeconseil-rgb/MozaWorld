@@ -4,7 +4,9 @@ Ces consignes servent aux quatre conteurs (profils dans `/mnt/project-files/etap
 
 ## 1. Règles du jeu à respecter (décisions de l'utilisateur)
 
-- Le héros part avec **10 cartes communes faibles** (5 Coup de bâton : coût 1, 6 dégâts ; 3 Pas de côté : coût 1, 5 de garde ; 2 Souffle court : coût 0, pioche 1 et 2 de garde). Assez pour une zone de niveau 0, peut-être 1.
+- Le héros part avec **5 cartes communes toutes différentes et faibles** (Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche), sans carte de pioche. Assez pour une zone de niveau 0, peut-être 1.
+- **Chaque carte a un impact** (utilisateur, 17 nov.) : un rôle qu'on retient et un crochet de combo identifiable, parce qu'elle permet peut-être de tuer « l'impossible boss du niveau 5 ». Pas de carte fade.
+- **Terrain** (17 nov.) : la garde du héros est une unité, la Garde, qui prend les coups ; les bloqueurs et les bêtes tiennent le terrain ; les ennemis peuvent voler par-dessus, enfoncer au bélier ou piétiner (voir regles-avancees.md, section 1 bis).
 - On gagne une **carte de zone uniquement quand la zone monte d'un palier** (épreuve réussie à la Pierre d'éveil), une copie par palier. Toutes les copies suivent le niveau actuel de la zone (L = écart à zéro, 1 à 7).
 - **Les cartes doivent être différentes selon le pôle choisi** (− ou +) et toujours **liées au background de la zone ET au pôle**. Deux pôles d'une même zone ne doivent jamais être la même mécanique en miroir (pas « 10 dégâts » contre « 10 de garde » : deux façons de jouer).
 - **Aucun pôle n'est le bien.** Un −7 n'est pas forcément mauvais ni un +7 bon. Chaque pôle a sa grandeur et son prix.
