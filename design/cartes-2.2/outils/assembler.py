@@ -69,6 +69,7 @@ for c in cards:
   else:
     slot=('m' if pol.startswith('-') else 'p')+(pal if pal.isdigit() else ('7' if '7' in pol else ''))
     J['zones'].setdefault(c['zone'],{})[slot]=d
+J['gerbes']={}  # 17 nov. : Gerbes retirées du jeu (textes gardés dans les fichiers des conteurs)
 open(OUTJS,'w').write('/* MozaWorld TV 2.2 : cartes écrites par les quatre conteurs (généré par cartes-2.2/outils/assembler.py, ne pas modifier à la main). */\nconst CARTES22='+json.dumps(J,ensure_ascii=False,indent=0)+';\n')
 # ---- Grimoire ----
 G=[]
@@ -93,11 +94,12 @@ for c in sorted(cards_g,key=lambda c:(zkey(c['zone']),{'res':0,'-':1,'+':2,'secr
   nom,typ,mana,pm,pp=META[c['zone']];pol=str(c.get('pole'));pal=str(c.get('palier'))
   e=dict(nom=c['nom'],zone=nom,tuile=typ,cout=c.get('cout'),e1=c.get('effet',''),ambiance=c.get('ambiance',''),mec=tags(c['ops']),combo=comb(c['ops']),conteur=c['conteur'])
   if pol=='secret': e.update(genre='Utilitaire (secret)',mana='Gris',pole='',polenom='Secret : '+(c.get('secret') or ''))
-  elif pol=='res': e.update(genre='Gerbe',mana=mana,pole='',polenom='Niveau '+pal if pal.isdigit() else 'Niveaux 1 à 3')
+  elif pol=='res': continue  # 17 nov. : Gerbes retirées du Grimoire
+  elif pol=='res-ancien': e.update(genre='Gerbe',mana=mana,pole='',polenom='Niveau '+pal if pal.isdigit() else 'Niveaux 1 à 3')
   elif pal=='7': e.update(genre='Forme du palier 7',mana=mana,pole=('-7' if pol.startswith('-') else '+7'),polenom=pm if pol.startswith('-') else pp)
   elif pal.isdigit(): e.update(genre='Carte de palier',mana=mana,pole=pol[:1],polenom=(pm if pol.startswith('-') else pp)+' · palier '+pal)
   else: e.update(genre='Carte de pôle',mana=mana,pole=pol[:1],polenom=(pm if pol.startswith('-') else pp)+' · paliers '+pal)
   G.append(e)
 json.dump(G,open(os.path.join(D,'recap','cartes-2.2.json'),'w'),ensure_ascii=False)
-print(len(cards),'cartes ;',{g:sum(1 for x in G if x['genre']==g) for g in set(x['genre'] for x in G)})
-print('zones à pôles :',sorted(J['zones']),'gerbes :',sorted(J['gerbes']),'secrets :',len(J['secrets']))
+print(len(G),'cartes au Grimoire ;',{g:sum(1 for x in G if x['genre']==g) for g in set(x['genre'] for x in G)})
+print('zones à pôles :',sorted(J['zones']),'gerbes : retirées','secrets :',len(J['secrets']))

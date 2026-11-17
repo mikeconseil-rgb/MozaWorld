@@ -63,7 +63,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Tour par tour, sur place, sur le Nœud : deux voies et un centre à tenir.
 - La garde du héros est une unité, la Garde, qui s'effrite à chaque tour. Bêtes et bloqueurs tiennent le terrain (3 places). Les ennemis annoncent leur intention : attaque, vol par-dessus, bélier, élan puis frappe qui piétine, soin.
 - Passifs du royaume : chaque Citadelle donne de l'endurance et lève la Garde ; chaque Donjon donne de la résistance et un piège ; chaque Antre donne un passif propre à son pôle.
-- Rempart : une **route** qui relie deux Citadelles, ou une Citadelle et un Donjon, toutes possédées. Il pose un bloqueur de 10 PV au début des combats de son domaine, 2 au plus **(le jeu applique encore le simple voisinage)**.
+- Rempart : une **route** qui relie deux Citadelles, ou une Citadelle et un Donjon, toutes possédées. Elle s'ouvre au menu « Remparts » de la Pierre d'éveil d'une Citadelle au palier 1 ou plus. Le rempart pose un bloqueur de 10 PV au début des combats de son domaine, 2 au plus ; il tombe si l'une des deux zones est perdue.
 - Blessures **(provisoire)** : prototype façon Shadowrun (moniteur de 10 cases, niveaux L, M, S, D), à jouer deux ou trois soirs avant de garder un seul système. D'ici là, les cartes restent en chiffres.
 
 ## 8. La mort et la guerre

@@ -40,7 +40,7 @@ Le royaume donne des **passifs de combat**, dans l'esprit des artefacts de Monst
   - Un coup ennemi frappe la Garde, qui couvre les deux voies. Sans Garde, il frappe la première unité de sa voie. Si la voie est vide, il frappe le héros.
   - Le chef change de voie à chaque tour.
   - Le centre appartient au camp qui a au moins autant d'unités sur le terrain que l'autre. Le héros qui le tient frappe à +2, avec ses bêtes. L'ennemi qui le tient frappe à +1.
-- **Remparts.** Décision du 17 nov. (soir) : un rempart naît d'une **route** qui relie deux Citadelles, ou une Citadelle et un Donjon, toutes possédées. (Le jeu applique encore la première version, le simple voisinage, en attendant le changement de code.) Chaque rempart pose un bloqueur de 10 PV au début des combats dans ses zones et dans les zones voisines, 2 au plus. Un rempart adverse actif annule l'abri des chemins.
+- **Remparts.** Décision du 17 nov. (soir) : un rempart naît d'une **route** qui relie deux Citadelles, ou une Citadelle et un Donjon, toutes possédées. Règle de jeu : une Citadelle possédée, éveillée et au palier 1 ou plus ouvre, dans le menu « Remparts » de sa Pierre d'éveil, une route vers une Citadelle ou un Donjon voisin qui est à vous. Cette route est le rempart ; elle compte dans les routes de la tuile (au plus autant que de côtés) et trace un chemin. Si l'une des deux zones est perdue ou désactivée, ou si la Citadelle retombe au niveau 0, le rempart tombe. Chaque rempart pose un bloqueur de 10 PV au début des combats dans ses zones et dans les zones voisines, 2 au plus. Un rempart adverse actif annule l'abri des chemins.
 - **Prototype : blessures façon Shadowrun.** C'est une option du menu, activée par défaut pour le test.
   - Le héros a un moniteur de 10 cases, plus 2 par Citadelle.
   - Le niveau d'un coup ennemi dépend de sa puissance : 1 à 4 donne L (1 case), 5 à 8 donne M (3 cases), 9 à 14 donne S (6 cases), 15 et plus donne D (10 cases). Une frappe forte monte d'un niveau.
@@ -175,6 +175,6 @@ Points : 1 dégât = 1 ; 1 garde = 0,8 ; 1 soin = 1 ; pioche = 4 ; hésitation =
 
 - Carte de pôle : (4 + 6 × coût) × (1 + 0,25 × (L − 1)), tolérance ±15 %. Palier 1, coût 2 ≈ 16 ; palier 6 ≈ 36.
 - Forme du palier 7 : 45 à 55 points, plus 60 à 100 % au réveil d'une résonance.
-- Gerbe : 7, 9 et 11 points aux niveaux 1, 2, 3. (Hors jeu depuis le 17 nov. : les Ressources ne donnent plus de carte ; les Gerbes écrites restent dans les données, en attente d'une décision.)
+- Gerbe : retirée du jeu et du Grimoire le 17 nov. (soir). Les Ressources ne donnent pas de carte ; les textes des Gerbes restent dans les fichiers des conteurs, matière à de futurs atouts.
 - Secret : 6 à 10 points.
 - Atout : 2 à 4 points par usage.
