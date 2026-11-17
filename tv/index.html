@@ -1428,9 +1428,7 @@ function installerCartes22(){
     const choix=()=>{const lv=S.lv[id]||0;return parPalier(P,lv<0?'m':'p',Math.max(1,Math.min(7,Math.abs(lv))))};
     CK[id]=carteCK(id,choix,()=>Lz(id));CK[id].poles=[P.m||P.m1,P.p||P.p1];
     for(const s of['m','p'])for(let n=1;n<=7;n++){const c=parPalier(P,s,n);if(c)CK[id+'#'+(s==='m'?'-':'+')+n]=carteCK(id,()=>c,()=>n)}}
-  for(const id in CARTES22.gerbes){if(!ZB[id])continue;const G=CARTES22.gerbes[id],g=n=>G['n'+n]||G;
-    CK[id]=carteCK(id,()=>g(Math.max(1,Math.min(3,Lz(id)))),()=>Math.min(3,Lz(id)));
-    for(let n=1;n<=3;n++)CK[id+'#r'+n]=carteCK(id,()=>g(n),()=>n)}
+  /* 17 nov. (revue de cohérence) : plus de Gerbes ; les Ressources ne donnent pas de carte. Leurs textes restent chez les conteurs, matière à de futurs atouts. */
   /* secrets : une carte utilitaire par secret, clé « S<numéro> », payée en gris */
   secrets.forEach((q,i)=>{const d=CARTES22.secrets[q.titre];if(!d)return;const k='S'+i;
     CK[k]={nom:()=>d.nom,cout:d.cout,cible:d.cible?1:0,secret:q.titre,zs:q.Z.id,ultime:false,pose:null,reveille:null,amb:()=>d.ambiance||'',txt:()=>texteCarte(d.effet,1,1),
@@ -8251,732 +8249,7 @@ false,
 }
 }
 },
-"gerbes": {
-"RES079": {
-"nom": "Gerbe de Teoco : éclat du mur tourné",
-"cout": 0,
-"cible": 1,
-"effet": "Piochez 1 carte ; (1+2L) dégâts à la cible.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"deg",
-"cible",
-[
-1,
-2
-]
-]
-],
-"ambiance": "Une lame d'obsidienne arrachée à l'enceinte, tranchant vers le dedans, comme le voulaient ceux qui levaient le tribut.",
-"n1": {
-"nom": "La Marche retournée",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte ; le héros gagne 4 de garde.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"garde",
-"heros",
-4
-]
-],
-"ambiance": "Une marche reposée à l'envers, glyphes de tribut contre la terre : on s'y abrite sans lire."
-},
-"n2": {
-"nom": "La Meule en cuvette",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte, gagnez 1 mana Pierre ; le héros gagne 3 de garde.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"mana",
-"Pierre",
-1
-],
-[
-"garde",
-"heros",
-3
-]
-],
-"ambiance": "Au fond de la meule usée, quelqu'un grava un compte de capes ; le maïs, lui, ne fut pas compté."
-},
-"n3": {
-"nom": "Éclat du mur tourné",
-"cout": 0,
-"cible": 1,
-"effet": "Piochez 1 carte ; 7 dégâts à la cible.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"deg",
-"cible",
-7
-]
-],
-"ambiance": "Une lame d'obsidienne arrachée à l'enceinte, tranchant vers le dedans, comme le voulaient les collecteurs."
-}
-},
-"RES212": {
-"nom": "Gerbe de Gramir : orge du tribut",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte ; le héros se soigne de (1+2L).",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"soin",
-"heros",
-[
-1,
-2
-]
-]
-],
-"ambiance": "Une gerbe d'orge d'hiver, liée au crin de cheval ; le percepteur ne demanda jamais d'où venait le crin.",
-"n1": {
-"nom": "L'Anneau usé",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte et gagnez 1 mana Vent.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"mana",
-"Vent",
-1
-]
-],
-"ambiance": "L'anneau du relais brille d'usure ; officiellement, aucun cheval n'y fut attaché depuis la proclamation."
-},
-"n2": {
-"nom": "La Proclamation clouée",
-"cout": 0,
-"cible": 1,
-"effet": "Piochez 1 carte ; la cible hésite ce tour.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"hesite",
-"cible"
-]
-],
-"ambiance": "Lue à voix haute au poteau, la proclamation arrêtait tout le monde, le temps de la lecture."
-},
-"n3": {
-"nom": "Orge du tribut",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte ; le héros se soigne de 7.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"soin",
-"heros",
-7
-]
-],
-"ambiance": "Une gerbe d'orge d'hiver liée au crin de cheval ; le percepteur ne demanda jamais d'où venait le crin."
-}
-},
-"RES021": {
-"nom": "Larme d'encens",
-"cout": 0,
-"cible": 0,
-"effet": "Le héros se soigne de (2+2L) et gagne 1 mana de Sève.",
-"ops": [
-[
-"soin",
-"heros",
-[
-2,
-2
-]
-],
-[
-"mana",
-"Sève",
-1
-]
-],
-"ambiance": "Onze jours sur l'écorce, une larme ambrée décollée au couteau d'os : elle panse avant de partir en fumée.",
-"n1": {
-"nom": "Incision",
-"cout": 0,
-"cible": 0,
-"effet": "Le héros se soigne de 4 et gagne 1 mana de Sève.",
-"ops": [
-[
-"soin",
-"heros",
-4
-],
-[
-"mana",
-"Sève",
-1
-]
-],
-"ambiance": "Mekdes entaille l'écorce tordue ; la première larme perle au bord de la source."
-},
-"n2": {
-"nom": "Panier tressé",
-"cout": 0,
-"cible": 0,
-"effet": "Reprenez en main la dernière carte de la défausse ; le héros se soigne de 5.",
-"ops": [
-[
-"recup"
-],
-[
-"soin",
-"heros",
-5
-]
-],
-"ambiance": "Onze jours de séchage, puis la larme ambrée tombe dans le panier, décollée au couteau d'os."
-},
-"n3": {
-"nom": "Fumée bleue",
-"cout": 0,
-"cible": 1,
-"effet": "La cible hésite ce tour, perdue dans la fumée ; le héros se soigne de 6.",
-"ops": [
-[
-"hesite",
-"cible"
-],
-[
-"soin",
-"heros",
-6
-]
-],
-"ambiance": "Dans un port lointain, la récolte de Mekdes part en fumée bleue, et tout le marché s'arrête."
-}
-},
-"RES122": {
-"nom": "Branche de corail",
-"cout": 0,
-"cible": 1,
-"effet": "1 dégât à la cible ; jusqu'au prochain tour, chaque coup reçu par le héros renvoie (2+L) dégâts.",
-"ops": [
-[
-"deg",
-"cible",
-1
-],
-[
-"riposte",
-[
-2,
-1
-]
-]
-],
-"ambiance": "Alvise pèse le corail brin par brin ; qui le vole s'écorche les mains sur les têtes rouges.",
-"n1": {
-"nom": "Tête de corail",
-"cout": 0,
-"cible": 1,
-"effet": "1 dégât à la cible ; jusqu'au prochain tour, le héros renvoie 3 dégâts à chaque coup reçu.",
-"ops": [
-[
-"deg",
-"cible",
-1
-],
-[
-"riposte",
-3
-]
-],
-"ambiance": "Les barques accostent sur les têtes rouges ; qui y pose le pied sans regarder s'écorche jusqu'au sang."
-},
-"n2": {
-"nom": "Filet lesté",
-"cout": 0,
-"cible": 1,
-"effet": "2 dégâts à la cible, qui prend +1 dégât à chaque coup reçu. Piochez 1 carte.",
-"ops": [
-[
-"deg",
-"cible",
-2
-],
-[
-"vulnerable",
-"cible",
-1
-],
-[
-"pioche",
-1
-]
-],
-"ambiance": "Les plongeurs remontent les branches rouges dans des filets lestés, avant que la marée ne revienne."
-},
-"n3": {
-"nom": "Balance de laiton",
-"cout": 0,
-"cible": 1,
-"effet": "2 dégâts à la cible ; le héros renvoie 3 dégâts à chaque coup reçu jusqu'au prochain tour ; gagnez 1 mana d'Eau.",
-"ops": [
-[
-"deg",
-"cible",
-2
-],
-[
-"riposte",
-3
-],
-[
-"mana",
-"Eau",
-1
-]
-],
-"ambiance": "Alvise pèse le corail brin par brin ; à midi, l'eau remonte et la balance se referme."
-}
-},
-"RES136": {
-"nom": "Nid de salangane",
-"cout": 0,
-"cible": 0,
-"effet": "Reprenez en main la dernière carte de votre défausse ; le héros gagne (1+3L) de garde.",
-"ops": [
-[
-"recup"
-],
-[
-"garde",
-"heros",
-[
-1,
-3
-]
-]
-],
-"ambiance": "Le vieux Vann redescend l'échelle de rotin avec le nid que vous aviez laissé tomber, sans un mot.",
-"n1": {
-"nom": "Échelle de rotin",
-"cout": 0,
-"cible": 0,
-"effet": "Le héros gagne 4 de garde. Piochez 1 carte.",
-"ops": [
-[
-"garde",
-"heros",
-4
-],
-[
-"pioche",
-1
-]
-],
-"ambiance": "Une torche entre les dents, le cueilleur monte l'échelle de rotin dans le vent qui siffle."
-},
-"n2": {
-"nom": "Nid de salangane",
-"cout": 0,
-"cible": 0,
-"effet": "Le héros gagne 8 de garde ; s'il avait déjà de la garde, piochez 1 carte.",
-"ops": [
-[
-"garde",
-"heros",
-8
-],
-[
-"si",
-"garde",
-[
-[
-"pioche",
-1
-]
-]
-]
-],
-"ambiance": "Un panier de nids pèse moins qu'une poule et vaut une barque ; Vann le cale contre la paroi."
-},
-"n3": {
-"nom": "Grotte de Vann",
-"cout": 0,
-"cible": 1,
-"effet": "La cible hésite ce tour ; le héros gagne 3 de garde. Piochez 1 carte.",
-"ops": [
-[
-"hesite",
-"cible"
-],
-[
-"garde",
-"heros",
-3
-],
-[
-"pioche",
-1
-]
-],
-"ambiance": "Vann repart vers une grotte qu'il n'a montrée à personne ; le vent y couvre tous les bruits."
-}
-},
-"RES227": {
-"nom": "Poignée de Balo",
-"cout": 0,
-"cible": 1,
-"effet": "La cible brûle (1+L) par tour pendant 2 tours. Une poignée dans le feu : +1 mana Feu.",
-"ops": [
-[
-"brulure",
-"cible",
-[
-1,
-1
-],
-2
-],
-[
-"mana",
-"Feu",
-1
-]
-],
-"ambiance": "Une poignée dans la paume, une dans le feu : le sable de Balo mord deux fois avant la nuit.",
-"n1": {
-"nom": "Poignée de verre",
-"cout": 0,
-"cible": 1,
-"effet": "La cible brûle 2 pendant 2 tours. +1 mana Feu.",
-"ops": [
-[
-"brulure",
-"cible",
-2,
-2
-],
-[
-"mana",
-"Feu",
-1
-]
-],
-"ambiance": "Une poignée dans la paume, une dans le feu : le sable de Balo mord deux fois."
-},
-"n2": {
-"nom": "Tube de foudre",
-"cout": 0,
-"cible": 1,
-"effet": "5 dégâts à la cible. Piochez 1 carte.",
-"ops": [
-[
-"deg",
-"cible",
-5
-],
-[
-"pioche",
-1
-]
-],
-"ambiance": "Là où la foudre est tombée, un tube de verre creux siffle quand on le lance."
-},
-"n3": {
-"nom": "Dune avant la nuit",
-"cout": 0,
-"cible": 0,
-"effet": "Tous les ennemis brûlent 2 pendant 2 tours. +1 mana Feu.",
-"ops": [
-[
-"brulure",
-"tous",
-2,
-2
-],
-[
-"mana",
-"Feu",
-1
-]
-],
-"ambiance": "La chaleur ne quitte pas la dune avant la nuit : elle mord tout ce qui y reste."
-}
-},
-"RES": {
-"nom": "Galette du premier grain",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte. Le héros se soigne de (1+2L).",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"soin",
-"heros",
-[
-1,
-2
-]
-]
-],
-"ambiance": "Galette du premier grain : l'esprit clair, la langue lente, et le compte des tiges juste, pour cette fois.",
-"n1": {
-"nom": "Grain bleu tombé",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte. Ajoutez 1 mana Vent.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"mana",
-"Vent",
-1
-]
-],
-"ambiance": "Les enfants ramassent le grain tombé entre deux îles ; il en tombe plus qu'on n'en a coupé."
-},
-"n2": {
-"nom": "Galette du premier grain",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte. Le héros se soigne de 5.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"soin",
-"heros",
-5
-]
-],
-"ambiance": "Galette du premier grain : l'esprit clair, la langue lente, et le compte des tiges juste, pour cette fois."
-},
-"n3": {
-"nom": "Le pont d'agave retendu",
-"cout": 0,
-"cible": 0,
-"effet": "Le héros gagne 5 de garde. Piochez 1 carte. Ajoutez 1 mana Vent.",
-"ops": [
-[
-"garde",
-"heros",
-5
-],
-[
-"pioche",
-1
-],
-[
-"mana",
-"Vent",
-1
-]
-],
-"ambiance": "On renoue en chantant l'île qui a dérivé ; la corde est plus courte qu'hier, et l'île plus proche."
-}
-},
-"RES374": {
-"nom": "Gerbe de résine",
-"cout": 0,
-"cible": 0,
-"effet": "Piochez 1 carte. Le héros gagne (3+2L) de garde : la résine se fige sur lui.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"garde",
-"heros",
-[
-3,
-2
-]
-]
-],
-"ambiance": "La résine coule vers l'entaille et vous recouvre ; l'arbre ne sait pas qu'il n'y a plus d'entailleur.",
-"n1": {
-"nom": "Lichen de paume",
-"cout": 0,
-"cible": 0,
-"effet": "Le héros gagne 4 de garde. Piochez 1 carte.",
-"ops": [
-[
-"garde",
-"heros",
-4
-],
-[
-"pioche",
-1
-]
-],
-"ambiance": "Un cercle de lichen de la largeur d'une paume ; il a mis trois siècles à couvrir votre main."
-},
-"n2": {
-"nom": "Gerbe de résine",
-"cout": 0,
-"cible": 0,
-"effet": "Le héros gagne 6 de garde : la résine se fige sur lui. Piochez 1 carte.",
-"ops": [
-[
-"garde",
-"heros",
-6
-],
-[
-"pioche",
-1
-]
-],
-"ambiance": "La résine coule vers l'entaille et vous recouvre ; l'arbre ne sait pas qu'il n'y a plus d'entailleur."
-},
-"n3": {
-"nom": "La résine des quarante mille hivers",
-"cout": 0,
-"cible": 1,
-"effet": "Le héros gagne 5 de garde. La cible, engluée, perd 1 d'attaque pour le combat. Piochez 1 carte.",
-"ops": [
-[
-"garde",
-"heros",
-5
-],
-[
-"affaiblit",
-"cible",
-1
-],
-[
-"pioche",
-1
-]
-],
-"ambiance": "Dans la vieille résine, un insecte pris il y a quarante mille hivers ; ses pattes bougent encore, lentement."
-}
-},
-"RES345": {
-"nom": "Braise de bouse",
-"cout": 0,
-"cible": 1,
-"effet": "Piochez 1 carte. La cible brûle de (1+L) au début de ses 2 prochains tours.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"brulure",
-"cible",
-[
-1,
-1
-],
-2
-]
-],
-"ambiance": "Une galette de bouse sèche, prise à la paroi, encore tiède du flanc du canyon qui respire.",
-"n1": {
-"nom": "Galette de bouse",
-"cout": 0,
-"cible": 1,
-"effet": "Piochez 1 carte. La cible brûle de 1 au début de ses 3 prochains tours.",
-"ops": [
-[
-"pioche",
-1
-],
-[
-"brulure",
-"cible",
-1,
-3
-]
-],
-"ambiance": "Une galette de bouse sèche, prise à la paroi, encore tiède du flanc du canyon."
-},
-"n2": {
-"nom": "La pierre tiède",
-"cout": 0,
-"cible": 1,
-"effet": "Le héros gagne 3 de garde. La cible brûle de 2 au début de ses 2 prochains tours. Ajoutez 1 mana Feu.",
-"ops": [
-[
-"garde",
-"heros",
-3
-],
-[
-"brulure",
-"cible",
-2,
-2
-],
-[
-"mana",
-"Feu",
-1
-]
-],
-"ambiance": "Les vaches se couchent contre la pierre rouge ; au matin, la pierre est plus chaude que les vaches."
-},
-"n3": {
-"nom": "Le flanc qui se soulève",
-"cout": 0,
-"cible": 0,
-"effet": "3 dégâts à tous. Piochez 1 carte.",
-"ops": [
-[
-"deg",
-"tous",
-3
-],
-[
-"pioche",
-1
-]
-],
-"ambiance": "La nuit, le fond du canyon se soulève d'une hauteur de main, et les pierres roulent vers vous."
-}
-}
-},
+"gerbes": {},
 "secrets": {
 "L'écorce pliée en huit": {
 "nom": "L'écorce pliée en huit",
@@ -9718,9 +8991,15 @@ const estRES=Z=>(Z.mod||Z.id)==='RES';
 const VOISINES={};
 (()=>{const pr=p=>Math.round(p[0])+','+Math.round(p[1]);const S1={};for(const Z of ZN)S1[Z.id]=new Set(Z.poly.map(pr));
   for(const A of ZN){VOISINES[A.id]=[];for(const B of ZN){if(A===B)continue;let n=0;for(const p of B.poly)if(S1[A.id].has(pr(p)))n++;if(n>=2)VOISINES[A.id].push(B.id)}}})();
+const estCIT=Z=>!!Z&&(Z.mod||Z.id)==='CIT',estDON=Z=>!!Z&&(Z.mod||Z.id)==='DON';
+const tient=id=>!!(S.own[id]&&S.act[id]);
+/* rempart (17 nov.) : route ouverte par une Citadelle tenue et éveillée (palier 1 ou plus) vers une Citadelle ou un Donjon tenu et voisin */
+const rempartOK=(a,b)=>tient(a)&&tient(b)&&Math.abs(S.lv[a]||0)>=1&&(estDON(ZB[b])||estCIT(ZB[b]));
 function etatRoutes(){S.routes=S.routes||{};S.atout=S.atout||{};
-  /* route coupée si la Ressource est sous le niveau 2 */
-  for(const r in S.routes)if(Math.abs(S.lv[r]||0)<2)delete S.routes[r]}
+  for(const r in S.routes){
+    if(estCIT(ZB[r])){S.routes[r]=S.routes[r].filter(b=>rempartOK(r,b));if(!S.routes[r].length)delete S.routes[r];continue}
+    /* route coupée si la Ressource est sous le niveau 2 */
+    if(Math.abs(S.lv[r]||0)<2)delete S.routes[r]}}
 const routesVers=id=>{etatRoutes();return Object.keys(S.routes).filter(r=>S.routes[r].indexOf(id)>=0)};
 const nbCotes=id=>ZB[id]?ZB[id].poly.length:4;
 /* atouts actifs sur une tuile : un par type de mana, d'une Ressource au niveau 3 reliée */
@@ -9734,8 +9013,20 @@ function optionsRoutes(Z){etatRoutes();const o=[],lv=Math.abs(S.lv[Z.id]||0);
       o.push({l:a?`Atout choisi : ${a}`:'Choisir l\'atout du niveau 3',ic:'✦',cls:'p',d:a?'changer':'trois atouts '+ZMANA[Z.id],go:()=>openAtouts(Z)})}
     if(lv>=2)o.push({l:'Routes',ic:'⟋',cls:'p',d:`${(S.routes[Z.id]||[]).length} route(s) · ${lv>=3?'atout greffé':'atout au niveau 3'}`,go:()=>openRoutes(Z)});
     else o.push({l:'Routes',ic:'⟋',off:true,d:'ouvertes au niveau 2'})}
-  else{const at=atoutsDe(Z.id);if(at.length)o.push({l:'Atouts greffés',ic:'✦',off:true,d:at.map(a=>a.nom).join(', ')})}
+  else if(estCIT(Z)&&S.act[Z.id]){const n=(S.routes[Z.id]||[]).length;
+    if(Math.abs(S.lv[Z.id]||0)>=1)o.push({l:'Remparts',ic:'▥',cls:'p',d:`${n} rempart(s) · route vers une Citadelle ou un Donjon à vous, voisin`,go:()=>openRemparts(Z)});
+    else o.push({l:'Remparts',ic:'▥',off:true,d:'ouverts au palier 1'})}
+  if(!estRES(Z)){const at=atoutsDe(Z.id);if(at.length)o.push({l:'Atouts greffés',ic:'✦',off:true,d:at.map(a=>a.nom).join(', ')})}
   return o}
+function openRemparts(Z,f){etatRoutes();const mes=S.routes[Z.id]||[],max=nbCotes(Z.id);
+  const cand=VOISINES[Z.id].filter(id=>estCIT(ZB[id])||estDON(ZB[id]));
+  const opts=cand.map(id=>{const B=ZB[id],on=mes.indexOf(id)>=0,ok=rempartOK(Z.id,id),pleine=!on&&routesVers(id).length>=nbCotes(id);
+    return{l:(on?'✓ ':'')+B.info.nom,ic:on?'▥':'·',cls:on?'p':'',off:!on&&(!ok||pleine||mes.length>=max),
+      d:on?'rempart debout · OK pour le défaire':!ok?`${estDON(B)?'Donjon':'Citadelle'} pas encore à vous`:pleine?'tuile déjà pleine de routes':(estDON(B)?'Donjon':'Citadelle')+' voisin',
+      go:()=>{const r=S.routes[Z.id]=S.routes[Z.id]||[];if(on)r.splice(r.indexOf(id),1);else r.push(id);save();openRemparts(Z,UI.f)}}});
+  ui('menu',{sur:'Remparts · '+Z.info.nom,t:'Relier la Citadelle',f:f||0,
+    corps:`<p class="petit">Une route entre cette Citadelle et une Citadelle ou un Donjon voisin qui est à vous devient un rempart. Il pose un bloqueur de 10 PV au début des combats dans les deux zones et leurs voisines (2 au plus), et bloque l'abri des chemins pour vos adversaires. Si l'une des deux zones est perdue, le rempart tombe.${cand.length?'':' <b>Aucune Citadelle ni aucun Donjon voisin.</b>'}</p>`,
+    back:()=>openEveil(Z),opts:opts.concat([{l:'Retour',ic:'◆',go:()=>openEveil(Z)}])})}
 function openAtouts(Z,f){const t=ZMANA[Z.id],L=ATOUTS[t]||[];
   ui('menu',{sur:'Ressource niveau 3 · mana '+t,t:'Choisir un atout',f:f||0,
     corps:'<p class="petit">L\'atout choisi tient lieu de pôle. Chaque route vers une tuile voisine le greffe sur les cartes de cette tuile. Deux atouts du même mana sur une tuile : un seul compte.</p>',
@@ -10086,8 +9377,8 @@ const PASSIFS={
     :{nom:'Crocs de braise',txt:'les coups de vos bêtes brûlent (1 sur 2 tours)',braise:1}};
 const passifsZones=()=>ZN.filter(Z=>PASSIFS[Z.id]&&S.own[Z.id]&&S.act[Z.id]&&Lz(Z.id)>=1).map(Z=>PASSIFS[Z.id](Z));
 const aPassif=k=>CB&&(CB.pz||[]).some(p=>p[k]);
-function remparts(){if(typeof VOISINES==='undefined')return[];const t=Z=>Z.mod||Z.id,ok=Z=>S.own[Z.id]&&S.act[Z.id],out=[];
-  for(const A of ZN)if(ok(A)&&t(A)==='CIT')for(const v of VOISINES[A.id]||[]){const B=ZB[v];if(B&&ok(B)&&(t(B)==='DON'||(t(B)==='CIT'&&A.id<B.id)))out.push([A.id,B.id])}return out}
+function remparts(){if(typeof etatRoutes!=='function')return[];etatRoutes();const out=[];
+  for(const a in S.routes)if(estCIT(ZB[a]))for(const b of S.routes[a])out.push([a,b]);return out}
 
 /* ---------- Déroulement ---------- */
 /* ce qu'on peut encore dépenser ce tour : la capacité du tour, sans dépasser la réserve */
@@ -11224,7 +10515,7 @@ function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
       {l:'Règles des cartes',ic:'?',go:grimoireRegles},
       {l:'Cartes communes',ic:'▤',d:'paquet de départ',go:grimoireCommunes},
       ...ZN.map((Z,i)=>({l:Z.info.nom,ic:sgn(S.lv[Z.id]||0)||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',
-        d:(estRes(Z)?'Ressource':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+2)})),
+        d:(estRes(Z)?'Ressource · mana et atouts, pas de carte':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+2)})),
       {l:'Retour',ic:'◆',go:openMenu}]})}
 function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:()=>openGrimoire(0),
   corps:`<p class="petit">· Le paquet de départ : 5 cartes communes toutes différentes, les mêmes pour tous (Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche).</p>
@@ -11234,11 +10525,17 @@ function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:
 <p class="petit">· En combat, la capacité de dépense monte de 1 par tour (1, 2, 3…), tous types confondus. Une carte de zone se paie avec le mana de sa zone ; les cartes communes en mana gris, infini. Sans assez du bon mana, une carte de zone se joue en gris : effet −25 %, pas de contre-pouvoir.</p>
 <p class="petit">· Contre-pouvoir : jouée contre les gardiens de la zone qu'elle contre, une carte de zone voit son effet doublé.</p>`,
   opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(0)}]})}
-function grimoireCommunes(){const ks=Object.keys(CK).filter(k=>!CK[k].z);
+function grimoireCommunes(){const ks=(typeof DEPART!=='undefined'?DEPART:Object.keys(CK).filter(k=>!CK[k].z&&!CK[k].secret)).filter(k=>CK[k]);
   ui('menu',{sur:'Grimoire',t:'Cartes communes',back:()=>openGrimoire(1),
     corps:`<div class="cartes">${ks.map(k=>carteHTML(k)).join('')}</div><p class="petit" style="margin-top:1em">Payées en mana gris. Paquet de départ : 5 communes toutes différentes, chacune avec un petit combo.</p>`,
     opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(1)}]})}
-function grimoireZone(Z,fi){const id=Z.id,I=Z.info,lv=S.lv[id]||0,L=Math.abs(lv),c=CK[id];if(!c)return;
+/* 17 nov. : une Ressource ne donne pas de carte ; elle donne du mana et, au niveau 3, un atout greffé par ses routes */
+function grimoireRessource(Z,fi){const id=Z.id,I=Z.info,t=ZMANA[id],L=(typeof ATOUTS!=='undefined'&&ATOUTS[t])||[];
+  ui('menu',{sur:`Grimoire · ${I.sur.split(' · ')[0]}`,t:I.nom,back:()=>openGrimoire(fi),
+    corps:`<p class="petit">Ressource de mana ${t} : pas de carte. Niveau 1 : 1 mana ${t} ; niveau 2 : 2 mana et des routes ; niveau 3 : 2 mana et un atout au choix, greffé sur les cartes des tuiles reliées par route. Zone au niveau ${Math.abs(S.lv[id]||0)}${S.act[id]?'':', pas encore activée'}.</p>`+
+      L.map((a,i)=>`<p class="petit">${S.atout&&S.atout[id]===i?'✓ ':''}<b>${a[0]}</b> : ${a[1]}</p>`).join(''),
+    opts:[{l:'Voyager vers cette zone',ic:'✧',go:()=>{tp(id);toMonde()}},{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(fi)}]})}
+function grimoireZone(Z,fi){if(estRes(Z))return grimoireRessource(Z,fi);const id=Z.id,I=Z.info,lv=S.lv[id]||0,L=Math.abs(lv),c=CK[id];if(!c)return;
   const res=estRes(Z),txt=(l)=>avecNiveau(id,l,()=>`<b>${c.nom()}</b> (coût ${c.cout}) : ${c.txt(id)}`);
   let cartes,lignes;
   if(res){const n=Math.max(1,Math.min(3,L));cartes=avecNiveau(id,n,()=>carteHTML(id));

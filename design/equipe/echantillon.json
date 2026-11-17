@@ -1,0 +1,202 @@
+[
+ {
+  "id": "ANT-031",
+  "type": "Antre",
+  "tuile": "Nœud papillon",
+  "biome": "Forêt de champignons géants",
+  "culture": "Maya",
+  "pole_moins7": "Sécheresse",
+  "pole_plus7": "Déluge",
+  "agent": "A"
+ },
+ {
+  "id": "ANT-079",
+  "type": "Antre",
+  "tuile": "Nœud papillon",
+  "biome": "Mangrove",
+  "culture": "Byzantine",
+  "pole_moins7": "Nuit",
+  "pole_plus7": "Aurore",
+  "agent": "B"
+ },
+ {
+  "id": "ANT-147",
+  "type": "Antre",
+  "tuile": "Nœud papillon",
+  "biome": "Récif",
+  "culture": "Vénitienne",
+  "pole_moins7": "Silence",
+  "pole_plus7": "Chant",
+  "agent": "C"
+ },
+ {
+  "id": "ANT-209",
+  "type": "Antre",
+  "tuile": "Nœud papillon",
+  "biome": "Cité en ruines",
+  "culture": "Moghole",
+  "pole_moins7": "Mort",
+  "pole_plus7": "Vie",
+  "agent": "D"
+ },
+ {
+  "id": "CIT-001",
+  "type": "Citadelle",
+  "tuile": "Décagone",
+  "biome": "Forêt boréale",
+  "culture": "Slave",
+  "pole_moins7": "Oubli",
+  "pole_plus7": "Mémoire",
+  "agent": "A"
+ },
+ {
+  "id": "CIT-027",
+  "type": "Citadelle",
+  "tuile": "Décagone",
+  "biome": "Falaise côtière",
+  "culture": "Inuit",
+  "pole_moins7": "Abysse",
+  "pole_plus7": "Ciel",
+  "agent": "B"
+ },
+ {
+  "id": "CIT-059",
+  "type": "Citadelle",
+  "tuile": "Décagone",
+  "biome": "Marais",
+  "culture": "Nordique",
+  "pole_moins7": "Tyrannie",
+  "pole_plus7": "Liberté",
+  "agent": "C"
+ },
+ {
+  "id": "CIT-090",
+  "type": "Citadelle",
+  "tuile": "Décagone",
+  "biome": "Cavernes cristallines",
+  "culture": "Perse",
+  "pole_moins7": "Pourriture",
+  "pole_plus7": "Croissance",
+  "agent": "D"
+ },
+ {
+  "id": "DON-018",
+  "type": "Donjon",
+  "tuile": "Pentagone",
+  "biome": "Savane",
+  "culture": "Inuit",
+  "pole_moins7": "Fer",
+  "pole_plus7": "Bois",
+  "agent": "A"
+ },
+ {
+  "id": "DON-043",
+  "type": "Donjon",
+  "tuile": "Pentagone",
+  "biome": "Falaise côtière",
+  "culture": "Romaine",
+  "pole_moins7": "Chaos",
+  "pole_plus7": "Ordre",
+  "agent": "B"
+ },
+ {
+  "id": "DON-058",
+  "type": "Donjon",
+  "tuile": "Pentagone",
+  "biome": "Volcan",
+  "culture": "Chinoise impériale",
+  "pole_moins7": "Tyrannie",
+  "pole_plus7": "Liberté",
+  "agent": "C"
+ },
+ {
+  "id": "DON-087",
+  "type": "Donjon",
+  "tuile": "Pentagone",
+  "biome": "Haute montagne",
+  "culture": "Byzantine",
+  "pole_moins7": "Cauchemar",
+  "pole_plus7": "Rêve",
+  "agent": "D"
+ },
+ {
+  "id": "MAR-088",
+  "type": "Marché",
+  "tuile": "Losange",
+  "biome": "Désert de sable",
+  "culture": "Grecque",
+  "pole_moins7": "Famine",
+  "pole_plus7": "Festin",
+  "agent": "A"
+ },
+ {
+  "id": "MAR-115",
+  "type": "Marché",
+  "tuile": "Losange",
+  "biome": "Oasis",
+  "culture": "Zouloue",
+  "pole_moins7": "Peste",
+  "pole_plus7": "Guérison",
+  "agent": "B"
+ },
+ {
+  "id": "MAR-156",
+  "type": "Marché",
+  "tuile": "Losange",
+  "biome": "Glacier",
+  "culture": "Gothique",
+  "pole_moins7": "Brume",
+  "pole_plus7": "Clarté",
+  "agent": "C"
+ },
+ {
+  "id": "MAR-173",
+  "type": "Marché",
+  "tuile": "Losange",
+  "biome": "Lande",
+  "culture": "Andalouse",
+  "pole_moins7": "Ombre",
+  "pole_plus7": "Lumière",
+  "agent": "D"
+ },
+ {
+  "id": "RES-025",
+  "type": "Ressource",
+  "tuile": "Hexagone allongé",
+  "biome": "Désert de sel",
+  "culture": "Japonaise féodale",
+  "pole_moins7": "Pierre",
+  "pole_plus7": "Cristal",
+  "agent": "A"
+ },
+ {
+  "id": "RES-078",
+  "type": "Ressource",
+  "tuile": "Hexagone allongé",
+  "biome": "Delta fluvial",
+  "culture": "Mongole",
+  "pole_moins7": "Poison",
+  "pole_plus7": "Nectar",
+  "agent": "B"
+ },
+ {
+  "id": "RES-166",
+  "type": "Ressource",
+  "tuile": "Hexagone allongé",
+  "biome": "Steppe",
+  "culture": "Chinoise impériale",
+  "pole_moins7": "Corruption",
+  "pole_plus7": "Pureté",
+  "agent": "C"
+ },
+ {
+  "id": "RES-334",
+  "type": "Ressource",
+  "tuile": "Hexagone allongé",
+  "biome": "Iles flottantes",
+  "culture": "Aztèque",
+  "pole_moins7": "Folie",
+  "pole_plus7": "Raison",
+  "agent": "D"
+ }
+]

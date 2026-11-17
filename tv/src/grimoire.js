@@ -12,7 +12,7 @@ function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
       {l:'Règles des cartes',ic:'?',go:grimoireRegles},
       {l:'Cartes communes',ic:'▤',d:'paquet de départ',go:grimoireCommunes},
       ...ZN.map((Z,i)=>({l:Z.info.nom,ic:sgn(S.lv[Z.id]||0)||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',
-        d:(estRes(Z)?'Ressource':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+2)})),
+        d:(estRes(Z)?'Ressource · mana et atouts, pas de carte':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+2)})),
       {l:'Retour',ic:'◆',go:openMenu}]})}
 function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:()=>openGrimoire(0),
   corps:`<p class="petit">· Le paquet de départ : 5 cartes communes toutes différentes, les mêmes pour tous (Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche).</p>
@@ -22,11 +22,17 @@ function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:
 <p class="petit">· En combat, la capacité de dépense monte de 1 par tour (1, 2, 3…), tous types confondus. Une carte de zone se paie avec le mana de sa zone ; les cartes communes en mana gris, infini. Sans assez du bon mana, une carte de zone se joue en gris : effet −25 %, pas de contre-pouvoir.</p>
 <p class="petit">· Contre-pouvoir : jouée contre les gardiens de la zone qu'elle contre, une carte de zone voit son effet doublé.</p>`,
   opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(0)}]})}
-function grimoireCommunes(){const ks=Object.keys(CK).filter(k=>!CK[k].z);
+function grimoireCommunes(){const ks=(typeof DEPART!=='undefined'?DEPART:Object.keys(CK).filter(k=>!CK[k].z&&!CK[k].secret)).filter(k=>CK[k]);
   ui('menu',{sur:'Grimoire',t:'Cartes communes',back:()=>openGrimoire(1),
     corps:`<div class="cartes">${ks.map(k=>carteHTML(k)).join('')}</div><p class="petit" style="margin-top:1em">Payées en mana gris. Paquet de départ : 5 communes toutes différentes, chacune avec un petit combo.</p>`,
     opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(1)}]})}
-function grimoireZone(Z,fi){const id=Z.id,I=Z.info,lv=S.lv[id]||0,L=Math.abs(lv),c=CK[id];if(!c)return;
+/* 17 nov. : une Ressource ne donne pas de carte ; elle donne du mana et, au niveau 3, un atout greffé par ses routes */
+function grimoireRessource(Z,fi){const id=Z.id,I=Z.info,t=ZMANA[id],L=(typeof ATOUTS!=='undefined'&&ATOUTS[t])||[];
+  ui('menu',{sur:`Grimoire · ${I.sur.split(' · ')[0]}`,t:I.nom,back:()=>openGrimoire(fi),
+    corps:`<p class="petit">Ressource de mana ${t} : pas de carte. Niveau 1 : 1 mana ${t} ; niveau 2 : 2 mana et des routes ; niveau 3 : 2 mana et un atout au choix, greffé sur les cartes des tuiles reliées par route. Zone au niveau ${Math.abs(S.lv[id]||0)}${S.act[id]?'':', pas encore activée'}.</p>`+
+      L.map((a,i)=>`<p class="petit">${S.atout&&S.atout[id]===i?'✓ ':''}<b>${a[0]}</b> : ${a[1]}</p>`).join(''),
+    opts:[{l:'Voyager vers cette zone',ic:'✧',go:()=>{tp(id);toMonde()}},{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(fi)}]})}
+function grimoireZone(Z,fi){if(estRes(Z))return grimoireRessource(Z,fi);const id=Z.id,I=Z.info,lv=S.lv[id]||0,L=Math.abs(lv),c=CK[id];if(!c)return;
   const res=estRes(Z),txt=(l)=>avecNiveau(id,l,()=>`<b>${c.nom()}</b> (coût ${c.cout}) : ${c.txt(id)}`);
   let cartes,lignes;
   if(res){const n=Math.max(1,Math.min(3,L));cartes=avecNiveau(id,n,()=>carteHTML(id));
