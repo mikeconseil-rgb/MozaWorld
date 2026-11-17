@@ -25,11 +25,11 @@ const CK={
   DON:{z:'DON',nom:()=>poleN('DON','Édit de fer','Édit de délivrance'),cout:2,cible:1,
     txt:k=>`${(10+3*Lz('DON'))*contreX(k)} dégâts.`,jeu:(k,t)=>frappe(t,(10+3*Lz('DON'))*contreX(k))},
   RES:{z:'RES',nom:()=>'Gerbe de Tezcamixtli',cout:0,
-    txt:k=>`Boost : +1 de capacité de dépense ce tour, soigne le héros de ${(2+Lz('RES'))*contreX(k)}.`,jeu:k=>{CB.mana++;CB.capT++;soigner(CB.hero,(2+Lz('RES'))*contreX(k))}},
+    txt:k=>`Piochez 1 carte, soigne le héros de ${(2+Lz('RES'))*contreX(k)}.`,jeu:k=>{pioche(1);soigner(CB.hero,(2+Lz('RES'))*contreX(k))}},
   ANT:{z:'ANT',nom:()=>poleN('ANT','Appel : Luciole de nuit','Appel : Lancière de l\'aurore'),cout:2,
     txt:k=>{const b=bete(k);return`Une bête rejoint le combat : ${b.pv} PV, frappe ${b.atk} à chaque tour.`},jeu:k=>invoquer(bete(k))},
   MAR:{z:'MAR',nom:()=>poleN('MAR','Lot de brume','Lot de clarté'),cout:0,
-    txt:k=>`Piochez ${2*contreX(k)} cartes${Lz('MAR')>=2?', boost : +1 de capacité ce tour':''}.`,jeu:k=>{pioche(2*contreX(k));if(Lz('MAR')>=2){CB.mana++;CB.capT++}}}};
+    txt:k=>`Piochez ${2*contreX(k)} cartes${Lz('MAR')>=5?', boost rare : +1 de capacité ce tour':''}.`,jeu:k=>{pioche(2*contreX(k));if(Lz('MAR')>=5){CB.mana++;CB.capT++}}}};
 const bete=k=>{const L=Lz('ANT'),x=contreX(k);return{nom:poleN('ANT','Luciole de nuit','Lancière de l\'aurore'),pv:(7+3*L)*x,max:(7+3*L)*x,atk:(3+L)*x,g:0,bete:1}};
 
 /* ---------- Gardiens des zones (originaux) : a attaque, g garde, t frappe tout le monde, c charge puis f frappe forte, s soin ---------- */
@@ -50,7 +50,10 @@ const pvMax=()=>30+(S.act.CIT?6+2*Lz('CIT'):0);
 
 /* ---------- Déroulement ---------- */
 /* ce qu'on peut encore dépenser ce tour : la capacité du tour, sans dépasser la réserve */
-const dispo=()=>CB?Math.max(0,Math.min(CB.mana,S.res)):0;
+/* la capacité de dépense par tour est commune à tous les types ; chaque carte se paie dans la réserve de son type */
+const mtype=k=>CK[k].z?ZMANA[CK[k].z]:null;
+const dispo=()=>CB?Math.max(0,CB.mana):0;
+const jouable=k=>CK[k].cout<=dispo()&&peutPayer(mtype(k),CK[k].cout);
 let CB=null;
 const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function startCombat(Z,kind){
@@ -74,7 +77,7 @@ function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.mana=CB.capT=CB.tour
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
-function jouer(i,t){const k=CB.main[i],c=CK[k];CB.mana-=c.cout;S.res-=c.cout;CB.main.splice(i,1);CB.defausse.push(k);
+function jouer(i,t){const k=CB.main[i],c=CK[k];CB.mana-=c.cout;payer(mtype(k),c.cout);CB.main.splice(i,1);CB.defausse.push(k);
   journal(`Vous jouez « ${c.nom()} »${contreX(k)>1?' : contre-pouvoir, effet doublé !':'.'}`);c.jeu(k,t);clack();
   CB.f=Math.min(CB.f,CB.main.length);CB.sel=null;majUnites();dessinerMain();finSiFini()}
 function finTour(){CB.busy=true;CB.sel=null;CB.defausse.push(...CB.main);CB.main=[];dessinerMain();
@@ -115,7 +118,8 @@ const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
 function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
-  const retour=` Réserve : ${S.res} mana.`;
+  let gain='';if(ok){const t=ZMANA[Z.id],n=C.kind==='eveil'?2:1;gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
+  const retour=`${gain} Réserve : ${resTexte()}.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
     ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3).${retour} À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
       back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
@@ -129,7 +133,7 @@ function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
   const plein=S.deck.length>=PAQUET_MAX;save();sfx('hit');
   ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${plein?'Votre paquet de combat est plein ('+PAQUET_MAX+' cartes).':'Choisissez une carte à ajouter à votre paquet de combat.'}${retour}${S.act[Z.id]?'':' Activez la zone à sa Pierre d\'éveil pour que ses rencontres offrent sa carte.'}</p><div class="cartes">${offre.map(carteHTML).join('')}</div>`,
     back:toMonde,opts:[...offre.map(k=>({l:'Prendre « '+CK[k].nom()+' »',ic:'+',off:plein,go:()=>{S.deck.push(k);save();toMonde()}})),{l:'Ne rien prendre',ic:'◆',go:toMonde}]})}
-function fuir(){const C=CB;fermerCombat();toMonde();toast('Fuite',C.kind==='renc'?'Vous semez les créatures':'Les gardiens attendront',`Réserve : ${S.res} mana.`)}
+function fuir(){const C=CB;fermerCombat();toMonde();toast('Fuite',C.kind==='renc'?'Vous semez les créatures':'Les gardiens attendront',`Réserve : ${resTexte()}.`)}
 function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas ; le mana déjà dépensé est perdu. Les gardiens d\'une Pierre attendront votre retour.</p>',
   back:reprendreCombat,opts:[{l:'Continuer le combat',ic:'▲',go:reprendreCombat},{l:'Fuir',ic:'◆',go:fuir}]})}
 function reprendreCombat(){closeUI();mode='combat'}
@@ -146,7 +150,7 @@ function cbInput(a,rep){const C=CB;if(!C)return;
   else if(a==='down'){C.f=C.main.length;tick();dessinerMain()}
   else if(a==='up'&&C.f===C.main.length&&C.main.length){C.f=0;tick();dessinerMain()}
   else if(a==='ok'&&!rep){if(C.f===C.main.length){clack();finTour();return}
-    const k=C.main[C.f],c=CK[k];if(c.cout>dispo()){sfx('miss');journal(c.cout>S.res?'Réserve de mana vide pour « '+c.nom()+' ».':'Capacité de dépense atteinte ce tour pour « '+c.nom()+' ».');return}
+    const k=C.main[C.f],c=CK[k];if(!jouable(k)){sfx('miss');journal(c.cout>dispo()?'Capacité de dépense atteinte ce tour pour « '+c.nom()+' ».':'Pas assez de mana '+(mtype(k)||'')+' en réserve pour « '+c.nom()+' ».');return}
     if(c.cible){const v=vivants(C.foes);if(v.length>1){C.sel='cible';C.ti=0;dessinerMain();majUnites();journal('Choisissez la cible avec ◀ ▶, puis OK.');return}jouer(C.f,v[0])}
     else jouer(C.f)}}
 
@@ -165,12 +169,12 @@ function majUnites(){if(!CB)return;const v=vivants(CB.foes);
     if(u.bete)e.querySelector('.int').textContent='⚔ '+u.atk+' à chaque tour';
     else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}`:''}
     e.classList.toggle('vise',!!CB.sel&&u===v[CB.ti])}
-  const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">réserve ${S.res}</span>`;
+  const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">${resHTML()}</span>`;
   $('cb-piles').innerHTML=`<span>Pioche <b>${CB.pile.length}</b></span><span>Défausse <b>${CB.defausse.length}</b></span><span>Tour <b>${CB.tour}</b></span>`}
-function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" style="${z?'--kcA:'+rgba(ZCOL[z],.3)+';--kcB:'+rgba(ZCOL[z],.75):''}"><div class="co">${c.cout}</div><div class="cn">${c.nom()}</div><div class="ct">${c.txt(k)}</div><div class="cz">${z?TYPE[z].kind+' · '+ZCOURT[z]:'Base'}</div></div>`}
+function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" style="${z?'--kcA:'+rgba(ZCOL[z],.3)+';--kcB:'+rgba(ZCOL[z],.75):''}"><div class="co" style="${mtype(k)?'background:'+MCOL[mtype(k)]+';color:#111':''}">${c.cout}</div><div class="cn">${c.nom()}</div><div class="ct">${c.txt(k)}</div><div class="cz">${z?TYPE[z].kind+' · '+ZCOURT[z]+' · '+ZMANA[z]:'Commune · tout mana'}</div></div>`}
 function dessinerMain(){const C=CB;if(!C)return;const h=$('cb-main');
   h.innerHTML=C.main.map(carteHTML).join('')+`<div class="cc fin"><div class="cn">Fin du tour</div><div class="ct">Les bêtes frappent, puis les monstres agissent.</div></div>`;
-  [...h.children].forEach((d,i)=>{d.classList.toggle('f',i===C.f&&!C.busy);if(i<C.main.length&&CK[C.main[i]].cout>dispo())d.classList.add('off');if(C.sel&&i===C.f)d.classList.add('choisie')});
+  [...h.children].forEach((d,i)=>{d.classList.toggle('f',i===C.f&&!C.busy);if(i<C.main.length&&!jouable(C.main[i]))d.classList.add('off');if(C.sel&&i===C.f)d.classList.add('choisie')});
   $('cb-aide').textContent=C.busy?'Les créatures agissent…':C.sel?'◀ ▶ choisir la cible · OK frapper · ▼ annuler':'◀ ▶ choisir une carte · OK jouer · ▼ fin du tour · Retour pause';majUnites()}
 function journal(t){const j=$('cb-log');j.textContent=t;j.classList.remove('neuf');void j.offsetWidth;j.classList.add('neuf')}
 
