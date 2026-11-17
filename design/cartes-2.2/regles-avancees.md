@@ -35,6 +35,20 @@ Le royaume donne des **passifs de combat**, dans l'esprit des artefacts de Monst
 - **Gardiens mortels.** Si une zone dépasse de 5 niveaux ou plus la plus haute de vos zones, ses gardiens ont 3 fois leurs PV et 2 fois leur attaque. La mort est alors assurée sans un royaume développé.
 - **À venir :** les remparts posent un bloqueur au début du combat. Traverser une zone en restant sur une route évite les rencontres, sauf dans une Citadelle ou sur un rempart actif que l'on ne possède pas.
 
+## 1 quinquies. Le Nœud, les remparts et le prototype de blessures (17 nov.)
+
+- **Le Nœud** (le champ de bataille choisi par l'utilisateur, 7 tuiles). De chaque côté, il y a deux losanges (voie haute et voie basse) et un hexagone (le héros, ou le chef). Le décagone de la zone est au centre.
+  - Un coup ennemi frappe la Garde, qui couvre les deux voies. Sans Garde, il frappe la première unité de sa voie. Si la voie est vide, il frappe le héros.
+  - Le chef change de voie à chaque tour.
+  - Le centre appartient au camp qui a au moins autant d'unités sur le terrain que l'autre. Le héros qui le tient frappe à +2, avec ses bêtes. L'ennemi qui le tient frappe à +1.
+- **Remparts.** Ils naissent de deux Citadelles, ou d'une Citadelle et d'un Donjon, possédées et voisines. Chaque rempart pose un bloqueur de 10 PV au début des combats dans ses zones et dans les zones voisines, 2 au plus. Un rempart adverse actif annule l'abri des chemins.
+- **Prototype : blessures façon Shadowrun.** C'est une option du menu, activée par défaut pour le test.
+  - Le héros a un moniteur de 10 cases, plus 2 par Citadelle.
+  - Le niveau d'un coup ennemi dépend de sa puissance : 1 à 4 donne L (1 case), 5 à 8 donne M (3 cases), 9 à 14 donne S (6 cases), 15 et plus donne D (10 cases). Une frappe forte monte d'un niveau.
+  - La protection est la résistance plus les PV de la Garde. Si elle atteint la puissance, le niveau baisse d'un cran. Si elle atteint le double, le coup ne blesse pas.
+  - Toutes les 3 cases remplies, le héros perd 1 de capacité de dépense.
+  - En simulation, un jeu naïf perd 6 combats sur 50, contre 0 sur 50 avec les PV.
+
 ## 2. D'où viennent les cartes
 
 | Sorte | Comment on l'obtient | Combien | Mana |

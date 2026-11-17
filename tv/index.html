@@ -1283,7 +1283,7 @@ const hesite=m=>{if(!m||m.pv<=0)return;const t=CB?CB.tour:0;
   if(m.chef&&m.hesT===t-1){if(m.int&&m.int.a==='c'){m.int={a:'a',v:m.atk,ic:'⚔',t:'attaque'};pop(m,'perd son élan','g')}else pop(m,'s\'habitue','g');m.hesT=-9;return}
   m.hesT=t;m.int={a:'h',v:0,ic:'?',t:'hésite'};pop(m,'hésite','g')};
 const tous=()=>vivants(CB.foes);
-const perdPV=n=>{CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');majUnites()};
+const perdPV=n=>{if(CB.sr)n=Math.max(1,Math.ceil(n/3));CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');majUnites()};
 const bete2=(nom,pv,atk)=>({nom,pv,max:pv,atk,g:0,bete:1});
 /* chaque entrée : [nom, coût, cible, texte(L,x), jeu(L,x,t)] */
 const POLES={
@@ -8985,6 +8985,17 @@ const pvMax=()=>30+zonesA('CIT').reduce((a,Z)=>a+6+2*Lz(Z.id),0);
 const niveauRoyaume=()=>ZN.reduce((a,Z)=>S.own[Z.id]?Math.max(a,Lz(Z.id)):a,0);
 /* « à +5 de différence, la mort doit être assurée » : écart entre la zone et la plus haute de vos zones */
 const ecartZone=Z=>Lz(Z.id)-niveauRoyaume();
+/* Prototype « blessures façon Shadowrun » (17 nov., à tester ; option du menu, S.sr) : le héros a un moniteur de 10 cases (+2 par Citadelle).
+   Un coup ennemi a un code puissance + niveau (L 1 case, M 3, S 6, D 10) : puissance 1-4 L, 5-8 M, 9-14 S, 15+ D ; une frappe forte monte d'un niveau.
+   Protection = résistance (Donjons) + PV de la Garde encore debout : si elle atteint la puissance, le niveau baisse d'un cran ; le double, aucune blessure.
+   Toutes les 3 cases remplies : −1 de capacité de dépense. */
+const SR_CASES=[0,1,3,6,10],SR_NOM=['—','L','M','S','D'];
+const srActif=()=>S.sr!==false;
+function srNiveau(p,fort){let l=p>=15?4:p>=9?3:p>=5?2:1;if(fort)l=Math.min(4,l+1);return l}
+function srBlesse(h,p,src){const fort=src&&src.int&&src.int.a==='f',G=gardeU(),prot=(h.res||0)+(G?G.pv:0);let l=srNiveau(p,fort);
+  if(prot>=2*p)l=0;else if(prot>=p)l--;const c=SR_CASES[l];h.pv=Math.max(0,h.pv-c);
+  pop(h,l?p+SR_NOM[l]+' −'+c:'protégé',l?'deg':'g');journal(`Coup ${p}${SR_NOM[srNiveau(p,fort)]}${l<srNiveau(p,fort)?' ramené à '+SR_NOM[l]+' par la protection':''} : ${c} case${c>1?'s':''}.`);return c}
+const srMalus=()=>CB&&CB.sr?Math.floor((CB.hero.max-CB.hero.pv)/3):0;
 function remparts(){if(typeof VOISINES==='undefined')return[];const t=Z=>Z.mod||Z.id,ok=Z=>S.own[Z.id]&&S.act[Z.id],out=[];
   for(const A of ZN)if(ok(A)&&t(A)==='CIT')for(const v of VOISINES[A.id]||[]){const B=ZB[v];if(B&&ok(B)&&(t(B)==='DON'||(t(B)==='CIT'&&A.id<B.id)))out.push([A.id,B.id])}return out}
 
@@ -8999,8 +9010,8 @@ const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()
 function startCombat(Z,kind){
   const foes=kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
     :Array.from({length:Lz(Z.id)>=3?3:2},()=>monstre(Z,Math.floor(Math.random()*2)));
-  const hero={nom:'Le héros',pv:pvMax(),max:pvMax(),g:0,hero:1};
-  CB={Z,kind,foes,hero,allies:[hero],pile:melange(S.deck.filter(k=>typeof eveillee!=='function'||eveillee(k))),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
+  const sr=srActif(),mx=sr?10+2*zonesA('CIT').length:pvMax(),hero={nom:'Le héros',pv:mx,max:mx,g:0,hero:1};
+  CB={sr,Z,kind,foes,hero,allies:[hero],pile:melange(S.deck.filter(k=>typeof eveillee!=='function'||eveillee(k))),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
   mode='combat';closeUI();document.body.classList.add('jeu-ouvert');$('toast').classList.remove('vu');toastT=0;
   const H=$('combat');H.hidden=false;H.style.setProperty('--zcA',rgba(ZCOL[Z.id],.22));
   $('cb-sur').textContent=(kind==='eveil'?'Activation · les gardiens de la Pierre':'Rencontre')+' · '+Z.info.sur.split(' · ')[0]+' niveau '+(sgn(S.lv[Z.id])||'0');
@@ -9024,7 +9035,7 @@ function startCombat(Z,kind){
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
-function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;eroderGarde();CB.riposte=0;CB.echo=false;CB.nrecup=0;CB.nJoues=0;if(typeof atoutsDebutTour==='function')atoutsDebutTour();CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
+function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;eroderGarde();CB.riposte=0;CB.echo=false;CB.nrecup=0;CB.nJoues=0;if(typeof atoutsDebutTour==='function')atoutsDebutTour();CB.mana=CB.capT=Math.max(1,CB.tour-srMalus());if(srMalus())journal('Blessures : −'+srMalus()+' de capacité ce tour.');   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
@@ -9044,12 +9055,12 @@ function finSiFini(){if(!CB)return false;
 
 /* ---------- Effets ---------- */
 function pop(u,txt,cls){if(!u.el)return;const s=document.createElement('span');s.className='pop '+(cls||'');s.textContent=txt;u.el.appendChild(s);setTimeout(()=>s.remove(),1000)}
-function frappe(u,n,src){if(!u||u.pv<=0)return 0;if(CB&&n>0&&CB.centre){const ennemi=CB.foes.indexOf(u)>=0;if(ennemi&&CB.centre==='heros'&&(!src||src.bete||src.hero))n+=2;else if(!ennemi&&CB.centre==='ennemi'&&src&&CB.foes.indexOf(src)>=0)n+=1}if(u.hero&&u.res&&src&&src!==u&&n>0)n=Math.max(1,n-u.res);if(CB&&CB.gris&&!src)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u.vul&&n>0)n+=u.vul;const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
+function frappe(u,n,src){if(!u||u.pv<=0)return 0;if(CB&&CB.sr&&u.hero&&src&&CB.foes.indexOf(src)>=0&&n>0){srBlesse(u,n,src);if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}majUnites();return n}if(CB&&n>0&&CB.centre){const ennemi=CB.foes.indexOf(u)>=0;if(ennemi&&CB.centre==='heros'&&(!src||src.bete||src.hero))n+=2;else if(!ennemi&&CB.centre==='ennemi'&&src&&CB.foes.indexOf(src)>=0)n+=1}if(u.hero&&u.res&&src&&src!==u&&n>0)n=Math.max(1,n-u.res);if(CB&&CB.gris&&!src)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u.vul&&n>0)n+=u.vul;const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
   pop(u,n>0?'−'+n:'garde',n>0?'deg':'g');if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}
   if(AX&&soundOn)n>0?perc(AX.currentTime,'t',.9):note(AX.currentTime,523,SIN,.2,.07);
   if(u.pv<=0){journal(u.nom+(u.hero?' tombe.':u.garde?' cède.':u.mur?' est brisé.':' est vaincu.'));if(u.bete||u.garde){CB.allies.splice(CB.allies.indexOf(u),1);const e=u.el;if(e){e.classList.add('mort');e.querySelector('.bar i').style.width='0%'}setTimeout(()=>e&&e.remove(),900)}}majUnites();return n}
 function garder(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u&&u.hero&&CB){leverGarde(n);return}u.g+=n;pop(u,'+'+n+' garde','g');majUnites()}
-function soigner(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));const a=Math.min(n,u.max-u.pv);u.pv+=a;pop(u,'+'+a,'soin');majUnites()}
+function soigner(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(CB&&CB.sr&&u.hero)n=Math.max(1,Math.ceil(n/3));const a=Math.min(n,u.max-u.pv);u.pv+=a;pop(u,'+'+a,'soin');majUnites()}
 function invoquer(b){if(b.voie==null){const n0=CB.allies.filter(u=>u.bete&&u.pv>0&&u.voie===0).length,n1=CB.allies.filter(u=>u.bete&&u.pv>0&&u.voie===1).length;b.voie=n1<n0?1:0}const nb=CB.allies.filter(u=>u.bete).length;if(nb>=3){const w=CB.allies.filter(u=>u.bete).sort((p,q)=>p.pv-q.pv)[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove()}
   CB.allies.push(b);uniteEl(b,'cb-allies');pop(b,'arrive','soin');journal(b.nom+' rejoint le combat et encaisse les coups à la place du héros.')}
 /* Terrain (17 nov., « bloqueurs sur le terrain », esprit Magic et Monster Train) : les coups visent d'abord la Garde,
@@ -9142,7 +9153,7 @@ function placerNoeud(){if(!CB)return;
     else{if(u.chef)pose(u,'3','1 / 3');else{const i=n[u.voie||0]++;pose(u,String(Math.min(2,1+i)),String((u.voie||0)+1))}}}}}
 function majUnites(){if(!CB)return;const v=vivants(CB.foes);majCentre();placerNoeud();
   for(const u of[...CB.foes,...CB.allies]){const e=u.el;if(!e)continue;e.classList.toggle('mort',u.pv<=0);
-    e.querySelector('.bar i').style.width=(100*u.pv/u.max)+'%';e.querySelector('.bar span').textContent=u.pv+' / '+u.max;
+    e.querySelector('.bar i').style.width=(100*u.pv/u.max)+'%';e.querySelector('.bar span').textContent=CB.sr&&u.hero?`Blessures ${u.max-u.pv} / ${u.max}${srMalus()?' · −'+srMalus():''}`:u.pv+' / '+u.max;
     const g=e.querySelector('.gd');g.textContent=u.g>0?'⛨ '+u.g:'';
     if(u.garde)e.querySelector('.int').textContent='⛨ prend les coups, s\'effrite de moitié';else if(u.mur)e.querySelector('.int').textContent='⛨ bloqueur'+(u.epine?' · renvoie '+u.epine:'');else if(u.bete)e.querySelector('.int').textContent='⚔ '+u.atk+' à chaque tour';
     else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}`:''}
@@ -10372,6 +10383,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Grimoire des cartes',ic:'✦',d:'toutes les cartes, pôle par pôle',go:()=>openGrimoire(0)},
     {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+resTot()+' mana',go:openCombatPaquet},
     {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
+    {l:'Blessures (prototype)',ic:'✚',d:S.sr===false?'Points de vie':'Façon Shadowrun : L, M, S, D',go:()=>{S.sr=S.sr===false;save();openMenu(UI.f)}},
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
     {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},

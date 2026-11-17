@@ -211,6 +211,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Grimoire des cartes',ic:'✦',d:'toutes les cartes, pôle par pôle',go:()=>openGrimoire(0)},
     {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+resTot()+' mana',go:openCombatPaquet},
     {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
+    {l:'Blessures (prototype)',ic:'✚',d:S.sr===false?'Points de vie':'Façon Shadowrun : L, M, S, D',go:()=>{S.sr=S.sr===false;save();openMenu(UI.f)}},
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
     {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
