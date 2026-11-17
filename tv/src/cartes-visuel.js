@@ -13,7 +13,7 @@ const VMANA={Feu:['#b5482a','#f0a060','#3a1a12'],Glace:['#6f9bb0','#e4f1f4','#1d
   'Sève':['#4f7f3a','#d9b22e','#1f3a1c'],Pierre:['#7a6450','#c99a5a','#2a2420'],Vent:['#5b7896','#e2d8c0','#28323e']};
 /* accents de pôle par zone [−, +] et culture des zones d'origine (brief de direction artistique) ; les autres zones dérivent leurs accents du mana */
 const ZACC={CIT:['#b9b4e0','#c2412f'],DON:['#3f9e7a','#ff9a3c'],ANT:['#c8f25a','#ff9f86'],MAR:['#b9b3d6','#2fb7d6'],RES:['#5cc6c0','#5cc6c0'],
-  DON045:['#7b5fb0','#f1efe6'],DON024:['#2a8a8a','#2f56b0'],ASS152:['#d9c7a0','#ff7a2a'],ASS155:['#c07a5a','#5fd0c0'],ANT120:['#9fd3e6','#e8562a'],
+  DON045:['#7b5fb0','#f2c94c'],DON024:['#2a8a8a','#2f56b0'],ASS152:['#d9c7a0','#ff7a2a'],ASS155:['#c07a5a','#5fd0c0'],ANT120:['#9fd3e6','#e8562a'],
   ASS012:['#e07a3a','#7ac25a'],ASS006:['#8a2f6a','#4f7aa0'],ASS150:['#b08a4a','#3a8fd0'],RES227:['#d23a1f','#d23a1f'],RES079:['#c99a5a','#c99a5a'],
   RES374:['#9fd3e6','#9fd3e6'],RES122:['#2fb0b0','#2fb0b0'],RES021:['#d9b22e','#d9b22e'],RES212:['#c9b56a','#c9b56a'],RES345:['#e08a3a','#e08a3a'],RES136:['#3a7a9a','#3a7a9a']};
 const ZCULT={DON:'chinoise impériale'};
@@ -105,7 +105,7 @@ const EMBT={CIT:'<path d="M1 10V4h2v2h2V4h2v2h2V4h2v6z"/>',DON:'<rect x="2" y="2
   RES:'<path d="M6 11V3M6 5q-3-1-3-4q3 1 3 4M6 5q3-1 3-4q-3 1-3 4M6 8q-3-1-3-3q3 0 3 3M6 8q3-1 3-3q-3 0-3 3" stroke-width="1" fill="none"/>',
   ANT:'<path d="M1 6q5-5 10 0q-5 5-10 0z"/><circle cx="6" cy="6" r="1.6" fill="#000"/>',MAR:[0,1,2,3,4].map(i=>`<circle cx="${(6+Math.cos(i*1.2566-1.57)*3.6).toFixed(1)}" cy="${(6+Math.sin(i*1.2566-1.57)*3.6).toFixed(1)}" r="1.3"/>`).join('')};
 /* ---------- Élément secondaire propre à chaque pôle : le mot du pôle se voit dans la scène ---------- */
-function effetPole(w,c,r,L){const k=sansAcc(w||''),n=L>=4?14:8,pts=()=>Array.from({length:n},()=>[r()*160,6+r()*70]);
+function effetPole(w,c,r,L){const k=sansAcc(w||''),n=L>=6?20:L>=4?13:L>=2?7:4,pts=()=>Array.from({length:n},()=>[r()*160,6+r()*70]);
   const sc=(fn)=>pts().map(([x,y])=>fn(f1(x),f1(y))).join('');const A=c.fx;
   const T={oubli:()=>sc((x,y)=>`<circle cx="${x}" cy="${y}" r="2.2" fill="#fff" opacity=".85"/>`)+`<path d="M0 100 L0 86 Q80 70 160 86 L160 100Z" fill="#f4f2fb" opacity=".9"/>`,
     memoire:()=>sc((x,y)=>`<path d="M${x} ${y} l3 -3 l3 3 M${x} ${+y+4} h6" stroke="${A}" stroke-width="1.4" fill="none"/>`),
@@ -189,15 +189,14 @@ function paliers(n,max,coul){return`<div class="kpal" style="--pc:${coul}">${Arr
 function scene(P,uid){const r=rng(P.id+'|'+P.pole),[m,l,d]=P.m,a=P.acc,bk=bkey(P.biome),B=BIO[bk]||BIO.collines,neg=P.pole==='neg';
   const c={loin:mix(a,d,.45),mi:mix(m,a,.4),pres:mix(d,a,.22),acc:mix(a,'#ffffff',.45),eau:mix(m,a,.35),emb:mix(d,a,.2),embL:mix(a,'#ffffff',.35),mid:mix(d,'#000000',.4),feu:mix(a,'#fff3c0',.5),fx:mix(a,'#ffffff',.15)};
   const x=58+r()*44,mon=(MON_C[ckeyL(P.cult)]||MON_C.girih)(c);
-  const sc=P.ult?1.18:P.mod==='RES'?.9+.08*Math.min(3,P.L):1;
+  const sc=P.ult?1.42:P.mod==='RES'?1.12+.08*Math.min(3,P.L):1.3;
   const tex=neg?`<defs><pattern id="vh${uid}" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path d="M0 0 V3" stroke="${d}" stroke-opacity=".28" stroke-width="1"/></pattern></defs><rect width="160" height="100" fill="url(#vh${uid})"/>`
     :`<rect width="160" height="100" fill="url(#mz-girih)" opacity=".3"/>`;
   const rayons=P.ult?`<g opacity=".55">${Array.from({length:18},(_,i)=>{const t=i*PI/9;return`<path d="M${f1(x)} 52 L${f1(x+Math.cos(t)*120)} ${f1(52+Math.sin(t)*120)} L${f1(x+Math.cos(t+.08)*120)} ${f1(52+Math.sin(t+.08)*120)}Z" fill="${l}"/>`}).join('')}</g>`:'';
   const frise=P.ult?`<rect x="2" y="2" width="156" height="96" fill="none" stroke="${l}" stroke-width="3" stroke-dasharray="6 3 2 3"/><rect width="160" height="100" fill="url(#mz-girih)" opacity=".9"/>`:'';
-  const halo=P.L>=6?`<ellipse cx="${f1(x)}" cy="56" rx="38" ry="30" fill="${a}" opacity=".35" filter="url(#mz-flou)"/>`:'';
+  const halo=P.L>=4?`<ellipse cx="${f1(x)}" cy="56" rx="38" ry="30" fill="${P.L>=6?'#ffffff':a}" opacity="${P.L>=6?.45:.35}" filter="url(#mz-flou)"/>`:'';
   const pw=P.mod==='RES'?'':P.pole==='neg'?P.pm:P.pole==='pos'?P.pp:'';
-  return ciel(P,r,uid)+rayons+B.loin(r,c)+halo+`<g transform="translate(${f1(x)} ${f1(82-82*sc)}) scale(${sc})">${mon}</g>`+B.pres(r,c)+(P.L>=2||P.mod==='RES'?effetPole(pw,c,r,P.L):'')+tex+frise+
-    `<g transform="translate(146 4)" fill="${c.embL}" stroke="${c.embL}" opacity=".9"><rect x="-1" y="-1" width="14" height="14" rx="3" fill="${d}" stroke="none" opacity=".7"/><g>${EMBT[P.mod]||''}</g></g>`}
+  return ciel(P,r,uid)+rayons+B.loin(r,c)+halo+`<g transform="translate(${f1(x)} ${f1(90-82*sc)}) scale(${sc})" stroke="${mix(d,'#000000',.5)}" stroke-width="1.1" stroke-linejoin="round" paint-order="stroke">${mon}</g>`+B.pres(r,c)+effetPole(pw,c,r,P.L)+tex+frise}
 
 /* ---------- Illustration d'une carte de secret : dessin au trait sur papier kraft, objet trouvé au centre ---------- */
 function sceneSecret(c,P,uid){const r=rng(String(c.secret||uid)),bk=P?bkey(P.biome):'collines',B=BIO[bk]||BIO.collines,ink='#2a1f1a';
@@ -205,7 +204,7 @@ function sceneSecret(c,P,uid){const r=rng(String(c.secret||uid)),bk=P?bkey(P.bio
   const obj=['<path d="M-12 0 a7 7 0 1 0 0 .1 M-5 0 H16 M10 0 v6 M14 0 v4" fill="none"/>','<path d="M-14 -10 h28 v20 h-28z M-14 -10 l14 10 l14 -10" fill="none"/>',
    '<path d="M-5 -14 h10 M-3 -14 v8 q-9 4 -9 12 a12 9 0 0 0 24 0 q0 -8 -9 -12 v-8" fill="none"/>','<path d="M-14 -12 h20 l8 8 v18 h-28z M6 -12 v8 h8 M-9 -2 h16 M-9 4 h16" fill="none"/>'][hsh(c.secret||uid)%4];
   return`<rect width="160" height="100" fill="#c9a77a"/>${B.loin(r,enc)}${B.pres(r,enc)}
-   <g transform="translate(80 52)" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${obj}</g>
+   <g transform="translate(80 52) scale(2.3)" stroke="${ink}" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round">${obj}</g>
    <g transform="translate(140 6)" stroke="${ink}" stroke-width="1.4" fill="none"><circle cx="5" cy="5" r="4.5"/><path d="M8.5 8.5 L13 13"/></g>`}
 
 /* ---------- Rendu public ---------- */
@@ -226,7 +225,7 @@ window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
   return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid)}</svg>`};
 
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
-const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>300?' t5':n>220?' t4':n>150?' t3':n>95?' t2':n>60?' t1':''};
+const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>290?' t5':n>210?' t4':n>140?' t3':n>85?' t2':n>45?' t1':''};
 window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,uid='h'+(uidN++),txt=c.txt(k),lg=longueur(txt);
   const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
   const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">${amb}</div>`:'';
@@ -249,7 +248,7 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
   const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
   return`<div class="${cls}" style="--kb:${V[0]};--kl:${V[1]};--kd:${V[2]};--kcA:${rgba(V[0],.28)};--kcB:${rgba(V[0],.8)};--pc:${coulP}">
-   ${nP>=3||ult?coins(P.mana,V[1],nP):''}${coZ}${crest}<div class="art">${artCarte(k)}${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
+   ${nP>=5||ult?coins(P.mana,V[1],nP):''}${coZ}${crest}<div class="art">${artCarte(k)}${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
    <div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${txt}</div>${nP>=4&&!ult?bandeau(ckey(P.cult),V[1],uid+'b').replace('kband','kband bas'):''}${ambH}${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`};
 
 /* ---------- CSS propre au visuel 2.2 ---------- */
@@ -276,9 +275,9 @@ const css=document.createElement('style');css.textContent=`
 .kblason svg{width:72%;height:72%}
 .kblason.neg{border-radius:0 0 50% 50%/0 0 60% 60%;clip-path:polygon(0 0,100% 0,100% 60%,50% 100%,0 60%)}
 .kblason.pos{border-radius:50%;box-shadow:0 0 0 2px var(--kd),0 0 12px var(--kcB)}
-.kpal{position:absolute;left:calc(var(--u)*.3);top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*.22)}
-.kpal i{width:calc(var(--u)*.55);height:calc(var(--u)*.55);transform:rotate(45deg);border:1px solid var(--pc);background:rgba(0,0,0,.55)}
-.kpal i.on{background:var(--pc);box-shadow:0 0 6px var(--pc)}
+.kpal{position:absolute;left:0;top:0;bottom:0;width:calc(var(--u)*1.25);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:calc(var(--u)*.2);background:rgba(8,7,10,.6)}
+.kpal i{width:calc(var(--u)*.6);height:calc(var(--u)*.6);transform:rotate(45deg);border:1px solid rgba(255,255,255,.35);background:transparent}
+.kpal i.on{background:var(--pc);border:1.5px solid #fff;box-shadow:0 0 6px var(--pc)}
 .kamb{display:none;font-family:var(--titre);font-style:italic;font-size:calc(var(--u)*.78);line-height:1.2;text-align:center;color:var(--sable);opacity:.85;padding:.25em .3em 0}
 .boite .kamb{display:block}
 /* forme ultime (±7) */
@@ -289,12 +288,12 @@ const css=document.createElement('style');css.textContent=`
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
 @keyframes kult{to{--ang:360deg}}
 @keyframes kpuls{50%{box-shadow:0 0 12px var(--pc),0 0 2px #fff}}
-.kresos{align-self:center;display:flex;align-items:center;gap:0;margin:calc(var(--u)*-.75) 0 calc(var(--u)*-.2);z-index:2;padding:calc(var(--u)*.15) calc(var(--u)*.3);border-radius:2em;background:#0d0b0f;border:1.5px solid var(--kl)}
+.kresos{align-self:center;display:flex;align-items:center;gap:0;margin:calc(var(--u)*.15) 0 0;z-index:2;padding:calc(var(--u)*.15) calc(var(--u)*.3);border-radius:2em;background:#0d0b0f;border:1.5px solid var(--kl)}
 .kresos b{width:calc(var(--u)*.7);height:2px;background:var(--kl)}
 .kband.vide{height:calc(var(--u)*.55);margin-top:calc(var(--u)*.2)}
 .kband.bas{margin:calc(var(--u)*.2) 0 0;opacity:.6}
-.cc.kcarte .co.neg{box-shadow:-3px 0 0 0 var(--pc),0 0 0 2px var(--mc,#c9a45c),0 4px 10px rgba(0,0,0,.6),inset 0 -4px 8px rgba(0,0,0,.35)}
-.cc.kcarte .co.pos{box-shadow:3px 0 0 0 var(--pc),0 0 0 2px var(--mc,#c9a45c),0 4px 10px rgba(0,0,0,.6),inset 0 -4px 8px rgba(0,0,0,.35)}
+.cc.kcarte .co.neg{box-shadow:-5px 0 0 0 var(--pc),0 0 0 2px var(--mc,#c9a45c),0 4px 10px rgba(0,0,0,.6),inset 0 -4px 8px rgba(0,0,0,.35)}
+.cc.kcarte .co.pos{box-shadow:5px 0 0 0 var(--pc),0 0 0 2px var(--mc,#c9a45c),0 4px 10px rgba(0,0,0,.6),inset 0 -4px 8px rgba(0,0,0,.35)}
 .cc.kcarte.L6 .cn{font-variant:small-caps;letter-spacing:.06em}
 .cc.kcarte.L5,.cc.kcarte.L6{border-color:var(--pc)}
 .kres{width:calc(var(--u)*1.6);height:calc(var(--u)*1.6);display:grid;place-items:center;border-radius:50%;color:var(--rc);background:rgba(8,7,10,.8);border:1.5px solid var(--rc)}
@@ -329,5 +328,10 @@ const css=document.createElement('style');css.textContent=`
 .boite .cc.kcarte{height:auto;min-height:calc(var(--u)*15.8)}
 .boite .cc.kcarte .art{height:calc(var(--u)*6.4)}
 .boite .cc.kcarte .ct{font-size:calc(var(--u)*.88);line-height:1.26;overflow:visible}
+.cc.kcarte .kgris{bottom:auto;top:calc(var(--u)*-1.5);z-index:3}
+.cc.kcarte.ultime .kamb{display:none}
+.cc.kcarte.ultime.t3 .art,.cc.kcarte.ultime.t4 .art,.cc.kcarte.ultime.t5 .art{height:calc(var(--u)*4.6)}
+.cc.kcarte .ksceau{bottom:calc(var(--u)*-.9);right:calc(var(--u)*-.9)}
+.cc.kcarte .cn{font-style:normal}.cc.kcarte.p-neg .cn{font-style:normal}
 `;document.head.appendChild(css);
 })();
