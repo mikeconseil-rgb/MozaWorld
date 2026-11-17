@@ -165,6 +165,94 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 .boite .cc{width:auto;min-height:0}
 .boite .cc .co{top:calc(var(--u)*.6);left:auto;right:calc(var(--u)*.6);width:calc(var(--u)*2);height:calc(var(--u)*2);font-size:calc(var(--u)*1.3)}
 @media (prefers-reduced-motion:reduce){.hud,.toast,.ecran,.pip,.opt{transition:none}}
+.mana-p{display:inline-grid;place-items:center;min-width:1.5em;height:1.5em;border-radius:50%;background:var(--mc);color:#111;font-weight:600;font-size:.85em;vertical-align:middle}
+
+/* ===== Habillage du combat (17 nov.) : décor peint par zone, alliés à gauche et monstres à droite, vraies cartes illustrées ===== */
+#combat{display:grid;grid-template-columns:.8fr 1.2fr;grid-template-rows:auto auto 1fr auto auto;grid-template-areas:"tete tete" "log log" "allies foes" "bas bas" "aide aide";
+  gap:calc(var(--u)*.4) calc(var(--u)*2);background:#0d0c0f;padding:calc(var(--my)*.7) var(--mx) calc(var(--my)*.6)}
+#cb-decor{position:absolute;inset:0;z-index:-1;pointer-events:none}
+#cb-decor svg{width:100%;height:100%;display:block}
+#combat::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(13,12,15,.55),transparent 18%,transparent 55%,rgba(13,12,15,.92) 74%)}
+.cb-tete{grid-area:tete}
+.cb-tete .sur{font-size:calc(var(--u)*.85)}
+.cb-tete h2{font-size:calc(var(--u)*2.1);text-shadow:0 2px 16px #000}
+#cb-foes{grid-area:foes;justify-content:space-evenly;align-items:center;padding-bottom:calc(var(--u)*1.5);gap:calc(var(--u)*1)}
+#cb-allies{grid-area:allies;justify-content:center;align-items:center;padding-bottom:calc(var(--u)*1.5);gap:calc(var(--u)*.6);min-height:0;flex-direction:row-reverse}
+.cb-log{grid-area:log;font-size:calc(var(--u)*1.3);text-shadow:0 1px 10px #000;min-height:1.3em}
+.cb-bas{grid-area:bas;grid-template-columns:calc(var(--u)*9.5) 1fr calc(var(--u)*7.5);gap:calc(var(--u)*1);align-items:end}
+.cb-aide{grid-area:aide;font-size:calc(var(--u)*.95)}
+.cb-aide::before{content:"";display:block;height:1px;margin:0 auto calc(var(--u)*.5);width:40%;background:linear-gradient(90deg,transparent,rgba(201,164,92,.5),transparent)}
+
+/* Créatures : portrait peint, plaque de nom et de vie, intention en médaillon */
+.u{width:calc(var(--u)*12);display:flex;flex-direction:column;align-items:center}
+.u .por{position:relative;width:calc(var(--u)*10);height:calc(var(--u)*10)}
+.u .por svg,.u.chef .por svg{width:100%;height:100%;filter:drop-shadow(0 0 calc(var(--u)*.8) var(--ucg)) drop-shadow(0 8px 10px rgba(0,0,0,.7))}
+.u.chef{width:calc(var(--u)*13)}.u.chef .por{width:calc(var(--u)*12.5);height:calc(var(--u)*12.5)}
+.u.hero .por{width:calc(var(--u)*11);height:calc(var(--u)*11)}
+.u.bete{width:calc(var(--u)*9)}.u.bete .por{width:calc(var(--u)*8.5);height:calc(var(--u)*8.5)}
+.plaque{width:100%;box-sizing:border-box;margin-top:calc(var(--u)*-.6);padding:calc(var(--u)*.35) calc(var(--u)*.6) calc(var(--u)*.45);background:linear-gradient(180deg,rgba(26,22,28,.92),rgba(10,9,12,.95));
+  border:1px solid rgba(201,164,92,.45);border-radius:calc(var(--u)*.5);box-shadow:0 6px 18px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+.u .un{font-size:calc(var(--u)*1.1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u .bar{height:calc(var(--u)*1.35);margin:.3em 0 0;width:100%;border-radius:calc(var(--u)*.5);border-color:rgba(0,0,0,.6);background:rgba(0,0,0,.55)}
+.u .bar i{border-radius:inherit;background:linear-gradient(180deg,#e2675a,#8f2a22)}
+#cb-allies .u .bar i{background:linear-gradient(180deg,#9fd27e,#3f7a35)}
+.u .bar span{display:block;font-size:calc(var(--u)*.85);line-height:calc(var(--u)*1.35);font-weight:600}
+.u .gd{height:auto;min-height:1.3em;margin-top:.2em;font-size:calc(var(--u)*.95);color:#bfe0ff;text-shadow:0 1px 6px #000}
+.u .int{min-height:0;margin-bottom:calc(var(--u)*-.2);display:inline-flex;align-items:center;gap:.35em;padding:.2em .7em .2em .3em;border-radius:2em;background:rgba(10,9,12,.82);border:1px solid rgba(201,164,92,.5);
+  font-size:calc(var(--u)*.9);color:var(--ivoire);text-shadow:none;white-space:nowrap}
+.u .int:empty{visibility:hidden}
+.u .int b{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;border-radius:50%;background:var(--uc,#c9a45c);color:#120f10;font-family:var(--texte);font-size:1em;margin:0}
+#cb-allies .u .int{min-height:0;padding:.2em .7em;color:var(--sable)}
+.u.vise{transform:none}
+.u.vise .por{outline:none}
+.u.vise .por::after{content:"";position:absolute;left:8%;right:8%;bottom:2%;height:14%;border-radius:50%;border:3px solid var(--laiton2);box-shadow:0 0 18px var(--laiton2);animation:vise 1s ease-in-out infinite alternate}
+.u.vise .plaque{border-color:var(--laiton2);box-shadow:0 0 0 3px rgba(232,199,127,.3)}
+@keyframes vise{from{opacity:.55;transform:scale(.94)}to{opacity:1;transform:scale(1.04)}}
+.pop{top:25%;font-size:calc(var(--u)*2.8);-webkit-text-stroke:1px rgba(0,0,0,.6)}
+
+/* Mana du tour : gemmes */
+.cb-mana{min-width:0;padding:calc(var(--u)*.7) calc(var(--u)*.6);background:radial-gradient(ellipse at 50% 30%,rgba(201,164,92,.18),rgba(10,9,12,.88) 70%);border:1px solid rgba(201,164,92,.45);border-radius:calc(var(--u)*.6)}
+.cb-mana b{font-family:var(--texte);font-weight:500;font-size:calc(var(--u)*2.2)}
+.cb-piles b,.u .bar span{font-family:var(--texte)}
+.cb-mana .l{font-size:calc(var(--u)*.75);letter-spacing:.1em;text-align:center;line-height:1.7}
+.mp{flex-wrap:wrap;justify-content:center;max-width:calc(var(--u)*9)}
+.mp i{width:calc(var(--u)*1.1);height:calc(var(--u)*1.1);border:1px solid #f5dc9c;background:rgba(0,0,0,.4)}
+.mp i.on{background:linear-gradient(135deg,#fff3c8,#e8c77f 45%,#9c7834);box-shadow:0 0 12px rgba(232,199,127,.85)}
+.cb-piles{padding:calc(var(--u)*.6) calc(var(--u)*.8);background:rgba(10,9,12,.75);border:1px solid rgba(201,164,92,.3);border-radius:calc(var(--u)*.6)}
+
+/* Cartes : cadre, coût, illustration, nom, ligne de type, texte */
+#cb-main{gap:calc(var(--u)*.6);min-height:calc(var(--u)*16);min-width:0}
+.cc.kcarte{flex:0 1 calc(var(--u)*11);min-width:calc(var(--u)*8.5);width:calc(var(--u)*11);min-height:0;height:calc(var(--u)*15.8);padding:calc(var(--u)*.45);border:2px solid var(--kb);border-radius:calc(var(--u)*.8);
+  background:linear-gradient(165deg,var(--kcA),#0d0b0f 55%),#141116;box-shadow:0 10px 24px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.07),inset 0 0 0 calc(var(--u)*.3) rgba(0,0,0,.35)}
+.cc.kcarte .art{height:calc(var(--u)*6.4);border-radius:calc(var(--u)*.45);overflow:hidden;border:1px solid rgba(0,0,0,.7);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.cc.kcarte .art svg{width:100%;height:100%;display:block}
+.cc.kcarte .cn{margin:.35em 0 0;padding:.12em .3em;text-align:center;font-size:calc(var(--u)*1.12);line-height:1.08;border-radius:calc(var(--u)*.3);background:linear-gradient(90deg,transparent,rgba(0,0,0,.5),transparent)}
+.cc.kcarte .cz{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:.15em 0 .3em;text-align:center;font-size:calc(var(--u)*.68);letter-spacing:.14em;color:var(--kb);filter:brightness(1.35)}
+.cc.kcarte .ct{flex:1;padding:.4em .45em;font-size:calc(var(--u)*.92);line-height:1.3;text-align:center;border-radius:calc(var(--u)*.35);background:rgba(239,231,214,.06);border-top:1px solid rgba(255,255,255,.06)}
+.cc.kcarte .co{top:calc(var(--u)*-.9);left:calc(var(--u)*-.9);width:calc(var(--u)*2.6);height:calc(var(--u)*2.6);z-index:2;font-family:var(--texte);font-weight:600;font-size:calc(var(--u)*1.35);
+  background:radial-gradient(circle at 35% 30%,#fff7d8,var(--mc,#e8c77f) 45%);color:#141012;border:2px solid #120f10;box-shadow:0 0 0 2px var(--mc,#c9a45c),0 4px 10px rgba(0,0,0,.6),inset 0 -4px 8px rgba(0,0,0,.35)}
+.cc.kcarte.f{transform:translateY(calc(var(--u)*-1.4)) scale(1.08);border-color:#f5dc9c;box-shadow:0 0 0 3px rgba(245,220,156,.45),0 0 34px var(--kcB),0 18px 34px rgba(0,0,0,.7);z-index:3}
+.cc.kcarte.off{opacity:1;filter:saturate(.45) brightness(.7)}
+.cc.kcarte.choisie{transform:translateY(calc(var(--u)*-2)) scale(1.1);border-color:#fff}
+.cc.fin{flex:0 0 auto;width:calc(var(--u)*7.6);height:calc(var(--u)*7.6);min-height:0;align-self:center;border-radius:50%;border:2px solid rgba(201,164,92,.6);border-style:solid;
+  background:radial-gradient(circle at 50% 35%,rgba(201,164,92,.28),rgba(10,9,12,.92) 70%);padding:calc(var(--u)*.8);box-shadow:0 8px 20px rgba(0,0,0,.6)}
+.cc.fin .cn{font-size:calc(var(--u)*1.2);margin:0;line-height:1.05}
+.cc.fin .ct{display:none}
+.cc.fin.f{transform:scale(1.1);border-color:#f5dc9c;box-shadow:0 0 0 4px rgba(245,220,156,.3),0 0 30px rgba(232,199,127,.4)}
+/* cartes dans les menus (paquet, récompenses) */
+.boite .cartes{grid-template-columns:repeat(auto-fill,calc(var(--u)*12));justify-content:center;gap:calc(var(--u)*1.4);padding-top:calc(var(--u)*1)}
+.boite .cc.kcarte{width:calc(var(--u)*12)}
+.boite .cc.kcarte .co{top:calc(var(--u)*-.9);left:calc(var(--u)*-.9);right:auto;width:calc(var(--u)*2.6);height:calc(var(--u)*2.6);font-size:calc(var(--u)*1.55)}
+
+/* ===== Manette (17 nov.) : boutons A B X Y à leurs couleurs, aide qui change quand la manette sert ===== */
+.bt{display:inline-grid;place-items:center;min-width:1.5em;height:1.5em;padding:0 .2em;box-sizing:border-box;border-radius:50%;font-family:var(--texte);font-weight:600;font-size:.85em;line-height:1;vertical-align:middle;color:#0d0c0f;font-style:normal;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
+.bt.a{background:#6fc24a}.bt.b{background:#e0533f}.bt.x{background:#3f8fe0}.bt.y{background:#e8c33a}
+.bt.rt{border-radius:.35em;background:#d9cfb8;min-width:2em}
+.invite .bt{margin-right:.45em;font-size:.8em}
+.aide-pad{display:none}
+body.manette .aide-pad{display:block}
+body.manette .aide:not(.aide-pad){display:none}
+body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6);left:50%;transform:translateX(-50%);width:calc(var(--u)*1.8);height:calc(var(--u)*1.8);display:grid;place-items:center;border-radius:50%;background:#3f8fe0;color:#0d0c0f;font-weight:600;font-size:calc(var(--u)*1)}
 </style>
 
 <canvas id="vue" tabindex="0"></canvas>
@@ -180,7 +268,7 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 <div class="hud mondain etat cadre">
   <div><span class="l">Blessures </span><span class="vies" id="h-vies"></span></div>
   <div><span class="l">Cartes </span><b id="h-cartes">0</b></div>
-  <div><span class="l">Combat </span><b id="h-deck">8</b><span class="l"> cartes · mana </span><b id="h-mana">2</b></div>
+  <div><span class="l">Combat </span><b id="h-deck">8</b><span class="l"> cartes · réserve </span><b id="h-mana">2</b></div>
   <div><span class="l">Secrets </span><b id="h-sec">0</b><span class="l"> / <span id="h-sect">0</span></span></div>
 </div>
 
@@ -199,6 +287,11 @@ body.jeu-ouvert .hud.mondain{opacity:0}
   <div><i>▲ ▼</i> marcher (tenir pour courir)</div>
   <div><i>◀ ▶</i> tourner</div>
   <div><i>OK</i> agir · <i>Retour</i> menu</div>
+</div>
+<div class="hud mondain aide aide-pad cadre">
+  <div><i>stick G</i> marcher · <span class="bt rt">RT</span> courir</div>
+  <div><i>stick D</i> caméra · <span class="bt x">X</span> marche auto</div>
+  <div><span class="bt a">A</span> agir · <span class="bt y">Y</span> cartes · <span class="bt b">B</span> menu</div>
 </div>
 
 <div class="hud toast" id="toast"><div class="t1" id="t1"></div><div class="t2" id="t2"></div><div class="t3" id="t3"></div></div>

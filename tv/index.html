@@ -166,6 +166,94 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 .boite .cc{width:auto;min-height:0}
 .boite .cc .co{top:calc(var(--u)*.6);left:auto;right:calc(var(--u)*.6);width:calc(var(--u)*2);height:calc(var(--u)*2);font-size:calc(var(--u)*1.3)}
 @media (prefers-reduced-motion:reduce){.hud,.toast,.ecran,.pip,.opt{transition:none}}
+.mana-p{display:inline-grid;place-items:center;min-width:1.5em;height:1.5em;border-radius:50%;background:var(--mc);color:#111;font-weight:600;font-size:.85em;vertical-align:middle}
+
+/* ===== Habillage du combat (17 nov.) : décor peint par zone, alliés à gauche et monstres à droite, vraies cartes illustrées ===== */
+#combat{display:grid;grid-template-columns:.8fr 1.2fr;grid-template-rows:auto auto 1fr auto auto;grid-template-areas:"tete tete" "log log" "allies foes" "bas bas" "aide aide";
+  gap:calc(var(--u)*.4) calc(var(--u)*2);background:#0d0c0f;padding:calc(var(--my)*.7) var(--mx) calc(var(--my)*.6)}
+#cb-decor{position:absolute;inset:0;z-index:-1;pointer-events:none}
+#cb-decor svg{width:100%;height:100%;display:block}
+#combat::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(13,12,15,.55),transparent 18%,transparent 55%,rgba(13,12,15,.92) 74%)}
+.cb-tete{grid-area:tete}
+.cb-tete .sur{font-size:calc(var(--u)*.85)}
+.cb-tete h2{font-size:calc(var(--u)*2.1);text-shadow:0 2px 16px #000}
+#cb-foes{grid-area:foes;justify-content:space-evenly;align-items:center;padding-bottom:calc(var(--u)*1.5);gap:calc(var(--u)*1)}
+#cb-allies{grid-area:allies;justify-content:center;align-items:center;padding-bottom:calc(var(--u)*1.5);gap:calc(var(--u)*.6);min-height:0;flex-direction:row-reverse}
+.cb-log{grid-area:log;font-size:calc(var(--u)*1.3);text-shadow:0 1px 10px #000;min-height:1.3em}
+.cb-bas{grid-area:bas;grid-template-columns:calc(var(--u)*9.5) 1fr calc(var(--u)*7.5);gap:calc(var(--u)*1);align-items:end}
+.cb-aide{grid-area:aide;font-size:calc(var(--u)*.95)}
+.cb-aide::before{content:"";display:block;height:1px;margin:0 auto calc(var(--u)*.5);width:40%;background:linear-gradient(90deg,transparent,rgba(201,164,92,.5),transparent)}
+
+/* Créatures : portrait peint, plaque de nom et de vie, intention en médaillon */
+.u{width:calc(var(--u)*12);display:flex;flex-direction:column;align-items:center}
+.u .por{position:relative;width:calc(var(--u)*10);height:calc(var(--u)*10)}
+.u .por svg,.u.chef .por svg{width:100%;height:100%;filter:drop-shadow(0 0 calc(var(--u)*.8) var(--ucg)) drop-shadow(0 8px 10px rgba(0,0,0,.7))}
+.u.chef{width:calc(var(--u)*13)}.u.chef .por{width:calc(var(--u)*12.5);height:calc(var(--u)*12.5)}
+.u.hero .por{width:calc(var(--u)*11);height:calc(var(--u)*11)}
+.u.bete{width:calc(var(--u)*9)}.u.bete .por{width:calc(var(--u)*8.5);height:calc(var(--u)*8.5)}
+.plaque{width:100%;box-sizing:border-box;margin-top:calc(var(--u)*-.6);padding:calc(var(--u)*.35) calc(var(--u)*.6) calc(var(--u)*.45);background:linear-gradient(180deg,rgba(26,22,28,.92),rgba(10,9,12,.95));
+  border:1px solid rgba(201,164,92,.45);border-radius:calc(var(--u)*.5);box-shadow:0 6px 18px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+.u .un{font-size:calc(var(--u)*1.1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u .bar{height:calc(var(--u)*1.35);margin:.3em 0 0;width:100%;border-radius:calc(var(--u)*.5);border-color:rgba(0,0,0,.6);background:rgba(0,0,0,.55)}
+.u .bar i{border-radius:inherit;background:linear-gradient(180deg,#e2675a,#8f2a22)}
+#cb-allies .u .bar i{background:linear-gradient(180deg,#9fd27e,#3f7a35)}
+.u .bar span{display:block;font-size:calc(var(--u)*.85);line-height:calc(var(--u)*1.35);font-weight:600}
+.u .gd{height:auto;min-height:1.3em;margin-top:.2em;font-size:calc(var(--u)*.95);color:#bfe0ff;text-shadow:0 1px 6px #000}
+.u .int{min-height:0;margin-bottom:calc(var(--u)*-.2);display:inline-flex;align-items:center;gap:.35em;padding:.2em .7em .2em .3em;border-radius:2em;background:rgba(10,9,12,.82);border:1px solid rgba(201,164,92,.5);
+  font-size:calc(var(--u)*.9);color:var(--ivoire);text-shadow:none;white-space:nowrap}
+.u .int:empty{visibility:hidden}
+.u .int b{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;border-radius:50%;background:var(--uc,#c9a45c);color:#120f10;font-family:var(--texte);font-size:1em;margin:0}
+#cb-allies .u .int{min-height:0;padding:.2em .7em;color:var(--sable)}
+.u.vise{transform:none}
+.u.vise .por{outline:none}
+.u.vise .por::after{content:"";position:absolute;left:8%;right:8%;bottom:2%;height:14%;border-radius:50%;border:3px solid var(--laiton2);box-shadow:0 0 18px var(--laiton2);animation:vise 1s ease-in-out infinite alternate}
+.u.vise .plaque{border-color:var(--laiton2);box-shadow:0 0 0 3px rgba(232,199,127,.3)}
+@keyframes vise{from{opacity:.55;transform:scale(.94)}to{opacity:1;transform:scale(1.04)}}
+.pop{top:25%;font-size:calc(var(--u)*2.8);-webkit-text-stroke:1px rgba(0,0,0,.6)}
+
+/* Mana du tour : gemmes */
+.cb-mana{min-width:0;padding:calc(var(--u)*.7) calc(var(--u)*.6);background:radial-gradient(ellipse at 50% 30%,rgba(201,164,92,.18),rgba(10,9,12,.88) 70%);border:1px solid rgba(201,164,92,.45);border-radius:calc(var(--u)*.6)}
+.cb-mana b{font-family:var(--texte);font-weight:500;font-size:calc(var(--u)*2.2)}
+.cb-piles b,.u .bar span{font-family:var(--texte)}
+.cb-mana .l{font-size:calc(var(--u)*.75);letter-spacing:.1em;text-align:center;line-height:1.7}
+.mp{flex-wrap:wrap;justify-content:center;max-width:calc(var(--u)*9)}
+.mp i{width:calc(var(--u)*1.1);height:calc(var(--u)*1.1);border:1px solid #f5dc9c;background:rgba(0,0,0,.4)}
+.mp i.on{background:linear-gradient(135deg,#fff3c8,#e8c77f 45%,#9c7834);box-shadow:0 0 12px rgba(232,199,127,.85)}
+.cb-piles{padding:calc(var(--u)*.6) calc(var(--u)*.8);background:rgba(10,9,12,.75);border:1px solid rgba(201,164,92,.3);border-radius:calc(var(--u)*.6)}
+
+/* Cartes : cadre, coût, illustration, nom, ligne de type, texte */
+#cb-main{gap:calc(var(--u)*.6);min-height:calc(var(--u)*16);min-width:0}
+.cc.kcarte{flex:0 1 calc(var(--u)*11);min-width:calc(var(--u)*8.5);width:calc(var(--u)*11);min-height:0;height:calc(var(--u)*15.8);padding:calc(var(--u)*.45);border:2px solid var(--kb);border-radius:calc(var(--u)*.8);
+  background:linear-gradient(165deg,var(--kcA),#0d0b0f 55%),#141116;box-shadow:0 10px 24px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.07),inset 0 0 0 calc(var(--u)*.3) rgba(0,0,0,.35)}
+.cc.kcarte .art{height:calc(var(--u)*6.4);border-radius:calc(var(--u)*.45);overflow:hidden;border:1px solid rgba(0,0,0,.7);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.cc.kcarte .art svg{width:100%;height:100%;display:block}
+.cc.kcarte .cn{margin:.35em 0 0;padding:.12em .3em;text-align:center;font-size:calc(var(--u)*1.12);line-height:1.08;border-radius:calc(var(--u)*.3);background:linear-gradient(90deg,transparent,rgba(0,0,0,.5),transparent)}
+.cc.kcarte .cz{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:.15em 0 .3em;text-align:center;font-size:calc(var(--u)*.68);letter-spacing:.14em;color:var(--kb);filter:brightness(1.35)}
+.cc.kcarte .ct{flex:1;padding:.4em .45em;font-size:calc(var(--u)*.92);line-height:1.3;text-align:center;border-radius:calc(var(--u)*.35);background:rgba(239,231,214,.06);border-top:1px solid rgba(255,255,255,.06)}
+.cc.kcarte .co{top:calc(var(--u)*-.9);left:calc(var(--u)*-.9);width:calc(var(--u)*2.6);height:calc(var(--u)*2.6);z-index:2;font-family:var(--texte);font-weight:600;font-size:calc(var(--u)*1.35);
+  background:radial-gradient(circle at 35% 30%,#fff7d8,var(--mc,#e8c77f) 45%);color:#141012;border:2px solid #120f10;box-shadow:0 0 0 2px var(--mc,#c9a45c),0 4px 10px rgba(0,0,0,.6),inset 0 -4px 8px rgba(0,0,0,.35)}
+.cc.kcarte.f{transform:translateY(calc(var(--u)*-1.4)) scale(1.08);border-color:#f5dc9c;box-shadow:0 0 0 3px rgba(245,220,156,.45),0 0 34px var(--kcB),0 18px 34px rgba(0,0,0,.7);z-index:3}
+.cc.kcarte.off{opacity:1;filter:saturate(.45) brightness(.7)}
+.cc.kcarte.choisie{transform:translateY(calc(var(--u)*-2)) scale(1.1);border-color:#fff}
+.cc.fin{flex:0 0 auto;width:calc(var(--u)*7.6);height:calc(var(--u)*7.6);min-height:0;align-self:center;border-radius:50%;border:2px solid rgba(201,164,92,.6);border-style:solid;
+  background:radial-gradient(circle at 50% 35%,rgba(201,164,92,.28),rgba(10,9,12,.92) 70%);padding:calc(var(--u)*.8);box-shadow:0 8px 20px rgba(0,0,0,.6)}
+.cc.fin .cn{font-size:calc(var(--u)*1.2);margin:0;line-height:1.05}
+.cc.fin .ct{display:none}
+.cc.fin.f{transform:scale(1.1);border-color:#f5dc9c;box-shadow:0 0 0 4px rgba(245,220,156,.3),0 0 30px rgba(232,199,127,.4)}
+/* cartes dans les menus (paquet, récompenses) */
+.boite .cartes{grid-template-columns:repeat(auto-fill,calc(var(--u)*12));justify-content:center;gap:calc(var(--u)*1.4);padding-top:calc(var(--u)*1)}
+.boite .cc.kcarte{width:calc(var(--u)*12)}
+.boite .cc.kcarte .co{top:calc(var(--u)*-.9);left:calc(var(--u)*-.9);right:auto;width:calc(var(--u)*2.6);height:calc(var(--u)*2.6);font-size:calc(var(--u)*1.55)}
+
+/* ===== Manette (17 nov.) : boutons A B X Y à leurs couleurs, aide qui change quand la manette sert ===== */
+.bt{display:inline-grid;place-items:center;min-width:1.5em;height:1.5em;padding:0 .2em;box-sizing:border-box;border-radius:50%;font-family:var(--texte);font-weight:600;font-size:.85em;line-height:1;vertical-align:middle;color:#0d0c0f;font-style:normal;box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
+.bt.a{background:#6fc24a}.bt.b{background:#e0533f}.bt.x{background:#3f8fe0}.bt.y{background:#e8c33a}
+.bt.rt{border-radius:.35em;background:#d9cfb8;min-width:2em}
+.invite .bt{margin-right:.45em;font-size:.8em}
+.aide-pad{display:none}
+body.manette .aide-pad{display:block}
+body.manette .aide:not(.aide-pad){display:none}
+body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6);left:50%;transform:translateX(-50%);width:calc(var(--u)*1.8);height:calc(var(--u)*1.8);display:grid;place-items:center;border-radius:50%;background:#3f8fe0;color:#0d0c0f;font-weight:600;font-size:calc(var(--u)*1)}
 </style>
 
 <canvas id="vue" tabindex="0"></canvas>
@@ -181,7 +269,7 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 <div class="hud mondain etat cadre">
   <div><span class="l">Blessures </span><span class="vies" id="h-vies"></span></div>
   <div><span class="l">Cartes </span><b id="h-cartes">0</b></div>
-  <div><span class="l">Combat </span><b id="h-deck">8</b><span class="l"> cartes · mana </span><b id="h-mana">2</b></div>
+  <div><span class="l">Combat </span><b id="h-deck">8</b><span class="l"> cartes · réserve </span><b id="h-mana">2</b></div>
   <div><span class="l">Secrets </span><b id="h-sec">0</b><span class="l"> / <span id="h-sect">0</span></span></div>
 </div>
 
@@ -200,6 +288,11 @@ body.jeu-ouvert .hud.mondain{opacity:0}
   <div><i>▲ ▼</i> marcher (tenir pour courir)</div>
   <div><i>◀ ▶</i> tourner</div>
   <div><i>OK</i> agir · <i>Retour</i> menu</div>
+</div>
+<div class="hud mondain aide aide-pad cadre">
+  <div><i>stick G</i> marcher · <span class="bt rt">RT</span> courir</div>
+  <div><i>stick D</i> caméra · <span class="bt x">X</span> marche auto</div>
+  <div><span class="bt a">A</span> agir · <span class="bt y">Y</span> cartes · <span class="bt b">B</span> menu</div>
 </div>
 
 <div class="hud toast" id="toast"><div class="t1" id="t1"></div><div class="t2" id="t2"></div><div class="t3" id="t3"></div></div>
@@ -1276,7 +1369,9 @@ function styleBorder(id){const Z=ZB[id],Q=CIT;let best=null;
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
    Tout se joue à la télécommande : ◀ ▶ choisir, OK jouer, Retour pause. Rien de 3D pendant le combat (léger). */
 
-const DEPART=['coup','coup','coup','coup','garde','garde','garde','souffle'];
+/* Les mêmes 10 cartes communes pour tout le monde : assez pour une zone de niveau 0, peut-être 1, pas plus. */
+const DEPART=['coup','coup','coup','coup','coup','garde','garde','garde','souffle','souffle'];
+const PAQUET_MAX=40;
 const ZCOL={CIT:'#c0584c',DON:'#e0782f',RES:'#73b45e',ANT:'#e2cb62',MAR:'#93bede'};
 const rgba=(h,a)=>`rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;
 const ZCOURT={CIT:'Berestograd',DON:'Neuf Édits',RES:'Tezcamixtli',ANT:'Lucioles',MAR:'Givrecloche'};
@@ -1295,12 +1390,12 @@ const CK={
     txt:k=>`Tous vos alliés gagnent ${(6+2*Lz('CIT'))*contreX(k)} de garde.`,jeu:k=>CB.allies.forEach(u=>u.pv>0&&garder(u,(6+2*Lz('CIT'))*contreX(k)))},
   DON:{z:'DON',nom:()=>poleN('DON','Édit de fer','Édit de délivrance'),cout:2,cible:1,
     txt:k=>`${(10+3*Lz('DON'))*contreX(k)} dégâts.`,jeu:(k,t)=>frappe(t,(10+3*Lz('DON'))*contreX(k))},
-  RES:{z:'RES',nom:()=>poleN('RES','Gerbe de folie','Gerbe de raison'),cout:0,
-    txt:k=>`+1 mana ce tour, soigne le héros de ${(2+Lz('RES'))*contreX(k)}.`,jeu:k=>{CB.mana++;soigner(CB.hero,(2+Lz('RES'))*contreX(k))}},
+  RES:{z:'RES',nom:()=>'Gerbe de Tezcamixtli',cout:0,
+    txt:k=>`Piochez 1 carte, soigne le héros de ${(2+Lz('RES'))*contreX(k)}.`,jeu:k=>{pioche(1);soigner(CB.hero,(2+Lz('RES'))*contreX(k))}},
   ANT:{z:'ANT',nom:()=>poleN('ANT','Appel : Luciole de nuit','Appel : Lancière de l\'aurore'),cout:2,
     txt:k=>{const b=bete(k);return`Une bête rejoint le combat : ${b.pv} PV, frappe ${b.atk} à chaque tour.`},jeu:k=>invoquer(bete(k))},
   MAR:{z:'MAR',nom:()=>poleN('MAR','Lot de brume','Lot de clarté'),cout:0,
-    txt:k=>`Piochez ${2*contreX(k)} cartes${Lz('MAR')>=2?', +1 mana':''}.`,jeu:k=>{pioche(2*contreX(k));if(Lz('MAR')>=2)CB.mana++}}};
+    txt:k=>`Piochez ${2*contreX(k)} cartes${Lz('MAR')>=5?', boost rare : +1 de capacité ce tour':''}.`,jeu:k=>{pioche(2*contreX(k));if(Lz('MAR')>=5){CB.mana++;CB.capT++}}}};
 const bete=k=>{const L=Lz('ANT'),x=contreX(k);return{nom:poleN('ANT','Luciole de nuit','Lancière de l\'aurore'),pv:(7+3*L)*x,max:(7+3*L)*x,atk:(3+L)*x,g:0,bete:1}};
 
 /* ---------- Gardiens des zones (originaux) : a attaque, g garde, t frappe tout le monde, c charge puis f frappe forte, s soin ---------- */
@@ -1320,6 +1415,11 @@ const mainMax=()=>S.act.RES&&Lz('RES')>=3?6:5;                  /* le bonus du n
 const pvMax=()=>30+(S.act.CIT?6+2*Lz('CIT'):0);
 
 /* ---------- Déroulement ---------- */
+/* ce qu'on peut encore dépenser ce tour : la capacité du tour, sans dépasser la réserve */
+/* la capacité de dépense par tour est commune à tous les types ; chaque carte se paie dans la réserve de son type */
+const mtype=k=>CK[k].z?ZMANA[CK[k].z]:null;
+const dispo=()=>CB?Math.max(0,CB.mana):0;
+const jouable=k=>CK[k].cout<=dispo()&&peutPayer(mtype(k),CK[k].cout);
 let CB=null;
 const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function startCombat(Z,kind){
@@ -1339,11 +1439,11 @@ function startCombat(Z,kind){
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
-function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.mana=manaMax();
+function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
-function jouer(i,t){const k=CB.main[i],c=CK[k];CB.mana-=c.cout;CB.main.splice(i,1);CB.defausse.push(k);
+function jouer(i,t){const k=CB.main[i],c=CK[k];CB.mana-=c.cout;payer(mtype(k),c.cout);CB.main.splice(i,1);CB.defausse.push(k);
   journal(`Vous jouez « ${c.nom()} »${contreX(k)>1?' : contre-pouvoir, effet doublé !':'.'}`);c.jeu(k,t);clack();
   CB.f=Math.min(CB.f,CB.main.length);CB.sel=null;majUnites();dessinerMain();finSiFini()}
 function finTour(){CB.busy=true;CB.sel=null;CB.defausse.push(...CB.main);CB.main=[];dessinerMain();
@@ -1380,25 +1480,27 @@ function agir(m){const I=m.int;if(!I)return;m.el&&(m.el.classList.remove('agit')
 
 /* ---------- Fin du combat : récompenses ---------- */
 function fermerCombat(){$('combat').hidden=true;CB=null;CBwalk=P.walked;CBnext=prochaineRencontre()}
-const RECO={RES:'Source de mana : +1 mana à chaque tour de combat. En éveillant la zone : 2 mana au niveau 2, puis 2 mana et une carte de plus en main au niveau 3.',
+const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1 mana, puis 2 au niveau 2, puis 2 et une carte de plus en main au niveau 3.',
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
-function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';
+function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
+  let gain='';if(ok){const t=ZMANA[Z.id],n=C.kind==='eveil'?2:1;gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
+  const retour=`${gain} Réserve : ${resTexte()}.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
-    ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
+    ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3).${retour} À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
       back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
   S.hurt=Math.max(0,S.hurt-(C.kind==='eveil'?1:0));
-  if(C.kind==='eveil'){S.act[Z.id]=true;S.own[Z.id]=true;S.emp[Z.id]=false;if(S.deck.length<24)S.deck.push(Z.id);save();etatHud();hudKey='';fanfare(S.lv[Z.id]||1);
-    ui('menu',{sur:'Zone activée',t:Z.info.nom,corps:`<p>La zone est à vous. Vous gagnez la carte « ${CK[Z.id].nom()} ».</p><div class="cartes" style="grid-template-columns:1fr">${carteHTML(Z.id)}</div><p class="petit" style="margin-top:1em">${RECO[Z.id]} Vous pouvez maintenant éveiller cette zone : plus elle s'éloigne de zéro, plus sa carte devient forte.</p>`,
+  if(C.kind==='eveil'){if(Z.id==='DON')S.dernierAssaut=S.nc;S.act[Z.id]=true;S.own[Z.id]=true;S.emp[Z.id]=false;if(S.deck.length<PAQUET_MAX)S.deck.push(Z.id);save();etatHud();hudKey='';fanfare(S.lv[Z.id]||1);
+    ui('menu',{sur:'Zone activée',t:Z.info.nom,corps:`<p>La zone est à vous. Vous gagnez la carte « ${CK[Z.id].nom()} ».${retour}</p><div class="cartes" style="grid-template-columns:1fr">${carteHTML(Z.id)}</div><p class="petit" style="margin-top:1em">${RECO[Z.id]} Vous pouvez maintenant éveiller cette zone : plus elle s'éloigne de zéro, plus sa carte devient forte.</p>`,
       back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});return}
   /* rencontre : choisir une carte à ajouter au paquet de combat */
   const offre=[S.act[Z.id]?Z.id:['coup','garde','souffle'][Math.floor(Math.random()*3)],['coup','garde','souffle'][Math.floor(Math.random()*3)]];
   if(offre[0]===offre[1])offre[1]=offre[0]==='coup'?'garde':'coup';
-  const plein=S.deck.length>=24;save();sfx('hit');
-  ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${plein?'Votre paquet de combat est plein (24 cartes).':'Choisissez une carte à ajouter à votre paquet de combat.'}${S.act[Z.id]?'':' Activez la zone à sa Pierre d\'éveil pour que ses rencontres offrent sa carte.'}</p><div class="cartes">${offre.map(carteHTML).join('')}</div>`,
+  const plein=S.deck.length>=PAQUET_MAX;save();sfx('hit');
+  ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${plein?'Votre paquet de combat est plein ('+PAQUET_MAX+' cartes).':'Choisissez une carte à ajouter à votre paquet de combat.'}${retour}${S.act[Z.id]?'':' Activez la zone à sa Pierre d\'éveil pour que ses rencontres offrent sa carte.'}</p><div class="cartes">${offre.map(carteHTML).join('')}</div>`,
     back:toMonde,opts:[...offre.map(k=>({l:'Prendre « '+CK[k].nom()+' »',ic:'+',off:plein,go:()=>{S.deck.push(k);save();toMonde()}})),{l:'Ne rien prendre',ic:'◆',go:toMonde}]})}
-function fuir(){const C=CB;fermerCombat();toMonde();if(C.kind==='renc')toast('Fuite','Vous semez les créatures','Rien de perdu, rien de gagné.')}
-function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas. Les gardiens d\'une Pierre attendront votre retour.</p>',
+function fuir(){const C=CB;fermerCombat();toMonde();toast('Fuite',C.kind==='renc'?'Vous semez les créatures':'Les gardiens attendront',`Réserve : ${resTexte()}.`)}
+function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas ; le mana déjà dépensé est perdu. Les gardiens d\'une Pierre attendront votre retour.</p>',
   back:reprendreCombat,opts:[{l:'Continuer le combat',ic:'▲',go:reprendreCombat},{l:'Fuir',ic:'◆',go:fuir}]})}
 function reprendreCombat(){closeUI();mode='combat'}
 
@@ -1414,7 +1516,7 @@ function cbInput(a,rep){const C=CB;if(!C)return;
   else if(a==='down'){C.f=C.main.length;tick();dessinerMain()}
   else if(a==='up'&&C.f===C.main.length&&C.main.length){C.f=0;tick();dessinerMain()}
   else if(a==='ok'&&!rep){if(C.f===C.main.length){clack();finTour();return}
-    const k=C.main[C.f],c=CK[k];if(c.cout>C.mana){sfx('miss');journal('Pas assez de mana pour « '+c.nom()+' ».');return}
+    const k=C.main[C.f],c=CK[k];if(!jouable(k)){sfx('miss');journal(c.cout>dispo()?'Capacité de dépense atteinte ce tour pour « '+c.nom()+' ».':'Pas assez de mana '+(mtype(k)||'')+' en réserve pour « '+c.nom()+' ».');return}
     if(c.cible){const v=vivants(C.foes);if(v.length>1){C.sel='cible';C.ti=0;dessinerMain();majUnites();journal('Choisissez la cible avec ◀ ▶, puis OK.');return}jouer(C.f,v[0])}
     else jouer(C.f)}}
 
@@ -1433,12 +1535,12 @@ function majUnites(){if(!CB)return;const v=vivants(CB.foes);
     if(u.bete)e.querySelector('.int').textContent='⚔ '+u.atk+' à chaque tour';
     else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}`:''}
     e.classList.toggle('vise',!!CB.sel&&u===v[CB.ti])}
-  $('cb-mana').innerHTML=`<span class="l">Mana</span><span class="mp">${Array.from({length:Math.max(CB.mana,manaMax())},(_,i)=>`<i class="${i<CB.mana?'on':''}"></i>`).join('')}</span><b>${CB.mana}</b>`;
+  const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">${resHTML()}</span>`;
   $('cb-piles').innerHTML=`<span>Pioche <b>${CB.pile.length}</b></span><span>Défausse <b>${CB.defausse.length}</b></span><span>Tour <b>${CB.tour}</b></span>`}
-function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" style="${z?'--kcA:'+rgba(ZCOL[z],.3)+';--kcB:'+rgba(ZCOL[z],.75):''}"><div class="co">${c.cout}</div><div class="cn">${c.nom()}</div><div class="ct">${c.txt(k)}</div><div class="cz">${z?TYPE[z].kind+' · '+ZCOURT[z]:'Base'}</div></div>`}
+function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" style="${z?'--kcA:'+rgba(ZCOL[z],.3)+';--kcB:'+rgba(ZCOL[z],.75):''}"><div class="co" style="${mtype(k)?'background:'+MCOL[mtype(k)]+';color:#111':''}">${c.cout}</div><div class="cn">${c.nom()}</div><div class="ct">${c.txt(k)}</div><div class="cz">${z?TYPE[z].kind+' · '+ZCOURT[z]+' · '+ZMANA[z]:'Commune · tout mana'}</div></div>`}
 function dessinerMain(){const C=CB;if(!C)return;const h=$('cb-main');
   h.innerHTML=C.main.map(carteHTML).join('')+`<div class="cc fin"><div class="cn">Fin du tour</div><div class="ct">Les bêtes frappent, puis les monstres agissent.</div></div>`;
-  [...h.children].forEach((d,i)=>{d.classList.toggle('f',i===C.f&&!C.busy);if(i<C.main.length&&CK[C.main[i]].cout>C.mana)d.classList.add('off');if(C.sel&&i===C.f)d.classList.add('choisie')});
+  [...h.children].forEach((d,i)=>{d.classList.toggle('f',i===C.f&&!C.busy);if(i<C.main.length&&!jouable(C.main[i]))d.classList.add('off');if(C.sel&&i===C.f)d.classList.add('choisie')});
   $('cb-aide').textContent=C.busy?'Les créatures agissent…':C.sel?'◀ ▶ choisir la cible · OK frapper · ▼ annuler':'◀ ▶ choisir une carte · OK jouer · ▼ fin du tour · Retour pause';majUnites()}
 function journal(t){const j=$('cb-log');j.textContent=t;j.classList.remove('neuf');void j.offsetWidth;j.classList.add('neuf')}
 
@@ -1451,6 +1553,365 @@ function verifierRencontre(){if(mode!=='monde'||!started||!curZ||!RENC[S.renc||1
   if(P.walked-CBwalk<CBnext)return;
   if(Math.hypot(curZ.alt.x-P.x,curZ.alt.z-P.z)<16){CBwalk=P.walked-CBnext+15;return}
   startCombat(curZ,'renc')}
+/* MozaWorld TV 1.5 : économie du mana et Donjon à aménager (premier test décidé le 16 novembre 2026).
+   - Six réserves de mana, une par type (Feu, Glace, Eau, Sève, Pierre, Vent). La Ressource (Tezcamixtli, Vent) en remplit
+     une à chaque cycle : 1 au niveau 0-1, 2 au niveau 2, 2 au niveau 3 avec son bonus. Les vaincus lâchent le mana de leur zone.
+   - En combat, les cartes se paient avec la réserve. La capacité de dépense monte de 1 par tour (1, 2, 3…) ;
+     la capacité est commune à tous les types ; les boosts sont rares.
+   - Le Donjon des Neuf Édits, une fois activé, s'aménage : 4 salles, un piège par salle, payé avec la réserve.
+     Le monde sauvage l'attaque à intervalles réguliers ; les pièges actifs affaiblissent la horde l'un après l'autre.
+   - L'entretien des pièges a trois rythmes au choix (menu), pour comparer en jouant. */
+
+const CYCLE=60;            /* secondes d'un cycle de jeu dans la démo (un « jour » du jeu complet, raccourci) */
+const ASSAUT_CYCLES=3;     /* un assaut du sauvage tous les 3 cycles quand le Donjon est à vous */
+/* Six types de mana, un par famille de biomes ; chaque type a sa propre réserve. */
+const MTYPES=['Feu','Glace','Eau','Sève','Pierre','Vent'];
+const MCOL={Feu:'#d8603a',Glace:'#8fc4e8',Eau:'#3f8fb5',Sève:'#6fae4f',Pierre:'#a89a84',Vent:'#c9c2e6'};
+const ZMANA={CIT:'Glace',DON:'Feu',RES:'Vent',ANT:'Eau',MAR:'Glace'};   /* forêt boréale, volcan, îles flottantes, mangrove, glacier */
+const RESERVE_DEPART=()=>({Feu:3,Glace:3,Eau:3,Vent:3});
+const resN=t=>(S.res&&S.res[t])||0;
+const resTot=()=>MTYPES.reduce((a,t)=>a+resN(t),0);
+/* type null = carte commune (incolore) : elle se paie avec n'importe quel type, pris dans la plus grosse réserve */
+const peutPayer=(t,n)=>t?resN(t)>=n:resTot()>=n;
+function payer(t,n){if(t){S.res[t]=resN(t)-n;return}for(let i=0;i<n;i++){const b=MTYPES.reduce((m,x)=>resN(x)>resN(m)?x:m,MTYPES[0]);S.res[b]=resN(b)-1}}
+function gagner(t,n){S.res[t]=resN(t)+n}
+const pastille=(t,n)=>`<span class="mana-p" style="--mc:${t?MCOL[t]:'#d9cfb8'}">${n!==undefined?n:''}</span>`;
+const resHTML=()=>MTYPES.filter(t=>resN(t)>0||Object.values(ZMANA).includes(t)).map(t=>`${pastille(t,resN(t))} ${t}`).join(' · ');
+const resTexte=()=>MTYPES.filter(t=>resN(t)>0).map(t=>t+' '+resN(t)).join(', ')||'vide';
+
+const PIEGES={
+  herse:{nom:'Herse de givre',m:'Glace',pose:2,force:3,txt:'Bon marché, arrête les petits groupes.'},
+  glyphe:{nom:'Glyphe de brume',m:'Vent',pose:2,force:2,txt:'Égare la horde : le piège suivant compte double.'},
+  lave:{nom:'Fosse de lave',m:'Feu',pose:3,force:5,txt:'Le cratère sous le Donjon : force brute.'},
+  gardien:{nom:'Gardien des marais',m:'Eau',pose:4,force:6,txt:'Un gardien qui se relève à chaque assaut.'}};
+const PORDRE=[null,'herse','glyphe','lave','gardien'];
+const SALLES=['Vestibule des Édits','Galerie des scribes','Puits de lave','Chambre du Sceau'];
+
+const ENTRETIEN=[
+  {nom:'À chaque cycle',court:'cycle',txt:'Chaque piège coûte 1 mana à chaque cycle. Un piège non payé dort jusqu\'au cycle suivant.'},
+  {nom:'À l\'assaut',court:'assaut',txt:'Rien entre deux assauts. Quand un assaut arrive, chaque piège coûte 2 mana ; un piège non payé ne se déclenche pas.'},
+  {nom:'Usure',court:'usure',txt:'Aucun entretien. Chaque piège sert 3 assauts, puis il casse et la salle se vide.'}];
+
+function initEco(){
+  if(!S.res||typeof S.res!=='object')S.res=RESERVE_DEPART();
+  if(!Array.isArray(S.pieges)||S.pieges.length!==4)S.pieges=[null,null,null,null];
+  if(typeof S.ent!=='number')S.ent=0;
+  if(typeof S.tc!=='number')S.tc=0;
+  if(typeof S.nc!=='number')S.nc=0;
+  if(!S.assauts)S.assauts={ok:0,ko:0};
+  if(typeof S.dernierAssaut!=='number')S.dernierAssaut=0}
+
+const piegeDe=p=>p&&(typeof p==='string'?{k:p,u:3,dort:false}:p);
+const nbPieges=()=>S.pieges.filter(Boolean).length;
+const prodRessource=()=>!S.act.RES?0:Lz('RES')>=2?2:1;
+const donjonAVous=()=>!!(S.act.DON&&S.own.DON);
+
+/* ---------- Cycle : production, entretien, assaut ---------- */
+let ecoRapport=[];
+function cycle(){S.nc++;const lignes=[];
+  const p=prodRessource();if(p){gagner(ZMANA.RES,p);lignes.push(`+${p} ${ZMANA.RES} de la Ressource`)}
+  if(donjonAVous()&&nbPieges()&&S.ent===0){let paye=0,dorment=0;
+    for(const x of S.pieges){if(!x)continue;const m=PIEGES[x.k].m;if(peutPayer(m,1)){payer(m,1);paye++;x.dort=false}else{x.dort=true;dorment++}}
+    lignes.push(`−${paye} mana d'entretien${dorment?`, ${dorment} piège(s) endormi(s)`:''}`)}
+  save();etatHud();
+  if(donjonAVous()&&S.nc-S.dernierAssaut>=ASSAUT_CYCLES){S.dernierAssaut=S.nc;assaut(lignes);return}
+  if(lignes.length&&started&&mode==='monde')toast('Cycle '+S.nc,'Réserve : '+resTexte(),lignes.join(' · '))}
+setInterval(()=>{if(!started||mode==='titre')return;S.tc++;if(S.tc>=CYCLE){S.tc=0;cycle()}},1000);
+
+/* ---------- Assaut du monde sauvage sur le Donjon ---------- */
+function forceHorde(){return 6+3*Lz('DON')+2*S.assauts.ok+Math.floor(Math.random()*4)}
+function assaut(avant){let h=forceHorde();const h0=h,l=[];
+  if(S.ent===1){let paye=0,non=0;for(const x of S.pieges){if(!x)continue;const m=PIEGES[x.k].m;if(peutPayer(m,2)){payer(m,2);paye++;x.dort=false}else{x.dort=true;non++}}
+    if(paye+non)l.push(`Entretien à l'assaut : −${2*paye} mana${non?`, ${non} piège(s) sans mana ne se déclenchent pas`:''}.`)}
+  let mult=1;
+  S.pieges.forEach((x,i)=>{if(!x||h<=0)return;const P_=PIEGES[x.k];
+    if(x.dort){l.push(`${SALLES[i]} : ${P_.nom} dort.`);return}
+    const f=P_.force*mult;mult=x.k==='glyphe'?2:1;h-=f;l.push(`${SALLES[i]} : ${P_.nom} retient ${f}${mult>1?' et égare la horde (suivant ×2)':''}.`);
+    if(S.ent===2){x.u--;if(x.u<=0){S.pieges[i]=null;l.push(`${P_.nom} casse.`)}}});
+  const ok=h<=0;
+  if(ok){S.assauts.ok++;gagner('Feu',2);l.push('La horde se brise dans vos salles : +2 Feu pris sur les vaincus.')}
+  else{S.assauts.ko++;const i=S.pieges.findIndex(Boolean);if(i>=0){l.push(`La horde passe (reste ${h}) et saccage ${SALLES[i]}.`);S.pieges[i]=null}else l.push(`La horde passe (reste ${h}) : aucune salle ne la retient.`);
+    if(S.lv.DON!==0){const n=S.lv.DON-Math.sign(S.lv.DON);S.lv.DON=n;DON.lvT=n;l.push(`Le Donjon recule d'un palier (${sgn(n)||'0'}).`)}}
+  save();etatHud();hudKey='';
+  ecoRapport.push({ok,h0,lignes:[...(avant||[]),...l]});montrerRapport()}
+function montrerRapport(){if(!ecoRapport.length||mode!=='monde')return;const r=ecoRapport.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
+  ui('menu',{sur:'Assaut du monde sauvage · horde de force '+r.h0,t:r.ok?'Le Donjon tient':'Le Donjon est forcé',
+    corps:`<p class="petit">${r.lignes.join('<br>')}</p><p class="petit">Réserve : ${resHTML()} · assauts repoussés ${S.assauts.ok}, perdus ${S.assauts.ko} · entretien : ${ENTRETIEN[S.ent].nom}.</p>`,
+    back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde},{l:'Aller au Donjon',ic:'✧',go:()=>{tp('DON');toMonde()}}]})}
+setInterval(()=>{if(started&&mode==='monde'&&ecoRapport.length)montrerRapport()},500);
+
+/* ---------- Aménager le Donjon ---------- */
+function openDonjon(f){mode='menu';document.body.classList.add('jeu-ouvert');
+  const o=S.pieges.map((x,i)=>{const P_=x&&PIEGES[x.k];return{l:`${SALLES[i]} : ${P_?P_.nom:'vide'}`,ic:P_?'⛬':'○',d:P_?`${P_.m} · force ${P_.force}${S.ent===2?' · '+x.u+' assaut(s)':''}${x.dort?' · endormi':''} · OK changer`:'OK poser un piège',go:()=>changerPiege(i)}});
+  o.push({l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openDonjon(UI.f)}});
+  o.push({l:'Provoquer un assaut maintenant (test)',ic:'⚔',go:()=>{closeUI();mode='monde';S.dernierAssaut=S.nc;assaut([])}});
+  o.push({l:'Retour',ic:'◆',go:toMonde});
+  const prochain=Math.max(0,(S.dernierAssaut+ASSAUT_CYCLES-S.nc-1)*CYCLE+(CYCLE-S.tc));
+  ui('menu',{sur:'Donjon à vous · aménager',t:'Les salles des Neuf Édits',f,
+    corps:`<p class="petit">Réserve : ${resHTML()}.</p><p class="petit">Chaque salle reçoit un piège ; chaque piège a son type de mana, pour la pose comme pour l'entretien. Un type que votre paquet n'utilise pas peut servir ici. Prochain assaut du sauvage dans environ ${fmt(prochain)} ; la horde traverse les salles dans l'ordre.</p><p class="petit">${ENTRETIEN[S.ent].txt}</p>`,
+    back:toMonde,opts:o})}
+function changerPiege(i){const cur=S.pieges[i],k0=cur?cur.k:null;
+  ui('menu',{sur:SALLES[i],t:'Choisir un piège',corps:`<p class="petit">Réserve : ${resHTML()}. Retirer un piège ne rend pas le mana.</p>`,back:()=>openDonjon(i),
+    opts:[...PORDRE.slice(1).map(k=>{const P_=PIEGES[k];return{l:P_.nom+(k===k0?' (en place)':''),ic:P_.pose,d:`${P_.pose} ${P_.m} · force ${P_.force} · ${P_.txt}`,off:k===k0||!peutPayer(P_.m,P_.pose),
+      go:()=>{payer(P_.m,P_.pose);S.pieges[i]={k,u:3,dort:false};save();etatHud();sfx('hit');openDonjon(i)}}}),
+      {l:'Salle vide',ic:'○',off:!cur,go:()=>{S.pieges[i]=null;save();openDonjon(i)}},{l:'Retour',ic:'◆',go:()=>openDonjon(i)}]})}
+/* MozaWorld TV : habillage du combat (17 novembre).
+   Retour de l'utilisateur : « c'est vraiment moche, il faut un minimum d'art dans les cartes ; un type commun au début c'est ok ».
+   Ici, seulement de l'image : une illustration par sorte de carte, un portrait par créature, un décor par zone.
+   Tout est dessiné en vecteurs (SVG) : rien à télécharger, net sur une grande télé, gratuit.
+   Ce fichier redéfinit portrait(), carteHTML() et uniteEl() de combat.js ; la logique du combat n'est pas touchée. */
+
+/* ---------- Dégradés et filtres communs (une seule fois dans la page) ---------- */
+(function(){const d=document.createElement('div');d.style.cssText='position:absolute;width:0;height:0;overflow:hidden';
+d.innerHTML=`<svg width="0" height="0" aria-hidden="true"><defs>
+<linearGradient id="mz-sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2630"/><stop offset="1" stop-color="#0c0a0e"/></linearGradient>
+<linearGradient id="mz-silC" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3340"/><stop offset=".6" stop-color="#16131a"/><stop offset="1" stop-color="#0a090c"/></linearGradient>
+<radialGradient id="mz-halo"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".25" stop-color="currentColor" stop-opacity=".55"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient>
+<linearGradient id="mz-or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5dc9c"/><stop offset=".5" stop-color="#c9a45c"/><stop offset="1" stop-color="#7d6230"/></linearGradient>
+<linearGradient id="mz-cape" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a3313d"/><stop offset="1" stop-color="#4a1018"/></linearGradient>
+<filter id="mz-lueur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="mz-flou" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+<pattern id="mz-girih" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M20 2 L25 15 L38 20 L25 25 L20 38 L15 25 L2 20 L15 15Z" fill="none" stroke="#c9a45c" stroke-opacity=".18" stroke-width=".8"/></pattern>
+</defs></svg>`;document.body.appendChild(d)})();
+
+/* ---------- Portraits des créatures ----------
+   Silhouettes sombres éclairées par la couleur de la zone (currentColor), yeux qui luisent. Pieds vers y = 92. */
+const OMBRE='<ellipse cx="50" cy="93" rx="27" ry="4.5" fill="#000" opacity=".55"/>';
+const HALO=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="url(#mz-halo)" opacity=".75"/>`;
+const YEUX=(x1,y1,x2,y2,r)=>`<g filter="url(#mz-lueur)" fill="currentColor"><circle cx="${x1}" cy="${y1}" r="${r||1.8}"/><circle cx="${x2}" cy="${y2}" r="${r||1.8}"/></g>`;
+const SIL='fill="url(#mz-silC)" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"';
+const BETES={
+/* Citadelle (Berestograd) */
+'Pillard des sapins':`<path d="M57 52 L80 22" stroke="#6b5440" stroke-width="3" stroke-linecap="round"/><path d="M76 17 Q90 18 88 34 Q82 27 73 27Z" fill="#9aa3ad" stroke="currentColor" stroke-width="1"/>
+ <path ${SIL} d="M36 92 L39 66 Q34 60 37 50 Q42 41 50 40 Q58 41 63 50 Q66 60 61 66 L64 92 L55 92 L52 74 L48 74 L45 92Z"/>
+ <path ${SIL} d="M40 44 Q42 24 50 21 Q58 24 60 44 Q50 38 40 44Z"/><path d="M43 41 Q50 30 57 41 Q50 44 43 41Z" fill="#0a090c"/>${YEUX(47,39,53,39,1.5)}
+ <path d="M36 54 Q30 60 34 70" stroke="#5d4a3a" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+'Archère d\'écorce':`<path d="M24 22 Q8 52 24 84" fill="none" stroke="#8a6b4a" stroke-width="3"/><path d="M24 22 L24 84" stroke="#e9dfc8" stroke-width=".7" opacity=".7"/>
+ <path ${SIL} d="M42 92 L45 62 Q41 52 45 44 Q50 38 55 44 Q59 52 55 62 L58 92 L52 92 L50 72 L48 92Z"/>
+ <path d="M46 50 L26 53" stroke="#1d1a20" stroke-width="4" stroke-linecap="round"/><path d="M26 53 L70 50" stroke="#c9a45c" stroke-width="1.2"/>
+ <path ${SIL} d="M43 42 Q42 28 50 26 Q58 28 57 42 Q54 46 50 46 Q46 46 43 42Z"/><path d="M50 24 Q60 10 70 14 Q60 18 56 28Z" fill="#3a5a35" stroke="currentColor" stroke-width=".8"/>${YEUX(47,36,53,36,1.4)}`,
+'Voïvode sans mémoire':`<path d="M24 92 Q22 60 32 48 L68 48 Q78 60 76 92Z" fill="url(#mz-cape)" stroke="currentColor" stroke-width="1.2"/>
+ <path ${SIL} d="M34 92 L36 58 Q36 46 50 44 Q64 46 64 58 L66 92 L56 92 L53 70 L47 70 L44 92Z"/><path d="M38 54 L62 54 L60 66 L40 66Z" fill="#2f2a34" stroke="url(#mz-or)" stroke-width="1"/>
+ <path ${SIL} d="M41 44 Q40 30 50 28 Q60 30 59 44Z"/><path d="M38 30 Q50 8 62 30 Q56 26 50 27 Q44 26 38 30Z" fill="url(#mz-or)"/><circle cx="50" cy="12" r="2.5" fill="url(#mz-or)"/>
+ <path d="M43 36 L57 36" stroke="#0a090c" stroke-width="5"/>${YEUX(46.5,36,53.5,36,1.7)}<path d="M68 50 L84 86" stroke="url(#mz-or)" stroke-width="3" stroke-linecap="round"/><path d="M81 80 L90 76 L88 92Z" fill="#9aa3ad"/>`,
+/* Donjon (Neuf Édits) */
+'Gardien d\'édit':`<path ${SIL} d="M32 92 L34 54 Q34 40 50 38 Q66 40 66 54 L68 92 L57 92 L54 72 L46 72 L43 92Z"/>
+ <rect x="22" y="48" width="22" height="34" rx="2" fill="#2f2a34" stroke="currentColor" stroke-width="1.2"/><path d="M26 56 H40 M26 62 H40 M26 68 H37 M26 74 H39" stroke="currentColor" stroke-opacity=".7" stroke-width="1.2"/>
+ <path ${SIL} d="M40 40 L40 24 Q50 16 60 24 L60 40Z"/><path d="M42 30 H58" stroke="currentColor" stroke-width="2.2" filter="url(#mz-lueur)"/>`,
+'Larve de lave':`${HALO(50,74,30)}<path ${SIL} d="M14 88 Q12 74 24 72 Q28 62 40 64 Q46 52 58 56 Q72 52 76 64 Q90 66 86 82 Q86 92 70 91 L22 92 Q14 92 14 88Z"/>
+ <path d="M26 74 Q30 80 28 88 M42 66 Q44 76 40 88 M60 58 Q62 72 58 88 M74 66 Q74 78 72 88" stroke="currentColor" stroke-width="1.6" fill="none" filter="url(#mz-lueur)"/>${YEUX(66,62,73,63,2.2)}`,
+'Scribe-tyran':`<path ${SIL} d="M30 92 Q32 62 40 48 Q50 40 60 48 Q68 62 70 92Z"/><path d="M40 48 Q50 56 60 48" stroke="url(#mz-or)" stroke-width="1.4" fill="none"/>
+ <path ${SIL} d="M42 46 Q40 30 50 26 Q60 30 58 46 Q50 50 42 46Z"/><path d="M40 28 L44 14 L50 22 L56 12 L60 28Z" fill="url(#mz-or)"/>${YEUX(46,38,54,38,1.8)}
+ <path d="M64 62 Q86 40 92 12 Q78 30 62 56Z" fill="#e9dfc8" stroke="currentColor" stroke-width=".8"/><path d="M16 70 Q18 60 30 62 L34 84 Q22 82 18 88Z" fill="#d9c9a4" stroke="currentColor" stroke-width=".8"/>
+ <path d="M21 70 H30 M22 75 H31 M22 80 H31" stroke="#5a4636" stroke-width="1"/>`,
+/* Ressource (Tezcamixtli) */
+'Glaneur hagard':`<path ${SIL} d="M38 92 L40 70 Q30 64 32 52 Q36 40 48 40 Q60 42 62 54 L60 70 L62 92 L54 92 L51 76 L47 92Z"/>
+ <path ${SIL} d="M38 46 Q36 30 46 26 Q56 26 58 40 Q48 36 38 46Z"/><path d="M30 34 Q44 18 64 32 Q50 30 30 34Z" fill="#b59a5a" stroke="currentColor" stroke-width=".8"/>${YEUX(44,38,51,37,1.4)}
+ <path d="M62 56 L72 36" stroke="#6b5440" stroke-width="2.6" stroke-linecap="round"/><path d="M72 36 Q88 30 86 50 Q82 40 70 40" fill="none" stroke="#c9ced6" stroke-width="2.4"/>`,
+'Anguille des canaux':`<path d="M8 86 Q30 80 50 86 T92 86" stroke="currentColor" stroke-opacity=".5" stroke-width="1.4" fill="none"/><path d="M14 92 Q34 88 52 92 T90 92" stroke="currentColor" stroke-opacity=".35" stroke-width="1.2" fill="none"/>
+ <path ${SIL} d="M30 88 Q24 62 44 52 Q62 44 58 26 Q56 14 66 12 Q80 12 78 26 Q76 34 68 34 Q72 52 56 62 Q42 70 44 88Z"/>
+ <path d="M66 16 Q74 6 82 10 M58 30 Q50 24 52 16" stroke="currentColor" stroke-width="1.2" fill="none"/>${YEUX(70,20,75,21,1.6)}<path d="M68 28 Q72 30 76 28" stroke="#0a090c" stroke-width="1.6"/>`,
+'Mère des Gerbes':`${HALO(50,30,28)}<g stroke="#e6c46a" stroke-width="2.2" stroke-linecap="round">${Array.from({length:9},(_,i)=>{const a=-PI/2+(i-4)*.32;return`<path d="M50 30 L${(50+Math.cos(a)*30).toFixed(1)} ${(30+Math.sin(a)*30).toFixed(1)}"/>`}).join('')}</g>
+ <path ${SIL} d="M24 92 Q28 60 40 46 Q50 40 60 46 Q72 60 76 92Z"/><path d="M36 64 Q50 72 64 64 M32 78 Q50 88 68 78" stroke="currentColor" stroke-opacity=".6" stroke-width="1.2" fill="none"/>
+ <path ${SIL} d="M41 44 Q40 28 50 24 Q60 28 59 44 Q50 48 41 44Z"/>${YEUX(46,36,54,36,1.8)}`,
+/* Antre (Lucioles) */
+'Luciole ardente':`<ellipse cx="34" cy="44" rx="20" ry="9" transform="rotate(-25 34 44)" fill="#e9dfc8" fill-opacity=".22" stroke="currentColor" stroke-width=".8"/><ellipse cx="66" cy="44" rx="20" ry="9" transform="rotate(25 66 44)" fill="#e9dfc8" fill-opacity=".22" stroke="currentColor" stroke-width=".8"/>
+ ${HALO(50,72,22)}<ellipse cx="50" cy="70" rx="10" ry="14" fill="currentColor" filter="url(#mz-lueur)"/><ellipse cx="50" cy="50" rx="9" ry="11" ${SIL}/>
+ <path d="M46 40 Q40 28 34 26 M54 40 Q60 28 66 26" stroke="currentColor" stroke-width="1.2" fill="none"/>${YEUX(46,48,54,48,1.8)}`,
+'Crabe-racine':`<path d="M22 70 Q10 62 12 48 Q20 54 24 46 M78 70 Q90 62 88 48 Q80 54 76 46" stroke="currentColor" stroke-width="2.2" fill="none"/>
+ <path d="M30 78 Q20 84 14 92 M36 82 Q30 88 28 92 M70 78 Q80 84 86 92 M64 82 Q70 88 72 92" stroke="#6b5440" stroke-width="3" stroke-linecap="round" fill="none"/>
+ <path ${SIL} d="M24 74 Q24 54 50 52 Q76 54 76 74 Q64 84 50 84 Q36 84 24 74Z"/><path d="M34 62 Q50 56 66 62" stroke="currentColor" stroke-opacity=".6" fill="none"/>
+ <path d="M10 46 Q4 36 14 32 Q20 40 12 44Z M90 46 Q96 36 86 32 Q80 40 88 44Z" fill="#3a3340" stroke="currentColor"/>${YEUX(44,58,56,58,2)}`,
+'Reine-luciole':`<path d="M50 50 Q14 18 6 40 Q8 62 46 58Z M50 50 Q86 18 94 40 Q92 62 54 58Z" fill="#e9dfc8" fill-opacity=".18" stroke="currentColor" stroke-width="1"/>
+ <path d="M48 58 Q22 66 18 84 Q34 82 48 64Z M52 58 Q78 66 82 84 Q66 82 52 64Z" fill="#e9dfc8" fill-opacity=".12" stroke="currentColor" stroke-width=".8"/>
+ ${HALO(50,78,22)}<ellipse cx="50" cy="76" rx="9" ry="15" fill="currentColor" filter="url(#mz-lueur)"/><ellipse cx="50" cy="52" rx="10" ry="12" ${SIL}/><circle cx="50" cy="38" r="7" ${SIL}/>
+ <path d="M43 32 L45 24 L50 30 L55 24 L57 32Z" fill="url(#mz-or)"/>${YEUX(47,38,53,38,1.5)}`,
+/* Marché (Givrecloche) */
+'Colporteur givré':`<rect x="52" y="40" width="26" height="34" rx="3" fill="#3b4652" stroke="currentColor" stroke-width="1.1"/><path d="M52 50 H78 M52 60 H78" stroke="currentColor" stroke-opacity=".5"/>
+ <path ${SIL} d="M34 92 L36 64 Q32 50 40 42 Q48 38 56 44 Q60 54 58 64 L60 92 L52 92 L48 74 L44 92Z"/>
+ <path ${SIL} d="M38 44 Q36 28 46 24 Q56 26 56 42 Q46 40 38 44Z"/><path d="M34 30 Q46 18 60 30Z" fill="#cfe3f0" opacity=".85"/>${YEUX(43,37,50,37,1.4)}
+ <path d="M34 58 L22 66" stroke="#1d1a20" stroke-width="3.5" stroke-linecap="round"/>${HALO(20,72,12)}<rect x="16" y="66" width="8" height="11" rx="1.5" fill="#f3d27a" filter="url(#mz-lueur)"/>`,
+'Mâtin de cloche':`<path ${SIL} d="M14 72 Q14 58 28 56 L58 54 Q66 40 76 42 Q90 44 90 56 Q86 62 78 62 L76 74 L80 92 L72 92 L68 76 L40 76 L36 92 L28 92 L28 74 Q18 76 14 72Z"/>
+ <path d="M14 66 Q4 60 8 50" stroke="currentColor" stroke-width="2" fill="none"/><path d="M74 40 L72 30 L80 38Z" fill="#3a3340" stroke="currentColor"/>
+ <path d="M62 60 Q70 66 78 62" stroke="#9aa3ad" stroke-width="2.4" fill="none"/><path d="M66 64 Q66 74 72 74 Q78 74 76 64Z" fill="url(#mz-or)"/>${YEUX(80,48,85,49,1.6)}`,
+'Prévôt de la Foire':`<path ${SIL} d="M30 92 Q32 60 40 50 Q50 44 60 50 Q68 60 70 92Z"/><path d="M40 50 L60 50 L56 92 M44 92 L40 50" stroke="currentColor" stroke-opacity=".45" fill="none"/>
+ <path ${SIL} d="M42 48 Q40 34 50 30 Q60 34 58 48 Q50 52 42 48Z"/><path d="M30 32 Q50 18 70 32 Q60 28 50 30 Q40 28 30 32Z M38 30 Q50 6 62 30Z" fill="#232a33" stroke="currentColor" stroke-width="1"/>${YEUX(46,40,54,40,1.6)}
+ <path d="M72 92 L74 22" stroke="url(#mz-or)" stroke-width="2.4"/><path d="M68 22 Q74 8 80 22 Q74 26 68 22Z" fill="url(#mz-or)"/><circle cx="74" cy="25" r="1.6" fill="#0a090c"/>`,
+/* Bêtes alliées */
+'Luciole de nuit':`<ellipse cx="34" cy="46" rx="18" ry="8" transform="rotate(-25 34 46)" fill="#bcd6ff" fill-opacity=".25" stroke="currentColor" stroke-width=".8"/><ellipse cx="66" cy="46" rx="18" ry="8" transform="rotate(25 66 46)" fill="#bcd6ff" fill-opacity=".25" stroke="currentColor" stroke-width=".8"/>
+ ${HALO(50,70,20)}<ellipse cx="50" cy="68" rx="9" ry="12" fill="currentColor" filter="url(#mz-lueur)"/><ellipse cx="50" cy="51" rx="8" ry="10" ${SIL}/>${YEUX(46,49,54,49,1.6)}`,
+'Lancière de l\'aurore':`${HALO(50,50,30)}<path d="M70 92 L58 8" stroke="url(#mz-or)" stroke-width="2.4"/><path d="M58 8 L54 20 L61 18Z" fill="#f5dc9c" filter="url(#mz-lueur)"/>
+ <path d="M50 52 Q24 30 20 46 Q26 58 46 58Z M50 52 Q76 30 82 46 Q76 58 54 58Z" fill="#ffe6a8" fill-opacity=".2" stroke="currentColor" stroke-width=".8"/>
+ <path ${SIL} d="M40 92 L42 64 Q38 52 44 46 Q50 42 56 46 Q62 52 58 64 L60 92 L53 92 L50 74 L47 92Z"/><path ${SIL} d="M43 44 Q42 30 50 28 Q58 30 57 44 Q50 48 43 44Z"/>${YEUX(47,38,53,38,1.4)}`};
+/* Le héros : un pèlerin en cape rouge, bâton à la main, vu de trois quarts */
+const HEROS=`${HALO(72,30,12)}<path d="M70 92 L74 16" stroke="#7a5a3c" stroke-width="3" stroke-linecap="round"/><circle cx="74" cy="15" r="3.2" fill="#ffd27a" filter="url(#mz-lueur)"/>
+ <path d="M26 92 Q28 62 38 48 Q50 40 62 48 Q72 62 74 92Z" fill="url(#mz-cape)" stroke="#e8c77f" stroke-width="1.2"/>
+ <path d="M40 92 Q44 66 50 58 Q56 66 60 92Z" fill="#e9dfc8" opacity=".9"/><path d="M62 60 Q68 62 72 58" stroke="#d8b48a" stroke-width="3.4" stroke-linecap="round"/>
+ <path d="M38 48 Q36 30 50 22 Q64 30 62 48 Q56 42 50 42 Q44 42 38 48Z" fill="#2a2630" stroke="#e8c77f" stroke-width="1.2"/><ellipse cx="50" cy="40" rx="7.5" ry="8.5" fill="#d8b48a"/><path d="M42 36 Q50 30 58 36 Q54 33 50 33 Q46 33 42 36Z" fill="#2a2630"/>
+ <circle cx="47" cy="41" r="1.1" fill="#2a1a10"/><circle cx="53" cy="41" r="1.1" fill="#2a1a10"/>`;
+function portrait(u){if(u.hero)return`<svg viewBox="0 0 100 100">${OMBRE}${HEROS}</svg>`;
+  const b=BETES[u.nom];if(b)return`<svg viewBox="0 0 100 100">${OMBRE}${b}</svg>`;
+  return`<svg viewBox="0 0 100 100">${OMBRE}<path ${SIL} d="M34 92 L36 58 Q36 42 50 40 Q64 42 64 58 L66 92Z"/>${YEUX(45,52,55,52)}</svg>`}
+function uniteEl(u,host){const d=document.createElement('div');d.className='u'+(u.chef?' chef':'')+(u.hero?' hero':'')+(u.bete?' bete':'');
+  const c=u.hero?'#e8c77f':u.bete?(u.nom.indexOf('nuit')>=0?'#9cc4ff':'#ffd27a'):ZCOL[u.z]||'#c9a45c';d.style.setProperty('--uc',c);d.style.setProperty('--ucg',rgba(c,.45));
+  d.innerHTML=`<div class="int"></div><div class="por" style="color:${c}">${portrait(u)}</div><div class="plaque"><div class="un">${u.nom}</div><div class="bar"><i></i><span></span></div></div><div class="gd"></div>`;
+  $(host).appendChild(d);u.el=d;if(CB&&u.hero)decorCombat(CB.Z.id)}
+
+/* ---------- Décor de combat : un paysage par zone, en couches (ciel, lointain, proche, sol) ---------- */
+const DECOR={
+CIT:{ciel:['#2a3140','#6b4a3e','#c9875a'],sol:'#1a1612',lune:'#f2d9a8',
+  loin:`<path d="M0 560 L120 470 L220 520 L360 430 L470 500 L600 440 L760 520 L900 450 L1040 510 L1180 430 L1320 500 L1460 450 L1600 520 L1600 900 L0 900Z" fill="#3b3a44"/>`,
+  proche:`<g fill="#15161a">${Array.from({length:22},(_,i)=>{const x=i*76+(i%3)*14,h=180+(i*53%120);return`<path d="M${x} 700 L${x+34} ${700-h} L${x+68} 700Z M${x+8} 660 L${x+34} ${640-h} L${x+60} 660Z"/>`}).join('')}</g>
+   <g fill="#201c1a"><rect x="560" y="520" width="480" height="170"/>${Array.from({length:24},(_,i)=>`<path d="M${560+i*20} 520 L${570+i*20} 500 L${580+i*20} 520Z"/>`).join('')}
+   <rect x="740" y="400" width="120" height="140"/><path d="M730 410 Q800 300 870 410Z"/><path d="M790 330 Q800 280 810 330Z"/></g><g fill="#ffbf6a" filter="url(#mz-lueur)"><rect x="760" y="440" width="9" height="15" rx="4"/><rect x="790" y="440" width="9" height="15" rx="4"/><rect x="820" y="440" width="9" height="15" rx="4"/><rect x="600" y="580" width="9" height="15" rx="4"/><rect x="680" y="600" width="9" height="15" rx="4"/><rect x="940" y="585" width="9" height="15" rx="4"/><rect x="990" y="610" width="9" height="15" rx="4"/></g>`},
+DON:{ciel:['#120c0c','#2a1310','#6a2310'],sol:'#120c0b',lune:'#ff8a3a',
+  loin:`<g fill="#3a1c13" stroke="#e0782f" stroke-opacity=".35" stroke-width="3">${Array.from({length:6},(_,i)=>`<path d="M${i*300-40} 900 L${i*300-40} 420 Q${i*300+110} 260 ${i*300+260} 420 L${i*300+260} 900 L${i*300+220} 900 L${i*300+220} 440 Q${i*300+110} 320 ${i*300} 440 L${i*300} 900Z"/>`).join('')}</g>`,
+  proche:`<rect x="0" y="720" width="1600" height="180" fill="#ff6a1a" opacity=".35" filter="url(#mz-flou)"/><g stroke="#3a2a22" stroke-width="10">${[180,460,1140,1420].map(x=>`<path d="M${x} 0 L${x} ${180+x%170}"/>`).join('')}</g>
+   <g fill="#0d0908"><path d="M0 900 L0 640 L140 600 L160 900Z M1600 900 L1600 620 L1450 600 L1430 900Z"/></g>`},
+RES:{ciel:['#1f3a3a','#4f7a62','#e7c87a'],sol:'#132017',lune:'#fff1b8',
+  loin:`<path d="M0 560 Q200 500 400 540 T800 520 T1200 540 T1600 510 L1600 900 L0 900Z" fill="#2c4a3c"/><path d="M0 620 L1600 620 L1600 640 L0 640Z" fill="#9fd0c0" opacity=".25"/>`,
+  proche:`<g stroke="#1b2d1f" stroke-width="5" stroke-linecap="round">${Array.from({length:40},(_,i)=>{const x=i*41,h=90+(i*37%80);return`<path d="M${x} 760 Q${x+8} ${760-h/2} ${x+(i%2?18:-10)} ${760-h}"/>`}).join('')}</g>
+   <g fill="#e6c46a" opacity=".55" filter="url(#mz-lueur)">${Array.from({length:14},(_,i)=>`<circle cx="${60+i*113}" cy="${560+(i*71%90)}" r="5"/>`).join('')}</g>`},
+ANT:{ciel:['#05070d','#0d1626','#203047'],sol:'#07090c',lune:'#e2cb62',
+  loin:`<path d="M0 900 L0 300 Q200 140 520 200 Q800 90 1080 200 Q1400 140 1600 300 L1600 900Z" fill="#0b0e14"/><path d="M300 900 Q300 420 800 380 Q1300 420 1300 900Z" fill="#141c2a"/>`,
+  proche:`<g fill="#e2cb62" filter="url(#mz-lueur)">${Array.from({length:40},(_,i)=>`<circle cx="${(i*197)%1600}" cy="${200+(i*131)%460}" r="${2+i%3}" opacity="${.35+(i%5)*.12}"/>`).join('')}</g>
+   <g fill="#06070a">${Array.from({length:9},(_,i)=>`<path d="M${i*190} 0 L${i*190+40} ${90+(i*61%110)} L${i*190+80} 0Z"/>`).join('')}</g>`},
+MAR:{ciel:['#1b2333','#3e5068','#a9c3d8'],sol:'#1a1f26',lune:'#eaf4ff',
+  loin:`<path d="M0 560 L180 420 L300 500 L460 360 L620 480 L800 380 L980 500 L1160 400 L1320 490 L1460 420 L1600 500 L1600 900 L0 900Z" fill="#5d7088"/><path d="M460 360 L420 420 L500 410Z M800 380 L760 440 L840 430Z" fill="#e8f2fb" opacity=".7"/>`,
+  proche:`<g fill="#151a21">${[120,420,1060,1360].map(x=>`<path d="M${x} 720 L${x} 560 L${x+70} 520 L${x+140} 560 L${x+140} 720Z"/><path d="M${x-10} 566 L${x+70} 510 L${x+150} 566 L${x+150} 580 L${x-10} 580Z" fill="#2f3c4c"/>`).join('')}
+   <path d="M780 300 L780 380" stroke="#151a21" stroke-width="6"/><path d="M740 430 Q740 370 780 370 Q820 370 820 430 L830 446 L730 446Z"/></g>
+   <g fill="#fff" opacity=".7">${Array.from({length:60},(_,i)=>`<circle cx="${(i*263)%1600}" cy="${(i*149)%720}" r="${1.5+i%3}"/>`).join('')}</g>`}};
+let decorZ='';
+function decorCombat(z){const D=DECOR[z];let el=$('cb-decor');if(!D)return;
+  if(!el){el=document.createElement('div');el.id='cb-decor';$('combat').prepend(el)}
+  if(decorZ===z)return;decorZ=z;const c=D.ciel;
+  el.innerHTML=`<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="mz-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".55" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient>
+   <radialGradient id="mz-vign" cx=".5" cy=".45" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></radialGradient></defs>
+   <rect width="1600" height="900" fill="url(#mz-ciel)"/><circle cx="300" cy="170" r="70" fill="${D.lune}" opacity=".75" filter="url(#mz-flou)"/><circle cx="300" cy="170" r="46" fill="${D.lune}" opacity=".9"/>
+   ${D.loin}${D.proche}<path d="M0 700 Q800 650 1600 700 L1600 900 L0 900Z" fill="${D.sol}"/><ellipse cx="800" cy="700" rx="620" ry="60" fill="#000" opacity=".25"/>
+   <rect width="1600" height="900" fill="url(#mz-girih)" opacity=".5"/><rect width="1600" height="900" fill="url(#mz-vign)"/></svg>`}
+
+/* ---------- Illustrations des cartes : une par sorte de carte (les cartes communes partagent la leur) ---------- */
+const ART={
+coup:{fond:['#3a1f16','#a0482a'],sorte:'Attaque',d:`<circle cx="104" cy="44" r="30" fill="#ffcf7a" opacity=".35" filter="url(#mz-lueur)"/>
+  <g stroke="#ffe2a8" stroke-width="2" stroke-linecap="round" opacity=".9">${Array.from({length:10},(_,i)=>{const a=i*PI/5;return`<path d="M${(104+Math.cos(a)*14).toFixed(1)} ${(44+Math.sin(a)*14).toFixed(1)} L${(104+Math.cos(a)*30).toFixed(1)} ${(44+Math.sin(a)*30).toFixed(1)}"/>`}).join('')}</g>
+  <path d="M22 96 L104 44" stroke="#6b4a2c" stroke-width="7" stroke-linecap="round"/><path d="M22 96 L104 44" stroke="#c99a62" stroke-width="2" stroke-linecap="round"/>
+  <path d="M30 80 Q60 40 110 30" stroke="#fff" stroke-opacity=".35" stroke-width="2" fill="none"/><path d="M36 88 Q70 52 118 40" stroke="#fff" stroke-opacity=".2" stroke-width="1.5" fill="none"/>`},
+garde:{fond:['#14202e','#3e6a8a'],sorte:'Défense',d:`<path d="M30 20 Q56 6 80 50 Q56 94 30 80" stroke="#9cc4e4" stroke-opacity=".35" stroke-width="2" fill="none"/>
+  <path d="M80 14 L112 24 Q114 64 80 90 Q46 64 48 24Z" fill="#2a3a4c" stroke="url(#mz-or)" stroke-width="2.5"/>
+  <path d="M80 30 L85 44 L99 46 L88 55 L92 70 L80 61 L68 70 L72 55 L61 46 L75 44Z" fill="url(#mz-or)"/>
+  <path d="M124 30 Q136 50 124 74 M134 24 Q150 50 134 82" stroke="#9cc4e4" stroke-opacity=".5" stroke-width="2" fill="none"/>`},
+souffle:{fond:['#102826','#3f8a7e'],sorte:'Technique',d:`<g fill="none" stroke="#d8fff4" stroke-linecap="round">
+  <path d="M20 62 Q60 40 96 54 Q122 64 118 44 Q112 28 96 36" stroke-width="3" stroke-opacity=".85"/>
+  <path d="M30 78 Q76 64 116 72 Q146 78 140 60" stroke-width="2" stroke-opacity=".55"/>
+  <path d="M40 38 Q70 26 92 32" stroke-width="1.6" stroke-opacity=".45"/></g>
+  <g fill="#d8fff4" opacity=".7"><circle cx="128" cy="28" r="2"/><circle cx="140" cy="40" r="1.4"/><circle cx="56" cy="24" r="1.2"/></g>`},
+CIT:{sorte:'Défense',d:`<rect x="0" y="66" width="160" height="34" fill="#1e1612"/>
+  <g fill="#2a1f19" stroke="#c0584c" stroke-opacity=".7">${Array.from({length:16},(_,i)=>`<path d="M${i*10} 100 L${i*10} 58 L${i*10+5} 50 L${i*10+10} 58 L${i*10+10} 100Z"/>`).join('')}</g>
+  <rect x="64" y="28" width="32" height="40" fill="#241a15"/><path d="M60 32 Q80 2 100 32Z" fill="url(#mz-or)"/><path d="M78 10 Q80 0 82 10Z" fill="url(#mz-or)"/>
+  <rect x="74" y="44" width="12" height="24" rx="6" fill="#ffcf7a" opacity=".8" filter="url(#mz-lueur)"/>`},
+DON:{sorte:'Attaque',d:`<path d="M30 100 L30 40 Q80 -4 130 40 L130 100 L116 100 L116 46 Q80 12 44 46 L44 100Z" fill="#1a0f0c" stroke="#e0782f" stroke-opacity=".6"/>
+  <rect x="44" y="70" width="72" height="30" fill="#ff6a1a" opacity=".55" filter="url(#mz-lueur)"/>
+  <path d="M60 30 L100 30 L102 76 L58 76Z" fill="#e9dfc8" stroke="#6b4a2c"/><path d="M64 40 H96 M64 48 H96 M64 56 H92 M64 64 H95" stroke="#7a2a1a" stroke-width="1.6"/>
+  <circle cx="80" cy="76" r="6" fill="#b3261e" stroke="url(#mz-or)"/>`},
+RES:{sorte:'Boost',d:`<path d="M0 74 Q40 68 80 74 T160 72 L160 100 L0 100Z" fill="#1c3a30"/><path d="M0 82 Q40 78 80 82 T160 80" stroke="#9fd0c0" stroke-opacity=".5" fill="none"/>
+  <circle cx="80" cy="44" r="30" fill="#ffe08a" opacity=".3" filter="url(#mz-lueur)"/>
+  <g stroke="#e6c46a" stroke-width="2.2" stroke-linecap="round">${Array.from({length:11},(_,i)=>{const a=-PI/2+(i-5)*.17;return`<path d="M80 76 Q${(80+Math.cos(a)*14).toFixed(1)} 56 ${(80+Math.cos(a)*34).toFixed(1)} ${(76+Math.sin(a)*52).toFixed(1)}"/>`}).join('')}</g>
+  <path d="M70 66 Q80 72 90 66" stroke="#6b4a2c" stroke-width="3"/>`},
+ANT:{sorte:'Invocation',d:`<path d="M0 100 L0 20 Q80 -10 160 20 L160 100Z" fill="#070a10"/><path d="M40 100 Q40 40 80 34 Q120 40 120 100Z" fill="#1d2a3e"/><circle cx="80" cy="62" r="26" fill="#e2cb62" opacity=".25" filter="url(#mz-lueur)"/>
+  <g fill="#e2cb62" filter="url(#mz-lueur)">${Array.from({length:16},(_,i)=>`<circle cx="${(i*47)%150+5}" cy="${16+(i*29)%70}" r="${1+i%3}" opacity="${.4+(i%4)*.15}"/>`).join('')}</g>
+  <ellipse cx="80" cy="62" rx="7" ry="10" fill="#ffe27a" filter="url(#mz-lueur)"/><ellipse cx="68" cy="52" rx="12" ry="5" transform="rotate(-25 68 52)" fill="#fff" fill-opacity=".25"/><ellipse cx="92" cy="52" rx="12" ry="5" transform="rotate(25 92 52)" fill="#fff" fill-opacity=".25"/>`},
+MAR:{sorte:'Technique',d:`<path d="M0 100 L0 70 L40 56 L80 66 L120 52 L160 64 L160 100Z" fill="#2a3442"/>
+  <path d="M80 10 L80 22" stroke="#cfe3f0" stroke-width="2"/><path d="M60 62 Q60 24 80 22 Q100 24 100 62 L106 70 L54 70Z" fill="url(#mz-or)" stroke="#7d6230"/>
+  <circle cx="80" cy="72" r="4" fill="#7d6230"/><path d="M48 50 Q40 60 48 70 M112 50 Q120 60 112 70 M38 44 Q26 60 38 76 M122 44 Q134 60 122 76" stroke="#cfe3f0" stroke-opacity=".6" stroke-width="1.6" fill="none"/>
+  <g fill="#fff" opacity=".8">${Array.from({length:14},(_,i)=>`<circle cx="${(i*53)%160}" cy="${(i*37)%60+4}" r="${.8+i%2}"/>`).join('')}</g>`}};
+function artCarte(k){const a=ART[k]||ART.coup,z=CK[k].z,col=z?ZCOL[z]:null;
+  return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="mz-f-${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0c0f"/><stop offset="1" stop-color="${a.fond?a.fond[1]:col}"/></linearGradient></defs>
+   <rect width="160" height="100" fill="url(#mz-f-${k})"/><rect width="160" height="100" fill="url(#mz-girih)"/>${a.d}</svg>`}
+function carteHTML(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,a=ART[k]||ART.coup;
+  const bord=z?ZCOL[z]:'#c9a45c';
+  const ligne=z?`${a.sorte} · ${typeof ZMANA!=='undefined'?ZMANA[z]:ZCOURT[z]}`:`${a.sorte} · Commune`;
+  return`<div class="cc kcarte ${z?'z':'base'}" style="--kb:${bord};--kcA:${rgba(bord,.28)};--kcB:${rgba(bord,.8)}"><div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${c.txt(k)}</div></div>`}
+/* MozaWorld TV : manette (17 novembre). L'utilisateur a branché une manette Xbox sur la Bravia.
+   Sur la télé, l'appli relaie elle-même les sticks et les boutons (MainActivity → window.MZpad), car la WebView ne les voit pas ;
+   sur PC, on lit l'API Gamepad du navigateur. La télécommande et le clavier marchent toujours.
+
+   Monde   : stick gauche = marcher dans la direction poussée (vitesse selon l'inclinaison), stick droit = caméra,
+             gâchette droite (RT) ou clic du stick = courir, A = sauter / agir, X = marche automatique,
+             Y = paquet de combat, B ou Menu (≡) = menu, Vue (⧉) = voyager.
+   Combat  : stick, croix ou LB / RB = choisir la carte ou la cible, A = jouer, X = fin du tour, B = annuler / pause.
+   Menus   : stick ou croix, A = valider, B = retour. Épreuves : stick ou croix, A = OK. */
+
+const PAD={lx:0,ly:0,rx:0,ry:0,lt:0,rt:0,hx:0,hy:0,b:{},on:false,web:false,dir:{},dirT:{},rep:{},plein:0};
+window.MZpad={axes(a){[PAD.lx,PAD.ly,PAD.rx,PAD.ry,PAD.lt,PAD.rt,PAD.hx,PAD.hy]=a.map(Number);padActif()},
+  btn(n,d){if(d&&!PAD.b[n])padBouton(n);PAD.b[n]=!!d;padActif()}};
+function padActif(){if(PAD.on)return;PAD.on=true;document.body.classList.add('manette');padTextes()}
+function padInactif(){if(!PAD.on)return;PAD.on=false;document.body.classList.remove('manette')}
+
+/* ---------- Boutons ---------- */
+function padBouton(n){if(AX&&AX.state==='suspended')AX.resume();
+  if(mode==='combat'&&CB){const C=CB;
+    if(n==='x'){if(!C.busy&&!C.sel){C.f=C.main.length;cbInput('ok',false)}return}
+    if(n==='lb'||n==='rb'){cbInput(n==='lb'?'left':'right',false);return}
+    if(n==='a'){cbInput('ok',false);return}
+    if(n==='b'||n==='start'){cbInput('back',false);return}return}
+  if(mode==='monde'){
+    if(n==='x'){P.auto=P.auto?0:1;return}
+    if(n==='y'){mode='menu';document.body.classList.add('jeu-ouvert');openCombatPaquet();return}
+    if(n==='select'){mode='menu';document.body.classList.add('jeu-ouvert');openVoyage();return}
+    if(n==='start'){P.auto=0;openMenu();return}}
+  if(n==='a')act('ok',false);
+  else if(n==='b'||n==='start')act('back',false)}
+
+/* ---------- Directions : stick gauche, croix ---------- */
+/* Dans le monde, le stick gauche est analogique (move lit padMarche) ; partout ailleurs il sert de flèches, avec répétition. */
+const DIRN=['up','down','left','right'];
+function padDirs(stick){const s=stick?.5:9,b=PAD.b;
+  return{up:PAD.ly<-s||PAD.hy<-.5||b.du,down:PAD.ly>s||PAD.hy>.5||b.dd,left:PAD.lx<-s||PAD.hx<-.5||b.dl,right:PAD.lx>s||PAD.hx>.5||b.dr}}
+function pollPad(){const t=performance.now();
+  /* PC : API Gamepad standard (manette Xbox branchée sur l'ordinateur) */
+  const ps=navigator.getGamepads?navigator.getGamepads():[];
+  for(const p of ps){if(!p||!p.connected)continue;const B=i=>!!(p.buttons[i]&&p.buttons[i].pressed),A=i=>{const v=p.axes[i]||0;return Math.abs(v)<.15?0:v};
+    const k=[A(0),A(1),A(2),A(3),p.buttons[6]?p.buttons[6].value:0,p.buttons[7]?p.buttons[7].value:0,0,0];
+    const names={a:0,b:1,x:2,y:3,lb:4,rb:5,select:8,start:9,ls:10,rs:11,du:12,dd:13,dl:14,dr:15};
+    const any=k.some(v=>Math.abs(v)>.3)||Object.values(names).some(B);
+    if(!PAD.web&&!any)break;PAD.web=true;
+    [PAD.lx,PAD.ly,PAD.rx,PAD.ry,PAD.lt,PAD.rt]=k;
+    for(const n in names)MZpad.btn(n,B(names[n]));break}
+  if(!PAD.on)return;
+  const libre=mode==='monde'||(mode==='epreuve'&&E&&E.monde);
+  const d=padDirs(!libre);
+  for(const a of DIRN){
+    if(d[a]&&!PAD.dir[a]){PAD.dirT[a]=t;PAD.rep[a]=t+380;held[a]=t;heldT[a]=t;act(a,false)}
+    else if(d[a]){held[a]=t;if(!libre&&t>PAD.rep[a]){PAD.rep[a]=t+150;act(a,true)}}
+    else if(PAD.dir[a])held[a]=0;
+    PAD.dir[a]=!!d[a]}}
+
+/* ---------- Marche analogique et caméra (appelées par move) ---------- */
+/* renvoie la direction et la vitesse de marche voulues par le stick gauche, ou null s'il est au repos */
+function padMarche(dt){if(!PAD.on)return null;
+  /* caméra : stick droit, en tout temps dans le monde */
+  if(PAD.rx)P.yaw-=PAD.rx*dt*2.8;
+  if(PAD.ry)P.pitch=clamp(P.pitch+PAD.ry*dt*1.4,.06,1.15);
+  const fwd=-PAD.ly,str=PAD.lx,mag=Math.min(1,Math.hypot(fwd,str));
+  if(mag<.18){PAD.plein=0;return null}
+  P.auto=0;
+  PAD.plein=mag>.92?PAD.plein+dt:0;
+  const court=PAD.rt>.3||PAD.b.ls||PAD.b.rt||PAD.plein>.6;
+  const m=P.yaw-Math.atan2(str,fwd);
+  /* la caméra se replace doucement derrière le héros quand on avance sans toucher au stick droit */
+  if(!PAD.rx&&fwd>-.2){const df=((m-P.yaw)%TAU+TAU+PI)%TAU-PI;P.yaw+=df*Math.min(1,dt*1.1*mag)}
+  return{m,sp:(court?27:15)*Math.max(.35,mag)}}
+
+/* ---------- Aide à l'écran : quand la manette sert, OK devient A, Retour devient B, etc. ---------- */
+const BT=(l,c)=>`<span class="bt ${c}">${l}</span>`;
+function padRemplacer(el){if(!PAD.on||!el||el.dataset.pad===el.innerHTML)return;let h=el.innerHTML;
+  h=h.replace(/<span class="ok">OK<\/span>/g,BT('A','a')+' ').replace(/▼ fin du tour/g,BT('X','x')+' fin du tour').replace(/▼ annuler/g,BT('B','b')+' annuler')
+   .replace(/◀ ▶/g,'◀ ▶').replace(/\bOK\b/g,BT('A','a')).replace(/Retour pause/g,BT('B','b')+' pause').replace(/tenez ▲ pour courir/g,'gâchette RT pour courir');
+  el.innerHTML=h;el.dataset.pad=h}
+function padTextes(){for(const id of['cb-aide','invite','j-c','cb-log'])padRemplacer($(id))}
+try{const mo=new MutationObserver(()=>{if(PAD.on)padTextes()});
+  for(const id of['cb-aide','invite','j-c','cb-log'])mo.observe(document.getElementById(id),{childList:true,characterData:true,subtree:true})}catch(e){console.log('manette : aide',e)}
 /* MozaWorld TV : héros, Pierres d'éveil, épreuves, cartes, télécommande, musique, boucle. */
 const $=id=>document.getElementById(id);
 const IDS=['CIT','DON','RES','ANT','MAR'];
@@ -1468,6 +1929,7 @@ try{const j=JSON.parse(localStorage.getItem('mz-tv-1')||'null');if(j&&j.lv){Obje
 for(const id of IDS)if(S.act[id]===undefined)S.act[id]=!!S.own[id];
 if(!Array.isArray(S.deck)||!S.deck.length)S.deck=DEPART.concat(IDS.filter(id=>S.act[id]));
 if(S.renc===undefined)S.renc=1;
+initEco();
 function save(){S.found=secrets.map((s,i)=>s.found?i:-1).filter(i=>i>=0);try{localStorage.setItem('mz-tv-1',JSON.stringify(S))}catch(_){}}
 const now=()=>Date.now()/1000;
 const restLeft=Z=>Math.max(0,(S.rest[Z.id]||0)-now());
@@ -1542,22 +2004,13 @@ function keyAct(e){const k=e.key,c=e.keyCode;
   if(k==='Escape'||k==='Backspace'||k==='GoBack'||k==='BrowserBack'||c===4||c===8||c===27||c===461||c===10009)return'back';
   if(e.code==='KeyM'||k==='MediaPlayPause'||c===179)return'son';return null}
 addEventListener('keydown',e=>{const a=keyAct(e);if(!a)return;e.preventDefault();
+  if((a==='ok'||a==='back')&&!e.repeat)padInactif();
   if(a in held){if(!held[a])heldT[a]=performance.now();held[a]=performance.now()}
   act(a,e.repeat)},{capture:true});
 addEventListener('keyup',e=>{const a=keyAct(e);if(a in held)held[a]=0});
 /* Le bouton Retour de la télécommande recule dans l'historique : on le retient et on en fait « menu » */
 try{history.pushState({mz:1},'');addEventListener('popstate',()=>{history.pushState({mz:1},'');act('back',false)})}catch(_){}
-let padPrev={};
-function pollPad(){const ps=navigator.getGamepads?navigator.getGamepads():[];let cur={};
-  for(const p of ps){if(!p)continue;const b=i=>p.buttons[i]&&p.buttons[i].pressed,ax=i=>p.axes[i]||0;
-    if(b(12)||ax(1)<-.5)cur.up=1;if(b(13)||ax(1)>.5)cur.down=1;if(b(14)||ax(0)<-.5)cur.left=1;if(b(15)||ax(0)>.5)cur.right=1;
-    if(b(0))cur.ok=1;if(b(1)||b(9)||b(8))cur.back=1}
-  const t=performance.now();
-  for(const a of['up','down','left','right','ok','back']){
-    if(cur[a]&&!padPrev[a]){if(a in held){held[a]=t;heldT[a]=t}act(a,false)}
-    else if(cur[a]&&a in held)held[a]=t;
-    else if(!cur[a]&&padPrev[a]&&a in held)held[a]=0}
-  padPrev=cur}
+/* La manette (Xbox) est gérée dans manette.js : pollPad(), padMarche() */
 /* Filet de sécurité : une touche dont on ne reçoit plus rien depuis 1,2 s est relâchée */
 const isHeld=a=>held[a]&&performance.now()-held[a]<1200;
 
@@ -1565,15 +2018,18 @@ function terrainAll(){const a=terrain.geometry.attributes;for(const n of['positi
 
 /* ---------- Modes ---------- */
 let mode='titre',curZ=null,hudKey='',started=false;
-let lastBack=0;
+let lastBack=0,lastUp=0;
 function act(a,rep){
   if(AX&&AX.state==='suspended')AX.resume();
   if(a==='back'){const t=performance.now();if(t-lastBack<250)return;lastBack=t}
   if(a==='son'){toggleSound();return}
   if(mode==='titre'||mode==='menu'){uiAct(a,rep);return}
   if(mode==='monde'){if(rep)return;
-    if(a==='ok'){if(nearAlt())openEveil(curZ);else if(P.g){P.vy=11.5;P.g=false}}
-    if(a==='back')openMenu();return}
+    /* marche automatique : ▲ deux fois de suite, le héros avance seul (◀ ▶ pour diriger, ▼ ou OK pour s'arrêter) */
+    if(a==='up'){const t=performance.now();if(t-lastUp<450)P.auto=1;lastUp=t}
+    if(a==='down'&&P.auto){P.auto=0;held.down=0}
+    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else if(P.g){P.vy=11.5;P.g=false}}
+    if(a==='back'){P.auto=0;openMenu()}return}
   if(mode==='epreuve'){if(a==='back'&&!rep){pauseEpreuve();return}if(E&&E.input)E.input(a,rep);return}
   if(mode==='mue'){if(a==='ok'&&!rep&&mue.t>2.5)mue.t=99}
   if(mode==='combat'){cbInput(a,rep)}}
@@ -1604,19 +2060,20 @@ function titre(){mode='titre';const o=[];
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){for(const Z of ZN){S.lv[Z.id]=0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=0;rebuild(Z);Z.update(0);placeAlt(Z)}
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
+    S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
   mode='monde';hudKey='';etatHud();
   if(neuf)setTimeout(()=>toast('Berestograd · niveau 0','Cherchez la Pierre d\'éveil','Suivez la flèche dorée en bas de l\'écran, puis appuyez sur OK devant la Pierre.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
-  ui('menu',{sur:'Pause',t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.cards.length} carte(s) · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]),0)} sur 35</p>`,
+  ui('menu',{sur:'Pause',t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.cards.length} carte(s) · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]),0)} sur 31 · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Paquet de cartes',ic:'▤',d:S.cards.length+' carte(s)',go:openPaquet},
-    {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · mana '+manaMax(),go:openCombatPaquet},
+    {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+resTot()+' mana',go:openCombatPaquet},
+    {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
     {l:'Musique',ic:'♪',d:soundOn?'activée':'coupée',go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
@@ -1631,10 +2088,11 @@ function cardHTML(c){return`<div class="kc ${c.pole?'p':'m'}"><div class="k1">${
 function openPaquet(){ui('menu',{sur:'Paquet',t:'Vos cartes de pouvoir',corps:S.cards.length?`<div class="cartes">${S.cards.slice(-8).map(cardHTML).join('')}</div>`:'<p>Aucune carte encore. Chaque éveil réussi en donne une. Une carte facilite l\'épreuve d\'une autre zone : c\'est un contre-pouvoir.</p>',
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
-  ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Mana par tour ${manaMax()}${sourceMana()?' (dont '+sourceMana()+' de la Ressource)':''} · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
+  ui('menu',{sur:'Paquet de combat',t:'Vos cartes de combat',corps:`<p class="petit">Réserve : ${resHTML()}${prodRessource()?' (la Ressource ajoute '+prodRessource()+' '+ZMANA.RES+' par cycle)':''} · en combat, on dépense la réserve : 1 mana au tour 1, 2 au tour 2, et ainsi de suite (certaines cartes donnent un boost) · main de ${mainMax()} cartes · ${pvMax()} PV. Les cartes de zone se renforcent quand la zone s'éveille, et leur effet est doublé dans la zone qu'elles contrent.</p><div class="cartes">${Object.keys(n).map(k=>carteHTML(k).replace('<div class="cn">','<div class="cn">'+(n[k]>1?n[k]+' × ':''))).join('')}</div>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
-function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
-<p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. La zone devient à vous et vous donne son pouvoir : du mana (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
+function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter, ou agir devant une Pierre · Retour : menu.</p>
+<p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
+<p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; une carte commune avec n'importe quel type. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure et plus la carte gagnée est forte (Mineure, Majeure, Ultime).</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
@@ -1643,13 +2101,15 @@ function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',c
 let carteOn=true;
 function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ci=bestCard(Z),emp=S.emp[Z.id];
   const diff=t=>{const b=Math.abs(t)-(emp?1:0)-(carteOn&&ci>=0?S.cards[ci].pw:0);return'Épreuve '+['très facile','facile','facile','moyenne','dure','dure','très dure','redoutable'][clamp(b,0,7)]};
-  const o=[],cap=Z.id==='RES'?3:7;
+  const o=[],cap=Z.id==='RES'?3:7,res=Z.id==='RES';
   if(!S.act[Z.id]){o.push({l:'Activer la zone : affronter ses gardiens',ic:'⚔',cls:'p',d:(emp?'empreinte : gardiens affaiblis · ':'')+'combat',go:()=>startCombat(Z,'eveil')});
     o.push({l:'Éveil verrouillé',ic:'▲',off:true,d:'activez d\'abord la zone'})}
   else{
-  if(lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
-  if(lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)});
-  if(Math.abs(lv)>=cap)o.push({l:'Niveau maximal atteint',ic:'◆',off:true,d:'une Ressource ne monte que de trois niveaux'})}
+  if(res&&lv<3)o.push({l:`Niveau ${lv+1} sur 3`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
+  if(!res&&lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
+  if(!res&&lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)});
+  if(res?lv>=3:Math.abs(lv)>=cap)o.push({l:'Niveau maximal atteint',ic:'◆',off:true,d:'une Ressource va de 0 à 3, sans pôle'})}
+  if(Z.id==='DON'&&S.act.DON&&S.own.DON)o.unshift({l:'Aménager le Donjon',ic:'⛬',cls:'p',d:`${nbPieges()} piège(s) · réserve ${resTot()}`,go:()=>openDonjon()});
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
   if(ci>=0)o.push({l:`Jouer « ${S.cards[ci].nom} »`,ic:carteOn?'☑':'☐',d:carteOn?`épreuve −${S.cards[ci].pw}, carte dépensée`:'carte gardée',go:()=>{carteOn=!carteOn;openEveil(Z,UI.f)}});
   o.push({l:'Partir',ic:'◆',go:toMonde});
@@ -1797,13 +2257,20 @@ function step(){if(AX&&soundOn)perc(AX.currentTime,'c',.35)}
 
 /* ---------- Déplacement : ▲▼ avancer/reculer, ◀▶ tourner ---------- */
 function move(dt){const t=performance.now();
-  const f=(isHeld('up')?1:0)-(isHeld('down')?1:0),r=(isHeld('right')?1:0)-(isHeld('left')?1:0);
-  if(mode==='monde'||(mode==='epreuve'&&E&&E.monde)){P.yaw-=r*dt*1.9;P.run=f>0&&t-heldT.up>1100?1:0}else{P.run=0}
+  /* Plus rapide (retour du 17 nov.) : marche 14, course 27 au bout de 0,35 s ; virage qui s'accélère quand on tient ◀ ▶ */
+  if(mode!=='monde')P.auto=0;
+  const f=P.auto?1:(isHeld('up')?1:0)-(isHeld('down')?1:0),r=(isHeld('right')?1:0)-(isHeld('left')?1:0);
+  const tr=r?Math.min(1,(t-Math.max(heldT.left||0,heldT.right||0))/450):0;
+  if(mode==='monde'||(mode==='epreuve'&&E&&E.monde)){P.yaw-=r*dt*(1.7+1.5*tr);P.run=f>0&&(P.auto||t-heldT.up>350)?1:0}else{P.run=0}
   const live=(mode==='monde'||(mode==='epreuve'&&E&&E.monde));const ff=live?f:0;
-  const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),sp=(P.run?17:8.5)*(ff<0?.6:1);
-  if(ff){const dx=fx*ff*sp*dt,dz=fz*ff*sp*dt;P.face=P.yaw;
+  P.sp=(P.sp||0)+((ff?(P.run?27:14)*(ff<0?.6:1):0)-(P.sp||0))*Math.min(1,dt*6);
+  const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),sp=P.sp;
+  const pm=live?padMarche(dt):null;let dx=0,dz=0;
+  if(pm){P.sp=pm.sp;dx=Math.sin(pm.m)*pm.sp*dt;dz=Math.cos(pm.m)*pm.sp*dt;P.face=pm.m}
+  else if(ff){dx=fx*ff*sp*dt;dz=fz*ff*sp*dt;P.face=P.yaw}
+  if(dx||dz){
     const tryMove=(nx,nz)=>{if(!zoneAt(nx,nz))return false;for(const Z of ZN)if(Math.hypot(Z.alt.x-nx,Z.alt.z-nz)<2.6)return false;const s=stand(nx,nz,P.y+.05);if(s.blocked)return false;P.x=nx;P.z=nz;return true};
-    if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=sp*dt}
+    if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=Math.hypot(dx,dz)*.55}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
   if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true}}
@@ -1821,7 +2288,7 @@ function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
   $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
-function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-cartes').textContent=S.cards.length;$('h-deck').textContent=S.deck.length;$('h-mana').textContent=manaMax();$('h-sec').textContent=secrets.filter(s=>s.found).length}
+function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-cartes').textContent=S.cards.length;$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length}
 let invKey='';
 function invite(){let h='',cls='';const el=$('invite');
   if(mode==='monde'&&curZ){const a=curZ.alt,d=Math.hypot(a.x-P.x,a.z-P.z),r=restLeft(curZ);
