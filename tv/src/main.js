@@ -10,14 +10,14 @@ const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
 /* ---------- Partie : niveaux, maîtrise, empreintes, repos, cartes, blessures ---------- */
 const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},deck:DEPART.slice(),renc:1};
 /* Territoire de départ et zones scellées (17 nov., règles de l'utilisateur, regles-avancees.md section 1 ter) :
-   - le territoire de départ permet un paquet de 15 cartes : 5 communes + 10 cartes de zone, soit environ 5 zones à cartes montées au palier 2
-     (1 Citadelle, 1 Donjon, 1 Antre, 2 Assemblées) et environ 4 Ressources (qui ne donnent pas de carte) : environ 9 tuiles, au niveau 0 ;
+   - le territoire de départ permet un paquet de 15 cartes ou plus (5 communes + 2 cartes par zone à cartes montée au palier 2)
+     (choix C2 du 17 nov. : 12 tuiles, 6 zones à cartes : 1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée, et 6 Ressources sans carte), au niveau 0 ;
    - les zones qui l'entourent sont à ±5 ; au-delà, pôle ET niveau au hasard (tirés à chaque nouvelle partie) ;
    - elles ne cèdent qu'une fois toutes les zones de départ prises et le royaume assez développé (paquet d'au moins 15 cartes). */
 const DIST_DEP={},PAQUET_ROYAUME=15;
 const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR'];for(const id of org){d[id]=0;file.push(id)}
   const ordre=[];while(file.length){const z=file.shift();for(const v of (typeof VOISINES!=='undefined'?VOISINES[z]:[])||[])if(d[v]===undefined){d[v]=d[z]+1;file.push(v);ordre.push(v)}}
-  const vise={CIT:1,DON:1,ANT:1,MAR:2,RES:4},n={};for(const id of org){const t=ZB[id].mod||id;n[t]=(n[t]||0)+1}
+  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={};for(const id of org){const t=ZB[id].mod||id;n[t]=(n[t]||0)+1}
   const dep=org.slice();for(const id of ordre){const t=ZB[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
 const ESTDEP=new Set(ZONES_DEP);
 const BORD_DEP=new Set(ZN.filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES!=='undefined'?VOISINES[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
