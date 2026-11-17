@@ -40,7 +40,7 @@ Le royaume donne des **passifs de combat**, dans l'esprit des artefacts de Monst
   - Un coup ennemi frappe la Garde, qui couvre les deux voies. Sans Garde, il frappe la première unité de sa voie. Si la voie est vide, il frappe le héros.
   - Le chef change de voie à chaque tour.
   - Le centre appartient au camp qui a au moins autant d'unités sur le terrain que l'autre. Le héros qui le tient frappe à +2, avec ses bêtes. L'ennemi qui le tient frappe à +1.
-- **Remparts.** Ils naissent de deux Citadelles, ou d'une Citadelle et d'un Donjon, possédées et voisines. Chaque rempart pose un bloqueur de 10 PV au début des combats dans ses zones et dans les zones voisines, 2 au plus. Un rempart adverse actif annule l'abri des chemins.
+- **Remparts.** Décision du 17 nov. (soir) : un rempart naît d'une **route** qui relie deux Citadelles, ou une Citadelle et un Donjon, toutes possédées. (Le jeu applique encore la première version, le simple voisinage, en attendant le changement de code.) Chaque rempart pose un bloqueur de 10 PV au début des combats dans ses zones et dans les zones voisines, 2 au plus. Un rempart adverse actif annule l'abri des chemins.
 - **Prototype : blessures façon Shadowrun.** C'est une option du menu, activée par défaut pour le test.
   - Le héros a un moniteur de 10 cases, plus 2 par Citadelle.
   - Le niveau d'un coup ennemi dépend de sa puissance : 1 à 4 donne L (1 case), 5 à 8 donne M (3 cases), 9 à 14 donne S (6 cases), 15 et plus donne D (10 cases). Une frappe forte monte d'un niveau.
