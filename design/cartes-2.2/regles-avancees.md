@@ -77,6 +77,7 @@ Une **Ressource au niveau 3** offre trois atouts de son type de mana ; on en cho
 - Atouts de types différents : ils se cumulent. Deux atouts du même type : seul le meilleur compte.
 - Route coupée (horde, rival, Ressource qui recule) : l'atout est perdu tout de suite.
 - Une Ressource isolée donne son mana normalement, sans atout.
+- Une route s'ouvre dès le niveau 2 de la Ressource (menu « Routes » de sa Pierre d'éveil) vers une tuile voisine (qui partage un côté) ; l'atout ne se greffe qu'au niveau 3. Sur la minicarte, une route en pointillés attend son atout, une route pleine le porte. Le texte de la carte affiche ses atouts.
 - Les atouts sont **mineurs** mais imaginatifs : ils changent la façon de jouer une carte plus qu'ils n'en gonflent les chiffres.
 
 | Mana | Atout | Effet ajouté à la carte |
@@ -92,13 +93,13 @@ Une **Ressource au niveau 3** offre trois atouts de son type de mana ; on en cho
 | Eau | **Reflux** | La première fois par combat, la carte revient en main au lieu d'aller à la défausse. |
 | Sève | **Bouture** | Si la carte invoque, la bête a +4 PV ; sinon, le héros gagne 2 de garde. |
 | Sève | **Sève lente** | Le héros se soigne de 1 au début de chacun des 3 tours suivants. |
-| Sève | **Greffe** | La carte pose aussi Racine, même avant le palier 7. |
+| Sève | **Greffe** | La carte pose aussi Racine (réveil à moitié), même avant le palier 7. |
 | Pierre | **Assise** | Le héros gagne 3 de garde. |
-| Pierre | **Poids** | Si la carte a un prix, le prix baisse de 1 (minimum 0). |
-| Pierre | **Remploi** | La carte coûte 1 de moins la première fois qu'on la joue dans un combat. |
-| Vent | **Rafale** | Si la carte vise une cible, elle frappe aussi un deuxième ennemi pour moitié. |
+| Pierre | **Poids** | Si la carte a un prix, le héros récupère 1 PV. |
+| Pierre | **Remploi** | La première fois qu'on la joue dans un combat, la carte rend 1 de capacité. |
+| Vent | **Rafale** | Si la carte vise une cible, un deuxième ennemi subit 3 dégâts. |
 | Vent | **Vent porteur** | La carte coûte du mana gris sans perdre 25 % (une fois par combat). |
-| Vent | **Girouette** | Après la carte, regardez l'intention des ennemis du tour suivant (elle s'affiche à l'avance). |
+| Vent | **Girouette** | Après la carte, un ennemi qui prenait son élan le perd. |
 
 Exemple : Les Dunes de Balo (Feu) au niveau 3, atout **Tison** choisi, reliées par une route au Canyon de Fjorhel. La loi du Canyon laisse désormais 2 de brûlure à chaque fois qu'on la joue. Si un rival coupe la route, l'atout disparaît.
 

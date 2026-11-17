@@ -77,14 +77,14 @@ function startCombat(Z,kind){
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
-function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.riposte=0;CB.echo=false;CB.nrecup=0;CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
+function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.riposte=0;CB.echo=false;CB.nrecup=0;CB.nJoues=0;if(typeof atoutsDebutTour==='function')atoutsDebutTour();CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
-function jouer(i,t){const k=CB.main[i],c=CK[k],g=enGris(k);CB.mana-=c.cout;if(mtype(k)&&!g)payer(mtype(k),c.cout);CB.main.splice(i,1);CB.defausse.push(k);
+function jouer(i,t){const k=CB.main[i],c=CK[k],g=enGris(k);CB.nJoues=(CB.nJoues||0)+1;CB.mana-=c.cout;if(mtype(k)&&!g)payer(mtype(k),c.cout);CB.main.splice(i,1);CB.defausse.push(k);
   journal(`Vous jouez « ${c.nom()} »${g?' en mana gris : effet affaibli.':contreX(k)>1?' : contre-pouvoir, effet doublé !':'.'}`);CB.gris=g;try{c.jeu(k,t)}finally{CB.gris=false}clack();
   CB.f=Math.min(CB.f,CB.main.length);CB.sel=null;majUnites();dessinerMain();finSiFini()}
-function finTour(){CB.busy=true;CB.sel=null;CB.defausse.push(...CB.main);CB.main=[];dessinerMain();
+function finTour(){CB.busy=true;CB.sel=null;if(typeof atoutsFinTour==='function')atoutsFinTour();CB.defausse.push(...CB.main);CB.main=[];dessinerMain();
   /* les bêtes frappent d'abord, puis chaque monstre fait ce qu'il a annoncé */
   for(const b of CB.allies)if(b.bete)attendre(.45,()=>{if(!CB||b.pv<=0)return;const t=vivants(CB.foes)[0];if(t){frappe(t,b.atk,b);finSiFini()}});
   attendre(.35,()=>{if(CB)for(const m of CB.foes)m.g=0;if(CB)majUnites()});
