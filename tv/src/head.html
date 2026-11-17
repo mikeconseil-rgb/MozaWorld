@@ -57,7 +57,8 @@ body.jeu-ouvert .hud.mondain{opacity:0}
 
 /* Mini-carte et légende */
 .carte{left:var(--mx);bottom:var(--my);padding:calc(var(--u)*.6)}
-.carte canvas{display:block;width:calc(var(--u)*13);height:calc(var(--u)*13)}
+.carte canvas{display:block;width:calc(var(--u)*17);height:calc(var(--u)*17)}
+.carte .lg{font-size:calc(var(--u)*.85);color:var(--sable);text-align:center;padding-top:calc(var(--u)*.3);letter-spacing:.04em}.carte .lg b{color:#ffd98a;font-weight:400}
 .aide{right:var(--mx);bottom:var(--my);padding:calc(var(--u)*.7) calc(var(--u)*1.1);font-size:calc(var(--u)*1);line-height:1.8;color:var(--sable);text-align:right}
 .aide i{font-style:normal;color:var(--ivoire);font-weight:500}
 
@@ -258,7 +259,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
 .kgris{position:absolute;left:8%;right:8%;bottom:calc(var(--u)*-.7);padding:.15em .3em;border-radius:1em;background:#8d8a86;color:#111;font-size:calc(var(--u)*.7);font-weight:600;text-align:center;white-space:nowrap}
 .cc.kcarte.gris .co{--mc:#8d8a86}
 /* 2.1 : longues listes (Voyager, Grimoire) : les choix défilent, le texte au-dessus reste */
-#menu .boite{display:flex;flex-direction:column}#menu-corps{flex:0 1 auto;overflow:hidden;min-height:0}#menu .choix{flex:0 1 auto;overflow-y:auto;min-height:calc(var(--u)*8);padding:4px 6px}
+#menu .boite{display:flex;flex-direction:column;max-height:84vh}#menu-choix{position:relative}#menu-corps{flex:0 1 auto;overflow:hidden;min-height:0}#menu .choix{flex:0 1 auto;overflow-y:auto;min-height:calc(var(--u)*8);padding:4px 6px}
 .cartes.grim{grid-template-columns:repeat(2,calc(var(--u)*12));justify-content:center;max-height:none}
 </style>
 
@@ -288,7 +289,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
   <span class="niv" id="h-niv">0</span>
 </div>
 
-<div class="hud mondain carte cadre"><canvas id="mini" width="300" height="300"></canvas></div>
+<div class="hud mondain carte cadre"><canvas id="mini" width="300" height="300"></canvas><div class="lg"><b>⚑</b> à vous · <b>◆</b> activité · ⛫ ⬟ ⬢ ✦ ⚖</div></div>
 
 <div class="hud mondain aide cadre">
   <div><i>▲ ▼</i> marcher (tenir pour courir)</div>

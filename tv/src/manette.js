@@ -67,7 +67,7 @@ function padMarche(dt){if(!PAD.on)return null;
   const m=P.yaw-Math.atan2(str,fwd);
   /* la caméra se replace doucement derrière le héros quand on avance sans toucher au stick droit */
   if(!PAD.rx&&fwd>-.2){const df=((m-P.yaw)%TAU+TAU+PI)%TAU-PI;P.yaw+=df*Math.min(1,dt*1.1*mag)}
-  return{m,sp:(court?27:15)*Math.max(.35,mag)}}
+  return{m,sp:(court?31:17)*Math.max(.35,mag)}}
 
 /* ---------- Aide à l'écran : quand la manette sert, OK devient A, Retour devient B, etc. ---------- */
 const BT=(l,c)=>`<span class="bt ${c}">${l}</span>`;

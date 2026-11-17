@@ -1,0 +1,19 @@
+/* MozaWorld 2.4 : bandeau d'état (demande du 17 nov. : « un bandeau bien intégré dans l'interface affiche l'état des manas
+   et d'autres états, comme le nombre de Citadelles et de Donjons possédés »). Il s'ajoute en tête du cadre d'état, en haut à droite. */
+const BTYPES=[['CIT','⛫','Citadelles'],['DON','⬟','Donjons'],['RES','⬢','Ressources'],['ANT','✦','Antres'],['MAR','⚖','Assemblées']];
+(function(){const st=document.createElement('style');st.textContent=`
+.bandeau{display:grid;gap:calc(var(--u)*.5);padding-bottom:calc(var(--u)*.6);margin-bottom:calc(var(--u)*.2);border-bottom:1px solid rgba(201,164,92,.3)}
+.bandeau .ligne{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:calc(var(--u)*.35) calc(var(--u)*.7);align-items:center}
+.bandeau .m{display:inline-flex;align-items:center;gap:.3em;font-family:var(--titre);font-size:calc(var(--u)*1.35);color:var(--ivoire);font-variant-numeric:tabular-nums}
+.bandeau .m i{display:inline-block;width:.85em;height:.85em;border-radius:50%;background:var(--mc);box-shadow:0 0 .4em var(--mc)}
+.bandeau .m.vide{opacity:.4}
+.bandeau .d{display:inline-flex;align-items:center;gap:.25em;font-size:calc(var(--u)*1.25);color:var(--ivoire)}
+.bandeau .d span{color:#ffd98a;font-size:1.1em}.bandeau .d small{color:var(--sable);font-size:.75em}
+.bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}`;document.head.appendChild(st)})();
+function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;let b=document.getElementById('bandeau');
+  if(!b){b=document.createElement('div');b.id='bandeau';b.className='bandeau';box.prepend(b)}
+  const mana=`<span class="m"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');
+  const dom=BTYPES.map(([m,ic,nom])=>{const tot=ZN.filter(Z=>(Z.mod||Z.id)===m),own=tot.filter(Z=>S.own[Z.id]).length;
+    return`<span class="d" title="${nom}"><span>${ic}</span>${own}<small>/${tot.length}</small></span>`}).join('');
+  const prod=typeof prodTexte==='function'&&prodRessource()?`<span class="titre">+ ${prodTexte()} par cycle</span>`:'';
+  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}</div>`}

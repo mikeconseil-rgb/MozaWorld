@@ -1,6 +1,6 @@
 'use strict';
 /* MozaWorld, démo « Cinq Tuiles ». Noyau : mosaïque, terrain, ciel, météo, rendu, physique du héros. */
-const PI=Math.PI,TAU=PI*2,D2R=PI/180,SC=2,L=100*SC; /* SC : agrandissement des tuiles (arête 100 m → 200 m) */
+const PI=Math.PI,TAU=PI*2,D2R=PI/180,SC=3,L=100*SC; /* SC : agrandissement des tuiles (arête 100 m → 300 m ; 2.4 : +50 % à la demande du 17 nov.) */
 const clamp=(x,a,b)=>x<a?a:x>b?b:x,lerp=(a,b,t)=>a+(b-a)*t;
 const sst=(a,b,x)=>{x=clamp((x-a)/(b-a),0,1);return x*x*(3-2*x)};
 let _s=20261110;const rnd=()=>{_s=(_s*1664525+1013904223)>>>0;return _s/4294967296},rr=(a,b)=>a+(b-a)*rnd();
@@ -42,7 +42,7 @@ const RES=zone('RES',walk(VX[2],VX[1],[144,72,144,144]));
 const MAR=zone('MAR',walk(VX[3],VX[2],[72,108]),P=>Math.atan2(P[3][1]-P[1][1],P[3][0]-P[1][0]));
 const DON=zone('DON',walk(VX[4],VX[3],[108,108,108]));
 /* 2.0 : la carte s'agrandit, tuiles Girih exactes autour des cinq zones (carte.js, zonesplus.js) */
-for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const Z=zone(d.id,d.poly);Z.mod=d.mod;Z.d=d;Z.plus=true}
+for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const Z=zone(d.id,d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]));Z.mod=d.mod;Z.d=d;Z.plus=true}
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
@@ -110,7 +110,7 @@ function secret(Z,pos,titre,texte,cond){const m=new THREE.Mesh(secGeo,secMat);sc
 const secHalo=points(32,7,{opacity:.8});
 
 /* ---------- Terrain ---------- */
-const CELL=3; /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
+const CELL=3.6; /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
 for(const Z of ZN)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
 X0-=64;X1+=64;Z0-=64;Z1+=64;
 const GW=Math.ceil((X1-X0)/CELL)+1,GH=Math.ceil((Z1-Z0)/CELL)+1,GN=GW*GH;

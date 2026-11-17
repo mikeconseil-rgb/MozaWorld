@@ -97,6 +97,16 @@ Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au ba
 
 APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
 
+## Version 2.4 (web, Edge sur Xbox Series S) : héros animé, zones +50 %, minicarte, bandeau, sauvegardes (17 novembre)
+
+Le 17 novembre, l'utilisateur a arrêté la version Google TV : il joue seulement à la version web, dans Edge sur la Series S. On ne livre plus d'APK.
+- **Héros** (`src/heros.js`) : un voyageur articulé, avec chapeau pointu, écharpe, tunique, cape et bâton à lanterne. Il est animé à la main : marche, course penchée, saut, atterrissage, respiration au repos, cape et lanterne qui bougent. **Double saut** : appuyer une seconde fois en l'air fait une culbute.
+- **Zones +50 %** : SC passe de 2 à 3 (arête de 300 m). Les cœurs des zones écrits à la main gardent leur taille, et les ceintures et les nouvelles tuiles s'agrandissent. La maille du terrain passe de 3 à 3,6 m. La marche passe à 16, la course à 31.
+- **Minicarte** : vos zones sont pleines et bordées d'or, avec un fanion ; les zones sauvages sont sombres. Chaque zone a le symbole de son type. Les Pierres de vos zones où une épreuve est possible clignotent, et une légende est ajoutée.
+- **Bandeau** (`src/bandeau.js`) : en haut à droite, le mana par type (gris ∞), la production par cycle, et les domaines possédés par type (Citadelles, Donjons, Ressources, Antres, Assemblées).
+- **Sauvegardes** (`src/sauvegardes.js`) : dans le menu, Sauvegarder (20 emplacements), Charger une partie, et Nouvelle partie.
+- **Menus** : la liste défile pour garder le choix visible, et le cadre est limité à 84 % de la hauteur (marge de sécurité des télés).
+
 ## Version 2.1-grimoire : le Grimoire des cartes (17 novembre)
 
 Ce que l'utilisateur a demandé : « ajoute un menu dans le jeu pour y mettre le grimoire ». Le menu pause a maintenant une entrée **Grimoire des cartes** (`src/grimoire.js`). On y trouve les règles des cartes, les cartes communes, puis une page par zone. Chaque page dit où gagner la carte (la Pierre d'éveil et son épreuve), le mana, le niveau actuel de la zone et le nombre de copies dans le paquet. Elle montre aussi la carte de chaque pôle au palier actuel, puis aux paliers 4 et 7. Tout est lu dans les cartes elles-mêmes, au niveau voulu, donc le Grimoire suit les cartes 2.2 sans retouche. Les longues listes (Voyager, Grimoire) défilent maintenant à la manette.
