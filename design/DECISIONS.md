@@ -16,6 +16,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Assemblée | Épreuve = Duel d'arguments avec un petit paquet politique à part (choix 2 sur 3) : 5 cartes communes + une carte de voix par type de tuile tenue ; vote des voisines avant le duel | en vigueur | le Chantier de la Foire (hérité du Marché) |
 | Méthode | Lots du soir de trois nouveautés au plus, verdict après test (garder, ajuster, retirer), revue des provisoires chaque dimanche | en vigueur | « une livraison et trois questions par soir » (16 nov.) |
 | Juges | Juge visuel des zones (80 %) suspendu tant que le jeu est la version web ; le critique reste pour les textes et les cartes | en vigueur | jugement de toute nouvelle zone (10 nov.) |
 | Méthode | Test automatique avant chaque fusion, numéro de version affiché, document « Règles en vigueur » et ce registre | en vigueur | |

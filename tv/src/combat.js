@@ -95,18 +95,20 @@ const jouable=k=>CK[k].cout<=dispo();
 let CB=null;
 const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function startCombat(Z,kind){
-  const foes=kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
+  const duel=kind==='duel'&&typeof DUEL!=='undefined'&&DUEL;
+  const foes=duel?conseil(Z,DUEL.eff):kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
     :Array.from({length:Lz(Z.id)>=3?3:2},()=>monstre(Z,Math.floor(Math.random()*2)));
-  const sr=srActif(),mx=sr?10+2*zonesA('CIT').length:pvMax(),hero={nom:'Le héros',pv:mx,max:mx,g:0,hero:1};
-  CB={sr,Z,kind,foes,hero,allies:[hero],pile:melange(S.deck.filter(k=>typeof eveillee!=='function'||eveillee(k))),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
+  const sr=!duel&&srActif(),mx=duel?24+2*zonesA('MAR').length:sr?10+2*zonesA('CIT').length:pvMax(),hero={nom:duel?'Votre crédit':'Le héros',pv:mx,max:mx,g:0,hero:1};
+  CB={sr,Z,kind,foes,hero,allies:[hero],pile:melange(duel?paquetPolitique():S.deck.filter(k=>typeof eveillee!=='function'||eveillee(k))),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
   mode='combat';closeUI();document.body.classList.add('jeu-ouvert');$('toast').classList.remove('vu');toastT=0;
   const H=$('combat');H.hidden=false;H.style.setProperty('--zcA',rgba(ZCOL[Z.id],.22));
-  $('cb-sur').textContent=(kind==='eveil'?'Activation · les gardiens de la Pierre':'Rencontre')+' · '+Z.info.sur.split(' · ')[0]+' niveau '+(sgn(S.lv[Z.id])||'0');
+  $('cb-sur').textContent=(duel?'Duel d\'arguments · le Conseil en place':kind==='eveil'?'Activation · les gardiens de la Pierre':'Rencontre')+' · '+Z.info.sur.split(' · ')[0]+' niveau '+(sgn(S.lv[Z.id])||'0');
   $('cb-t').textContent=Z.info.nom;
   $('cb-foes').innerHTML='';$('cb-allies').innerHTML='';
   for(const u of foes)uniteEl(u,'cb-foes');uniteEl(hero,'cb-allies');
   {let i=0;for(const u of foes)if(!u.chef)u.voie=(i++)%2}
   for(const u of foes)intention(u);
+  if(duel){CB.passifs=[];journal(ouvrirDuel());majUnites();if(AX&&soundOn)perc(AX.currentTime,'t',1.4);attendre(.7,debutTour);return}
   /* passifs du royaume */
   hero.res=zonesA('DON').length;const cits=zonesA('CIT'),dons=zonesA('DON');CB.erosion=cits.length?2/3:1/2;
   if(cits.length)leverGarde(cits.reduce((a,Z)=>a+5+Lz(Z.id),0));
@@ -190,6 +192,7 @@ const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
 function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
+  if(C.kind==='duel'&&typeof finDuel==='function'){finDuel(ok);return}
   let gain='';if(ok){const t=ZMANA[Z.id],n=(C.kind==='eveil'?2:1)+(C.kind==='renc'&&typeof bonusChant==='function'?bonusChant():0);gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
   const retour=`${gain} Réserve : ${resTexte()}.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
