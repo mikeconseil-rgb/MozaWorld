@@ -19,6 +19,14 @@ Direction choisie par l'utilisateur : « bloqueurs sur le terrain », dans l'esp
 - **Les ennemis ont des réponses** (annoncées au-dessus de leur tête) : **vole par-dessus** ➶ (frappe le héros directement, la Garde n'y peut rien), **bélier** ⚒ (dégâts doublés contre la Garde et les bloqueurs), **frappe fort et piétine** ⚔⚔ (ce que le bloqueur n'absorbe pas passe au suivant). Monter la garde ne suffit donc plus : il faut lire les intentions.
 - **Principe des cartes (utilisateur) :** chaque carte doit avoir un impact, avec un crochet de combo qu'on aime, parce qu'elle permet peut-être de tuer « l'impossible boss du niveau 5 ». Même les 5 communes en ont un : Torche puis Coup de bâton (10 sur une cible qui brûle), Torche sur Torche (la brûlure double), Jet de pierre contre l'élan d'un boss, Pas de côté deux fois (la Garde tient), Pieu planté contre les frappeurs.
 
+## 1 ter. Le territoire de départ (17 nov.)
+
+- Le paquet visé avant de sortir du territoire de départ compte **15 cartes** : les 5 communes et 10 cartes de zone.
+- Les Ressources ne donnent pas de carte. Les 10 cartes viennent donc d'environ **5 zones à cartes montées au palier 2** : 1 Citadelle, 1 Donjon, 1 Antre et 2 Assemblées.
+- Il faut aussi environ **4 Ressources** pour le mana et les premiers atouts.
+- Le territoire de départ compte donc **environ 9 tuiles**.
+- Les zones qui l'entourent sont au niveau ±5. Elles **ne cèdent** (Pierre d'éveil fermée, combats mortels) **qu'une fois toutes les zones de départ prises** et le royaume assez développé : paquet d'au moins 15 cartes.
+
 ## 2. D'où viennent les cartes
 
 | Sorte | Comment on l'obtient | Combien | Mana |
@@ -26,7 +34,7 @@ Direction choisie par l'utilisateur : « bloqueurs sur le terrain », dans l'esp
 | **Commune** | Paquet de départ, identique pour tous | 5 cartes toutes différentes : Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche ; aucune carte de pioche | gris |
 | **Carte de pôle** | Une copie à chaque palier réussi à la Pierre d'éveil (paliers 1 à 6) | 1 par palier | type de la zone |
 | **Forme du palier 7** | Quand la zone atteint ±7, toutes ses copies se transforment | autant que de copies | type de la zone |
-| **Gerbe** | Une copie par niveau d'une Ressource (1 à 3) | 1 par niveau | type de la Ressource |
+| *(Ressource)* | Les Ressources ne donnent **pas de carte** (17 nov.) : elles donnent du mana et, au niveau 3, un atout greffé par les routes | 0 | — |
 | **Utilitaire (secret)** | Trouver un secret doré dans une zone | 1 par secret | gris |
 | **Atout** | Pas une carte : un bonus greffé sur une carte par une route (section 6) | — | — |
 

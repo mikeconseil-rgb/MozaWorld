@@ -7,12 +7,12 @@ for l in R.split('\n'):
   if m:
     mana,nom,eff=m.groups();t=eff.lower();mec=[k for k,w in [('Brûlure','brûlure'),('Dégâts','dégât'),('Contrôle','hésite'),('Affaiblissement',"d'attaque"),('Pioche','pioch'),('Soin','soign'),('Récupération','revient en main'),('Invocation','bête'),('Garde','garde'),('Combo','racine'),('Prix','prix'),('Coût','coûte'),('Rétention','gardée en main'),('Information','intention')] if w in t]
     at.append(dict(nom=nom,zone='Ressource de type '+mana+' au niveau 3',tuile='Atout',mana=mana,pole='',polenom='Lié par une route',cout='·',e1=eff,genre='Atout (bonus lié)',mec=mec,combo={'pose':'Racine'} if nom=='Greffe' else {}))
-cartes=C+at
+cartes=[c for c in C if c.get('genre')!='Gerbe']+at  # 17 nov. : les Ressources ne donnent pas de carte
 for c in cartes:
   if c['genre']=='Carte de pôle': c['e7lab']=''
 D={'version':'Version télé 2.2 · écrite par les quatre conteurs, relue par le critique et le game design (229 cartes et 18 atouts)',
-'lede':"Toutes les cartes du jeu avec leurs tags. Chaque zone à pôles a une carte par pôle (paliers 1 à 6) et une forme du palier 7 qui change de nature et crée des combos par les résonances. Chaque Ressource a sa Gerbe, chaque secret sa carte utilitaire, et les atouts sont les bonus qu'une route greffe sur une carte. Les nombres « (2+L) » grandissent avec le palier L.",
-'pied':'Sources : cartes-2.2/conteur_A à D.md, regles-avancees.md, critique-2.2.md. Une carte différente à chaque palier pour les 12 zones à pôles (7 par pôle) et 3 Gerbes par Ressource. Corrections du critique appliquées (critique-2.2.md).',
+'lede':"Toutes les cartes du jeu avec leurs tags. Chaque zone à pôles a une carte par pôle (paliers 1 à 6) et une forme du palier 7 qui change de nature et crée des combos par les résonances. Les Ressources ne donnent pas de carte (mana et atouts par les routes), chaque secret donne sa carte utilitaire, et les atouts sont les bonus qu'une route greffe sur une carte. Les nombres « (2+L) » grandissent avec le palier L.",
+'pied':'Sources : cartes-2.2/conteur_A à D.md, regles-avancees.md, critique-2.2.md. Une carte différente à chaque palier pour les 12 zones à pôles (7 par pôle) ; les Ressources ne donnent pas de carte. Corrections du critique appliquées (critique-2.2.md).',
 'legende':[
  ['Le tour','Capacité de dépense = numéro du tour. Chaque carte se paie dans la réserve de son type de mana ; sinon en gris, à −25 %. Main de 5, pioche jusqu’à 5 à chaque tour. Paquet de départ : 5 communes toutes différentes (Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche), faibles, sans carte de pioche, chacune avec un petit crochet de combo.'],
  ['Pôles et paliers','Chaque palier donne une carte différente : 7 par pôle, qui racontent l’histoire du pôle. Une carte dort hors du paquet de combat si la zone redescend sous son palier ou change de pôle. Aucun pôle n’est le bien ; deux cartes sur trois ont un prix (PV, défausse, ennemis renforcés, exil).'],
