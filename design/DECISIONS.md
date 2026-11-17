@@ -16,6 +16,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Musique | Musique MIDI par zone : classique du domaine public, comptines populaires et airs originaux style 16 bits, remixés par zone ; on ajoute des accords et des couches à la trame à chaque palier vers ±7 | en vigueur | notes générées au hasard par type de tuile |
 | Méthode | Lots du soir de trois nouveautés au plus, verdict après test (garder, ajuster, retirer), revue des provisoires chaque dimanche | en vigueur | « une livraison et trois questions par soir » (16 nov.) |
 | Juges | Juge visuel des zones (80 %) suspendu tant que le jeu est la version web ; le critique reste pour les textes et les cartes | en vigueur | jugement de toute nouvelle zone (10 nov.) |
 | Méthode | Test automatique avant chaque fusion, numéro de version affiché, document « Règles en vigueur » et ce registre | en vigueur | |
