@@ -3,8 +3,8 @@
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
    Tout se joue à la télécommande : ◀ ▶ choisir, OK jouer, Retour pause. Rien de 3D pendant le combat (léger). */
 
-/* Les mêmes 5 cartes communes pour tout le monde (17 nov. : « on en met 5 en tout », sans carte de pioche) : assez pour une zone de niveau 0. */
-const DEPART=['coup','coup','coup','garde','garde'];
+/* Les mêmes 5 cartes communes pour tout le monde (17 nov. : « cinq cartes uniques », faibles, sans carte de pioche) : assez pour une zone de niveau 0. */
+const DEPART=['coup','garde','pieu','caillou','torche'];
 const PAQUET_MAX=40;
 const ZCOL={CIT:'#c0584c',DON:'#e0782f',RES:'#73b45e',ANT:'#e2cb62',MAR:'#93bede'};
 const rgba=(h,a)=>`rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;
@@ -21,8 +21,12 @@ const enGris=k=>!!mtype(k)&&!peutPayer(mtype(k),CK[k].cout);
 
 /* ---------- Cartes de combat ---------- */
 const CK={
-  coup:{nom:()=>'Coup de bâton',cout:1,cible:1,txt:()=>'6 dégâts.',jeu:(k,t)=>frappe(t,6)},
-  garde:{nom:()=>'Pas de côté',cout:1,txt:()=>'Le héros gagne 5 de garde.',jeu:()=>garder(CB.hero,5)},
+  /* chaque commune a son crochet de combo (17 nov. : « chaque carte a un impact ») */
+  coup:{nom:()=>'Coup de bâton',cout:1,cible:1,txt:()=>'6 dégâts. Sur une cible qui brûle : 10.',jeu:(k,t)=>frappe(t,t&&t.br&&t.br.length?10:6)},
+  garde:{nom:()=>'Pas de côté',cout:1,txt:()=>'5 de garde : la Garde se dresse devant le héros. Si elle était déjà levée, elle ne s\'effrite pas au prochain tour.',jeu:()=>{if(gardeU())CB.gardeTient=1;garder(CB.hero,5)}},
+  pieu:{nom:()=>'Pieu planté',cout:1,txt:()=>'Un bloqueur de 6 PV prend place sur le terrain : il encaisse les coups et renvoie 2 dégâts à qui le frappe.',jeu:()=>invoquer({nom:'Pieu planté',pv:6,max:6,atk:0,g:0,bete:1,mur:1,epine:2})},
+  caillou:{nom:()=>'Jet de pierre',cout:0,txt:()=>'3 dégâts à l\'ennemi qui prend son élan (sinon au hasard) : il perd son élan et hésite.',jeu:()=>{const v=vivants(CB.foes);if(!v.length)return;const m=v.find(x=>x.int&&x.int.a==='c')||v[Math.floor(Math.random()*v.length)];frappe(m,3);if(m.pv>0&&m.int&&m.int.a==='c'){hesite(m);journal(m.nom+' perd son élan.')}}},
+  torche:{nom:()=>'Torche',cout:1,cible:1,txt:()=>'2 dégâts, puis 2 de brûlure sur 2 tours. Si la cible brûlait déjà, sa brûlure double.',jeu:(k,t)=>{if(!t)return;const deja=t.br&&t.br.length;frappe(t,2);if(t.pv<=0)return;t.br=t.br||[];if(deja)t.br.forEach(b=>b[0]*=2);t.br.push([CB.gris?1:2,2])}},
   souffle:{nom:()=>'Souffle court',cout:0,txt:()=>'Piochez 1 carte, 2 de garde.',jeu:()=>{pioche(1);garder(CB.hero,2)}},
   CIT:{z:'CIT',nom:()=>poleN('CIT','Palissade d\'oubli','Rempart de mémoire'),cout:1,
     txt:k=>`Tous vos alliés gagnent ${(6+2*Lz('CIT'))*contreX(k)} de garde.`,jeu:k=>CB.allies.forEach(u=>u.pv>0&&garder(u,(6+2*Lz('CIT'))*contreX(k)))},
@@ -36,13 +40,14 @@ const CK={
     txt:k=>`Piochez ${2*contreX(k)} cartes${Lz('MAR')>=5?', boost rare : +1 de capacité ce tour':''}.`,jeu:k=>{pioche(2*contreX(k));if(Lz('MAR')>=5){CB.mana++;CB.capT++}}}};
 const bete=k=>{const L=Lz('ANT'),x=contreX(k);return{nom:poleN('ANT','Luciole de nuit','Lancière de l\'aurore'),pv:(7+3*L)*x,max:(7+3*L)*x,atk:(3+L)*x,g:0,bete:1}};
 
-/* ---------- Gardiens des zones (originaux) : a attaque, g garde, t frappe tout le monde, c charge puis f frappe forte, s soin ---------- */
+/* ---------- Gardiens des zones (originaux) : a attaque, g garde, t frappe tout le monde, c charge puis f frappe forte (qui piétine), s soin,
+   v vole par-dessus les bloqueurs (frappe le héros), b bélier (double contre la Garde et les bloqueurs) ---------- */
 const MON={
-  CIT:[{nom:'Pillard des sapins',pv:11,atk:4,mv:'aag'},{nom:'Archère d\'écorce',pv:8,atk:3,mv:'ta'},{nom:'Voïvode sans mémoire',pv:24,atk:5,mv:'agcf',chef:1}],
-  DON:[{nom:'Gardien d\'édit',pv:13,atk:3,mv:'ga'},{nom:'Larve de lave',pv:7,atk:4,mv:'a'},{nom:'Scribe-tyran',pv:25,atk:5,mv:'acf',chef:1}],
-  RES:[{nom:'Glaneur hagard',pv:9,atk:3,mv:'as'},{nom:'Anguille des canaux',pv:9,atk:4,mv:'aag'},{nom:'Mère des Gerbes',pv:22,atk:4,mv:'sat',chef:1}],
-  ANT:[{nom:'Luciole ardente',pv:6,atk:3,mv:'a'},{nom:'Crabe-racine',pv:14,atk:3,mv:'ga'},{nom:'Reine-luciole',pv:23,atk:3,mv:'tacf',chef:1}],
-  MAR:[{nom:'Colporteur givré',pv:10,atk:3,mv:'ag'},{nom:'Mâtin de cloche',pv:12,atk:4,mv:'aacf'},{nom:'Prévôt de la Foire',pv:24,atk:5,mv:'gat',chef:1}]};
+  CIT:[{nom:'Pillard des sapins',pv:11,atk:4,mv:'abg'},{nom:'Archère d\'écorce',pv:8,atk:3,mv:'tv'},{nom:'Voïvode sans mémoire',pv:24,atk:5,mv:'agcf',chef:1}],
+  DON:[{nom:'Gardien d\'édit',pv:13,atk:3,mv:'gb'},{nom:'Larve de lave',pv:7,atk:4,mv:'a'},{nom:'Scribe-tyran',pv:25,atk:5,mv:'acf',chef:1}],
+  RES:[{nom:'Glaneur hagard',pv:9,atk:3,mv:'as'},{nom:'Anguille des canaux',pv:9,atk:4,mv:'avg'},{nom:'Mère des Gerbes',pv:22,atk:4,mv:'sat',chef:1}],
+  ANT:[{nom:'Luciole ardente',pv:6,atk:3,mv:'av'},{nom:'Crabe-racine',pv:14,atk:3,mv:'ga'},{nom:'Reine-luciole',pv:23,atk:3,mv:'tacf',chef:1}],
+  MAR:[{nom:'Colporteur givré',pv:10,atk:3,mv:'abg'},{nom:'Mâtin de cloche',pv:12,atk:4,mv:'aacf'},{nom:'Prévôt de la Foire',pv:24,atk:5,mv:'gat',chef:1}]};
 function monstre(Z,i,faible){const m=MON[Z.id][i],L=Lz(Z.id),k=faible?.7:1,pv=Math.round(m.pv*(1+.4*L)*k);
   return{nom:m.nom,pv,max:pv,atk:m.atk+L,g:0,mv:m.mv,mi:m.chef?0:Math.floor(Math.random()*m.mv.length),chef:m.chef,z:Z.id}}
 
@@ -77,7 +82,7 @@ function startCombat(Z,kind){
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
-function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;CB.riposte=0;CB.echo=false;CB.nrecup=0;CB.nJoues=0;if(typeof atoutsDebutTour==='function')atoutsDebutTour();CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
+function debutTour(){if(!CB)return;CB.tour++;CB.hero.g=0;eroderGarde();CB.riposte=0;CB.echo=false;CB.nrecup=0;CB.nJoues=0;if(typeof atoutsDebutTour==='function')atoutsDebutTour();CB.mana=CB.capT=CB.tour;   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
   pioche(mainMax()-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;dessinerMain();majUnites()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
@@ -86,7 +91,7 @@ function jouer(i,t){const k=CB.main[i],c=CK[k],g=enGris(k);CB.nJoues=(CB.nJoues|
   CB.f=Math.min(CB.f,CB.main.length);CB.sel=null;majUnites();dessinerMain();finSiFini()}
 function finTour(){CB.busy=true;CB.sel=null;if(typeof atoutsFinTour==='function')atoutsFinTour();CB.defausse.push(...CB.main);CB.main=[];dessinerMain();
   /* les bêtes frappent d'abord, puis chaque monstre fait ce qu'il a annoncé */
-  for(const b of CB.allies)if(b.bete)attendre(.45,()=>{if(!CB||b.pv<=0)return;const t=vivants(CB.foes)[0];if(t){frappe(t,b.atk,b);finSiFini()}});
+  for(const b of CB.allies)if(b.bete&&b.atk>0)attendre(.45,()=>{if(!CB||b.pv<=0)return;const t=vivants(CB.foes)[0];if(t){frappe(t,b.atk,b);finSiFini()}});
   attendre(.35,()=>{if(CB)for(const m of CB.foes)m.g=0;if(CB)majUnites()});
   attendre(.3,()=>{if(!CB)return;for(const m of vivants(CB.foes))if(m.br&&m.br.length){let d=0;m.br=m.br.filter(b=>{d+=b[0];return--b[1]>0});if(d){frappe(m,d,{nom:'brûlure'});journal(`${m.nom} brûle (${d}).`)}}finSiFini()});
   for(const m of CB.foes)attendre(.6,()=>{if(!CB||m.pv<=0||vivants(CB.allies).indexOf(CB.hero)<0)return;agir(m);finSiFini()});
@@ -100,18 +105,30 @@ function pop(u,txt,cls){if(!u.el)return;const s=document.createElement('span');s
 function frappe(u,n,src){if(!u||u.pv<=0)return 0;if(CB&&CB.gris&&!src)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u.vul&&n>0)n+=u.vul;const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
   pop(u,n>0?'−'+n:'garde',n>0?'deg':'g');if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}
   if(AX&&soundOn)n>0?perc(AX.currentTime,'t',.9):note(AX.currentTime,523,SIN,.2,.07);
-  if(u.pv<=0){journal(u.nom+(u.hero?' tombe.':' est vaincu.'));if(u.bete){CB.allies.splice(CB.allies.indexOf(u),1);const e=u.el;if(e){e.classList.add('mort');e.querySelector('.bar i').style.width='0%'}setTimeout(()=>e&&e.remove(),900)}}majUnites();return n}
-function garder(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));u.g+=n;pop(u,'+'+n+' garde','g');majUnites()}
+  if(u.pv<=0){journal(u.nom+(u.hero?' tombe.':u.garde?' cède.':u.mur?' est brisé.':' est vaincu.'));if(u.bete||u.garde){CB.allies.splice(CB.allies.indexOf(u),1);const e=u.el;if(e){e.classList.add('mort');e.querySelector('.bar i').style.width='0%'}setTimeout(()=>e&&e.remove(),900)}}majUnites();return n}
+function garder(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u&&u.hero&&CB){leverGarde(n);return}u.g+=n;pop(u,'+'+n+' garde','g');majUnites()}
 function soigner(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));const a=Math.min(n,u.max-u.pv);u.pv+=a;pop(u,'+'+a,'soin');majUnites()}
 function invoquer(b){const nb=CB.allies.filter(u=>u.bete).length;if(nb>=3){const w=CB.allies.filter(u=>u.bete).sort((p,q)=>p.pv-q.pv)[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove()}
   CB.allies.push(b);uniteEl(b,'cb-allies');pop(b,'arrive','soin');journal(b.nom+' rejoint le combat et encaisse les coups à la place du héros.')}
-/* les monstres visent la première bête vivante : les bêtes protègent le héros */
-const cibleAlliee=()=>CB.allies.find(u=>u.bete&&u.pv>0)||CB.hero;
+/* Terrain (17 nov., « bloqueurs sur le terrain », esprit Magic et Monster Train) : les coups visent d'abord la Garde,
+   puis les bloqueurs et les bêtes dans leur ordre d'arrivée, puis le héros. La garde du héros n'est plus un chiffre qui tombe :
+   c'est une unité, la Garde, qui reste d'un tour à l'autre mais s'effrite de moitié au début de votre tour, et que l'ennemi peut briser. */
+const gardeU=()=>CB&&CB.allies.find(u=>u.garde&&u.pv>0);
+const cibleAlliee=()=>gardeU()||CB.allies.find(u=>u.bete&&u.pv>0)||CB.hero;
+function leverGarde(n){let G=gardeU();
+  if(!G){G={nom:'La Garde',pv:0,max:0,g:0,garde:1,atk:0};CB.allies.splice(1,0,G);uniteEl(G,'cb-allies')}
+  G.pv+=n;G.max=Math.max(G.max,G.pv);pop(G,'+'+n+' garde','g');majUnites()}
+function eroderGarde(){const G=gardeU();if(!G)return;if(CB.gardeTient){CB.gardeTient=0;pop(G,'tient bon','g');return}const p=Math.floor(G.pv/2);if(p<=0){G.pv=0;CB.allies.splice(CB.allies.indexOf(G),1);if(G.el)G.el.remove();journal('La Garde retombe.')}else{G.pv=p;pop(G,'s\'effrite','g')}}
+/* un coup qui piétine : ce que le bloqueur n'a pas absorbé passe au suivant */
+function coupSurTerrain(m,v,opt){let reste=v;for(let n=0;n<5&&reste>0;n++){const t=opt.vol?CB.hero:cibleAlliee();const avant=t.pv+t.g,x=opt.belier&&!t.hero?2:1;
+  journal(`${m.nom} ${opt.vol?'passe par-dessus et frappe le héros':opt.belier&&!t.hero?'enfonce '+t.nom:'frappe '+(t.hero?'le héros':t.nom)} (${reste*x}).`);
+  frappe(t,reste*x,m);if((t.hero||t.garde)&&CB.riposte)frappe(m,CB.riposte,CB.hero);if(t.epine&&m.pv>0)frappe(m,t.epine,t);
+  if(!opt.pietine||t.hero||t.pv>0)break;reste=Math.ceil((reste*x-avant)/x);if(reste>0)journal('Le coup piétine et passe au suivant.')}}
 function intention(m){const a=m.mv[m.mi%m.mv.length];m.mi++;const L=Lz(m.z);
-  m.int=a==='a'?{a,v:m.atk,ic:'⚔',t:'attaque'}:a==='g'?{a,v:m.atk+3,ic:'⛨',t:'se garde'}:a==='t'?{a,v:Math.max(1,m.atk-1),ic:'✶',t:'frappe tout le monde'}
-    :a==='c'?{a,v:0,ic:'…',t:'prend son élan'}:a==='f'?{a,v:m.atk*2,ic:'⚔⚔',t:'frappe fort'}:{a,v:4+L,ic:'✚',t:'soigne les siens'}}
+  m.int=a==='v'?{a,v:Math.max(1,m.atk-1),ic:'➶',t:'vole par-dessus'}:a==='b'?{a,v:m.atk,ic:'⚒',t:'bélier'}:a==='a'?{a,v:m.atk,ic:'⚔',t:'attaque'}:a==='g'?{a,v:m.atk+3,ic:'⛨',t:'se garde'}:a==='t'?{a,v:Math.max(1,m.atk-1),ic:'✶',t:'frappe tout le monde'}
+    :a==='c'?{a,v:0,ic:'…',t:'prend son élan'}:a==='f'?{a,v:m.atk*2,ic:'⚔⚔',t:'frappe fort et piétine'}:{a,v:4+L,ic:'✚',t:'soigne les siens'}}
 function agir(m){const I=m.int;if(!I)return;m.el&&(m.el.classList.remove('agit'),void m.el.offsetWidth,m.el.classList.add('agit'));
-  if(I.a==='a'||I.a==='f'){const t=cibleAlliee();journal(`${m.nom} frappe ${t.hero?'le héros':t.nom} (${I.v}).`);frappe(t,I.v,m);if(t.hero&&CB.riposte)frappe(m,CB.riposte,CB.hero)}
+  if(I.a==='a'||I.a==='f'||I.a==='v'||I.a==='b')coupSurTerrain(m,I.v,{pietine:I.a==='f',vol:I.a==='v',belier:I.a==='b'})
   else if(I.a==='t'){journal(`${m.nom} frappe tout le monde (${I.v}).`);for(const u of vivants(CB.allies))frappe(u,I.v,m)}
   else if(I.a==='g'){garder(m,I.v);journal(`${m.nom} se met en garde.`)}
   else if(I.a==='s'){const w=vivants(CB.foes).sort((p,q)=>p.pv/p.max-q.pv/q.max)[0];soigner(w,I.v);journal(`${m.nom} soigne ${w===m?'ses plaies':w.nom}.`)}
@@ -170,7 +187,7 @@ function majUnites(){if(!CB)return;const v=vivants(CB.foes);
   for(const u of[...CB.foes,...CB.allies]){const e=u.el;if(!e)continue;e.classList.toggle('mort',u.pv<=0);
     e.querySelector('.bar i').style.width=(100*u.pv/u.max)+'%';e.querySelector('.bar span').textContent=u.pv+' / '+u.max;
     const g=e.querySelector('.gd');g.textContent=u.g>0?'⛨ '+u.g:'';
-    if(u.bete)e.querySelector('.int').textContent='⚔ '+u.atk+' à chaque tour';
+    if(u.garde)e.querySelector('.int').textContent='⛨ prend les coups, s\'effrite de moitié';else if(u.mur)e.querySelector('.int').textContent='⛨ bloqueur'+(u.epine?' · renvoie '+u.epine:'');else if(u.bete)e.querySelector('.int').textContent='⚔ '+u.atk+' à chaque tour';
     else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}`:''}
     e.classList.toggle('vise',!!CB.sel&&u===v[CB.ti])}
   const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">${resHTML()}</span>`;

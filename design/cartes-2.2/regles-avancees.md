@@ -7,13 +7,23 @@ Ces règles complètent le combat au tour par tour de la version télé. Elles s
 1. Début du tour : la **capacité de dépense** vaut le numéro du tour (1 au tour 1, 2 au tour 2…). On pioche jusqu'à 5 cartes (6 avec une Ressource au niveau 3). Les **brûlures** des ennemis se déclenchent au début de leur tour. La **riposte** et l'**écho** du tour précédent s'éteignent.
 2. On joue ses cartes. Chaque carte coûte de la capacité **et** du mana de son type, pris dans la réserve. Sans assez de mana de ce type, la carte se joue en **mana gris** (réserve infinie) avec 25 % d'effet en moins et sans contre-pouvoir.
 3. Fin du tour : les bêtes alliées frappent, puis chaque ennemi fait ce qu'il a annoncé au-dessus de sa tête (attaque, garde, frappe tout le monde, élan puis coup fort, soin). Un ennemi qui **hésite** ne fait rien.
-4. La garde du héros tombe au début de son tour ; celle des ennemis, au début du leur.
+4. La Garde du héros (une unité, voir section 1 bis) s'effrite de moitié au début de son tour ; la garde des ennemis tombe au début du leur.
+
+## 1 bis. Le terrain : la Garde, les bloqueurs et les bêtes (17 nov.)
+
+Direction choisie par l'utilisateur : « bloqueurs sur le terrain », dans l'esprit de Magic et de Monster Train. La garde reste un style de jeu (le Rempart), mais elle vit sur le terrain.
+
+- **Ordre des coups.** Un ennemi qui attaque frappe d'abord **la Garde**, puis les **bloqueurs** et les **bêtes** dans leur ordre d'arrivée, puis **le héros**. À l'écran, le plus exposé est le plus proche des ennemis.
+- **La Garde.** Toute garde gagnée par le héros dresse ou renforce une unité, la Garde, devant lui. Elle reste d'un tour à l'autre mais **s'effrite de moitié** au début du tour du héros, et l'ennemi peut la briser. La riposte joue quand la Garde ou le héros est frappé. La condition « si le héros a de la garde » veut dire « si la Garde est levée ».
+- **Bloqueurs.** Des unités sans attaque (ex. Pieu planté) qui prennent les coups ; certaines renvoient des dégâts (épines). Bêtes et bloqueurs partagent 3 places ; une 4e remplace la plus faible.
+- **Les ennemis ont des réponses** (annoncées au-dessus de leur tête) : **vole par-dessus** ➶ (frappe le héros directement, la Garde n'y peut rien), **bélier** ⚒ (dégâts doublés contre la Garde et les bloqueurs), **frappe fort et piétine** ⚔⚔ (ce que le bloqueur n'absorbe pas passe au suivant). Monter la garde ne suffit donc plus : il faut lire les intentions.
+- **Principe des cartes (utilisateur) :** chaque carte doit avoir un impact, avec un crochet de combo qu'on aime, parce qu'elle permet peut-être de tuer « l'impossible boss du niveau 5 ». Même les 5 communes en ont un : Torche puis Coup de bâton (10 sur une cible qui brûle), Torche sur Torche (la brûlure double), Jet de pierre contre l'élan d'un boss, Pas de côté deux fois (la Garde tient), Pieu planté contre les frappeurs.
 
 ## 2. D'où viennent les cartes
 
 | Sorte | Comment on l'obtient | Combien | Mana |
 |---|---|---|---|
-| **Commune** | Paquet de départ, identique pour tous | 5 (3 Coup de bâton, 2 Pas de côté) ; aucune carte de pioche | gris |
+| **Commune** | Paquet de départ, identique pour tous | 5 cartes toutes différentes : Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche ; aucune carte de pioche | gris |
 | **Carte de pôle** | Une copie à chaque palier réussi à la Pierre d'éveil (paliers 1 à 6) | 1 par palier | type de la zone |
 | **Forme du palier 7** | Quand la zone atteint ±7, toutes ses copies se transforment | autant que de copies | type de la zone |
 | **Gerbe** | Une copie par niveau d'une Ressource (1 à 3) | 1 par niveau | type de la Ressource |
@@ -50,7 +60,8 @@ Chaque forme du palier 7 **pose** une résonance (elle reste posée jusqu'à la 
 | Mécanique | Règle |
 |---|---|
 | Dégâts | La garde absorbe d'abord. « À tous » touche tous les ennemis ; « au hasard » frappe n fois un ennemi tiré au sort. |
-| Garde | Absorbe les coups jusqu'au début du tour suivant du porteur. |
+| Garde | Héros : dresse ou renforce la Garde, une unité qui prend les coups et s'effrite de moitié à chaque tour du héros. Ennemis et bêtes : absorbe les coups jusqu'au début du tour suivant du porteur. |
+| Bloqueur | Unité sans attaque qui prend les coups avant les bêtes et le héros ; peut renvoyer des dégâts. |
 | Soin | Ne dépasse jamais les PV maximum. |
 | Pioche | Main de 8 cartes au plus. |
 | Hésitation | L'ennemi n'exécute pas son intention ce tour. |

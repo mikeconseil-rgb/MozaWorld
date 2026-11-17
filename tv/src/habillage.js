@@ -93,10 +93,12 @@ const HEROS=`${HALO(72,30,12)}<path d="M70 92 L74 16" stroke="#7a5a3c" stroke-wi
  <path d="M38 48 Q36 30 50 22 Q64 30 62 48 Q56 42 50 42 Q44 42 38 48Z" fill="#2a2630" stroke="#e8c77f" stroke-width="1.2"/><ellipse cx="50" cy="40" rx="7.5" ry="8.5" fill="#d8b48a"/><path d="M42 36 Q50 30 58 36 Q54 33 50 33 Q46 33 42 36Z" fill="#2a2630"/>
  <circle cx="47" cy="41" r="1.1" fill="#2a1a10"/><circle cx="53" cy="41" r="1.1" fill="#2a1a10"/>`;
 function portrait(u){if(u.hero)return`<svg viewBox="0 0 100 100">${OMBRE}${HEROS}</svg>`;
+  if(u.garde)return`<svg viewBox="0 0 100 100">${OMBRE}<path ${SIL} d="M50 10 L80 22 Q82 62 50 90 Q18 62 20 22Z"/><path d="M50 26 L54 40 L68 42 L57 51 L61 66 L50 57 L39 66 L43 51 L32 42 L46 40Z" fill="currentColor" opacity=".7"/></svg>`;
+  if(u.mur)return`<svg viewBox="0 0 100 100">${OMBRE}<path ${SIL} d="M42 92 L44 30 L50 12 L56 30 L58 92Z"/><path d="M30 92 L40 70 M70 92 L60 70" stroke="currentColor" stroke-width="2"/></svg>`;
   const b=BETES[u.nom];if(b)return`<svg viewBox="0 0 100 100">${OMBRE}${b}</svg>`;
   return`<svg viewBox="0 0 100 100">${OMBRE}<path ${SIL} d="M34 92 L36 58 Q36 42 50 40 Q64 42 64 58 L66 92Z"/>${YEUX(45,52,55,52)}</svg>`}
-function uniteEl(u,host){const d=document.createElement('div');d.className='u'+(u.chef?' chef':'')+(u.hero?' hero':'')+(u.bete?' bete':'');
-  const c=u.hero?'#e8c77f':u.bete?(u.nom.indexOf('nuit')>=0?'#9cc4ff':'#ffd27a'):ZCOL[u.z]||'#c9a45c';d.style.setProperty('--uc',c);d.style.setProperty('--ucg',rgba(c,.45));
+function uniteEl(u,host){const d=document.createElement('div');d.className='u'+(u.chef?' chef':'')+(u.hero?' hero':'')+(u.bete?' bete':'')+(u.garde?' garde':'')+(u.mur?' mur':'');
+  const c=u.hero?'#e8c77f':u.garde?'#9cc4e4':u.mur?'#c99a62':u.bete?(u.nom.indexOf('nuit')>=0?'#9cc4ff':'#ffd27a'):ZCOL[u.z]||'#c9a45c';d.style.setProperty('--uc',c);d.style.setProperty('--ucg',rgba(c,.45));
   d.innerHTML=`<div class="int"></div><div class="por" style="color:${c}">${portrait(u)}</div><div class="plaque"><div class="un">${u.nom}</div><div class="bar"><i></i><span></span></div></div><div class="gd"></div>`;
   $(host).appendChild(d);u.el=d;if(CB&&u.hero)decorCombat(CB.Z.id)}
 
