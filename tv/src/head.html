@@ -255,6 +255,9 @@ body.manette .aide:not(.aide-pad){display:none}
 body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6);left:50%;transform:translateX(-50%);width:calc(var(--u)*1.8);height:calc(var(--u)*1.8);display:grid;place-items:center;border-radius:50%;background:#3f8fe0;color:#0d0c0f;font-weight:600;font-size:calc(var(--u)*1)}
 .kgris{position:absolute;left:8%;right:8%;bottom:calc(var(--u)*-.7);padding:.15em .3em;border-radius:1em;background:#8d8a86;color:#111;font-size:calc(var(--u)*.7);font-weight:600;text-align:center;white-space:nowrap}
 .cc.kcarte.gris .co{--mc:#8d8a86}
+/* 2.1 : longues listes (Voyager, Grimoire) : les choix défilent, le texte au-dessus reste */
+#menu .boite{display:flex;flex-direction:column}#menu-corps{flex:0 1 auto;overflow:hidden;min-height:0}#menu .choix{flex:0 1 auto;overflow-y:auto;min-height:calc(var(--u)*8);padding:4px 6px}
+.cartes.grim{grid-template-columns:repeat(2,calc(var(--u)*12));justify-content:center;max-height:none}
 </style>
 
 <canvas id="vue" tabindex="0"></canvas>
