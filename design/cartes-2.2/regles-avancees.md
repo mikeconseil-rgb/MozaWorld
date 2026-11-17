@@ -49,6 +49,28 @@ Le royaume donne des **passifs de combat**, dans l'esprit des artefacts de Monst
   - Toutes les 3 cases remplies, le héros perd 1 de capacité de dépense.
   - En simulation, un jeu naïf perd 6 combats sur 50, contre 0 sur 50 avec les PV.
 
+## 1 sexies. Passifs des Antres et pouvoirs des Assemblées (17 nov.)
+
+Chaque zone est unique : chacune donne son propre bonus.
+
+**Antres** (passif de combat ; il dépend du pôle et s'active dès le palier 1) :
+
+| Zone | Pôle − | Pôle + |
+|---|---|---|
+| Lucioles | Essaim de veille : une Luciole est déjà sur le terrain | Meute de l'aurore : vos bêtes ont +1 d'attaque |
+| Maulu | Repousse du givre : la première bête tombée revient avec la moitié de ses PV | Crocs de braise : les coups de vos bêtes brûlent |
+
+**Assemblées** (pouvoir sur la carte du monde, pas en combat ; validé « pour l'instant ») :
+
+| Zone | Pouvoir |
+|---|---|
+| Givrecloche | Brume : vos zones voisines sont cachées aux rivaux et aux hordes. Clarté : vous voyez le niveau et les secrets des zones jusqu'à 2 tuiles |
+| Lande de Cezo | Loi des péages : chaque route ouverte rapporte +1 mana par cycle |
+| Balpak | Loi du brûlis : le repos des Pierres d'éveil voisines est divisé par deux |
+| Delta de Pama | Greniers : les invasions vers vos zones arrivent deux fois plus tard |
+| Canyon de Fjorhel | Silence : moins de rencontres dans votre territoire. Chant : plus de rencontres, mais chacune donne 1 mana |
+| Oasis de Raak | Pierre de bornage : une zone de votre choix ne peut pas perdre de niveau face à une horde ou un rival |
+
 ## 2. D'où viennent les cartes
 
 | Sorte | Comment on l'obtient | Combien | Mana |
