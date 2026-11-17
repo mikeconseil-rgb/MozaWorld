@@ -1612,12 +1612,12 @@ function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
     ui('menu',{sur:'Défaite',t:'Le héros se replie',corps:`<p>Vous êtes blessé (${S.hurt} sur 3).${retour} À la troisième blessure, le héros meurt et perd tout.</p><p class="petit">Une victoire ou une épreuve réussie soigne une blessure.</p>`,
       back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
   S.hurt=Math.max(0,S.hurt-(C.kind==='eveil'?1:0));
-  if(C.kind==='eveil'){if(Z.id==='DON')S.dernierAssaut=S.nc;S.act[Z.id]=true;S.own[Z.id]=true;S.emp[Z.id]=false;if(S.deck.length<PAQUET_MAX)S.deck.push(Z.id);save();etatHud();hudKey='';fanfare(S.lv[Z.id]||1);
-    ui('menu',{sur:'Zone activée',t:Z.info.nom,corps:`<p>La zone est à vous. Vous gagnez la carte « ${CK[Z.id].nom()} ».${retour}</p><div class="cartes" style="grid-template-columns:1fr">${carteHTML(Z.id)}</div><p class="petit" style="margin-top:1em">${RECO[Z.id]} Vous pouvez maintenant éveiller cette zone : plus elle s'éloigne de zéro, plus sa carte devient forte.</p>`,
+  if(C.kind==='eveil'){if(Z.id==='DON')S.dernierAssaut=S.nc;S.act[Z.id]=true;S.own[Z.id]=true;S.emp[Z.id]=false;save();etatHud();hudKey='';fanfare(S.lv[Z.id]||1);
+    ui('menu',{sur:'Zone activée',t:Z.info.nom,corps:`<p>La zone est à vous.${retour}</p><p class="petit" style="margin-top:1em">${RECO[Z.id]} Vous pouvez maintenant éveiller cette zone : chaque montée de niveau vous donne sa carte de combat « ${CK[Z.id].nom()} », plus forte à mesure que la zone s'éloigne de zéro.</p>`,
       back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});return}
   /* rencontre (2.0) : plus de carte en combat ; les cartes viennent de l'activation et des mues des zones */
   save();sfx('hit');
-  ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${retour}</p><p class="petit">Les cartes de combat viennent des zones : on en gagne une en activant une zone, puis une à chaque mue.</p>`,
+  ui('menu',{sur:'Victoire',t:'Les créatures fuient',corps:`<p class="petit">${retour}</p><p class="petit">Les combats ne donnent pas de cartes : on gagne une carte de combat à chaque montée de niveau d'une zone.</p>`,
     back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]})}
 function fuir(){const C=CB;fermerCombat();toMonde();toast('Fuite',C.kind==='renc'?'Vous semez les créatures':'Les gardiens attendront',`Réserve : ${resTexte()}.`)}
 function pauseCombat(){mode='menu';ui('menu',{sur:'Combat en pause',t:'Fuir ?',corps:'<p class="petit">Fuir ne blesse pas ; le mana déjà dépensé est perdu. Les gardiens d\'une Pierre attendront votre retour.</p>',
