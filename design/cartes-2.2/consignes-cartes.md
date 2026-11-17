@@ -84,3 +84,6 @@ Nouvelle règle de l'utilisateur : « Chaque palier donne une carte ». Pour cha
 - Ressources : 3 Gerbes distinctes (niveaux 1, 2, 3).
 - On possède la carte d'un palier tant que la zone est sur ce pôle à ce palier ou au-delà ; sinon elle s'endort (elle quitte le paquet de combat et revient quand la zone reprend ce palier).
 - Format JSON : un objet par carte, avec `"palier": 1` … `7` (nombre), `"pole": "-"` ou `"+"` (ou `"res"` avec `"palier"` 1 à 3).
+
+## 7. Longueur du texte (17 nov., fil « visuel des cartes »)
+Le champ `effet` doit tenir en **250 caractères au plus** : au-delà d'environ 290, la carte devient illisible dans la main sur la télé. La narration va dans `ambiance`, pas dans `effet`. À la date du 17 nov., 22 formes du palier 7 dépassent 290 caractères et sont à raccourcir.

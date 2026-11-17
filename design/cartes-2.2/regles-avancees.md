@@ -13,14 +13,14 @@ Ces règles complètent le combat au tour par tour de la version télé. Elles s
 
 | Sorte | Comment on l'obtient | Combien | Mana |
 |---|---|---|---|
-| **Commune** | Paquet de départ, identique pour tous | 10 (5 Coup de bâton, 3 Pas de côté, 2 Souffle court) | gris |
+| **Commune** | Paquet de départ, identique pour tous | 5 (3 Coup de bâton, 2 Pas de côté) ; aucune carte de pioche | gris |
 | **Carte de pôle** | Une copie à chaque palier réussi à la Pierre d'éveil (paliers 1 à 6) | 1 par palier | type de la zone |
 | **Forme du palier 7** | Quand la zone atteint ±7, toutes ses copies se transforment | autant que de copies | type de la zone |
 | **Gerbe** | Une copie par niveau d'une Ressource (1 à 3) | 1 par niveau | type de la Ressource |
 | **Utilitaire (secret)** | Trouver un secret doré dans une zone | 1 par secret | gris |
 | **Atout** | Pas une carte : un bonus greffé sur une carte par une route (section 6) | — | — |
 
-Les combats ne donnent pas de cartes. Le paquet compte au plus 40 cartes. À la mort, le héros perd tout : il repart avec les 10 communes ; ses zones redeviennent sauvages avec leur niveau.
+Les combats ne donnent pas de cartes. Le paquet compte au plus 40 cartes. À la mort, le héros perd tout : il repart avec les 5 communes ; ses zones redeviennent sauvages avec leur niveau.
 
 ## 3. Les deux pôles
 

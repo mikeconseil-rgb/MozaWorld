@@ -62,7 +62,10 @@ function carteCK(id,choix,niv){const L=()=>Math.max(1,niv());const cur=()=>choix
     get reveille(){const p=(cur().ops||[]).find(o=>o[0]==='reveil');return p?p[1]:null},
     txt:k=>texteCarte(cur().effet,L(),contreX(k))+(typeof atoutsDe==='function'?atoutsDe(id).map(a=>` Atout ${a.nom}.`).join(''):''),jeu:(k,t)=>{if(typeof atoutsAvant==='function')atoutsAvant(id,k);const avant=vivants(CB.foes).reduce((a,m)=>a+m.pv,0);const dbl=CB.echo&&!(cur().ops||[]).some(o=>o[0]==='echo');if(dbl){CB.echo=false;journal('Écho : effet doublé.')}
       const ctx={L:L(),x:contreX(k)*(dbl?2:1),dbl,t,z:id,k};execOps(cur().ops,ctx);if(typeof atoutsApres==='function')atoutsApres(id,k,t,ctx,avant);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
-function installerCartes22(){if(typeof CARTES22==='undefined')return;
+function installerCartes22(){
+  /* anciennes parties : le paquet garde au plus les 5 communes de départ (3 Coup de bâton, 2 Pas de côté, plus de Souffle court) */
+  if(Array.isArray(S.deck)){const reste={};for(const k of DEPART)reste[k]=(reste[k]||0)+1;S.deck=S.deck.filter(k=>{if(!(k in CK)||CK[k].z||CK[k].secret)return true;if(reste[k]>0){reste[k]--;return true}return false})}
+  if(typeof CARTES22==='undefined')return;
   /* « chaque palier donne une carte » : P.m1…P.m6 et P.p1…P.p6 si les conteurs les ont écrites, sinon la carte du pôle (P.m, P.p) qui grandit avec L */
   const parPalier=(P,s,n)=>n>=7&&P[s+'7']?Object.assign({p7:1},P[s+'7']):(P[s+n]||P[s]);
   for(const id in CARTES22.zones){const P=CARTES22.zones[id];if(!ZB[id])continue;
