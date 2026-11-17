@@ -87,9 +87,7 @@ function installerCartes22(){
     const choix=()=>{const lv=S.lv[id]||0;return parPalier(P,lv<0?'m':'p',Math.max(1,Math.min(7,Math.abs(lv))))};
     CK[id]=carteCK(id,choix,()=>Lz(id));CK[id].poles=[P.m||P.m1,P.p||P.p1];
     for(const s of['m','p'])for(let n=1;n<=7;n++){const c=parPalier(P,s,n);if(c)CK[id+'#'+(s==='m'?'-':'+')+n]=carteCK(id,()=>c,()=>n)}}
-  for(const id in CARTES22.gerbes){if(!ZB[id])continue;const G=CARTES22.gerbes[id],g=n=>G['n'+n]||G;
-    CK[id]=carteCK(id,()=>g(Math.max(1,Math.min(3,Lz(id)))),()=>Math.min(3,Lz(id)));
-    for(let n=1;n<=3;n++)CK[id+'#r'+n]=carteCK(id,()=>g(n),()=>n)}
+  /* 17 nov. (revue de cohérence) : plus de Gerbes ; les Ressources ne donnent pas de carte. Leurs textes restent chez les conteurs, matière à de futurs atouts. */
   /* secrets : une carte utilitaire par secret, clé « S<numéro> », payée en gris */
   secrets.forEach((q,i)=>{const d=CARTES22.secrets[q.titre];if(!d)return;const k='S'+i;
     CK[k]={nom:()=>d.nom,cout:d.cout,cible:d.cible?1:0,secret:q.titre,zs:q.Z.id,ultime:false,pose:null,reveille:null,amb:()=>d.ambiance||'',txt:()=>texteCarte(d.effet,1,1),

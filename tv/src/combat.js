@@ -83,8 +83,8 @@ const PASSIFS={
     :{nom:'Crocs de braise',txt:'les coups de vos bêtes brûlent (1 sur 2 tours)',braise:1}};
 const passifsZones=()=>ZN.filter(Z=>PASSIFS[Z.id]&&S.own[Z.id]&&S.act[Z.id]&&Lz(Z.id)>=1).map(Z=>PASSIFS[Z.id](Z));
 const aPassif=k=>CB&&(CB.pz||[]).some(p=>p[k]);
-function remparts(){if(typeof VOISINES==='undefined')return[];const t=Z=>Z.mod||Z.id,ok=Z=>S.own[Z.id]&&S.act[Z.id],out=[];
-  for(const A of ZN)if(ok(A)&&t(A)==='CIT')for(const v of VOISINES[A.id]||[]){const B=ZB[v];if(B&&ok(B)&&(t(B)==='DON'||(t(B)==='CIT'&&A.id<B.id)))out.push([A.id,B.id])}return out}
+function remparts(){if(typeof etatRoutes!=='function')return[];etatRoutes();const out=[];
+  for(const a in S.routes)if(estCIT(ZB[a]))for(const b of S.routes[a])out.push([a,b]);return out}
 
 /* ---------- Déroulement ---------- */
 /* ce qu'on peut encore dépenser ce tour : la capacité du tour, sans dépasser la réserve */
