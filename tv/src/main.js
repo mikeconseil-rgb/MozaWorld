@@ -193,7 +193,7 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
+    S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
   mode='monde';hudKey='';etatHud();
@@ -239,8 +239,10 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
     o.push({l:'Éveil verrouillé',ic:'▲',off:true,d:'activez d\'abord la zone'})}
   else{
   if(res&&lv<3)o.push({l:`Niveau ${lv+1} sur 3`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
-  if(!res&&lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
-  if(!res&&lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)});
+  const osc=!res&&typeof optionsScene==='function'?optionsScene(Z,diff,r>0):null;  /* 18 nov. : zone à scénario, la scène remplace les paliers */
+  if(osc)o.push(...osc);
+  else{if(!res&&lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
+  if(!res&&lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)})}
   if(res?lv>=3:Math.abs(lv)>=cap)o.push({l:'Niveau maximal atteint',ic:'◆',off:true,d:'une Ressource va de 0 à 3, sans pôle'})}
   if(Z.id==='DON'&&S.act.DON&&S.own.DON)o.unshift({l:'Aménager le Donjon',ic:'⛬',cls:'p',d:`${nbPieges()} piège(s) · réserve ${resTot()}`,go:()=>openDonjon()});
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
@@ -249,7 +251,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
-    corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
+    corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
     corps2:`<p class="petit">Niveau actuel ${sgn(lv)||'0'} · ${S.own[Z.id]?'zone à vous':emp?'zone sauvage, votre empreinte la rend plus facile à reprendre':'zone sauvage'}${r>0?` · <b style="color:var(--laiton2)">la zone se repose encore ${fmt(r)}</b>`:''}</p>`,
     back:toMonde,opts:o});$('menu-corps').innerHTML+=UI.corps2}
 /* Repérage : la zone montre brièvement ses deux paliers voisins, puis revient */
@@ -260,7 +262,8 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 let mue=null;
 function startMue(Z,lv){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
   const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${typeof reposZone==='function'?reposZone(Z.id):REPOS} secondes avant le prochain bond.</p>`;
-  ui('menu',{sur:rs?'Mue · Ressource':'Mue · nouvelle carte',t:I.nom,corps:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
+  const sc=!rs&&Z._sansCarte;Z._sansCarte=false;
+  ui('menu',{sur:rs?'Mue · Ressource':sc?'Mue · vous vous êtes ravisé':'Mue · nouvelle carte',t:I.nom,corps:sc?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)||'0'}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La zone revient d'un palier vers l'autre pôle. Se raviser ne donne pas de carte, mais le monde s'en souviendra.</p>${fin}</div></div>`:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});mode='menu'}};
   toast(`Palier ${sgn(lv)} · ${lv>0?I_(Z).pp:lv<0?I_(Z).pm:'Équilibre'}`,Z.info.nom,palTxt(Z,lv));fanfare(lv)}
 const I_=Z=>Z.info;
@@ -281,7 +284,7 @@ function startEpreuve(Z,target){const pw=contrePar(Z).pw;
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
+  if(ok){const de=S.lv[Z.id]||0,carte=typeof sceneDonneCarte!=='function'||sceneDonneCarte(Z,de,target);if(typeof tenirParole==='function')tenirParole(Z);S.lv[Z.id]=target;Z._sansCarte=!carte;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(carte&&S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,

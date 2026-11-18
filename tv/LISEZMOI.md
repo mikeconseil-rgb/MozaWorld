@@ -103,6 +103,14 @@ Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au ba
 
 APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
 
+## Version 2.7 (web) : les choix moraux de la Taïga de Kobor, soir 1 (18 novembre)
+
+- **La scène remplace le menu des paliers** (`src/scenarios.js`) : à la Pierre de la Taïga de Kobor, une scène de l'histoire du registre (le voïévode Mstisla, l'inspecteur Zakhar, la veuve Oustina) et deux réponses. L'une enfonce la zone d'un palier dans son pôle (Mensonge ou Vérité), l'autre la ramène d'un palier. 15 scènes, de −7 à +7.
+- **Le prix** est payé au choix : mana, PV retirés au prochain combat, carte perdue ou exilée. Un prix caché s'affiche « ? ».
+- **Parole donnée** : après un échec, seul « Tenir parole » reste ; on ne rechoisit pas.
+- **Traces** (`S.memoire`) gardées après la mort ; certaines changent déjà le texte des scènes suivantes. Se raviser ne donne pas de carte.
+- Les autres zones ne changent pas. Prochains soirs : l'épreuve habillée par la scène, puis les effets des traces.
+
 ## Version 2.6 (web) : combat animé, décors par pôle, zones plus grandes et lieux à découvrir (18 novembre)
 
 Lot du soir tiré de l'évaluation graphique du 17 novembre (idées 6, 1 et 8).
