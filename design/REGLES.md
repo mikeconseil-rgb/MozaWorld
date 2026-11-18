@@ -78,7 +78,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 ## 8. La mort et la guerre
 
 - Une défaite coûte une blessure de campagne ; à la troisième, le héros meurt.
-- À la mort, le héros perd tout. L'héritier reçoit de nouveau le territoire de départ au niveau 1, pôles retirés au hasard, avec ses 6 cartes de palier 1 **(provisoire, à confirmer)**. Ses autres zones gardent leur niveau mais redeviennent sauvages. Son empreinte rend leur reprise plus facile, tant que personne d'autre ne les a prises. La mort nourrit le monde sauvage.
+- À la mort, le héros perd tout. L'héritier reçoit de nouveau le territoire de départ au niveau 1, pôles retirés au hasard, avec ses 6 cartes de palier 1. Ses autres zones gardent leur niveau mais redeviennent sauvages. Son empreinte rend leur reprise plus facile, tant que personne d'autre ne les a prises. La mort nourrit le monde sauvage.
 - Les zones à ±7 lèvent des hordes qui envahissent les zones plus faibles ; souvent un seul des deux pôles envahit, et l'autre donne un pouvoir plus fort. Citadelles, remparts et Donjons aménagés défendent **(dans le jeu : seulement les assauts contre le Donjon aménagé)**.
 
 ## 9. Le beau et les juges

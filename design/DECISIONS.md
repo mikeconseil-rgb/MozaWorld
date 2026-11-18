@@ -6,7 +6,6 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Règle | Depuis | Ce qui manque pour trancher |
 |---|---|---|
-| Territoire de départ rendu à la mort | 18 nov. | Réponse de l'utilisateur |
 | Lot graphique 2.6 et zones +33 % | 18 nov. | Fluidité validée sur la Xbox (18 nov.) ; reste son avis sur le rendu |
 | Blessures façon Shadowrun | 17 nov. | Deux ou trois soirs de jeu, puis un seul système |
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
@@ -19,7 +18,8 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
 | Départ | Plus de cartes communes (« me pue au nez ») : les 12 zones du territoire de départ sont à vous dès le début, au niveau 1, pôle tiré au hasard pour chaque zone ; le paquet de départ = leurs 6 cartes de palier 1 | en vigueur | 5 communes toutes différentes (17 nov.), départ au niveau 0 à conquérir |
-| Mort | L'héritier reçoit de nouveau le territoire de départ au niveau 1 (pôles retirés) avec ses cartes de palier 1 ; les autres zones redeviennent sauvages | provisoire | repartir avec les 5 communes |
+| Équilibrage | Après les tests (≈ 300 combats simulés) : on garde le début plus facile qu'avant (6 vraies cartes, territoire facile) ; zones de bordure à ±6 pour garder l'écart mortel ; 15 cartes toujours nécessaires pour ouvrir les zones scellées | en vigueur (« Oui à tout ») | bordure à ±5 |
+| Mort | L'héritier reçoit de nouveau le territoire de départ au niveau 1 (pôles retirés) avec ses cartes de palier 1 ; les autres zones redeviennent sauvages | en vigueur (« Oui à tout », 18 nov.) | repartir avec les 5 communes |
 | Choix moraux | Chaque zone a un scénario en 15 marches (−7 à +7) écrit par son conteur. À chaque éveil, une scène pose un dilemme : une réponse enfonce la zone d'un palier dans son pôle, l'autre la ramène d'un palier vers l'autre pôle ; chaque réponse a un prix (annoncé ou caché) et mène à une épreuve qui colle à l'histoire | en vigueur (Kobor seule, soir 1 sur 3) | menu « Palier +1 / −1 » |
 | Choix moraux | Une parole donnée reste donnée : si l'épreuve échoue, on la retente sans rechoisir | en vigueur | |
 | Choix moraux | Paliers 3 et 6 sans choix (respirations), pour rester à environ 7 choix sur 10 ; se raviser ne donne pas de carte | en vigueur | |
