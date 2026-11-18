@@ -2,7 +2,7 @@
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.5';
+const MZ_VERSION='2.5.1';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -85,6 +85,28 @@ const MZ_VERSION='2.5';
 .cb-piles{padding:calc(var(--u)*.8) calc(var(--u)*1.1)!important}
 .cb-piles span{display:flex;justify-content:space-between;align-items:baseline;gap:.8em}
 .cb-tete h2,.cb-tete .t{text-shadow:0 2px 22px rgba(232,199,127,.2)}
+/* ---- 2.5.1 (retour de test du 18 nov. : « le bandeau est bien trop grand, en haut, sombre et efficace, une barre ») ----
+   tout l'état tient sur une seule barre sombre en haut de l'écran */
+.hud.etat{top:0;left:0;right:0;bottom:auto;display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:0;text-align:left;
+  padding:calc(var(--u)*.35) var(--mx);background:linear-gradient(180deg,rgba(8,7,10,.92),rgba(8,7,10,.78));border:0;border-bottom:1px solid rgba(201,164,92,.38);border-radius:0;
+  box-shadow:0 4px 18px rgba(0,0,0,.45);backdrop-filter:none;white-space:nowrap}
+.hud.etat .bandeau{display:flex;flex-wrap:nowrap;align-items:center;gap:0;padding:0;margin:0;background:none;border:0}
+.hud.etat .bandeau .ligne,.hud.etat>div:not(.bandeau){display:flex;flex-wrap:nowrap;align-items:center;gap:calc(var(--u)*.55);padding:0 calc(var(--u)*1);margin:0;background:none;
+  border-left:1px solid rgba(201,164,92,.28)}
+.hud.etat .bandeau .ligne:first-child{border-left:0}
+.hud.etat .bandeau .titre{display:none}
+.hud.etat .bandeau .ligne.prod .titre{display:inline;margin:0;font-size:calc(var(--u)*.72);letter-spacing:.08em;color:var(--sable)}
+.hud.etat .bandeau .m{font-size:calc(var(--u)*1.1)}
+.hud.etat .bandeau .d{font-size:calc(var(--u)*1)}
+.hud.etat .bandeau .dg{font-size:calc(var(--u)*.85);padding:0 .4em}
+.hud.etat .l{font-size:calc(var(--u)*.7);letter-spacing:.12em}
+.hud.etat b{font-size:calc(var(--u)*1.25)}
+.hud.etat .vie{width:calc(var(--u)*.7);height:calc(var(--u)*.7)}
+.hud.etat .bandeau .ligne.prod,.hud.etat [title="Plus grand territoire d'un seul tenant"],.hud.etat [title="Niveaux de vos zones"],.hud.etat>div:has(#h-deck){display:none}
+.hud.etat>div:not(.bandeau) .l{display:none}
+.hud.etat>div:has(#h-sec)::before{content:"✧";color:var(--or);font-size:calc(var(--u)*1)}
+.hud.etat>div:has(#h-sec) .l:last-child{display:inline;letter-spacing:0;font-size:calc(var(--u)*.9);color:var(--sable)}
+.cart{top:calc(var(--my) + var(--u)*2.6)}
 /* ---- message flottant ---- */
 .toast .t2{background:linear-gradient(90deg,transparent,rgba(232,199,127,.5),transparent) bottom/60% 1px no-repeat;padding-bottom:.15em}
 `;document.head.appendChild(st)})();
