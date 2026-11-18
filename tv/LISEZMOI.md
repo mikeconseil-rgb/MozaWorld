@@ -103,6 +103,15 @@ Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au ba
 
 APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
 
+## Version 2.6 (web) : combat animé, décors par pôle, zones plus grandes et lieux à découvrir (18 novembre)
+
+Lot du soir tiré de l'évaluation graphique du 17 novembre (idées 6, 1 et 8).
+
+- **Combat animé** (`src/anim-combat.js`) : la carte jouée quitte la main et vole vers sa cible avant que l'effet parte ; l'attaquant prend son élan et fonce ; la cible encaisse avec un éclair, un trait de coup et des étincelles ; l'écran tremble sur les coups de 8 ou plus ; soins et gardes ont leur lueur ; les unités respirent ; les vaincus se dissolvent ; le décor de la zone dérive lentement. Seulement du CSS et l'API Web Animations : aucune règle changée.
+- **Décors propres à chaque pôle** (`src/poles-decor.js`, nouvelles tuiles) : vers −7, arbres morts, colonnes brisées, éclats d'obsidienne fendus de la couleur du pôle et trois flèches noires effondrées ; vers +7, bannières, cristaux lumineux, lanternes, grandes fleurs et trois tours Girih dorées. Chaque objet a son seuil, donc chaque palier en ajoute. La végétation du biome se penche et dépérit vers −7, grandit vers +7. Les objets éteints ne sont pas dessinés.
+- **Zones agrandies d'un tiers** (`SC` 3 → 4 dans `src/core.js`, arête 400 m) ; maille du terrain 3,6 → 4,2 m et densité de végétation plafonnée pour rester fluide. Mesure (rendu logiciel, triangles par image avec les ombres) : Berestograd −31 %, Taïga de Kobor environ +7 %, Canyon de Fjorhel environ +22 % par rapport à la 2.5.
+- **Trois lieux par nouvelle tuile** (`src/lieux.js`) : un camp abandonné, un cercle de pierres levées et un belvédère, dans trois directions loin de la Pierre. Un rai de lumière les signale de loin tant que leur secret n'est pas trouvé. 48 secrets de plus (79 au total) ; ils sont ajoutés après les anciens, donc les sauvegardes gardent leurs secrets trouvés. Ces nouveaux secrets ne donnent pas encore de carte.
+
 ## Version 2.4 (web, Edge sur Xbox Series S) : héros animé, zones +50 %, minicarte, bandeau, sauvegardes (17 novembre)
 
 Le 17 novembre, l'utilisateur a arrêté la version Google TV : il joue seulement à la version web, dans Edge sur la Series S. On ne livre plus d'APK.

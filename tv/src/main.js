@@ -43,6 +43,7 @@ const now=()=>Date.now()/1000;
 const restLeft=Z=>Math.max(0,(S.rest[Z.id]||0)-now());
 
 for(const Z of ZN){Z.lv=Z.lvT=S.lv[Z.id]||0;Z.build()}
+if(typeof lieuxSecrets==='function')lieuxSecrets();   /* 2.6 : secrets des lieux, après tous les autres (numéros des sauvegardes inchangés) */
 buildTerrain();buildBorders();for(const Z of ZN)Z.update(Z.lv);
 for(const i of S.found||[])if(secrets[i])secrets[i].found=true;
 $('h-sect').textContent=secrets.length;

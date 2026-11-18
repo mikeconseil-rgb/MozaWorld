@@ -76,7 +76,7 @@ for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B=BIO[d.biome]||BIO['Steppe'],[neg
   /* végétation : posée au hasard dans la tuile, loin de la Pierre ; elle grandit, se ternit ou s'illumine selon le pôle */
   const R=Math.max(...Z.poly.map(p=>{const q=Z.loc(p[0],p[1]);return Math.hypot(q[0],q[1])}));Z.props=[];
   Z.build=()=>{for(const[k,n]of B.props){const it=inst(PG[k],k==='cristal'?PMAT.cristal:PG[k].attributes.color?PMAT.vc:PMAT.plein);it.k=k;let t=0;
-      const nn=Math.round(n*SC*SC/4*.75);while(it.a.length<nn&&t++<nn*30){const u=rr(-R,R),v=rr(-R,R);if(!Z.inside(u,v,12)||Math.hypot(u+20,v)<32)continue;const p=Z.w(u,v);
+      const nn=Math.round(n*Math.min(SC*SC,12)/4*.75);   /* 2.6 : zones agrandies, densité plafonnée pour rester fluide */while(it.a.length<nn&&t++<nn*30){const u=rr(-R,R),v=rr(-R,R);if(!Z.inside(u,v,12)||Math.hypot(u+20,v)<32)continue;const p=Z.w(u,v);
         if(k!=='roseau'&&k!=='corail'&&B.f(u,v,N1(p[0],p[1]),N2(p[0],p[1]),N3(p[0],p[1]))<-.8)continue;
         const s=rr(.75,1.35);it.add(p[0],0,p[1],s,s,s,rr(0,TAU),k==='mur'||k==='colonne'?rr(-.08,.08):0,0,{u,v});}
       it.make();Z.props.push(it)}};
