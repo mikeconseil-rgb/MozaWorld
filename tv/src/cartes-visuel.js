@@ -389,7 +389,7 @@ const css=document.createElement('style');css.textContent=`
 .kpeint{position:absolute;inset:0;display:block;overflow:hidden;background:#0d0c0f}
 .kpeint>*{position:absolute;inset:0;width:100%;height:100%;display:block}
 .kpeint .kfond{visibility:hidden}.kpeint.ko .kfond{visibility:visible}.kpeint.ko .kimg{display:none}
-.kpeint .kimg{object-fit:cover}
+.kpeint .kimg{object-fit:cover}.kpeint .kfx{opacity:.4;mix-blend-mode:screen}
 .kpeint::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 calc(var(--u)*1.2) rgba(0,0,0,.55);background:linear-gradient(180deg,transparent 70%,rgba(8,7,10,.45))}
 .cc.kcarte.p-neg .kimg{filter:saturate(.9) contrast(1.06)}.cc.kcarte.p-pos .kimg{filter:saturate(1.08)}
 .cc.kcarte.secret .kimg{filter:sepia(.25)}

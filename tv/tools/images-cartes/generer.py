@@ -28,11 +28,13 @@ def main():
     o = a.parse_args()
     if o.manifeste: print(manifeste(), 'images listées'); return
     cartes = json.loads((Path(__file__).parent / 'cartes.json').read_text(encoding='utf-8'))
+    toutes = len(cartes)
     if o.seul: cartes = [c for c in cartes if c['k'] in o.seul.split(',') or c['fichier'] in o.seul.split(',')]
     a_faire = [c for c in cartes if o.refaire or not (DOSSIER / (c['fichier'] + '.webp')).exists()]
     print(f"{len(a_faire)} images à faire, {o.max} au plus cette fois")
     jeton = os.environ.get('HF_TOKEN') or None
-    client = Client(ESPACES[0], hf_token=jeton, verbose=False)
+    try: client = Client(ESPACES[0], token=jeton, verbose=False)        # gradio_client récent
+    except TypeError: client = Client(ESPACES[0], hf_token=jeton, verbose=False)
     faites = 0
     for c in a_faire[:o.max]:
         graine = sum(map(ord, c['k'])) * 7919 % 2**31
@@ -46,13 +48,14 @@ def main():
         src = r[0] if isinstance(r, (list, tuple)) else r
         if isinstance(src, dict): src = src.get('path') or src.get('url')
         im = Image.open(src).convert('RGB')
+        w, h = im.size; im = im.crop((int(w*.04), int(h*.04), int(w*.96), int(h*.96)))   # rogne un éventuel cadre dessiné par le modèle
         w, h = im.size; cible = 1.5
         if w / h > cible: nw = int(h * cible); im = im.crop(((w - nw) // 2, 0, (w - nw) // 2 + nw, h))
         else: nh = int(w / cible); im = im.crop((0, (h - nh) // 2, w, (h - nh) // 2 + nh))
         im.resize((480, 320), Image.LANCZOS).save(DOSSIER / (c['fichier'] + '.webp'), 'WEBP', quality=72, method=6)
         faites += 1; print('ok', c['k'], c['nom'])
     total = manifeste()
-    print(f"{faites} faites ; {total}/{len(cartes)} cartes ont leur image")
+    print(f"{faites} faites ; {total}/{toutes} cartes ont leur image")
 
 if __name__ == '__main__':
     sys.exit(main())
