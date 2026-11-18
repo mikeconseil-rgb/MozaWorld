@@ -1,6 +1,6 @@
 'use strict';
 /* MozaWorld, démo « Cinq Tuiles ». Noyau : mosaïque, terrain, ciel, météo, rendu, physique du héros. */
-const PI=Math.PI,TAU=PI*2,D2R=PI/180,SC=3,L=100*SC; /* SC : agrandissement des tuiles (arête 100 m → 300 m ; 2.4 : +50 % à la demande du 17 nov.) */
+const PI=Math.PI,TAU=PI*2,D2R=PI/180,SC=4,L=100*SC; /* SC : agrandissement des tuiles (arête 100 m → 400 m ; 2.4 : +50 % à la demande du 17 nov. ; 2.6 : +33 % à la demande du 18 nov., « zones plus grandes ») */
 const clamp=(x,a,b)=>x<a?a:x>b?b:x,lerp=(a,b,t)=>a+(b-a)*t;
 const sst=(a,b,x)=>{x=clamp((x-a)/(b-a),0,1);return x*x*(3-2*x)};
 let _s=20261110;const rnd=()=>{_s=(_s*1664525+1013904223)>>>0;return _s/4294967296},rr=(a,b)=>a+(b-a)*rnd();
@@ -110,7 +110,7 @@ function secret(Z,pos,titre,texte,cond){const m=new THREE.Mesh(secGeo,secMat);sc
 const secHalo=points(32,7,{opacity:.8});
 
 /* ---------- Terrain ---------- */
-const CELL=3.6; /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
+const CELL=4.2; /* 2.6 : 4,2 m avec les zones agrandies, pour garder à peu près le même nombre de sommets */ /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
 for(const Z of ZN)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
 X0-=64;X1+=64;Z0-=64;Z1+=64;
 const GW=Math.ceil((X1-X0)/CELL)+1,GH=Math.ceil((Z1-Z0)/CELL)+1,GN=GW*GH;

@@ -78,6 +78,9 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 ## 9. Le beau et les juges
 
 - Chaque zone doit avoir un style propre ; un style de rendu différent par tuile, surtout pour les 45 Citadelles.
+- Les deux pôles changent les **décors eux-mêmes**, pas seulement la teinte : chaque palier vers ±7 ajoute des objets propres au pôle (en jeu sur les nouvelles tuiles depuis la 2.6).
+- Zones : arête de 400 m depuis la 2.6 (300 m avant). Chaque nouvelle tuile a trois lieux à découvrir (camp, cercle de pierres, belvédère), chacun avec un secret.
+- Le combat est animé (carte qui vole, élan, impact), sans que les animations changent les règles.
 - Le juge visuel des zones (note de 80 % au moins) est **suspendu** tant que le jeu est la version web. Il reprendra sous Unreal. Le critique reste en place pour les textes et les cartes.
 - Musique : propre à chaque zone et à chaque niveau. Style MIDI : chaque zone a son air, tiré du classique du domaine public (Bach, Mozart, Beethoven, Grieg…), des comptines populaires (Frère Jacques, Au clair de la lune…) ou d'airs originaux dans l'esprit des jeux 16 bits (jamais une mélodie de jeu reprise). Au niveau 0 on n'entend que la trame ; chaque palier vers ±7 ajoute une couche (basse, accords, percussions, arpège ou canon, accords enrichis, ornements, harmonie). Vers −7 l'air passe en mineur puis en mode sombre et ralentit ; vers +7 il s'éclaire et accélère. Détail : `tv/src/musique.js` ; écoute : juke-box `tv/musique.html`.
 

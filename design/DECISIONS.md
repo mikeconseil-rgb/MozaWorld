@@ -6,11 +6,20 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Règle | Depuis | Ce qui manque pour trancher |
 |---|---|---|
+| Lot graphique 2.6 et zones +33 % | 18 nov. | Verdict de l'utilisateur après essai sur la Xbox (fluidité, goût) |
 | Blessures façon Shadowrun | 17 nov. | Deux ou trois soirs de jeu, puis un seul système |
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
+
+## 18 novembre 2026
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Méthode | Les PR sont fusionnées par le fil qui les a faites dès qu'elles sont prêtes (test de fumée passé), sans attendre l'utilisateur | en vigueur | fusion par l'utilisateur |
+| Graphismes | Lot 2.6 tiré de l'évaluation graphique (idées 6, 1 et 8 recommandées, lancées en attendant le choix de l'utilisateur) : combat animé, décors par pôle, zones agrandies d'un tiers avec trois lieux par tuile | provisoire | |
+| Zones | Arête des tuiles 400 m (zones +33 %) à la demande « zones plus grandes » | provisoire | arête 300 m (17 nov.) |
 
 ## 17 novembre 2026
 

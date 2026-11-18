@@ -4,7 +4,7 @@
    − : arbres morts, colonnes brisées, éclats d'obsidienne fendus de la couleur du pôle, et trois flèches noires effondrées ;
    + : bannières, cristaux lumineux, lanternes, grandes fleurs, et trois tours Girih dorées couronnées de lumière.
    La végétation du biome, elle, se penche et dépérit vers −7, grandit et se redresse vers +7.
-   Coût : quelques centaines d'objets instanciés par tuile (une poignée d'appels de dessin), écartés hors champ par fluidite.js. */
+   Coût : quelques centaines d'objets instanciés par tuile, sans ombre portée sauf les grands repères ; les objets éteints ne sont pas dessinés du tout (tasser), donc rien à zéro. */
 (function(){
 const geoD={
   souche:merge([[cyl(.35,.6,5.5,6,0,2.75,0),0x2a2420],[cyl(.12,.2,3,5,0,0,0).rotateZ(.9).translate(1,4.6,0),0x2a2420],[cyl(.1,.18,2.6,5,0,0,0).rotateZ(-1).translate(-.9,3.8,.2),0x2a2420]]),
@@ -20,6 +20,11 @@ const geoD={
   tour:(()=>{const p=[];for(let i=0;i<5;i++){const r=3.2-i*.5,h=6-i*.6,y=[0,6,11.4,16.2,20.4][i];p.push([cyl(r*.86,r,h,10,0,y+h/2,0),i%2?0xc9a45c:0xe9dfc8]);p.push([cyl(r+.25,r+.25,.5,10,0,y+h,0),0xc9a45c])}
     p.push([new THREE.ConeGeometry(1.2,4,10).translate(0,26.5,0),0xc9a45c]);return merge(p)})(),
   couronne:new THREE.IcosahedronGeometry(1.4,0).translate(0,30,0)};
+/* les objets éteints (sous leur seuil) ne sont pas envoyés du tout : on range les allumés en tête et on réduit count */
+function tasser(it){const m=it.m,A=m.instanceMatrix.array,C=m.instanceColor?m.instanceColor.array:null;let n=0;
+  for(let i=0;i<it.a.length;i++){if(Math.hypot(A[i*16],A[i*16+1],A[i*16+2])<.01)continue;
+    if(n!==i){for(let j=0;j<16;j++)A[n*16+j]=A[i*16+j];if(C)for(let j=0;j<3;j++)C[n*3+j]=C[i*3+j]}n++}
+  m.count=n;done(m)}
 const matV=M(0xffffff,{vertexColors:true}),matG=new THREE.MeshBasicMaterial({color:0xffffff,vertexColors:true}),matB=new THREE.MeshBasicMaterial({color:0xffffff});
 /* [sorte, géométrie, matériau, pôle, nombre, taille, lueur] ; lueur : la teinte du pôle, poussée au-delà de 1 pour le halo */
 const FAM=[
@@ -34,7 +39,7 @@ for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,
     const R=Math.max(...Z.poly.map(p=>{const q=Z.loc(p[0],p[1]);return Math.hypot(q[0],q[1])}));
     /* lanternes et poteaux partagent leurs places */
     const places={};
-    for(const[k,g,mat,side,n0,sz,glow]of FAM){const it=inst(geoD[g],mat,glow?false:true);it.k=k;it.side=side;it.glow=glow;fams.push(it);
+    for(const[k,g,mat,side,n0,sz,glow]of FAM){const it=inst(geoD[g],mat,false);it.k=k;it.side=side;it.glow=glow;fams.push(it);
       const n=Math.round(n0*Math.min(2,SC*SC/4)),src=k==='lanterne'?places.poteau:null;
       if(src){for(const o of src)it.add(o.x,0,o.z,1,1,1,0,0,0,{u:o.e.u,v:o.e.v,th:o.e.th});it.make();continue}
       let t=0;while(it.a.length<n&&t++<n*40){
@@ -59,6 +64,7 @@ for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,
       it.set(o=>{/* chaque objet a son seuil : plus on s'éloigne de zéro, plus il y en a ; les repères n'apparaissent qu'à partir de ±3 */
           const th=it.repere?.36+o.e.th:.05+o.e.th*.85,k=sst(th,th+.14,w);return k<.02?.0001:(it.repere?.35+.65*k:k)},
         (o,i,c)=>{if(it.glow){const e=it.glow*(.6+.4*w);const b=it.side<0?cN2:cP2;c[0]=b[0]*e;c[1]=b[1]*e;c[2]=b[2]*e;return}
-          if(it.k==='banniere'||it.k==='fleur'){mix3(c,cBlanc,cP,.85)}else if(it.k==='tour'){mix3(c,cBlanc,cP,.18)}else{mix3(c,cBlanc,cN,.35)}})}};
+          if(it.k==='banniere'||it.k==='fleur'){mix3(c,cBlanc,cP,.85)}else if(it.k==='tour'){mix3(c,cBlanc,cP,.18)}else{mix3(c,cBlanc,cN,.35)}});
+      tasser(it)}};
 })();
 })();
