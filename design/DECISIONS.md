@@ -6,7 +6,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Règle | Depuis | Ce qui manque pour trancher |
 |---|---|---|
-| Lot graphique 2.6 et zones +33 % | 18 nov. | Verdict de l'utilisateur après essai sur la Xbox (fluidité, goût) |
+| Lot graphique 2.6 et zones +33 % | 18 nov. | Fluidité validée sur la Xbox (18 nov.) ; reste son avis sur le rendu |
 | Blessures façon Shadowrun | 17 nov. | Deux ou trois soirs de jeu, puis un seul système |
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
@@ -23,6 +23,8 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Choix moraux | Le ton de la Taïga de Kobor (familles déportées, hameau rasé, inspecteur enfermé vivant) est le bon niveau de dur pour adultes | en vigueur | |
 | Choix moraux | Coder Kobor en 3 soirs (scène, épreuve habillée, traces) avant d'écrire les autres zones | en vigueur | |
 | Narration | Textes des scènes en français, lus par une voix d'homme et une voix de femme françaises de base (Piper : Tom et Siwis), gratuites ; pas d'anglais, pas d'accent québécois pour l'instant | en vigueur (pas encore dans le jeu) | |
+| Graphismes | Suite du lot graphique (« Tout oui ») : décors par pôle sur les zones d'origine, exploration épurée (RB ou Tab pour l'interface complète), monde animé (vent, braises et lucioles, créatures qui errent) ; les cartes des 48 secrets des lieux attendent | en vigueur | |
+| Graphismes | Essai de la 2.6 sur la Xbox : « C'est fluide » | en vigueur | |
 | Méthode | Les PR sont fusionnées par le fil qui les a faites dès qu'elles sont prêtes (test de fumée passé), sans attendre l'utilisateur | en vigueur | fusion par l'utilisateur |
 | Graphismes | Lot 2.6 tiré de l'évaluation graphique (idées 6, 1 et 8 recommandées, lancées en attendant le choix de l'utilisateur) : combat animé, décors par pôle, zones agrandies d'un tiers avec trois lieux par tuile | provisoire | |
 | Zones | Arête des tuiles 400 m (zones +33 %) à la demande « zones plus grandes » | provisoire | arête 300 m (17 nov.) |
