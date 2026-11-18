@@ -303,11 +303,13 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
   <div><i>▲ ▼</i> marcher (tenir pour courir)</div>
   <div><i>◀ ▶</i> tourner</div>
   <div><i>OK</i> agir · <i>Retour</i> menu</div>
+  <div><i>Tab</i> interface complète ou épurée</div>
 </div>
 <div class="hud mondain aide aide-pad cadre">
   <div><i>stick G</i> marcher · <span class="bt rt">RT</span> courir</div>
   <div><i>stick D</i> caméra · <span class="bt x">X</span> marche auto</div>
   <div><span class="bt a">A</span> agir · <span class="bt y">Y</span> cartes · <span class="bt b">B</span> menu</div>
+  <div><span class="bt">RB</span> interface complète ou épurée</div>
 </div>
 
 <div class="hud toast" id="toast"><div class="t1" id="t1"></div><div class="t2" id="t2"></div><div class="t3" id="t3"></div></div>
@@ -1365,7 +1367,7 @@ const geoD={
 function tasser(it){const m=it.m,A=m.instanceMatrix.array,C=m.instanceColor?m.instanceColor.array:null;let n=0;
   for(let i=0;i<it.a.length;i++){if(Math.hypot(A[i*16],A[i*16+1],A[i*16+2])<.01)continue;
     if(n!==i){for(let j=0;j<16;j++)A[n*16+j]=A[i*16+j];if(C)for(let j=0;j<3;j++)C[n*3+j]=C[i*3+j]}n++}
-  m.count=n;done(m)}
+  m.count=n;m.visible=n>0;done(m)}
 const matV=M(0xffffff,{vertexColors:true}),matG=new THREE.MeshBasicMaterial({color:0xffffff,vertexColors:true}),matB=new THREE.MeshBasicMaterial({color:0xffffff});
 /* [sorte, géométrie, matériau, pôle, nombre, taille, lueur] ; lueur : la teinte du pôle, poussée au-delà de 1 pour le halo */
 const FAM=[
@@ -1373,7 +1375,11 @@ const FAM=[
   ['banniere','banniere',matV,1,30,[.9,1.2],0],['cristal','cristal',matG,1,30,[.7,1.5],1.6],['poteau','poteau',matV,1,24,[1,1],0],['lanterne','lanterne',matB,1,24,[1,1],2.4],['fleur','fleur',matV,1,40,[.8,1.7],0]];
 const LANDMARK=[['fleche','fleche',matV,-1],['tour','tour',matV,1],['couronne','couronne',matB,1]];
 
-for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),cBlanc=[1,1,1],tmp=[0,0,0];
+/* 2.8 : aussi les zones d'origine (pas Tezcamixtli : une Ressource n'a pas de pôle). Là, le cœur écrit à la main reste tel quel :
+   les objets ne vont que dans la ceinture (Z.bw, mutations.js), et les repères à 70 % du rayon. */
+const MANA_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',MAR:'Glace'};
+for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?Z.d.mana:MANA_ORIG[Z.id]]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),cBlanc=[1,1,1],tmp=[0,0,0];
+  const zi=Z.i||0,cx=Z.plus?-20:0,ok=(u,v,m)=>Z.plus?Z.inside(u,v,m)&&Math.hypot(u+20,v)>=30:Z.inside(u,v,m)&&!!Z.bw&&Z.bw(u,v)>.6;
   const cN2=LIN(hexMix(neg,'#ff6040',.35)),cP2=LIN(hexMix(pos,'#ffffff',.3));
   const build0=Z.build,update0=Z.update;let fams=[];
   Z.build=()=>{build0();fams=[];
@@ -1381,22 +1387,22 @@ for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,
     /* lanternes et poteaux partagent leurs places */
     const places={};
     for(const[k,g,mat,side,n0,sz,glow]of FAM){const it=inst(geoD[g],mat,false);it.k=k;it.side=side;it.glow=glow;fams.push(it);
-      const n=Math.round(n0*Math.min(2,SC*SC/4)),src=k==='lanterne'?places.poteau:null;
+      const n=Math.round(n0*Math.min(2,SC*SC/4)*(Z.plus?1:1.6)),src=k==='lanterne'?places.poteau:null;
       if(src){for(const o of src)it.add(o.x,0,o.z,1,1,1,0,0,0,{u:o.e.u,v:o.e.v,th:o.e.th});it.make();continue}
       let t=0;while(it.a.length<n&&t++<n*40){
         /* la moitié autour de la Pierre (35 à 110 m), où le joueur regarde ; le reste partout dans la tuile */
-        let u,v;if(it.a.length%2===0){const a=rnd()*TAU,r=rr(35,110);u=-20+Math.cos(a)*r;v=Math.sin(a)*r}else{u=rr(-R,R);v=rr(-R,R)}
-        if(!Z.inside(u,v,10)||Math.hypot(u+20,v)<30)continue;const p=Z.w(u,v),s=rr(sz[0],sz[1]);
+        let u,v;if(Z.plus&&it.a.length%2===0){const a=rnd()*TAU,r=rr(35,110);u=-20+Math.cos(a)*r;v=Math.sin(a)*r}else{u=rr(-R,R);v=rr(-R,R)}
+        if(!ok(u,v,10))continue;const p=Z.w(u,v),s=rr(sz[0],sz[1]);
         it.add(p[0],0,p[1],s,s,s,rnd()*TAU,k==='ruine'||k==='souche'?rr(-.12,.12):0,k==='souche'?rr(-.15,.15):0,{u,v,th:rnd()})}
       it.make();if(k==='poteau')places.poteau=it.a}
     /* les trois grands repères, à 120° les uns des autres autour de la Pierre : on en voit toujours un */
     for(const[k,g,mat,side]of LANDMARK){const it=inst(geoD[g],mat,mat!==matB);it.k=k;it.side=side;it.glow=mat===matB?3:0;it.repere=1;fams.push(it);
-      for(let i=0;i<3;i++){const a=i*TAU/3+Z.i*.7;let r=78,u,v;for(let j=0;j<6;j++){u=-20+Math.cos(a)*r;v=Math.sin(a)*r;if(Z.inside(u,v,18))break;r*=.8}
+      for(let i=0;i<3;i++){const a=i*TAU/3+zi*.7;let r=Z.plus?78:R*.7,u,v;for(let j=0;j<8;j++){u=cx+Math.cos(a)*r;v=Math.sin(a)*r;if(ok(u,v,18))break;r*=Z.plus?.8:.93}
         const p=Z.w(u,v);it.add(p[0],0,p[1],1,1,1,a+(side<0?.6:0),side<0?.12:0,side<0?-.1:0,{u,v,th:i*.12})}
       it.make()}};
   Z.update=lv=>{update0(lv);const an=wneg(lv),ap=wpos(lv);
     /* la végétation du biome : penchée, rabougrie vers −7 ; redressée et plus haute vers +7 */
-    for(const it of Z.props){if(it.k==='rocher'||it.k==='mur'||it.k==='colonne')continue;
+    for(const it of Z.props||[]){if(it.k==='rocher'||it.k==='mur'||it.k==='colonne')continue;
       it.set(o=>{if(an>.2&&o.r<an*.55)return .0001;if(o.rz0===undefined){o.rz0=o.rz;o.rx0=o.rx}o.rz=o.rz0+an*.5*(o.r-.5);o.rx=o.rx0+an*.3*(o.r*7%1-.5);
           return[(1+ap*.35)*(1-an*.25),(1+ap*.7)*(1-an*.45),(1+ap*.35)*(1-an*.25)]},
         (o,i,c)=>{const b=LIN(PBASE[it.k]||'#ffffff');mix3(c,b,[.12,.1,.09],an*.75);if(ap>0)mix3(c,c,cP,ap*.4);if(it.k==='cristal'){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}
@@ -1542,8 +1548,8 @@ function carteCK(id,choix,niv){const L=()=>Math.max(1,niv());const cur=()=>choix
     txt:k=>texteCarte(cur().effet,L(),contreX(k))+(typeof atoutsDe==='function'?atoutsDe(id).map(a=>` Atout ${a.nom}.`).join(''):''),jeu:(k,t)=>{if(typeof atoutsAvant==='function')atoutsAvant(id,k);const avant=vivants(CB.foes).reduce((a,m)=>a+m.pv,0);const dbl=CB.echo&&!(cur().ops||[]).some(o=>o[0]==='echo');if(dbl){CB.echo=false;journal('Écho : effet doublé.')}
       const ctx={L:L(),x:contreX(k)*(dbl?2:1),dbl,t,z:id,k};execOps(cur().ops,ctx);if(typeof atoutsApres==='function')atoutsApres(id,k,t,ctx,avant);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
 function installerCartes22(){
-  /* anciennes parties : les communes sont remplacées par les 5 communes uniques de départ (17 nov.) */
-  if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>k in CK&&(CK[k].z||CK[k].secret)||!(k in CK)&&!/^(coup|garde|souffle)$/.test(k));S.deck=DEPART.concat(S.deck.filter(k=>{const id=k.split('#')[0],Z=typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'}))}  /* 17 nov. : les Ressources ne donnent plus de carte */
+  /* anciennes parties : les cartes communes sortent du paquet (18 nov. : plus de communes) et les Ressources ne donnent plus de carte (17 nov.) */
+  if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>COMMUNES.indexOf(k)<0&&(k in CK?(CK[k].z||CK[k].secret):true)).filter(k=>{const id=k.split('#')[0],Z=typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'})}
   if(typeof ART!=='undefined'){ART.pieu=ART.pieu||Object.assign({},ART.garde,{sorte:'Bloqueur'});ART.caillou=ART.caillou||Object.assign({},ART.coup);ART.torche=ART.torche||Object.assign({},ART.coup,{fond:['#2e1408','#c8541c'],sorte:'Brûlure'})}
   if(typeof CARTES22==='undefined')return;
   /* « chaque palier donne une carte » : P.m1…P.m6 et P.p1…P.p6 si les conteurs les ont écrites, sinon la carte du pôle (P.m, P.p) qui grandit avec L */
@@ -9421,8 +9427,11 @@ function styleBorder(id){const Z=ZB[id],Q=CIT;let best=null;
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
    Tout se joue à la télécommande : ◀ ▶ choisir, OK jouer, Retour pause. Rien de 3D pendant le combat (léger). */
 
-/* Les mêmes 5 cartes communes pour tout le monde (17 nov. : « cinq cartes uniques », faibles, sans carte de pioche) : assez pour une zone de niveau 0. */
-const DEPART=['coup','garde','pieu','caillou','torche'];
+/* 18 nov. (décision de l'utilisateur) : plus de cartes communes au départ. Le paquet de départ, ce sont les cartes de palier 1
+   des zones du territoire de départ, données au joueur dès le début (voir donnerDepart() dans main.js).
+   Les communes restent définies ici (anciennes parties, secrets qui les citent) mais n'entrent plus dans le paquet. */
+const DEPART=[];
+const COMMUNES=['coup','garde','pieu','caillou','torche','souffle'];
 const PAQUET_MAX=40;
 const ZCOL={CIT:'#c0584c',DON:'#e0782f',RES:'#73b45e',ANT:'#e2cb62',MAR:'#93bede'};
 const rgba=(h,a)=>`rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;
@@ -9517,6 +9526,7 @@ function startCombat(Z,kind){
   const foes=duel?conseil(Z,DUEL.eff):kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
     :Array.from({length:Lz(Z.id)>=3?3:2},()=>monstre(Z,Math.floor(Math.random()*2)));
   const sr=!duel&&srActif(),mx=duel?24+2*zonesA('MAR').length:sr?10+2*zonesA('CIT').length:pvMax(),hero={nom:duel?'Votre crédit':'Le héros',pv:mx,max:mx,g:0,hero:1};
+  if(!duel&&S.fatigue){hero.pv=Math.max(1,hero.pv-S.fatigue);S.fatigue=0}  /* 18 nov. : prix en PV d'un choix moral, payé au prochain combat */
   CB={sr,Z,kind,foes,hero,allies:[hero],pile:melange(duel?paquetPolitique():S.deck.filter(k=>typeof eveillee!=='function'||eveillee(k))),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
   mode='combat';closeUI();document.body.classList.add('jeu-ouvert');$('toast').classList.remove('vu');toastT=0;
   const H=$('combat');H.hidden=false;H.style.setProperty('--zcA',rgba(ZCOL[Z.id],.22));
@@ -10020,6 +10030,8 @@ function carteHTML(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k
   const ligne=z?`${a.sorte} · ${typeof ZMANA!=='undefined'?ZMANA[z]:ZCOURT[z]}`:`${a.sorte} · Commune`;
   const gris=typeof enGris==='function'&&enGris(k);
   return`<div class="cc kcarte ${z?'z':'base'}${gris?' gris':''}" style="--kb:${bord};--kcA:${rgba(bord,.28)};--kcB:${rgba(bord,.8)}"><div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${c.txt(k)}</div>${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`}
+/* Images IA des cartes présentes dans img/cartes/ (généré par tools/images-cartes/generer.py, ne pas modifier à la main). */
+window.CARTES_IMG=new Set(["ANT120_p5", "ASS006_p2", "CIT_m3", "DON045_p7", "DON_m7"]);
 /* MozaWorld TV : visuel des cartes 2.2 (17 nov., demande de l'utilisateur : « c'est bien mais il faut plus de personnalisation »).
    Chaque carte de zone se compose à partir de ses données, sans aucune image à télécharger :
    - la ZONE donne la scène (biome, emblème du type, graine propre à la tuile) et le bandeau de sa culture ;
@@ -10359,13 +10371,23 @@ const zoneDeCarte=(k,c)=>{const P=c.z?infoZone(c.z):null;if(!P)return null;const
 const accent=P=>{const A=ZACC[P.id],m=(VMANA[P.mana]||VMANA.Pierre);if(A)return P.pole==='neg'?A[0]:A[1];
   /* zones sans fiche : deux accents dérivés du mana, l'un froid et lointain, l'autre chaud et proche, à luminosité égale */
   return P.pole==='neg'?mix(m[1],'#8a7ad0',.45):mix(m[1],'#e0703a',.45)};
+/* ---------- Images IA (18 nov.) : peinture par carte dans img/cartes/, listée par cartes-images.js ; le dessin vectoriel reste en secours ---------- */
+const slugI=t=>sansAcc(t).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+function fichierImage(k,c,P){const I=window.CARTES_IMG;if(!I||!I.size)return'';let f='';
+  if(c.secret)f='S-'+slugI(c.secret);
+  else if(k.includes('#'))f=k.replace('#','_').replace('-','m').replace('+','p');
+  else if(P&&P.L>=1)f=P.id+'_'+(P.pole==='neg'?'m':'p')+Math.min(7,P.L);   /* carte de base : image de son palier actuel */
+  return f&&I.has(f)?'img/cartes/'+f+'.webp':''}
+const peint=(src,fond,fx)=>`<span class="kpeint">${fond.replace('<svg ','<svg class="kfond" ')}<img class="kimg" src="${src}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('ko')">${fx?`<svg class="kfx" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${fx}</svg>`:''}</span>`;
 window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
-  if(c.secret||c.zs&&!c.z){const P=c.zs?infoZone(c.zs):null;return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${sceneSecret(c,P,uid)}</svg>`}
+  if(c.secret||c.zs&&!c.z){const P=c.zs?infoZone(c.zs):null,sv=`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${sceneSecret(c,P,uid)}</svg>`,im=fichierImage(k,c,null);return im?peint(im,sv,''):sv}
   const P=zoneDeCarte(k,c);
   if(!P){const a=ART[k]||ART.coup;return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="vf${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0c0f"/><stop offset="1" stop-color="${a.fond?a.fond[1]:'#3a2a20'}"/></linearGradient></defs>
    <rect width="160" height="100" fill="url(#vf${uid})"/><rect width="160" height="100" fill="url(#mz-girih)"/>${a.d}</svg>`}
   P.m=VMANA[P.mana]||VMANA.Pierre;P.acc=accent(P);P.ult=!!c.ultime||(P.L>=7&&!!c.pose);
-  return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid,k,c)}</svg>`};
+  const sv=`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid,k,c)}</svg>`,im=fichierImage(k,c,P);if(!im)return sv;
+  const a=P.acc,d=P.m[2],fx=effetsCarte(c,k,{f:mix(d,'#000000',.35),l:mix(a,'#ffffff',.55),g:mix(a,'#fff3c0',.35)});
+  return peint(im,sv,fx)};
 
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
 const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>290?' t5':n>210?' t4':n>140?' t3':n>85?' t2':n>45?' t1':''};
@@ -10398,6 +10420,17 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
 const css=document.createElement('style');css.textContent=`
 .cc.kcarte{isolation:isolate}
 .cc.kcarte .art{position:relative;flex:0 0 auto}
+.kpeint{position:absolute;inset:0;display:block;overflow:hidden;background:#0d0c0f}
+.kpeint>*{position:absolute;inset:0;width:100%;height:100%;display:block}
+.kpeint .kfond{visibility:hidden}.kpeint.ko .kfond{visibility:visible}.kpeint.ko .kimg{display:none}
+.kpeint .kimg{object-fit:cover}.kpeint .kfx{opacity:.4;mix-blend-mode:screen}
+.kpeint::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 calc(var(--u)*1.2) rgba(0,0,0,.55);background:linear-gradient(180deg,transparent 70%,rgba(8,7,10,.45))}
+.cc.kcarte.p-neg .kimg{filter:saturate(.9) contrast(1.06)}.cc.kcarte.p-pos .kimg{filter:saturate(1.08)}
+.cc.kcarte.secret .kimg{filter:sepia(.25)}
+.cc.kcarte.ultime .kimg{animation:kvit 9s ease-in-out infinite alternate;animation-play-state:paused}
+.cc.kcarte.ultime.f .kimg,.boite .cc.kcarte.ultime .kimg{animation-play-state:running}
+@keyframes kvit{from{transform:scale(1)}to{transform:scale(1.07)}}
+@media (prefers-reduced-motion:reduce){.cc.kcarte.ultime .kimg{animation:none}}
 .cc.kcarte .cz{letter-spacing:.07em}
 
 .cc.kcarte.ultime .cz{display:none}
@@ -10518,7 +10551,7 @@ const css=document.createElement('style');css.textContent=`
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.6';
+const MZ_VERSION='2.8';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -10894,17 +10927,16 @@ function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
     corps:`<p class="petit">Une carte par pôle et par zone, gagnée à chaque palier réussi à la Pierre d'éveil. ${vues} zone(s) à vous sur ${ZN.length} · choisissez une zone pour voir ses cartes.</p>`,
     back:openMenu,opts:[
       {l:'Règles des cartes',ic:'?',go:grimoireRegles},
-      {l:'Cartes communes',ic:'▤',d:'paquet de départ',go:grimoireCommunes},
       ...(typeof PV_COMMUNES!=='undefined'?[{l:'Paquet politique',ic:'⚖',d:'duel d\'arguments des Assemblées',go:grimoirePolitique}]:[]),
       ...ZN.map((Z,i)=>({l:Z.info.nom,ic:sgn(S.lv[Z.id]||0)||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',
-        d:(estRes(Z)?'Ressource · mana et atouts, pas de carte':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+(typeof PV_COMMUNES!=="undefined"?3:2))})),
+        d:(estRes(Z)?'Ressource · mana et atouts, pas de carte':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+(typeof PV_COMMUNES!=="undefined"?2:1))})),
       {l:'Retour',ic:'◆',go:openMenu}]})}
 function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:()=>openGrimoire(0),
-  corps:`<p class="petit">· Le paquet de départ : 5 cartes communes toutes différentes, les mêmes pour tous (Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche).</p>
+  corps:`<p class="petit">· Plus de cartes communes : le paquet de départ, ce sont les cartes de palier 1 des 6 zones à cartes de votre territoire de départ (à vous dès le début, au niveau 1, pôle tiré au hasard).</p>
   <p class="petit">· Le terrain : les ennemis frappent d'abord la Garde, puis les bloqueurs et les bêtes, puis le héros. La Garde s'effrite de moitié à chaque tour. Attention aux ennemis qui volent par-dessus (➶), enfoncent au bélier (⚒) ou piétinent (⚔⚔).</p>
 <p class="petit">· Une carte de zone se gagne à chaque palier réussi à la Pierre d'éveil de sa zone. Ni les combats ni l'activation n'en donnent.</p>
 <p class="petit">· Toutes vos copies suivent le niveau actuel de leur zone : si la zone passe de +2 à +3, vos cartes se renforcent ; si elle passe du côté −, elles deviennent la carte de l'autre pôle.</p>
-<p class="petit">· En combat, la capacité de dépense monte de 1 par tour (1, 2, 3…), tous types confondus. Une carte de zone se paie avec le mana de sa zone ; les cartes communes en mana gris, infini. Sans assez du bon mana, une carte de zone se joue en gris : effet −25 %, pas de contre-pouvoir.</p>
+<p class="petit">· En combat, la capacité de dépense monte de 1 par tour (1, 2, 3…), tous types confondus. Une carte de zone se paie avec le mana de sa zone. Sans assez du bon mana, une carte de zone se joue en gris : effet −25 %, pas de contre-pouvoir.</p>
 <p class="petit">· Contre-pouvoir : jouée contre les gardiens de la zone qu'elle contre, une carte de zone voit son effet doublé.</p>`,
   opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(0)}]})}
 function grimoireCommunes(){const ks=(typeof DEPART!=='undefined'?DEPART:Object.keys(CK).filter(k=>!CK[k].z&&!CK[k].secret)).filter(k=>CK[k]);
@@ -10918,9 +10950,9 @@ function grimoireRessource(Z,fi){const id=Z.id,I=Z.info,t=ZMANA[id],L=(typeof AT
       L.map((a,i)=>`<p class="petit">${S.atout&&S.atout[id]===i?'✓ ':''}<b>${a[0]}</b> : ${a[1]}</p>`).join(''),
     opts:[{l:'Voyager vers cette zone',ic:'✧',go:()=>{tp(id);toMonde()}},{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(fi)}]})}
 function grimoirePolitique(){const ks=PV_COMMUNES.concat(Object.values(PV_VOIX));
-  ui('menu',{sur:'Grimoire',t:'Paquet politique',back:()=>openGrimoire(2),
+  ui('menu',{sur:'Grimoire',t:'Paquet politique',back:()=>openGrimoire(1),
     corps:`<p class="petit">Joué seulement au Duel d'arguments, l'épreuve des Assemblées, jamais en combat. Les 5 premières cartes sont à tous ; chaque autre carte s'ajoute quand vous tenez au moins une tuile de son type. Avant le duel, vos tuiles voisines de l'Assemblée votent pour vous (Assemblée 3, Citadelle 2, Ressource 2, Antre 1, Donjon 1) ; une tuile sauvage vote pour le pôle qui lui ressemble, contre l'autre. Chaque voix nette retire 3 de conviction au Conseil.</p><div class="cartes">${ks.map(k=>carteHTML(k)).join('')}</div>`,
-    opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(2)}]})}
+    opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(1)}]})}
 function grimoireZone(Z,fi){if(estRes(Z))return grimoireRessource(Z,fi);const id=Z.id,I=Z.info,lv=S.lv[id]||0,L=Math.abs(lv),c=CK[id];if(!c)return;
   const res=estRes(Z),txt=(l)=>avecNiveau(id,l,()=>`<b>${c.nom()}</b> (coût ${c.cout}) : ${c.txt(id)}`);
   let cartes,lignes;
@@ -11380,6 +11412,113 @@ function musLecture(F,lv,now){const cle=F.id+':'+Math.round(lv);let C=MUS.cur;
 function musiqueTick(Z,lv,now){if(typeof AX==='undefined'||!AX||!Z)return false;try{musBrancher(AX,master,typeof delayIn!=='undefined'?delayIn:null);
   if(!Z._mus)Z._mus=musZone(Z);if(!MUS_AIRS[Z._mus.air])return false;musLecture(Z._mus,lv,now);return true}catch(e){console.warn('musique',e);return false}}
 function musiqueTitre(Z){const F=Z&&(Z._mus||(Z._mus=musZone(Z)));const A=F&&MUS_AIRS[F.air];return A?A.nom+' · '+A.src:''}
+/* MozaWorld 2.7 : scénarios de zone (choix moraux).
+   Décidé le 18 nov. 2026 (« tout oui ») : à chaque éveil, une scène pose un dilemme ; une réponse enfonce la zone
+   d'un palier dans son pôle, l'autre la ramène d'un palier vers l'autre pôle. Chaque réponse a un prix réel,
+   annoncé ou caché. Paliers 3 et 6 : respirations, sans choix. Une parole donnée reste donnée : si l'épreuve
+   échoue, on la retente sans rechoisir. Les traces sont gardées par le monde, même après la mort du héros.
+   Soir 1 : la scène, les réponses, le prix. Soir 2 : l'épreuve habillée par la scène (champ ep). Soir 3 : effets des traces.
+   Une scène est rangée sous le palier où se trouve la zone quand on éveille la Pierre.
+   rep : réponses { vers (palier visé), l (texte du bouton), prix {mana, glace, pv, perte, exil}, cache (prix non affiché),
+         prixTxt (le prix en mots), trace (drapeau gardé par le monde), ep (épreuve prévue, soir 2) } */
+const SCENARIOS={
+DON045:{
+  perso:'Le voïévode Mstisla, l\'inspecteur Zakhar, la veuve Oustina',
+  scenes:{
+  '0':{t:'Quatre cents par hiver',
+    txt:'Hiver de l\'An 14. Le voïévode Mstisla a promis au trésor quatre cents zibelines par hiver. La taïga en a donné deux cent dix. Il pose le registre devant vous et vous tend la plume. C\'est vous qui écrirez le chiffre.',
+    rep:[{vers:-1,l:'Écrire 400',prixTxt:'rien aujourd\'hui',cache:true,trace:'detteHameau',ep:'Le double compte'},
+         {vers:1,l:'Écrire 210',prix:{glace:2},prixTxt:'chassé du fort : −2 mana Glace',ep:'Le compte nu'}]},
+  /* ---------- Mensonge ---------- */
+  '-1':{t:'La suie',
+    txt:'Il manque cent quatre-vingt-dix peaux, et les vraies sont brunes. La veuve Oustina baisse les yeux : la suie des lampes noircit tout, dit-elle, même la fourrure.',
+    rep:[{vers:-2,l:'Racler les lampes du hameau',prix:{pv:1},prixTxt:'−1 PV au prochain combat · le hameau passe l\'hiver dans le noir',trace:'hameauNoir',ep:'Le fort sans lampes'},
+         {vers:0,l:'Avouer au trésor avant le convoi',prix:{mana:3},prixTxt:'le voïévode garde votre solde : −3 mana',ep:'Fuir le fort'}]},
+  '-2':{t:'Peau teinte',resp:true,
+    txt:'Les chiens du hameau sont passés à la suie, un par un. Ils valent des zibelines au registre, tant qu\'il ne pleut pas. Le convoi part ce soir, et il faut passer le péage.',
+    rep:[{vers:-3,l:'Faire passer le convoi',prixTxt:'aucun',ep:'Le péage'}]},
+  '-3':{t:'Les années manquantes',
+    txt:'L\'inspecteur Zakhar annonce sa venue. Les registres des Ans 17 à 22 se contredisent à chaque page. Le relieur attend, des peaux noires plein les bras.',
+    rep:[{vers:-4,l:'Arracher six feuillets',prix:{perte:1},prixTxt:'une carte de votre paquet est perdue',cache:true,trace:'feuillets',ep:'Recopier le registre'},
+         {vers:-2,l:'Rendre les feuillets à Zakhar',prixTxt:'le voïévode vous livre comme seul coupable',ep:'La garde du voïévode'}]},
+  '-4':{t:'Les trappeurs',
+    txt:'Il n\'y a plus de chiens. Le voïévode demande aux trappeurs de marcher à quatre pattes sous les peaux, devant l\'inspecteur.',
+    txtTrace:{detteHameau:'Les trappeurs n\'ont pas oublié la dette du premier hiver : ils veulent être payés d\'abord.'},
+    rep:[{vers:-5,l:'Accepter la mascarade',prixTxt:'l\'Antre voisin, d\'où viennent les trappeurs, vous en voudra',trace:'rancuneAntre',ep:'La revue'},
+         {vers:-3,l:'Laisser partir les familles vers le sud',prixTxt:'la zone ne produit plus de Glace pendant un repos',trace:'famillesSud',ep:'Le passage'}]},
+  '-5':{t:'Quatre cents, toutes noires',resp:true,
+    txt:'Le compte est rond, les peaux sont égales, le froid mord tout le monde. La meute teinte gronde dans la loge.',
+    rep:[{vers:-6,l:'Affronter la meute teinte',prixTxt:'aucun',ep:'Combat de boss : la Meute teinte'}]},
+  '-6':{t:'Le Coffre',
+    txt:'An 23. Zakhar est descendu au Coffre, la loge creusée sous les mélèzes. Il frotte une peau au pouce mouillé ; elle déteint. Le voïévode vous tend la clé.',
+    txtTrace:{feuillets:'Zakhar a déjà lu les feuillets arrachés. Il sait.'},
+    rep:[{vers:-7,l:'Fermer la porte sur lui',prixTxt:'?',cache:true,trace:'coffreScelle',ep:'Combat de boss : l\'escorte de Zakhar'},
+         {vers:-5,l:'Lui ouvrir',prix:{pv:7,exil:'DON045#-4'},prixTxt:'arrêté avec le voïévode : −7 PV, « Les Années manquantes » quitte votre paquet',ep:'Sortir du Coffre'}]},
+  '-7':{t:'Le registre de l\'An 23',
+    txt:'Le registre de l\'An 23 tombe juste. L\'Inspecteur gelé garde la porte du Coffre, et personne ne demande où il est.',
+    rep:[{vers:-6,l:'Rouvrir le Coffre',prix:{pv:4},prixTxt:'−4 PV : ce qui est dedans ne veut pas sortir',ep:'Le Coffre'}]},
+  /* ---------- Vérité ---------- */
+  '1':{t:'Le doute',
+    txt:'Chassé du fort, vous vivez au hameau. Sur le convoi qui part, une peau vous laisse le doigt noir.',
+    rep:[{vers:2,l:'Frotter une peau devant le marché',prix:{pv:2},prixTxt:'−2 PV au prochain combat · Oustina vous maudit',trace:'hameauSait',ep:'Le pouce'},
+         {vers:0,l:'Vous taire et rentrer au fort',prixTxt:'?',cache:true,trace:'silenceAchete',ep:'Rentrer avant le couvre-feu'}]},
+  '2':{t:'La teinture qui coule',resp:true,
+    txt:'Il pleut au départ du convoi. Les peaux pleurent des rigoles noires sur la neige, jusqu\'aux niches où l\'on teint.',
+    rep:[{vers:3,l:'Suivre les rigoles noires',prixTxt:'aucun',ep:'Les rigoles'}]},
+  '3':{t:'Les chiens',
+    txt:'Zakhar arrive. Vous savez que les chiens du hameau ont été teints. Les dénoncer, c\'est faire punir le hameau entier.',
+    rep:[{vers:4,l:'Recompter les chiens devant l\'inspecteur',prixTxt:'la famille d\'Oustina est déportée · l\'Assemblée voisine votera contre vous',trace:'oustinaDeportee',ep:'Le recensement'},
+         {vers:2,l:'Cacher la meute',prix:{mana:3},prixTxt:'−3 mana · vous voilà complice',trace:'complice',ep:'Cacher la meute'}]},
+  '4':{t:'La porte du Coffre',
+    txt:'Zakhar veut descendre au Coffre. Les hommes du voïévode et les trappeurs gardent la loge.',
+    txtTrace:{silenceAchete:'Le voïévode vous rappelle votre silence du premier hiver. Il menace de le révéler.'},
+    rep:[{vers:5,l:'Ouvrir de force',prixTxt:'vous combattez des hommes affamés · l\'Antre voisin vous en voudra',trace:'rancuneAntre',ep:'Combat : les trappeurs en peaux'},
+         {vers:3,l:'Laisser le voïévode « retrouver » les peaux',prix:{mana:3},prixTxt:'−3 mana · Zakhar vous soupçonne',ep:'Le guet'}]},
+  '5':{t:'Le registre de l\'An 23',resp:true,
+    txt:'Le procès du voïévode tourne à l\'émeute. Sa garde tire les sabres dans la cour du fort.',
+    rep:[{vers:6,l:'Affronter le voïévode',prixTxt:'aucun',ep:'Combat de boss : le voïévode Mstisla'}]},
+  '6':{t:'Le chiffre',
+    txt:'Le compte nu : quatre mille peaux, dont trois mille six cents teintes. Si ce chiffre part au trésor, le hameau sera rasé pour fraude. Zakhar vous tend la plume.',
+    rep:[{vers:7,l:'Écrire le chiffre vrai',prix:{pv:4},prixTxt:'le hameau est rasé · −4 PV',trace:'hameauRase',ep:'Combat de boss : les Comptés'},
+         {vers:5,l:'Écrire un chiffre arrangé',prixTxt:'vous voilà en dette envers l\'inspecteur',trace:'detteInspecteur',ep:'Duel d\'arguments : Zakhar'}]},
+  '7':{t:'Le compte juste',
+    txt:'Le registre est juste. Là où était le hameau, la neige est blanche et vide. Les Comptés se taisent.',
+    rep:[{vers:6,l:'Rendre une part du chiffre',prix:{mana:4},prixTxt:'−4 mana : on rachète un peu de silence',ep:'Le chiffre'}]}
+  }}
+};
+
+/* ---------- moteur ---------- */
+const scenario=Z=>SCENARIOS[Z.id]||null;
+function sceneDe(Z){const sc=scenario(Z);return sc&&sc.scenes[String(S.lv[Z.id]||0)]||null}
+function traceA(t){return !!(S.memoire&&S.memoire[t])}
+function poserTrace(Z,t){if(!t)return;S.memoire=S.memoire||{};if(!S.memoire[t])S.memoire[t]={zone:Z.id,vie:S.lives||1}}
+/* le prix est payé au moment du choix : la parole est donnée */
+function payerPrix(p){if(!p)return[];const fait=[];
+  if(p.glace){S.res.Glace=Math.max(0,resN('Glace')-p.glace);fait.push('−'+p.glace+' Glace')}
+  if(p.mana){for(let i=0;i<p.mana;i++){const b=MTYPES.reduce((m,x)=>resN(x)>resN(m)?x:m,MTYPES[0]);if(resN(b)>0)S.res[b]=resN(b)-1}fait.push('−'+p.mana+' mana')}
+  if(p.pv){S.fatigue=(S.fatigue||0)+p.pv;fait.push('−'+p.pv+' PV au prochain combat')}
+  if(p.perte){const c=S.deck.map((k,i)=>[k,i]).filter(x=>DEPART.indexOf(x[0])<0);if(c.length){const x=c[Math.floor(Math.random()*c.length)];S.deck.splice(x[1],1);
+    fait.push('« '+(CK[x[0]]?CK[x[0]].nom():x[0])+' » perdue')}}
+  if(p.exil){const i=S.deck.indexOf(p.exil);if(i>=0){S.deck.splice(i,1);fait.push('« '+(CK[p.exil]?CK[p.exil].nom():p.exil)+' » exilée')}}
+  return fait}
+function choisirReponse(Z,r){S.parole=S.parole||{};S.parole[Z.id]={de:S.lv[Z.id]||0,vers:r.vers,l:r.l,ep:r.ep||''};
+  const fait=payerPrix(r.prix);poserTrace(Z,r.trace);save();etatHud();
+  if(fait.length)toast('Parole donnée',r.l,fait.join(' · '));startEpreuve(Z,r.vers)}
+/* la parole tient tant que la zone n'a pas bougé ; elle tombe à la réussite */
+function paroleEnCours(Z){const p=S.parole&&S.parole[Z.id];if(!p)return null;if(p.de!==(S.lv[Z.id]||0)){delete S.parole[Z.id];return null}return p}
+function tenirParole(Z){if(S.parole)delete S.parole[Z.id]}
+/* Éveil d'une zone à scénario : la scène remplace les boutons « Palier +1 / Palier −1 » */
+function optionsScene(Z,diff,off){const p=paroleEnCours(Z);
+  if(p)return[{l:'Tenir parole : '+p.l,ic:'▲',cls:p.vers>(S.lv[Z.id]||0)?'p':'m',off,d:diff(p.vers)+' · palier '+sgn(p.vers)+' · on ne revient pas sur une parole',go:()=>startEpreuve(Z,p.vers)}];
+  const s=sceneDe(Z);if(!s)return null;
+  return s.rep.map(r=>({l:r.l,ic:r.vers>(S.lv[Z.id]||0)?'▲':'▼',cls:r.vers>(S.lv[Z.id]||0)?'p':'m',off,
+    d:`palier ${sgn(r.vers)||'0'} · ${diff(r.vers)} · prix : ${r.cache?'?':r.prixTxt}`,go:()=>choisirReponse(Z,r)}))}
+function corpsScene(Z){const p=paroleEnCours(Z),s=sceneDe(Z);if(!s)return'';
+  const tr=s.txtTrace?Object.keys(s.txtTrace).filter(traceA).map(t=>`<p><i>${s.txtTrace[t]}</i></p>`).join(''):'';
+  return`<p class="petit" style="color:var(--laiton2)">${s.resp?'Scène sans choix':'Choix'} · ${s.t}</p><p>${s.txt}</p>${tr}`+
+    (p?`<p class="petit">Vous avez donné votre parole : « ${p.l} ». Il reste à réussir l'épreuve.</p>`:'')}
+/* une carte seulement quand la zone s'éloigne de 0 (se raviser n'en donne pas) */
+const sceneDonneCarte=(Z,de,vers)=>!scenario(Z)||Math.abs(vers)>Math.abs(de);
 /* MozaWorld TV : héros, Pierres d'éveil, épreuves, cartes, télécommande, musique, boucle. */
 const $=id=>document.getElementById(id);
 const IDS=ZN.map(Z=>Z.id);   /* 2.0 : les cinq zones d'origine et les tuiles de la carte agrandie */
@@ -11390,11 +11529,12 @@ const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60
 const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
 
 /* ---------- Partie : niveaux, maîtrise, empreintes, repos, cartes, blessures ---------- */
-const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},deck:DEPART.slice(),renc:1};
+const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},deck:[],renc:1};
 /* Territoire de départ et zones scellées (17 nov., règles de l'utilisateur, regles-avancees.md section 1 ter) :
-   - le territoire de départ permet un paquet de 15 cartes ou plus (5 communes + 2 cartes par zone à cartes montée au palier 2)
-     (choix C2 du 17 nov. : 12 tuiles, 6 zones à cartes : 1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée, et 6 Ressources sans carte), au niveau 0 ;
-   - les zones qui l'entourent sont à ±5 ; au-delà, pôle ET niveau au hasard (tirés à chaque nouvelle partie) ;
+   - territoire de départ (choix C2 du 17 nov.) : 12 tuiles, 6 zones à cartes : 1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée, et 6 Ressources sans carte ;
+     18 nov. (utilisateur) : ces 12 zones sont à vous dès le début, activées, au niveau 1, chacune vers un pôle tiré au hasard (Ressources : niveau 1, sans pôle) ;
+     le paquet de départ = leurs 6 cartes de palier 1 (plus de cartes communes) ;
+   - les zones qui l'entourent sont à ±6 (18 nov. : départ au niveau 1, l'écart mortel de 5 est gardé) ; au-delà, pôle ET niveau au hasard (tirés à chaque nouvelle partie) ;
    - elles ne cèdent qu'une fois toutes les zones de départ prises et le royaume assez développé (paquet d'au moins 15 cartes). */
 const DIST_DEP={},PAQUET_ROYAUME=15;
 const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR'];for(const id of org){d[id]=0;file.push(id)}
@@ -11404,7 +11544,7 @@ const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR
 const ESTDEP=new Set(ZONES_DEP);
 const BORD_DEP=new Set(ZN.filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES!=='undefined'?VOISINES[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
 function nivDep(graine){const o={};for(const Z of ZN){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;
-  o[Z.id]=ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?5*sg:(2+Math.floor(h2*6))*sg}return o}
+  o[Z.id]=ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?6*sg:(2+Math.floor(h2*6))*sg}return o}
 let NIV_DEP=nivDep(0);
 const departPris=()=>ZONES_DEP.filter(id=>S.own[id]).length;
 const royaumeEtabli=()=>departPris()>=ZONES_DEP.length&&S.deck.length>=PAQUET_ROYAUME;
@@ -11417,7 +11557,13 @@ NIV_DEP=nivDep(S.graine||0);
 for(const id of IDS){if(S.lv[id]===undefined)S.lv[id]=NIV_DEP[id]||0;if(S.own[id]===undefined)S.own[id]=false;if(S.emp[id]===undefined)S.emp[id]=false;if(S.rest[id]===undefined)S.rest[id]=0}
 /* Parties enregistrées avant le combat : les zones déjà à vous comptent comme activées */
 for(const id of IDS)if(S.act[id]===undefined)S.act[id]=!!S.own[id];
-if(!Array.isArray(S.deck)||!S.deck.length)S.deck=DEPART.concat(IDS.filter(id=>S.act[id]&&id!=='RES'));
+/* 18 nov. : territoire de départ donné au joueur, niveau 1, pôle au hasard par zone ; paquet = leurs cartes de palier 1 */
+function paquetDe(ids){return ids.filter(id=>(ZB[id].mod||id)!=='RES'&&S.own[id]&&S.act[id]&&S.lv[id]).map(id=>typeof clePalier==='function'?clePalier(ZB[id],S.lv[id]):id)}
+function donnerDepart(){for(const id of ZONES_DEP){const Z=ZB[id],lv=(Z.mod||id)==='RES'?1:(Math.random()<.5?-1:1);
+    S.lv[id]=lv;S.own[id]=true;S.act[id]=true;S.emp[id]=false;S.rest[id]=0;if(Z.lv!==lv){Z.lv=Z.lvT=lv;if(typeof rebuild==='function'){rebuild(Z);Z.update(lv);if(typeof placeAlt==='function')placeAlt(Z)}}}
+  if(ZONES_DEP.indexOf('DON')>=0)S.dernierAssaut=S.nc||0;
+  S.deck=paquetDe(ZONES_DEP)}
+if(!Array.isArray(S.deck)||!S.deck.length)S.deck=paquetDe(IDS);
 if(S.renc===undefined)S.renc=1;
 initEco();
 function save(){S.found=secrets.map((s,i)=>s.found?i:-1).filter(i=>i>=0);try{localStorage.setItem('mz-tv-1',JSON.stringify(S))}catch(_){}}
@@ -11575,11 +11721,12 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
+    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
+    donnerDepart();CULL.dirty=true;terrainAll();save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
   mode='monde';hudKey='';etatHud();
-  if(neuf)setTimeout(()=>toast('Berestograd · niveau 0','Cherchez la Pierre d\'éveil','Suivez la flèche dorée en bas de l\'écran, puis appuyez sur OK devant la Pierre.'),900)}
+  if(neuf)setTimeout(()=>toast('Berestograd · votre territoire','Vos 12 zones de départ sont à vous, au niveau 1','Votre paquet : leurs cartes de palier 1. Montez-les à leur Pierre d\'éveil pour gagner des cartes.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
   ui('menu',{sur:'Pause · version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:''),t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
@@ -11607,7 +11754,7 @@ function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter (deux fois : double saut), ou agir devant une Pierre · Retour : menu.</p>
 <p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter (deux fois : double saut) ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
-<p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; une carte commune avec n'importe quel type. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
+<p class="petit">Votre territoire de départ (12 zones) est à vous dès le début, au niveau 1 ; votre paquet, ce sont leurs cartes de palier 1. Ensuite, activez chaque nouvelle zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; sans assez de ce mana, elle se joue en mana gris, affaiblie. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure. Chaque palier gagné ajoute à votre paquet la carte de combat de la zone (sauf les Ressources). Posséder la zone qui en contre une autre facilite son épreuve.</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
@@ -11621,8 +11768,10 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
     o.push({l:'Éveil verrouillé',ic:'▲',off:true,d:'activez d\'abord la zone'})}
   else{
   if(res&&lv<3)o.push({l:`Niveau ${lv+1} sur 3`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
-  if(!res&&lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
-  if(!res&&lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)});
+  const osc=!res&&typeof optionsScene==='function'?optionsScene(Z,diff,r>0):null;  /* 18 nov. : zone à scénario, la scène remplace les paliers */
+  if(osc)o.push(...osc);
+  else{if(!res&&lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
+  if(!res&&lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)})}
   if(res?lv>=3:Math.abs(lv)>=cap)o.push({l:'Niveau maximal atteint',ic:'◆',off:true,d:'une Ressource va de 0 à 3, sans pôle'})}
   if(Z.id==='DON'&&S.act.DON&&S.own.DON)o.unshift({l:'Aménager le Donjon',ic:'⛬',cls:'p',d:`${nbPieges()} piège(s) · réserve ${resTot()}`,go:()=>openDonjon()});
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
@@ -11631,7 +11780,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
-    corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
+    corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
     corps2:`<p class="petit">Niveau actuel ${sgn(lv)||'0'} · ${S.own[Z.id]?'zone à vous':emp?'zone sauvage, votre empreinte la rend plus facile à reprendre':'zone sauvage'}${r>0?` · <b style="color:var(--laiton2)">la zone se repose encore ${fmt(r)}</b>`:''}</p>`,
     back:toMonde,opts:o});$('menu-corps').innerHTML+=UI.corps2}
 /* Repérage : la zone montre brièvement ses deux paliers voisins, puis revient */
@@ -11642,7 +11791,8 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 let mue=null;
 function startMue(Z,lv){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
   const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${typeof reposZone==='function'?reposZone(Z.id):REPOS} secondes avant le prochain bond.</p>`;
-  ui('menu',{sur:rs?'Mue · Ressource':'Mue · nouvelle carte',t:I.nom,corps:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
+  const sc=!rs&&Z._sansCarte;Z._sansCarte=false;
+  ui('menu',{sur:rs?'Mue · Ressource':sc?'Mue · vous vous êtes ravisé':'Mue · nouvelle carte',t:I.nom,corps:sc?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)||'0'}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La zone revient d'un palier vers l'autre pôle. Se raviser ne donne pas de carte, mais le monde s'en souviendra.</p>${fin}</div></div>`:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});mode='menu'}};
   toast(`Palier ${sgn(lv)} · ${lv>0?I_(Z).pp:lv<0?I_(Z).pm:'Équilibre'}`,Z.info.nom,palTxt(Z,lv));fanfare(lv)}
 const I_=Z=>Z.info;
@@ -11663,14 +11813,15 @@ function startEpreuve(Z,target){const pw=contrePar(Z).pw;
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){S.lv[Z.id]=target;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
+  if(ok){const de=S.lv[Z.id]||0,carte=typeof sceneDonneCarte!=='function'||sceneDonneCarte(Z,de,target);if(typeof tenirParole==='function')tenirParole(Z);S.lv[Z.id]=target;Z._sansCarte=!carte;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(carte&&S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
       opts:[{l:'Réessayer',ic:'▲',go:()=>openEveil(Z)},{l:'Repartir explorer',ic:'◆',go:toMonde}]});mode='menu'}}
-function mort(){for(const Z of ZN){if(S.own[Z.id]){S.own[Z.id]=false;S.emp[Z.id]=true}S.act[Z.id]=false}S.deck=DEPART.slice();
+function mort(){for(const Z of ZN){if(S.own[Z.id]){S.own[Z.id]=false;S.emp[Z.id]=true}S.act[Z.id]=false}
+  donnerDepart();CULL.dirty=true;terrainAll();   /* 18 nov. : l'héritier repart comme une nouvelle partie, territoire de départ au niveau 1, pôles retirés au hasard */
   S.cards=[];S.hurt=0;S.lives=(S.lives||1)+1;save();etatHud();hudKey='';
-  ui('menu',{sur:'Mort du héros',t:'La mosaïque vous oublie',corps:`<p>Troisième blessure. Votre paquet de combat revient aux cartes de départ. Vos zones gardent leur niveau mais redeviennent sauvages.</p><p class="petit">Votre empreinte reste : reprendre une ancienne zone à vous sera plus facile. Un héritier se lève à Berestograd.</p>`,
+  ui('menu',{sur:'Mort du héros',t:'La mosaïque vous oublie',corps:`<p>Troisième blessure. Vous perdez vos cartes et vos zones : elles gardent leur niveau mais redeviennent sauvages. L'héritier reçoit à nouveau le territoire de départ, au niveau 1, et ses cartes de palier 1.</p><p class="petit">Votre empreinte reste : reprendre une ancienne zone à vous sera plus facile. Un héritier se lève à Berestograd.</p>`,
     opts:[{l:'Se relever',ic:'✦',go:()=>{tp('CIT');toMonde()}}]});mode='menu'}
 function pauseEpreuve(){const keep=E;mode='menu';ui('menu',{sur:'Épreuve en pause',t:'Abandonner ?',corps:'<p class="petit">Abandonner ne blesse pas, la zone ne change pas.</p>',
   back:()=>{closeUI();mode='epreuve'},opts:[{l:'Continuer l\'épreuve',ic:'▲',go:()=>{closeUI();mode='epreuve'}},{l:'Abandonner',ic:'◆',go:()=>{if(E&&E.fin)E.fin();E=null;$('jeu').hidden=true;toMonde()}}]});$('jeu').hidden=!keep.monde?false:false}
@@ -11923,4 +12074,126 @@ addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);
 window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};
+/* MozaWorld 2.8 : exploration épurée (18 novembre, idée 9 de l'évaluation graphique, choisie par l'utilisateur).
+   Par défaut, l'écran laisse la place au paysage : la fiche de la zone en haut à gauche n'apparaît que quelques secondes
+   en entrant dans une zone, l'aide des commandes s'efface après la première minute, la minicarte rapetisse et s'estompe.
+   Le nom de la zone s'affiche en grand au centre à l'entrée (le toast existant), avec une entrée plus cinématographique.
+   RB à la manette (ou Tab au clavier) passe de l'interface épurée à l'interface complète, et le choix est retenu. */
+(function(){
+const st=document.createElement('style');st.textContent=`
+body.epure .hud.cart,body.epure .hud.aide,body.epure .hud.carte{transition:opacity .9s ease,scale .9s ease}
+body.epure:not(.zone-neuve) .hud.cart{opacity:0}
+body.epure.aide-vue .hud.aide{opacity:0}
+body.epure .hud.carte{scale:.72;transform-origin:0 100%;opacity:.8}
+body.epure .hud.jauge{scale:.88;transform-origin:50% 100%}
+.toast.vu .t2{animation:mzTitre 1.4s cubic-bezier(.2,.7,.2,1) both}
+.toast.vu .t1{animation:mzSur 1.2s ease both}
+.toast.vu .t3{animation:mzSur 1.6s ease .35s both}
+@keyframes mzTitre{from{opacity:0;letter-spacing:.35em;filter:blur(6px)}to{opacity:1;letter-spacing:normal;filter:none}}
+@keyframes mzSur{from{opacity:0;translate:0 calc(var(--u)*.8)}to{opacity:1;translate:0 0}}
+.mz-bascule{position:fixed;left:50%;top:calc(var(--u)*5.2);translate:-50% 0;z-index:40;pointer-events:none;font-size:calc(var(--u)*1.05);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--laiton2,#e8c77f);background:rgba(13,12,15,.72);border:1px solid rgba(201,164,92,.45);padding:calc(var(--u)*.45) calc(var(--u)*1.4);opacity:0;transition:opacity .5s}
+.mz-bascule.vu{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast.vu .t1,.toast.vu .t2,.toast.vu .t3{animation:none}}
+`;document.head.appendChild(st);
+
+let epure=true;try{epure=localStorage.getItem('mz-epure')!=='0'}catch(_){}
+const B=document.body;B.classList.toggle('epure',epure);
+const note=document.createElement('div');note.className='mz-bascule';B.appendChild(note);let noteT=null;
+function basculer(){epure=!epure;B.classList.toggle('epure',epure);try{localStorage.setItem('mz-epure',epure?'1':'0')}catch(_){}
+  note.textContent=epure?'Interface épurée · RB pour tout afficher':'Interface complète · RB pour épurer';note.classList.add('vu');
+  clearTimeout(noteT);noteT=setTimeout(()=>note.classList.remove('vu'),2200);if(typeof tick==='function')try{tick()}catch(_){}}
+window.addEventListener('keydown',e=>{if((e.key==='Tab'||e.key==='h'||e.key==='H')&&typeof mode!=='undefined'&&mode==='monde'){e.preventDefault();basculer()}});
+const pb0=padBouton;padBouton=function(n){if(n==='rb'&&typeof mode!=='undefined'&&mode==='monde'){basculer();return}return pb0.apply(this,arguments)};
+
+/* la fiche de zone reste 9 s à l'entrée d'une zone ; l'aide reste la première minute de jeu */
+let zv=null,zT=null,joue=0;
+setInterval(()=>{if(typeof curZ==='undefined')return;
+  if(curZ&&curZ!==zv){zv=curZ;B.classList.add('zone-neuve');clearTimeout(zT);zT=setTimeout(()=>B.classList.remove('zone-neuve'),9000)}
+  if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;if(joue>=60)B.classList.add('aide-vue')}},500);
+})();
+/* MozaWorld 2.8 : le monde bouge (18 novembre, idée 5 de l'évaluation graphique, choisie par l'utilisateur).
+   1. Le vent : la végétation et tout ce qui est haut et mince ploie doucement (déformation dans le shader, aucun calcul par objet).
+      Plus fort vers −7 (rafales), plus doux vers +7.
+   2. Braises et lucioles autour du héros : vers −7 des braises montent et s'éteignent, vers +7 des lucioles de la couleur du pôle
+      dérivent et clignotent. Un seul nuage de points.
+   3. Des créatures errent dans la zone, à 20 à 70 m du héros : elles marchent, broutent, s'enfuient si on approche.
+      Bêtes à quatre pattes, insectes ailés pour les Antres, feux follets pour les Donjons. Purement décoratives.
+   Rien de tout cela en qualité « Fluide ». */
+(function(){
+const VENT={uT:{value:0},uV:{value:1}};
+/* 1. le vent, injecté dans les matériaux des objets hauts et minces (arbres, roseaux, bannières, poteaux) */
+const vus=new Set();
+function venter(mat){if(vus.has(mat)||!mat.isMeshStandardMaterial)return;vus.add(mat);
+  const prev=mat.onBeforeCompile;mat.onBeforeCompile=(sh,r)=>{if(prev)prev(sh,r);sh.uniforms.uT=VENT.uT;sh.uniforms.uV=VENT.uV;
+    sh.vertexShader='uniform float uT;uniform float uV;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+#ifdef USE_INSTANCING
+{float h=max(transformed.y,0.0);vec4 wp=instanceMatrix*vec4(0.,0.,0.,1.);float ph=uT*1.6+wp.x*.045+wp.z*.06;
+ float a=uV*.011*h*h/(1.+h*.09);transformed.x+=(sin(ph)+.35*sin(ph*2.7))*a;transformed.z+=cos(ph*.83)*a*.6;}
+#endif`)};
+  mat.customProgramCacheKey=()=>'vent';mat.needsUpdate=true}
+/* chaque maillage haut et mince reçoit sa propre copie du matériau (même programme), pour que les murs et les toits qui
+   partageaient ce matériau restent immobiles ; on repasse toutes les 3 s pour les maillages refaits par une mue */
+function chercherVent(){scene.traverse(o=>{if(!o.isInstancedMesh||o.userData.vent)return;o.userData.vent=1;const g=o.geometry;if(!g.boundingBox)g.computeBoundingBox();const b=g.boundingBox,h=b.max.y-Math.max(0,b.min.y),w=Math.max(b.max.x-b.min.x,b.max.z-b.min.z);
+  if(h>2.5&&h<32&&w<h*1.1&&o.material&&o.material.isMeshStandardMaterial){o.material=o.material.clone();venter(o.material)}})}
+
+/* 2. braises et lucioles */
+const N=150,gP=new THREE.BufferGeometry(),pP=new Float32Array(N*3),vP=[];
+for(let i=0;i<N;i++){pP[i*3]=(Math.random()-.5)*60;pP[i*3+1]=Math.random()*10;pP[i*3+2]=(Math.random()-.5)*60;vP.push([Math.random()*6.28,.5+Math.random(),Math.random()])}
+gP.setAttribute('position',new THREE.BufferAttribute(pP,3));
+const mP=new THREE.PointsMaterial({size:.65,map:halo,color:0xffb060,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:true});
+const oP=new THREE.Points(gP,mP);oP.frustumCulled=false;scene.add(oP);const cP=new THREE.Color(),cB=new THREE.Color(0xff6a2a);
+function majParticules(dt,T,Z){const lv=Z?(S.lv[Z.id]||0):0,an=wneg(lv),ap=wpos(lv),vis=QI>0&&mode==='monde'&&(an>.1||ap>.1);oP.visible=vis;if(!vis)return;
+  const mana=Z.plus?Z.d.mana:({CIT:'Glace',DON:'Feu',ANT:'Eau',MAR:'Glace',RES:'Vent'})[Z.id];
+  cP.set(an>ap?'#ff6a2a':((PMANA[mana]||PMANA.Pierre)[1]));mP.color.lerp(cP,Math.min(1,dt*2));
+  const k=Math.max(an,ap);mP.opacity=(an>ap?.75:.55+.35*Math.sin(T*5.3))*Math.min(1,k*1.6);mP.size=an>ap?.45:.75;
+  for(let i=0;i<N;i++){const j=i*3,w=vP[i];w[0]+=dt*w[1];
+    if(an>ap){pP[j]+=Math.sin(w[0]*1.3)*dt*.8;pP[j+1]+=dt*(1.2+w[2]*2.2);pP[j+2]+=Math.cos(w[0])*dt*.8}   /* braises : elles montent */
+    else{pP[j]+=Math.sin(w[0])*dt*1.1;pP[j+1]+=Math.sin(w[0]*1.7)*dt*.5;pP[j+2]+=Math.cos(w[0]*.9)*dt*1.1}   /* lucioles : elles errent */
+    let dx=pP[j]-P.x,dz=pP[j+2]-P.z;if(dx>30)pP[j]-=60;else if(dx<-30)pP[j]+=60;if(dz>30)pP[j+2]-=60;else if(dz<-30)pP[j+2]+=60;
+    const gy=P.y-1.5;if(pP[j+1]<gy)pP[j+1]+=11;else if(pP[j+1]>gy+11)pP[j+1]-=11}
+  gP.attributes.position.needsUpdate=true}
+
+/* 3. créatures qui errent */
+const sombre=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.8,flatShading:true});
+function bete(sorte){const g=new THREE.Group(),m=sombre.clone(),parts={};g.userData={m,parts,sorte};
+  const add=(geo,x,y,z,mat)=>{const o=new THREE.Mesh(geo,mat||m);o.position.set(x,y,z);o.castShadow=!g.children.length;g.add(o);return o};   /* seul le corps porte une ombre */
+  if(sorte==='aile'){parts.corps=add(new THREE.OctahedronGeometry(.5,0).scale(.7,.6,1.6),0,0,0);
+    const ga=new THREE.PlaneGeometry(1.8,.9).translate(.9,0,0),ma=new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.55,side:THREE.DoubleSide,roughness:.4});g.userData.ma=ma;
+    parts.ag=add(ga,0,.15,0,ma);parts.ad=add(ga.clone().scale(-1,1,1),0,.15,0,ma);parts.ag.rotation.x=parts.ad.rotation.x=-Math.PI/2}
+  else if(sorte==='feu'){const mb=new THREE.MeshBasicMaterial({color:0xffffff});g.userData.mb=mb;parts.corps=add(new THREE.IcosahedronGeometry(.45,0),0,0,0,mb);
+    parts.queue=add(new THREE.ConeGeometry(.3,1.3,5).rotateX(Math.PI/2).translate(0,0,-.8),0,0,0,mb)}
+  else{parts.corps=add(new THREE.BoxGeometry(1.1,.8,2),0,1.15,0);parts.tete=add(new THREE.BoxGeometry(.7,.6,.7),0,1.55,1.2);
+    parts.p=[[-.4,.75],[.4,.75],[-.4,-.75],[.4,-.75]].map(([x,z])=>add(new THREE.BoxGeometry(.22,.8,.22).translate(0,-.4,0),x,.8,z))}
+  g.visible=false;scene.add(g);return g}
+const BETES=[];let zoneB=null;
+function peupler(Z){zoneB=Z;const mod=Z.mod||Z.id,sorte=mod==='ANT'?'aile':mod==='DON'?'feu':'pattes',col=(typeof ZCOL!=='undefined'&&ZCOL[Z.id])||'#c9a45c';
+  const n=sorte==='pattes'?5:6;while(BETES.length<n)BETES.push(null);
+  for(let i=0;i<BETES.length;i++){let b=BETES[i];if(b&&b.userData.sorte!==sorte){scene.remove(b);b=null}if(i>=n){if(b)b.visible=false;continue}
+    if(!b)b=BETES[i]=bete(sorte);const u=b.userData;u.m.color.set(col).lerp(new THREE.Color(0x2a2420),.35);if(u.ma)u.ma.color.set(col);if(u.mb)u.mb.color.set(col).multiplyScalar(2.2);
+    const a=Math.random()*TAU,r=25+Math.random()*45;b.position.set(P.x+Math.cos(a)*r,0,P.z+Math.sin(a)*r);u.cap=Math.random()*TAU;u.v=0;u.t=Math.random()*3;u.ph=Math.random()*6;u.actif=true;b.visible=true}}
+function majBetes(dt,T,Z){const vis=QI>0&&mode==='monde'&&!!Z;for(const b of BETES)if(b)b.visible=vis&&b.userData.actif;if(!vis)return;if(Z!==zoneB)peupler(Z);
+  for(const b of BETES){if(!b||!b.userData.actif)continue;const u=b.userData,dx=b.position.x-P.x,dz=b.position.z-P.z,d=Math.hypot(dx,dz);
+    u.t-=dt;if(d<10){u.cap=Math.atan2(dx,dz);u.vc=u.sorte==='feu'?9:7;u.t=1.5}           /* trop près : elle s'enfuit */
+    else if(u.t<=0){u.t=2+Math.random()*4;u.vc=Math.random()<.35?0:(u.sorte==='pattes'?2.2:3.5);u.cap+=(Math.random()-.5)*2.2}
+    if(d>85){const a=Math.random()*TAU;b.position.x=P.x+Math.cos(a)*45;b.position.z=P.z+Math.sin(a)*45}   /* trop loin : elle revient près du héros */
+    u.v+=((u.vc||0)-u.v)*Math.min(1,dt*3);let nx=b.position.x+Math.sin(u.cap)*u.v*dt,nz=b.position.z+Math.cos(u.cap)*u.v*dt;
+    if(zoneAt(nx,nz)!==Z){u.cap+=Math.PI;nx=b.position.x;nz=b.position.z}b.position.x=nx;b.position.z=nz;
+    const ry=b.rotation.y,dr=((u.cap-ry+Math.PI*3)%(TAU))-Math.PI;b.rotation.y=ry+dr*Math.min(1,dt*3);
+    u.ph+=dt*(1.5+u.v*2.2);const g=ground(b.position.x,b.position.z),p=u.parts;
+    if(u.sorte==='pattes'){b.position.y=g+Math.abs(Math.sin(u.ph))*.08*u.v;p.p.forEach((l,i)=>l.rotation.x=Math.sin(u.ph+(i%3?Math.PI:0))*.55*Math.min(1,u.v));
+      p.tete.position.y=1.55-(u.v<.3?.45+Math.sin(T*2+u.ph)*.08:0)}                        /* à l'arrêt, elle broute */
+    else if(u.sorte==='aile'){b.position.y=g+3+Math.sin(u.ph*.4)*1.2;const f=Math.sin(T*22+u.ph)*.7;p.ag.rotation.z=f;p.ad.rotation.z=-f}
+    else{b.position.y=g+1.6+Math.sin(u.ph*.7)*.6;p.corps.scale.setScalar(1+Math.sin(T*9+u.ph)*.15)}}}
+
+/* la boucle : après chaque image du jeu */
+let vu=-1e9,last=0;
+function tourne(t){requestAnimationFrame(tourne);const dt=Math.min(.05,(t-last)/1000||0);last=t;
+  if(typeof started!=='undefined'&&started&&t-vu>3000){vu=t;chercherVent()}
+  if(typeof mode==='undefined')return;const Z=typeof curZ!=='undefined'?curZ:null,lv=Z?(S.lv[Z.id]||0):0;
+  VENT.uT.value+=dt;VENT.uV.value=QI>0?(1+wneg(lv)*1.6-wpos(lv)*.4)*(QI>=2?1:.7):0;
+  majParticules(dt,VENT.uT.value,Z);majBetes(dt,VENT.uT.value,Z)}
+requestAnimationFrame(tourne);
+window.MZanime={VENT,BETES,chercherVent};
+})();
 </script></body></html>

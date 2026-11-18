@@ -102,6 +102,7 @@ function startCombat(Z,kind){
   const foes=duel?conseil(Z,DUEL.eff):kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
     :Array.from({length:Lz(Z.id)>=3?3:2},()=>monstre(Z,Math.floor(Math.random()*2)));
   const sr=!duel&&srActif(),mx=duel?24+2*zonesA('MAR').length:sr?10+2*zonesA('CIT').length:pvMax(),hero={nom:duel?'Votre crédit':'Le héros',pv:mx,max:mx,g:0,hero:1};
+  if(!duel&&S.fatigue){hero.pv=Math.max(1,hero.pv-S.fatigue);S.fatigue=0}  /* 18 nov. : prix en PV d'un choix moral, payé au prochain combat */
   CB={sr,Z,kind,foes,hero,allies:[hero],pile:melange(duel?paquetPolitique():S.deck.filter(k=>typeof eveillee!=='function'||eveillee(k))),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
   mode='combat';closeUI();document.body.classList.add('jeu-ouvert');$('toast').classList.remove('vu');toastT=0;
   const H=$('combat');H.hidden=false;H.style.setProperty('--zcA',rgba(ZCOL[Z.id],.22));
