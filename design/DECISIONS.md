@@ -17,6 +17,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Choix moraux | Chaque zone a un scénario en 15 marches (−7 à +7) écrit par son conteur. À chaque éveil, une scène pose un dilemme : une réponse enfonce la zone d'un palier dans son pôle, l'autre la ramène d'un palier vers l'autre pôle ; chaque réponse a un prix (annoncé ou caché) et mène à une épreuve qui colle à l'histoire | en vigueur (Kobor seule, soir 1 sur 3) | menu « Palier +1 / −1 » |
+| Choix moraux | Une parole donnée reste donnée : si l'épreuve échoue, on la retente sans rechoisir | en vigueur | |
+| Choix moraux | Paliers 3 et 6 sans choix (respirations), pour rester à environ 7 choix sur 10 ; se raviser ne donne pas de carte | en vigueur | |
+| Choix moraux | Le ton de la Taïga de Kobor (familles déportées, hameau rasé, inspecteur enfermé vivant) est le bon niveau de dur pour adultes | en vigueur | |
+| Choix moraux | Coder Kobor en 3 soirs (scène, épreuve habillée, traces) avant d'écrire les autres zones | en vigueur | |
+| Narration | Textes des scènes en français, lus par une voix d'homme et une voix de femme françaises de base (Piper : Tom et Siwis), gratuites ; pas d'anglais, pas d'accent québécois pour l'instant | en vigueur (pas encore dans le jeu) | |
 | Graphismes | Suite du lot graphique (« Tout oui ») : décors par pôle sur les zones d'origine, exploration épurée (RB ou Tab pour l'interface complète), monde animé (vent, braises et lucioles, créatures qui errent) ; les cartes des 48 secrets des lieux attendent | en vigueur | |
 | Graphismes | Essai de la 2.6 sur la Xbox : « C'est fluide » | en vigueur | |
 | Méthode | Les PR sont fusionnées par le fil qui les a faites dès qu'elles sont prêtes (test de fumée passé), sans attendre l'utilisateur | en vigueur | fusion par l'utilisateur |

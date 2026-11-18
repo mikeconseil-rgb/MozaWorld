@@ -32,7 +32,7 @@ const FAM=[
   ['banniere','banniere',matV,1,30,[.9,1.2],0],['cristal','cristal',matG,1,30,[.7,1.5],1.6],['poteau','poteau',matV,1,24,[1,1],0],['lanterne','lanterne',matB,1,24,[1,1],2.4],['fleur','fleur',matV,1,40,[.8,1.7],0]];
 const LANDMARK=[['fleche','fleche',matV,-1],['tour','tour',matV,1],['couronne','couronne',matB,1]];
 
-/* 2.7 : aussi les zones d'origine (pas Tezcamixtli : une Ressource n'a pas de pôle). Là, le cœur écrit à la main reste tel quel :
+/* 2.8 : aussi les zones d'origine (pas Tezcamixtli : une Ressource n'a pas de pôle). Là, le cœur écrit à la main reste tel quel :
    les objets ne vont que dans la ceinture (Z.bw, mutations.js), et les repères à 70 % du rayon. */
 const MANA_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',MAR:'Glace'};
 for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?Z.d.mana:MANA_ORIG[Z.id]]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),cBlanc=[1,1,1],tmp=[0,0,0];

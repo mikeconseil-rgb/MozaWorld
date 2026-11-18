@@ -1,4 +1,4 @@
-/* MozaWorld 2.7 : exploration épurée (18 novembre, idée 9 de l'évaluation graphique, choisie par l'utilisateur).
+/* MozaWorld 2.8 : exploration épurée (18 novembre, idée 9 de l'évaluation graphique, choisie par l'utilisateur).
    Par défaut, l'écran laisse la place au paysage : la fiche de la zone en haut à gauche n'apparaît que quelques secondes
    en entrant dans une zone, l'aide des commandes s'efface après la première minute, la minicarte rapetisse et s'estompe.
    Le nom de la zone s'affiche en grand au centre à l'entrée (le toast existant), avec une entrée plus cinématographique.

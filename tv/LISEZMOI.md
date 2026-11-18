@@ -103,7 +103,7 @@ Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au ba
 
 APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
 
-## Version 2.7 (web) : décors par pôle partout, exploration épurée, monde animé (18 novembre)
+## Version 2.8 (web) : décors par pôle partout, exploration épurée, monde animé (18 novembre)
 
 Choix de l'utilisateur après l'essai de la 2.6 (« C'est fluide », puis « Tout oui » sur les idées 1, 2 et 3 de la suite des graphismes).
 
@@ -111,6 +111,13 @@ Choix de l'utilisateur après l'essai de la 2.6 (« C'est fluide », puis « Tou
 - **Exploration épurée** (`src/epure.js`) : par défaut, la fiche de la zone (en haut à gauche) n'apparaît que 9 secondes en entrant dans une zone, l'aide des commandes s'efface après la première minute, la minicarte rapetisse ; le nom de la zone entre au centre avec un effet de mise au point. **RB** à la manette (ou **Tab** au clavier) bascule entre l'interface épurée et l'interface complète ; le choix est retenu.
 - **Monde animé** (`src/monde-anime.js`) : le vent fait ployer arbres, roseaux, bannières et poteaux (dans le shader), plus fort vers −7 ; des braises montent vers −7 et des lucioles de la couleur du pôle dérivent vers +7 ; cinq ou six créatures errent à 20 à 70 m du héros (bêtes à quatre pattes qui broutent, insectes ailés dans les Antres, feux follets dans les Donjons) et s'enfuient si on approche. Rien de tout cela en qualité « Fluide ».
 - Mesure (rendu logiciel) contre la 2.6 : triangles quasi identiques (+0 à +4 %), appels de dessin +5 à +21 % (surtout les créatures).
+## Version 2.7 (web) : les choix moraux de la Taïga de Kobor, soir 1 (18 novembre)
+
+- **La scène remplace le menu des paliers** (`src/scenarios.js`) : à la Pierre de la Taïga de Kobor, une scène de l'histoire du registre (le voïévode Mstisla, l'inspecteur Zakhar, la veuve Oustina) et deux réponses. L'une enfonce la zone d'un palier dans son pôle (Mensonge ou Vérité), l'autre la ramène d'un palier. 15 scènes, de −7 à +7.
+- **Le prix** est payé au choix : mana, PV retirés au prochain combat, carte perdue ou exilée. Un prix caché s'affiche « ? ».
+- **Parole donnée** : après un échec, seul « Tenir parole » reste ; on ne rechoisit pas.
+- **Traces** (`S.memoire`) gardées après la mort ; certaines changent déjà le texte des scènes suivantes. Se raviser ne donne pas de carte.
+- Les autres zones ne changent pas. Prochains soirs : l'épreuve habillée par la scène, puis les effets des traces.
 
 ## Version 2.6 (web) : combat animé, décors par pôle, zones plus grandes et lieux à découvrir (18 novembre)
 

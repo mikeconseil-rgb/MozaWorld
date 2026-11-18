@@ -1,4 +1,4 @@
-/* MozaWorld 2.7 : le monde bouge (18 novembre, idée 5 de l'évaluation graphique, choisie par l'utilisateur).
+/* MozaWorld 2.8 : le monde bouge (18 novembre, idée 5 de l'évaluation graphique, choisie par l'utilisateur).
    1. Le vent : la végétation et tout ce qui est haut et mince ploie doucement (déformation dans le shader, aucun calcul par objet).
       Plus fort vers −7 (rafales), plus doux vers +7.
    2. Braises et lucioles autour du héros : vers −7 des braises montent et s'éteignent, vers +7 des lucioles de la couleur du pôle
