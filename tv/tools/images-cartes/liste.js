@@ -33,10 +33,11 @@ const slug=s=>sans(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40
     if(c.secret){fichier='S-'+slug(c.secret);
       style='Detailed ink and sepia wash illustration on aged kraft paper, a found object in close-up, mysterious, museum study sketch';ton='';}
     else{const m=c.k.match(/#([-+])(\d)/),neg=m[1]==='-',n=+m[2];fichier=c.k.replace('#','_').replace('-','m').replace('+','p');
-      style='Dark fantasy trading card illustration, epic painterly digital art, dramatic cinematic lighting, strong silhouette, rich textures, highly detailed';
-      ton=(neg?`Pole "${z.pm}": cold, engraved, ominous, shadowy, moonlit mood`:`Pole "${z.pp}": warm, radiant, enamel-bright, solemn mood`)+
+      style='Dark fantasy concept art painting, epic painterly style, dramatic cinematic lighting, bold close composition focused on one striking subject lit by dramatic rim light, visible faces and details, rich textures, highly detailed, full-bleed illustration';
+      ton=(neg?`Mood of ${z.pm}: cold, ominous, shadowy, moonlit`:`Mood of ${z.pp}: warm, radiant, glowing, solemn`)+
         (n>=7?', mythic climax, monumental and awe-inspiring':n>=5?', powerful and intense':n<=2?', intimate and grounded':'')+'.';}
-    const prompt=`${style}. Scene: « ${c.nom} » — ${c.amb} Setting: ${biome}${cult?', '+cult+' inspired architecture and costume':''}. ${ton} Color palette: ${c.secret?'sepia, kraft brown and faded ink':MANA[z.mana]||MANA.Pierre}. No text, no letters, no frame, no border, no watermark.`;
+    const txt=t=>String(t).replace(/[«»"“”]/g,'').trim();
+    const prompt=`${style}. Subject: ${txt(c.nom)}. ${txt(c.amb)} Setting: ${biome}${cult?', with '+cult+' motifs in costume, props and distant buildings':''}.${ton?' '+ton:''} Color palette: ${c.secret?'sepia, kraft brown and faded ink':MANA[z.mana]||MANA.Pierre}. Pure full-bleed image only, with no writing of any kind, no captions, no lettering on scrolls or signs, no decorative frame.`;
     liste.push({k:c.k,fichier,nom:c.nom,zone:z.nom,prompt})}
   fs.writeFileSync(path.join(__dirname,'cartes.json'),JSON.stringify(liste,null,1));
   console.log(liste.length+' cartes à illustrer → tv/tools/images-cartes/cartes.json')})();
