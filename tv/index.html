@@ -10020,6 +10020,8 @@ function carteHTML(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k
   const ligne=z?`${a.sorte} · ${typeof ZMANA!=='undefined'?ZMANA[z]:ZCOURT[z]}`:`${a.sorte} · Commune`;
   const gris=typeof enGris==='function'&&enGris(k);
   return`<div class="cc kcarte ${z?'z':'base'}${gris?' gris':''}" style="--kb:${bord};--kcA:${rgba(bord,.28)};--kcB:${rgba(bord,.8)}"><div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${c.txt(k)}</div>${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`}
+/* Images IA des cartes présentes dans img/cartes/ (généré par tools/images-cartes/generer.py, ne pas modifier à la main). */
+window.CARTES_IMG=new Set([]);
 /* MozaWorld TV : visuel des cartes 2.2 (17 nov., demande de l'utilisateur : « c'est bien mais il faut plus de personnalisation »).
    Chaque carte de zone se compose à partir de ses données, sans aucune image à télécharger :
    - la ZONE donne la scène (biome, emblème du type, graine propre à la tuile) et le bandeau de sa culture ;
@@ -10359,13 +10361,23 @@ const zoneDeCarte=(k,c)=>{const P=c.z?infoZone(c.z):null;if(!P)return null;const
 const accent=P=>{const A=ZACC[P.id],m=(VMANA[P.mana]||VMANA.Pierre);if(A)return P.pole==='neg'?A[0]:A[1];
   /* zones sans fiche : deux accents dérivés du mana, l'un froid et lointain, l'autre chaud et proche, à luminosité égale */
   return P.pole==='neg'?mix(m[1],'#8a7ad0',.45):mix(m[1],'#e0703a',.45)};
+/* ---------- Images IA (18 nov.) : peinture par carte dans img/cartes/, listée par cartes-images.js ; le dessin vectoriel reste en secours ---------- */
+const slugI=t=>sansAcc(t).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+function fichierImage(k,c,P){const I=window.CARTES_IMG;if(!I||!I.size)return'';let f='';
+  if(c.secret)f='S-'+slugI(c.secret);
+  else if(k.includes('#'))f=k.replace('#','_').replace('-','m').replace('+','p');
+  else if(P&&P.L>=1)f=P.id+'_'+(P.pole==='neg'?'m':'p')+Math.min(7,P.L);   /* carte de base : image de son palier actuel */
+  return f&&I.has(f)?'img/cartes/'+f+'.webp':''}
+const peint=(src,fond,fx)=>`<span class="kpeint">${fond.replace('<svg ','<svg class="kfond" ')}<img class="kimg" src="${src}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('ko')">${fx?`<svg class="kfx" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${fx}</svg>`:''}</span>`;
 window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
-  if(c.secret||c.zs&&!c.z){const P=c.zs?infoZone(c.zs):null;return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${sceneSecret(c,P,uid)}</svg>`}
+  if(c.secret||c.zs&&!c.z){const P=c.zs?infoZone(c.zs):null,sv=`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${sceneSecret(c,P,uid)}</svg>`,im=fichierImage(k,c,null);return im?peint(im,sv,''):sv}
   const P=zoneDeCarte(k,c);
   if(!P){const a=ART[k]||ART.coup;return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="vf${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0c0f"/><stop offset="1" stop-color="${a.fond?a.fond[1]:'#3a2a20'}"/></linearGradient></defs>
    <rect width="160" height="100" fill="url(#vf${uid})"/><rect width="160" height="100" fill="url(#mz-girih)"/>${a.d}</svg>`}
   P.m=VMANA[P.mana]||VMANA.Pierre;P.acc=accent(P);P.ult=!!c.ultime||(P.L>=7&&!!c.pose);
-  return`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid,k,c)}</svg>`};
+  const sv=`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid,k,c)}</svg>`,im=fichierImage(k,c,P);if(!im)return sv;
+  const a=P.acc,d=P.m[2],fx=effetsCarte(c,k,{f:mix(d,'#000000',.35),l:mix(a,'#ffffff',.55),g:mix(a,'#fff3c0',.35)});
+  return peint(im,sv,fx)};
 
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
 const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>290?' t5':n>210?' t4':n>140?' t3':n>85?' t2':n>45?' t1':''};
@@ -10398,6 +10410,17 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
 const css=document.createElement('style');css.textContent=`
 .cc.kcarte{isolation:isolate}
 .cc.kcarte .art{position:relative;flex:0 0 auto}
+.kpeint{position:absolute;inset:0;display:block;overflow:hidden;background:#0d0c0f}
+.kpeint>*{position:absolute;inset:0;width:100%;height:100%;display:block}
+.kpeint .kfond{visibility:hidden}.kpeint.ko .kfond{visibility:visible}.kpeint.ko .kimg{display:none}
+.kpeint .kimg{object-fit:cover}
+.kpeint::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 calc(var(--u)*1.2) rgba(0,0,0,.55);background:linear-gradient(180deg,transparent 70%,rgba(8,7,10,.45))}
+.cc.kcarte.p-neg .kimg{filter:saturate(.9) contrast(1.06)}.cc.kcarte.p-pos .kimg{filter:saturate(1.08)}
+.cc.kcarte.secret .kimg{filter:sepia(.25)}
+.cc.kcarte.ultime .kimg{animation:kvit 9s ease-in-out infinite alternate;animation-play-state:paused}
+.cc.kcarte.ultime.f .kimg,.boite .cc.kcarte.ultime .kimg{animation-play-state:running}
+@keyframes kvit{from{transform:scale(1)}to{transform:scale(1.07)}}
+@media (prefers-reduced-motion:reduce){.cc.kcarte.ultime .kimg{animation:none}}
 .cc.kcarte .cz{letter-spacing:.07em}
 
 .cc.kcarte.ultime .cz{display:none}

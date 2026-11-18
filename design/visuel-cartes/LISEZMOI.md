@@ -27,3 +27,12 @@ Demande : « retravaille les cartes, leur bordure, leurs effets ; le texte et le
 - **Effets animés** selon ce que fait la carte : braises, coup, lustre, brume, pages, onde, pouls, yeux, fissure. Ils jouent sur la carte choisie, dans les menus et sur les formes ultimes ; le reste de la main reste calme.
 - **Texte** : chiffres en gras, « ◆ Prix » en rose clair, résonances en couleur. Dans la main, seule la première phrase s'affiche et la carte choisie montre tout. La phrase d'ambiance du conteur apparaît sur la carte choisie et dans les menus.
 - Critique : avant corrections, reconnaissable 5/10 et texte 4/10. Ensuite : sujet agrandi avec un halo, fond estompé, teinte propre à chaque carte, variantes de document et de bouclier, plus aucun texte coupé dans la main.
+
+## 3e tour (18 nov.) : images IA par carte
+
+Demande : « les images des cartes sont assez basiques, il faut des images bien plus percutantes ». Choix de l'utilisateur : images IA avec un compte Hugging Face gratuit (quota quotidien, pas d'achat).
+
+- `tv/tools/images-cartes/liste.js` fait un prompt par carte (nom, ambiance du conteur, biome, culture, pôle, palier, couleurs du mana) dans `cartes.json`. Secrets : encre et sépia sur papier kraft. Les Ressources et les communes n'ont pas d'image.
+- `tv/tools/images-cartes/generer.py --max 20` (variable `HF_TOKEN`) génère les images manquantes en WebP 480×320 dans `tv/img/cartes/` et réécrit `tv/src/cartes-images.js`. Relancer ensuite `sh tv/build.sh`.
+- Noms de fichiers : `ZONE_m3` / `ZONE_p7` pour les paliers, `S-<titre-du-secret>` pour les secrets. La carte de base d'une zone prend l'image de son palier actuel.
+- Affichage (`cartes-visuel.js`, `fichierImage` et `peint`) : l'image remplace la scène vectorielle, chargée en différé ; les effets animés, losanges de palier, cadre et bandeau restent par-dessus. Si l'image manque ou ne charge pas, le dessin vectoriel s'affiche.
