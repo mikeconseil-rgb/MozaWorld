@@ -10,17 +10,16 @@ function openGrimoire(f){mode='menu';document.body.classList.add('jeu-ouvert');
     corps:`<p class="petit">Une carte par pôle et par zone, gagnée à chaque palier réussi à la Pierre d'éveil. ${vues} zone(s) à vous sur ${ZN.length} · choisissez une zone pour voir ses cartes.</p>`,
     back:openMenu,opts:[
       {l:'Règles des cartes',ic:'?',go:grimoireRegles},
-      {l:'Cartes communes',ic:'▤',d:'paquet de départ',go:grimoireCommunes},
       ...(typeof PV_COMMUNES!=='undefined'?[{l:'Paquet politique',ic:'⚖',d:'duel d\'arguments des Assemblées',go:grimoirePolitique}]:[]),
       ...ZN.map((Z,i)=>({l:Z.info.nom,ic:sgn(S.lv[Z.id]||0)||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',
-        d:(estRes(Z)?'Ressource · mana et atouts, pas de carte':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+(typeof PV_COMMUNES!=="undefined"?3:2))})),
+        d:(estRes(Z)?'Ressource · mana et atouts, pas de carte':`${Z.info.pm} / ${Z.info.pp}`)+(nbPaquet(Z.id)?` · ${nbPaquet(Z.id)} au paquet`:''),go:()=>grimoireZone(Z,i+(typeof PV_COMMUNES!=="undefined"?2:1))})),
       {l:'Retour',ic:'◆',go:openMenu}]})}
 function grimoireRegles(){ui('menu',{sur:'Grimoire',t:'Règles des cartes',back:()=>openGrimoire(0),
-  corps:`<p class="petit">· Le paquet de départ : 5 cartes communes toutes différentes, les mêmes pour tous (Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche).</p>
+  corps:`<p class="petit">· Plus de cartes communes : le paquet de départ, ce sont les cartes de palier 1 des 6 zones à cartes de votre territoire de départ (à vous dès le début, au niveau 1, pôle tiré au hasard).</p>
   <p class="petit">· Le terrain : les ennemis frappent d'abord la Garde, puis les bloqueurs et les bêtes, puis le héros. La Garde s'effrite de moitié à chaque tour. Attention aux ennemis qui volent par-dessus (➶), enfoncent au bélier (⚒) ou piétinent (⚔⚔).</p>
 <p class="petit">· Une carte de zone se gagne à chaque palier réussi à la Pierre d'éveil de sa zone. Ni les combats ni l'activation n'en donnent.</p>
 <p class="petit">· Toutes vos copies suivent le niveau actuel de leur zone : si la zone passe de +2 à +3, vos cartes se renforcent ; si elle passe du côté −, elles deviennent la carte de l'autre pôle.</p>
-<p class="petit">· En combat, la capacité de dépense monte de 1 par tour (1, 2, 3…), tous types confondus. Une carte de zone se paie avec le mana de sa zone ; les cartes communes en mana gris, infini. Sans assez du bon mana, une carte de zone se joue en gris : effet −25 %, pas de contre-pouvoir.</p>
+<p class="petit">· En combat, la capacité de dépense monte de 1 par tour (1, 2, 3…), tous types confondus. Une carte de zone se paie avec le mana de sa zone. Sans assez du bon mana, une carte de zone se joue en gris : effet −25 %, pas de contre-pouvoir.</p>
 <p class="petit">· Contre-pouvoir : jouée contre les gardiens de la zone qu'elle contre, une carte de zone voit son effet doublé.</p>`,
   opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(0)}]})}
 function grimoireCommunes(){const ks=(typeof DEPART!=='undefined'?DEPART:Object.keys(CK).filter(k=>!CK[k].z&&!CK[k].secret)).filter(k=>CK[k]);
@@ -34,9 +33,9 @@ function grimoireRessource(Z,fi){const id=Z.id,I=Z.info,t=ZMANA[id],L=(typeof AT
       L.map((a,i)=>`<p class="petit">${S.atout&&S.atout[id]===i?'✓ ':''}<b>${a[0]}</b> : ${a[1]}</p>`).join(''),
     opts:[{l:'Voyager vers cette zone',ic:'✧',go:()=>{tp(id);toMonde()}},{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(fi)}]})}
 function grimoirePolitique(){const ks=PV_COMMUNES.concat(Object.values(PV_VOIX));
-  ui('menu',{sur:'Grimoire',t:'Paquet politique',back:()=>openGrimoire(2),
+  ui('menu',{sur:'Grimoire',t:'Paquet politique',back:()=>openGrimoire(1),
     corps:`<p class="petit">Joué seulement au Duel d'arguments, l'épreuve des Assemblées, jamais en combat. Les 5 premières cartes sont à tous ; chaque autre carte s'ajoute quand vous tenez au moins une tuile de son type. Avant le duel, vos tuiles voisines de l'Assemblée votent pour vous (Assemblée 3, Citadelle 2, Ressource 2, Antre 1, Donjon 1) ; une tuile sauvage vote pour le pôle qui lui ressemble, contre l'autre. Chaque voix nette retire 3 de conviction au Conseil.</p><div class="cartes">${ks.map(k=>carteHTML(k)).join('')}</div>`,
-    opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(2)}]})}
+    opts:[{l:'Retour au Grimoire',ic:'◆',go:()=>openGrimoire(1)}]})}
 function grimoireZone(Z,fi){if(estRes(Z))return grimoireRessource(Z,fi);const id=Z.id,I=Z.info,lv=S.lv[id]||0,L=Math.abs(lv),c=CK[id];if(!c)return;
   const res=estRes(Z),txt=(l)=>avecNiveau(id,l,()=>`<b>${c.nom()}</b> (coût ${c.cout}) : ${c.txt(id)}`);
   let cartes,lignes;

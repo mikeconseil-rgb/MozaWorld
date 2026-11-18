@@ -8,11 +8,12 @@ const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60
 const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
 
 /* ---------- Partie : niveaux, maîtrise, empreintes, repos, cartes, blessures ---------- */
-const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},deck:DEPART.slice(),renc:1};
+const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},deck:[],renc:1};
 /* Territoire de départ et zones scellées (17 nov., règles de l'utilisateur, regles-avancees.md section 1 ter) :
-   - le territoire de départ permet un paquet de 15 cartes ou plus (5 communes + 2 cartes par zone à cartes montée au palier 2)
-     (choix C2 du 17 nov. : 12 tuiles, 6 zones à cartes : 1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée, et 6 Ressources sans carte), au niveau 0 ;
-   - les zones qui l'entourent sont à ±5 ; au-delà, pôle ET niveau au hasard (tirés à chaque nouvelle partie) ;
+   - territoire de départ (choix C2 du 17 nov.) : 12 tuiles, 6 zones à cartes : 1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée, et 6 Ressources sans carte ;
+     18 nov. (utilisateur) : ces 12 zones sont à vous dès le début, activées, au niveau 1, chacune vers un pôle tiré au hasard (Ressources : niveau 1, sans pôle) ;
+     le paquet de départ = leurs 6 cartes de palier 1 (plus de cartes communes) ;
+   - les zones qui l'entourent sont à ±6 (18 nov. : départ au niveau 1, l'écart mortel de 5 est gardé) ; au-delà, pôle ET niveau au hasard (tirés à chaque nouvelle partie) ;
    - elles ne cèdent qu'une fois toutes les zones de départ prises et le royaume assez développé (paquet d'au moins 15 cartes). */
 const DIST_DEP={},PAQUET_ROYAUME=15;
 const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR'];for(const id of org){d[id]=0;file.push(id)}
@@ -22,7 +23,7 @@ const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR
 const ESTDEP=new Set(ZONES_DEP);
 const BORD_DEP=new Set(ZN.filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES!=='undefined'?VOISINES[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
 function nivDep(graine){const o={};for(const Z of ZN){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;
-  o[Z.id]=ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?5*sg:(2+Math.floor(h2*6))*sg}return o}
+  o[Z.id]=ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?6*sg:(2+Math.floor(h2*6))*sg}return o}
 let NIV_DEP=nivDep(0);
 const departPris=()=>ZONES_DEP.filter(id=>S.own[id]).length;
 const royaumeEtabli=()=>departPris()>=ZONES_DEP.length&&S.deck.length>=PAQUET_ROYAUME;
@@ -35,7 +36,13 @@ NIV_DEP=nivDep(S.graine||0);
 for(const id of IDS){if(S.lv[id]===undefined)S.lv[id]=NIV_DEP[id]||0;if(S.own[id]===undefined)S.own[id]=false;if(S.emp[id]===undefined)S.emp[id]=false;if(S.rest[id]===undefined)S.rest[id]=0}
 /* Parties enregistrées avant le combat : les zones déjà à vous comptent comme activées */
 for(const id of IDS)if(S.act[id]===undefined)S.act[id]=!!S.own[id];
-if(!Array.isArray(S.deck)||!S.deck.length)S.deck=DEPART.concat(IDS.filter(id=>S.act[id]&&id!=='RES'));
+/* 18 nov. : territoire de départ donné au joueur, niveau 1, pôle au hasard par zone ; paquet = leurs cartes de palier 1 */
+function paquetDe(ids){return ids.filter(id=>(ZB[id].mod||id)!=='RES'&&S.own[id]&&S.act[id]&&S.lv[id]).map(id=>typeof clePalier==='function'?clePalier(ZB[id],S.lv[id]):id)}
+function donnerDepart(){for(const id of ZONES_DEP){const Z=ZB[id],lv=(Z.mod||id)==='RES'?1:(Math.random()<.5?-1:1);
+    S.lv[id]=lv;S.own[id]=true;S.act[id]=true;S.emp[id]=false;S.rest[id]=0;if(Z.lv!==lv){Z.lv=Z.lvT=lv;if(typeof rebuild==='function'){rebuild(Z);Z.update(lv);if(typeof placeAlt==='function')placeAlt(Z)}}}
+  if(ZONES_DEP.indexOf('DON')>=0)S.dernierAssaut=S.nc||0;
+  S.deck=paquetDe(ZONES_DEP)}
+if(!Array.isArray(S.deck)||!S.deck.length)S.deck=paquetDe(IDS);
 if(S.renc===undefined)S.renc=1;
 initEco();
 function save(){S.found=secrets.map((s,i)=>s.found?i:-1).filter(i=>i>=0);try{localStorage.setItem('mz-tv-1',JSON.stringify(S))}catch(_){}}
@@ -193,11 +200,12 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.deck=DEPART.slice();S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;save()}
+    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
+    donnerDepart();CULL.dirty=true;terrainAll();save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
   mode='monde';hudKey='';etatHud();
-  if(neuf)setTimeout(()=>toast('Berestograd · niveau 0','Cherchez la Pierre d\'éveil','Suivez la flèche dorée en bas de l\'écran, puis appuyez sur OK devant la Pierre.'),900)}
+  if(neuf)setTimeout(()=>toast('Berestograd · votre territoire','Vos 12 zones de départ sont à vous, au niveau 1','Votre paquet : leurs cartes de palier 1. Montez-les à leur Pierre d\'éveil pour gagner des cartes.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
   ui('menu',{sur:'Pause · version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:''),t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
@@ -225,7 +233,7 @@ function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',corps:`<p class="petit">▲ ▼ marcher, tenir ▲ pour courir, ▲ deux fois : marche automatique (▼ ou OK l'arrête) · ◀ ▶ tourner · OK sauter (deux fois : double saut), ou agir devant une Pierre · Retour : menu.</p>
 <p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter (deux fois : double saut) ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
-<p class="petit">D'abord, activez chaque zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; une carte commune avec n'importe quel type. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
+<p class="petit">Votre territoire de départ (12 zones) est à vous dès le début, au niveau 1 ; votre paquet, ce sont leurs cartes de palier 1. Ensuite, activez chaque nouvelle zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; sans assez de ce mana, elle se joue en mana gris, affaiblie. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure. Chaque palier gagné ajoute à votre paquet la carte de combat de la zone (sauf les Ressources). Posséder la zone qui en contre une autre facilite son épreuve.</p>
 <p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
@@ -289,9 +297,10 @@ function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('j
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
       opts:[{l:'Réessayer',ic:'▲',go:()=>openEveil(Z)},{l:'Repartir explorer',ic:'◆',go:toMonde}]});mode='menu'}}
-function mort(){for(const Z of ZN){if(S.own[Z.id]){S.own[Z.id]=false;S.emp[Z.id]=true}S.act[Z.id]=false}S.deck=DEPART.slice();
+function mort(){for(const Z of ZN){if(S.own[Z.id]){S.own[Z.id]=false;S.emp[Z.id]=true}S.act[Z.id]=false}
+  donnerDepart();CULL.dirty=true;terrainAll();   /* 18 nov. : l'héritier repart comme une nouvelle partie, territoire de départ au niveau 1, pôles retirés au hasard */
   S.cards=[];S.hurt=0;S.lives=(S.lives||1)+1;save();etatHud();hudKey='';
-  ui('menu',{sur:'Mort du héros',t:'La mosaïque vous oublie',corps:`<p>Troisième blessure. Votre paquet de combat revient aux cartes de départ. Vos zones gardent leur niveau mais redeviennent sauvages.</p><p class="petit">Votre empreinte reste : reprendre une ancienne zone à vous sera plus facile. Un héritier se lève à Berestograd.</p>`,
+  ui('menu',{sur:'Mort du héros',t:'La mosaïque vous oublie',corps:`<p>Troisième blessure. Vous perdez vos cartes et vos zones : elles gardent leur niveau mais redeviennent sauvages. L'héritier reçoit à nouveau le territoire de départ, au niveau 1, et ses cartes de palier 1.</p><p class="petit">Votre empreinte reste : reprendre une ancienne zone à vous sera plus facile. Un héritier se lève à Berestograd.</p>`,
     opts:[{l:'Se relever',ic:'✦',go:()=>{tp('CIT');toMonde()}}]});mode='menu'}
 function pauseEpreuve(){const keep=E;mode='menu';ui('menu',{sur:'Épreuve en pause',t:'Abandonner ?',corps:'<p class="petit">Abandonner ne blesse pas, la zone ne change pas.</p>',
   back:()=>{closeUI();mode='epreuve'},opts:[{l:'Continuer l\'épreuve',ic:'▲',go:()=>{closeUI();mode='epreuve'}},{l:'Abandonner',ic:'◆',go:()=>{if(E&&E.fin)E.fin();E=null;$('jeu').hidden=true;toMonde()}}]});$('jeu').hidden=!keep.monde?false:false}

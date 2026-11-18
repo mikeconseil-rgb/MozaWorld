@@ -44,13 +44,13 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 
 ## 4. Le territoire de départ
 
-- 12 tuiles au niveau 0 : 1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée, 6 Ressources.
-- Autour, les zones sont à ±5 ; au-delà, pôle et niveau au hasard à chaque partie. Les Ressources hors départ ont un niveau 0 à 3 au hasard.
-- Les zones hors départ sont scellées tant que les 12 ne sont pas prises et que le paquet compte moins de 15 cartes. Une zone qui dépasse de 5 niveaux votre plus haute zone a des gardiens mortels.
+- 12 tuiles : 1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée, 6 Ressources. **Elles sont à vous dès le début**, déjà activées, au niveau 1, chacune vers un pôle tiré au hasard (les Ressources au niveau 1, sans pôle). Pas de combat d'activation pour elles (18 nov.).
+- Autour, les zones sont à ±6 (±5 avant le 18 nov. ; avec un départ au niveau 1, l'écart de 5 qui rend les gardiens mortels est gardé) ; au-delà, pôle et niveau au hasard à chaque partie. Les Ressources hors départ ont un niveau 0 à 3 au hasard.
+- Les zones hors départ sont scellées tant que le paquet compte moins de 15 cartes (6 au départ, une de plus par palier gagné). Une zone qui dépasse de 5 niveaux votre plus haute zone a des gardiens mortels.
 
 ## 5. Les cartes
 
-- Départ : les mêmes 5 communes pour tous, toutes différentes et faibles (Coup de bâton, Pas de côté, Pieu planté, Jet de pierre, Torche).
+- Départ : **plus de cartes communes** (18 nov.). Le paquet de départ, ce sont les 6 cartes de palier 1 des zones à cartes du territoire de départ, chacune du pôle tiré pour sa zone.
 - **Une seule sorte de carte** : la carte de combat. On en gagne une, distincte, à chaque palier réussi d'une zone (paliers 1 à 6). Au palier 7, la carte change de nature et porte une résonance (Braise, Givre, Sang, Racine, Sceau, Abîme) qui permet les grands combos. La « carte de pouvoir » de la première version (Mineure, Majeure, Ultime) est supprimée **(retrait en cours dans le jeu)**.
 - Les cartes diffèrent selon le pôle et viennent toujours de l'histoire de la zone. Chaque carte doit avoir un impact et un crochet de combo.
 - Un secret trouvé donne une carte utilitaire. Les combats ne donnent jamais de carte. Les Ressources ne donnent pas de carte (les Gerbes sont retirées, leurs textes gardés pour de futurs atouts).
@@ -61,7 +61,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 
 - Six types de mana, un par famille de biomes : Feu, Glace, Eau, Sève, Pierre, Vent. Une réserve par type.
 - Une Ressource donne 1 mana de son type au niveau 1, 2 au niveau 2, 2 et un atout au niveau 3 (on choisit un atout parmi trois ; ce choix tient lieu de pôle).
-- En combat, la capacité de dépense vaut le numéro du tour (1, 2, 3…), tous types confondus. Les boosts sont très rares. Le mana gris est infini, avec 25 % d'effet en moins.
+- En combat, la capacité de dépense vaut le numéro du tour (1, 2, 3…), tous types confondus. Les boosts sont très rares. Le mana gris est infini, avec 25 % d'effet en moins : une carte de zone sans assez de son mana se joue en gris. Il n'y a plus de cartes communes à payer avec n'importe quel mana (18 nov.).
 - Une route relie une Ressource de niveau 2 à une tuile voisine ; au niveau 3, elle greffe l'atout sur les cartes de cette tuile. Une tuile reçoit au plus autant de routes qu'elle a de côtés. Route coupée, atout perdu. Une horde fait baisser une Ressource d'un niveau et coupe ses routes **(pas encore dans le jeu)**.
 - Sur une route, pas de rencontre, sauf dans une Citadelle ou près d'un rempart adverse actif.
 - Le mana paie aussi les pièges du Donjon possédé. Le rythme d'entretien des pièges n'est pas tranché (trois rythmes à comparer dans le menu).
@@ -78,7 +78,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 ## 8. La mort et la guerre
 
 - Une défaite coûte une blessure de campagne ; à la troisième, le héros meurt.
-- À la mort, le héros perd tout et repart avec les 5 communes. Ses zones gardent leur niveau mais redeviennent sauvages. Son empreinte rend leur reprise plus facile, tant que personne d'autre ne les a prises. La mort nourrit le monde sauvage.
+- À la mort, le héros perd tout. L'héritier reçoit de nouveau le territoire de départ au niveau 1, pôles retirés au hasard, avec ses 6 cartes de palier 1 **(provisoire, à confirmer)**. Ses autres zones gardent leur niveau mais redeviennent sauvages. Son empreinte rend leur reprise plus facile, tant que personne d'autre ne les a prises. La mort nourrit le monde sauvage.
 - Les zones à ±7 lèvent des hordes qui envahissent les zones plus faibles ; souvent un seul des deux pôles envahit, et l'autre donne un pouvoir plus fort. Citadelles, remparts et Donjons aménagés défendent **(dans le jeu : seulement les assauts contre le Donjon aménagé)**.
 
 ## 9. Le beau et les juges
