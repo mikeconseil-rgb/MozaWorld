@@ -3,8 +3,11 @@
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
    Tout se joue à la télécommande : ◀ ▶ choisir, OK jouer, Retour pause. Rien de 3D pendant le combat (léger). */
 
-/* Les mêmes 5 cartes communes pour tout le monde (17 nov. : « cinq cartes uniques », faibles, sans carte de pioche) : assez pour une zone de niveau 0. */
-const DEPART=['coup','garde','pieu','caillou','torche'];
+/* 18 nov. (décision de l'utilisateur) : plus de cartes communes au départ. Le paquet de départ, ce sont les cartes de palier 1
+   des zones du territoire de départ, données au joueur dès le début (voir donnerDepart() dans main.js).
+   Les communes restent définies ici (anciennes parties, secrets qui les citent) mais n'entrent plus dans le paquet. */
+const DEPART=[];
+const COMMUNES=['coup','garde','pieu','caillou','torche','souffle'];
 const PAQUET_MAX=40;
 const ZCOL={CIT:'#c0584c',DON:'#e0782f',RES:'#73b45e',ANT:'#e2cb62',MAR:'#93bede'};
 const rgba=(h,a)=>`rgba(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)},${a})`;

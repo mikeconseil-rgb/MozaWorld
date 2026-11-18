@@ -77,8 +77,8 @@ function carteCK(id,choix,niv){const L=()=>Math.max(1,niv());const cur=()=>choix
     txt:k=>texteCarte(cur().effet,L(),contreX(k))+(typeof atoutsDe==='function'?atoutsDe(id).map(a=>` Atout ${a.nom}.`).join(''):''),jeu:(k,t)=>{if(typeof atoutsAvant==='function')atoutsAvant(id,k);const avant=vivants(CB.foes).reduce((a,m)=>a+m.pv,0);const dbl=CB.echo&&!(cur().ops||[]).some(o=>o[0]==='echo');if(dbl){CB.echo=false;journal('Écho : effet doublé.')}
       const ctx={L:L(),x:contreX(k)*(dbl?2:1),dbl,t,z:id,k};execOps(cur().ops,ctx);if(typeof atoutsApres==='function')atoutsApres(id,k,t,ctx,avant);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
 function installerCartes22(){
-  /* anciennes parties : les communes sont remplacées par les 5 communes uniques de départ (17 nov.) */
-  if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>k in CK&&(CK[k].z||CK[k].secret)||!(k in CK)&&!/^(coup|garde|souffle)$/.test(k));S.deck=DEPART.concat(S.deck.filter(k=>{const id=k.split('#')[0],Z=typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'}))}  /* 17 nov. : les Ressources ne donnent plus de carte */
+  /* anciennes parties : les cartes communes sortent du paquet (18 nov. : plus de communes) et les Ressources ne donnent plus de carte (17 nov.) */
+  if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>COMMUNES.indexOf(k)<0&&(k in CK?(CK[k].z||CK[k].secret):true)).filter(k=>{const id=k.split('#')[0],Z=typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'})}
   if(typeof ART!=='undefined'){ART.pieu=ART.pieu||Object.assign({},ART.garde,{sorte:'Bloqueur'});ART.caillou=ART.caillou||Object.assign({},ART.coup);ART.torche=ART.torche||Object.assign({},ART.coup,{fond:['#2e1408','#c8541c'],sorte:'Brûlure'})}
   if(typeof CARTES22==='undefined')return;
   /* « chaque palier donne une carte » : P.m1…P.m6 et P.p1…P.p6 si les conteurs les ont écrites, sinon la carte du pôle (P.m, P.p) qui grandit avec L */

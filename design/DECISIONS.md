@@ -6,6 +6,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Règle | Depuis | Ce qui manque pour trancher |
 |---|---|---|
+| Territoire de départ rendu à la mort | 18 nov. | Réponse de l'utilisateur |
 | Lot graphique 2.6 et zones +33 % | 18 nov. | Verdict de l'utilisateur après essai sur la Xbox (fluidité, goût) |
 | Blessures façon Shadowrun | 17 nov. | Deux ou trois soirs de jeu, puis un seul système |
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
@@ -17,6 +18,8 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Départ | Plus de cartes communes (« me pue au nez ») : les 12 zones du territoire de départ sont à vous dès le début, au niveau 1, pôle tiré au hasard pour chaque zone ; le paquet de départ = leurs 6 cartes de palier 1 | en vigueur | 5 communes toutes différentes (17 nov.), départ au niveau 0 à conquérir |
+| Mort | L'héritier reçoit de nouveau le territoire de départ au niveau 1 (pôles retirés) avec ses cartes de palier 1 ; les autres zones redeviennent sauvages | provisoire | repartir avec les 5 communes |
 | Méthode | Les PR sont fusionnées par le fil qui les a faites dès qu'elles sont prêtes (test de fumée passé), sans attendre l'utilisateur | en vigueur | fusion par l'utilisateur |
 | Graphismes | Lot 2.6 tiré de l'évaluation graphique (idées 6, 1 et 8 recommandées, lancées en attendant le choix de l'utilisateur) : combat animé, décors par pôle, zones agrandies d'un tiers avec trois lieux par tuile | provisoire | |
 | Zones | Arête des tuiles 400 m (zones +33 %) à la demande « zones plus grandes » | provisoire | arête 300 m (17 nov.) |
@@ -46,12 +49,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Routes | Sur une route, pas de rencontre, sauf Citadelle ou rempart adverse actif | en vigueur | |
 | Ressources | Les Ressources ne donnent pas de carte | en vigueur | carte d'équipement de la Ressource (16 nov.) |
 | Combat | « Bloqueurs sur le terrain » : la Garde devient une unité ; chaque carte doit avoir un impact et un crochet de combo | en vigueur | |
-| Départ | 5 cartes communes toutes différentes | en vigueur | 10 communes (16 nov.), 8 cartes (15 nov.) |
+| Départ | 5 cartes communes toutes différentes | remplacée (18 nov. : territoire de départ donné au niveau 1, plus de communes) | 10 communes (16 nov.), 8 cartes (15 nov.) |
 | Plateforme | Arrêt de la version Google TV et des APK ; jeu sur la page web, Edge sur Xbox Series S, manette | en vigueur | version télé Bravia (15 nov.) |
 | Cartes | Une carte distincte par palier ; palier 7 qui change de nature, avec combos (résonances) ; secrets = cartes utilitaires ; cartes différentes par pôle, liées à l'histoire | en vigueur | |
 | Cartes | Cartes gagnées seulement aux montées de palier, jamais après un combat | en vigueur | carte après victoire (16 nov.) |
 | Contenu | De nouvelles zones chaque jour, environ 50 tuiles, la majorité d'ici le dimanche 22 novembre | en vigueur | |
-| Mana | Mana gris de base infini, effet 25 % plus faible ; réserve par type ; capacité de dépense +1 par tour commune ; boosts très rares ; communes payables avec tout type | en vigueur | réserve unique et mise de départ (16 nov.) |
+| Mana | Mana gris de base infini, effet 25 % plus faible ; réserve par type ; capacité de dépense +1 par tour commune ; boosts très rares ; communes payables avec tout type | en vigueur (communes retirées le 18 nov.) | réserve unique et mise de départ (16 nov.) |
 | Interface | Un minimum d'art dans les cartes et l'écran de combat ; déplacement plus rapide | en vigueur | « la beauté n'est pas une priorité » (16 nov.) |
 
 ## 16 novembre 2026
