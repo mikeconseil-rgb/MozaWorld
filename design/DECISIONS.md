@@ -6,7 +6,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Règle | Depuis | Ce qui manque pour trancher |
 |---|---|---|
-| Lot graphique 2.6 et zones +33 % | 18 nov. | Verdict de l'utilisateur après essai sur la Xbox (fluidité, goût) |
+| Lot graphique 2.6 et zones +33 % | 18 nov. | Fluidité validée sur la Xbox (18 nov.) ; reste son avis sur le rendu |
 | Blessures façon Shadowrun | 17 nov. | Deux ou trois soirs de jeu, puis un seul système |
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
@@ -17,6 +17,8 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Graphismes | Suite du lot graphique (« Tout oui ») : décors par pôle sur les zones d'origine, exploration épurée (RB ou Tab pour l'interface complète), monde animé (vent, braises et lucioles, créatures qui errent) ; les cartes des 48 secrets des lieux attendent | en vigueur | |
+| Graphismes | Essai de la 2.6 sur la Xbox : « C'est fluide » | en vigueur | |
 | Méthode | Les PR sont fusionnées par le fil qui les a faites dès qu'elles sont prêtes (test de fumée passé), sans attendre l'utilisateur | en vigueur | fusion par l'utilisateur |
 | Graphismes | Lot 2.6 tiré de l'évaluation graphique (idées 6, 1 et 8 recommandées, lancées en attendant le choix de l'utilisateur) : combat animé, décors par pôle, zones agrandies d'un tiers avec trois lieux par tuile | provisoire | |
 | Zones | Arête des tuiles 400 m (zones +33 %) à la demande « zones plus grandes » | provisoire | arête 300 m (17 nov.) |

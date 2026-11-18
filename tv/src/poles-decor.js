@@ -24,7 +24,7 @@ const geoD={
 function tasser(it){const m=it.m,A=m.instanceMatrix.array,C=m.instanceColor?m.instanceColor.array:null;let n=0;
   for(let i=0;i<it.a.length;i++){if(Math.hypot(A[i*16],A[i*16+1],A[i*16+2])<.01)continue;
     if(n!==i){for(let j=0;j<16;j++)A[n*16+j]=A[i*16+j];if(C)for(let j=0;j<3;j++)C[n*3+j]=C[i*3+j]}n++}
-  m.count=n;done(m)}
+  m.count=n;m.visible=n>0;done(m)}
 const matV=M(0xffffff,{vertexColors:true}),matG=new THREE.MeshBasicMaterial({color:0xffffff,vertexColors:true}),matB=new THREE.MeshBasicMaterial({color:0xffffff});
 /* [sorte, géométrie, matériau, pôle, nombre, taille, lueur] ; lueur : la teinte du pôle, poussée au-delà de 1 pour le halo */
 const FAM=[
@@ -32,7 +32,11 @@ const FAM=[
   ['banniere','banniere',matV,1,30,[.9,1.2],0],['cristal','cristal',matG,1,30,[.7,1.5],1.6],['poteau','poteau',matV,1,24,[1,1],0],['lanterne','lanterne',matB,1,24,[1,1],2.4],['fleur','fleur',matV,1,40,[.8,1.7],0]];
 const LANDMARK=[['fleche','fleche',matV,-1],['tour','tour',matV,1],['couronne','couronne',matB,1]];
 
-for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),cBlanc=[1,1,1],tmp=[0,0,0];
+/* 2.7 : aussi les zones d'origine (pas Tezcamixtli : une Ressource n'a pas de pôle). Là, le cœur écrit à la main reste tel quel :
+   les objets ne vont que dans la ceinture (Z.bw, mutations.js), et les repères à 70 % du rayon. */
+const MANA_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',MAR:'Glace'};
+for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?Z.d.mana:MANA_ORIG[Z.id]]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),cBlanc=[1,1,1],tmp=[0,0,0];
+  const zi=Z.i||0,cx=Z.plus?-20:0,ok=(u,v,m)=>Z.plus?Z.inside(u,v,m)&&Math.hypot(u+20,v)>=30:Z.inside(u,v,m)&&!!Z.bw&&Z.bw(u,v)>.6;
   const cN2=LIN(hexMix(neg,'#ff6040',.35)),cP2=LIN(hexMix(pos,'#ffffff',.3));
   const build0=Z.build,update0=Z.update;let fams=[];
   Z.build=()=>{build0();fams=[];
@@ -40,22 +44,22 @@ for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,
     /* lanternes et poteaux partagent leurs places */
     const places={};
     for(const[k,g,mat,side,n0,sz,glow]of FAM){const it=inst(geoD[g],mat,false);it.k=k;it.side=side;it.glow=glow;fams.push(it);
-      const n=Math.round(n0*Math.min(2,SC*SC/4)),src=k==='lanterne'?places.poteau:null;
+      const n=Math.round(n0*Math.min(2,SC*SC/4)*(Z.plus?1:1.6)),src=k==='lanterne'?places.poteau:null;
       if(src){for(const o of src)it.add(o.x,0,o.z,1,1,1,0,0,0,{u:o.e.u,v:o.e.v,th:o.e.th});it.make();continue}
       let t=0;while(it.a.length<n&&t++<n*40){
         /* la moitié autour de la Pierre (35 à 110 m), où le joueur regarde ; le reste partout dans la tuile */
-        let u,v;if(it.a.length%2===0){const a=rnd()*TAU,r=rr(35,110);u=-20+Math.cos(a)*r;v=Math.sin(a)*r}else{u=rr(-R,R);v=rr(-R,R)}
-        if(!Z.inside(u,v,10)||Math.hypot(u+20,v)<30)continue;const p=Z.w(u,v),s=rr(sz[0],sz[1]);
+        let u,v;if(Z.plus&&it.a.length%2===0){const a=rnd()*TAU,r=rr(35,110);u=-20+Math.cos(a)*r;v=Math.sin(a)*r}else{u=rr(-R,R);v=rr(-R,R)}
+        if(!ok(u,v,10))continue;const p=Z.w(u,v),s=rr(sz[0],sz[1]);
         it.add(p[0],0,p[1],s,s,s,rnd()*TAU,k==='ruine'||k==='souche'?rr(-.12,.12):0,k==='souche'?rr(-.15,.15):0,{u,v,th:rnd()})}
       it.make();if(k==='poteau')places.poteau=it.a}
     /* les trois grands repères, à 120° les uns des autres autour de la Pierre : on en voit toujours un */
     for(const[k,g,mat,side]of LANDMARK){const it=inst(geoD[g],mat,mat!==matB);it.k=k;it.side=side;it.glow=mat===matB?3:0;it.repere=1;fams.push(it);
-      for(let i=0;i<3;i++){const a=i*TAU/3+Z.i*.7;let r=78,u,v;for(let j=0;j<6;j++){u=-20+Math.cos(a)*r;v=Math.sin(a)*r;if(Z.inside(u,v,18))break;r*=.8}
+      for(let i=0;i<3;i++){const a=i*TAU/3+zi*.7;let r=Z.plus?78:R*.7,u,v;for(let j=0;j<8;j++){u=cx+Math.cos(a)*r;v=Math.sin(a)*r;if(ok(u,v,18))break;r*=Z.plus?.8:.93}
         const p=Z.w(u,v);it.add(p[0],0,p[1],1,1,1,a+(side<0?.6:0),side<0?.12:0,side<0?-.1:0,{u,v,th:i*.12})}
       it.make()}};
   Z.update=lv=>{update0(lv);const an=wneg(lv),ap=wpos(lv);
     /* la végétation du biome : penchée, rabougrie vers −7 ; redressée et plus haute vers +7 */
-    for(const it of Z.props){if(it.k==='rocher'||it.k==='mur'||it.k==='colonne')continue;
+    for(const it of Z.props||[]){if(it.k==='rocher'||it.k==='mur'||it.k==='colonne')continue;
       it.set(o=>{if(an>.2&&o.r<an*.55)return .0001;if(o.rz0===undefined){o.rz0=o.rz;o.rx0=o.rx}o.rz=o.rz0+an*.5*(o.r-.5);o.rx=o.rx0+an*.3*(o.r*7%1-.5);
           return[(1+ap*.35)*(1-an*.25),(1+ap*.7)*(1-an*.45),(1+ap*.35)*(1-an*.25)]},
         (o,i,c)=>{const b=LIN(PBASE[it.k]||'#ffffff');mix3(c,b,[.12,.1,.09],an*.75);if(ap>0)mix3(c,c,cP,ap*.4);if(it.k==='cristal'){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}

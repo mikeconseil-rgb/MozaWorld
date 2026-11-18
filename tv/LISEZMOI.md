@@ -103,6 +103,15 @@ Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au ba
 
 APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
 
+## Version 2.7 (web) : décors par pôle partout, exploration épurée, monde animé (18 novembre)
+
+Choix de l'utilisateur après l'essai de la 2.6 (« C'est fluide », puis « Tout oui » sur les idées 1, 2 et 3 de la suite des graphismes).
+
+- **Décors par pôle sur les zones d'origine** (`src/poles-decor.js`) : Berestograd, les Neuf Édits, les Lucioles et Givrecloche reçoivent les mêmes familles d'objets que les nouvelles tuiles (arbres morts, éclats, flèches noires vers −7 ; bannières, cristaux, lanternes, fleurs, tours Girih vers +7), seulement dans leur ceinture : le cœur écrit à la main ne change pas. Tezcamixtli n'en a pas (une Ressource n'a pas de pôle). Les familles vides ne sont plus dessinées du tout.
+- **Exploration épurée** (`src/epure.js`) : par défaut, la fiche de la zone (en haut à gauche) n'apparaît que 9 secondes en entrant dans une zone, l'aide des commandes s'efface après la première minute, la minicarte rapetisse ; le nom de la zone entre au centre avec un effet de mise au point. **RB** à la manette (ou **Tab** au clavier) bascule entre l'interface épurée et l'interface complète ; le choix est retenu.
+- **Monde animé** (`src/monde-anime.js`) : le vent fait ployer arbres, roseaux, bannières et poteaux (dans le shader), plus fort vers −7 ; des braises montent vers −7 et des lucioles de la couleur du pôle dérivent vers +7 ; cinq ou six créatures errent à 20 à 70 m du héros (bêtes à quatre pattes qui broutent, insectes ailés dans les Antres, feux follets dans les Donjons) et s'enfuient si on approche. Rien de tout cela en qualité « Fluide ».
+- Mesure (rendu logiciel) contre la 2.6 : triangles quasi identiques (+0 à +4 %), appels de dessin +5 à +21 % (surtout les créatures).
+
 ## Version 2.6 (web) : combat animé, décors par pôle, zones plus grandes et lieux à découvrir (18 novembre)
 
 Lot du soir tiré de l'évaluation graphique du 17 novembre (idées 6, 1 et 8).
