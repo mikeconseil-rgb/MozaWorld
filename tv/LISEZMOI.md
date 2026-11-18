@@ -215,5 +215,6 @@ Code : tv/src/assemblees.js. Une Assemblée n'agit pas en combat : sa loi agit s
 - Le cycle des contre-pouvoirs (CONTRE) passe par la possession : si vous possédez et avez activé la zone qui en contre une autre, l'épreuve de celle-ci est plus facile, −1, puis −2 dès le palier 4 et −3 dès le palier 6 de la zone qui contre. En combat, la carte de la zone qui contre reste doublée (contreX).
 
 ### 2.5 · Interfaces et graphismes (17 nov.)
+- 2.5.1 (retour de test du 18 nov.) : l'état tient sur une seule barre sombre en haut de l'écran (mana, domaines, territoire, royaume, danger, blessures, secrets).
 - tv/src/ecrin.js : habillage commun des interfaces (cadres à filets d'or, coins ornés, fleurons, menus en lignes de manuscrit, bandeau en tableau, mue mise en scène). MZ_VERSION (affiché au titre et dans la pause) : à monter à chaque PR de jeu.
 - Graphismes : la version web part en qualité « Belle » (ombres 2048, anticrénelage ×4) ; nouveau réglage « Splendide » (image en pleine largeur 1920). Si l'image tombe sous 27 images/s, la qualité baisse seule. Poussières de lumière autour du héros, couleur de la zone (tv/src/poussiere.js).
