@@ -1,0 +1,121 @@
+{
+ "conteur": "C",
+ "livres": {
+  "DON": {
+   "titre": "Registre du greffe des Neuf Édits",
+   "auteur": "Lu Pei, greffière du troisième étage, qui tamponna dix mille mains et resta au puits parce qu'aucun Édit ne l'autorisait à remonter.",
+   "pages": [
+    {
+     "t": "Un empereur et sa lave",
+     "txt": "En l'an premier de son règne, l'empereur Shen Wu monta au bord du cratère et déclara que la lave lui devait obéissance, comme ses provinces. Ses astronomes le lui déconseillèrent ; il les fit descendre en premier. On creusa pendant onze ans, à la main, un puits vertical au fond du cratère, et ce furent des forçats en cangue de basalte qui creusèrent. Chaque étage achevé recevait une tablette, et chaque tablette un Édit. Je tiens ce registre depuis l'achèvement du quatrième étage."
+    },
+    {
+     "t": "Neuf étages, neuf Édits",
+     "txt": "Les huit premiers Édits étaient simples et cruels : nul ne courra, nul ne regardera en arrière, nul ne gardera deux armes, et cinq autres que j'ai tamponnés sur tant de mains que je ne les lis plus. Le neuvième, Shen Wu le fit tailler dans un sceau de jade céladon, gravé à l'envers. La lave obéit et durcit en croûte, et les forçats durcirent avec elle. Le jour de l'inauguration, l'empereur descendit seul imprimer son sceau. Il n'est jamais remonté, et la neuvième ligne explique pourquoi à qui sait la lire."
+    },
+    {
+     "t": "Ce que le greffe a vu",
+     "txt": "Sans empereur, le greffe a continué. Les inspecteurs ont gardé leurs lanternes de corne, les Tesselés se sont soudés en enclos autour de chaque infraction, et j'ai tamponné. Chaque Édit respecté épaissit la croûte du volcan, chaque Édit rompu la fend un peu plus : nous l'avons appris par nos morts. Les années d'obéissance furent sûres et étouffantes, les années de révolte libres et brûlantes. J'ai tamponné les unes et les autres de la même encre, et je suis encore là pour le noter."
+    },
+    {
+     "t": "Le sceau attend un porteur",
+     "txt": "Le sceau repose toujours au fond, sur son coussin de basalte, et il tient parole : qui le prend reçoit le droit d'écrire un Édit nouveau. Ceux qui ont gravé ont commandé le puits, puis le puits les a gardés. Ceux qui ont brisé les tablettes ont ouvert le cratère au ciel, et la lave a pris leurs maisons en même temps que leurs chaînes. Sous la margelle, la morale ne change pas, quelle que soit la main. Si vous descendez, présentez-vous au troisième étage : il faut bien que quelqu'un vous tamponne."
+    }
+   ],
+   "fin": {
+    "m5": "Au vermillon, de la main de l'inspecteur Gao : « La greffière Lu Pei a été trouvée à son pupitre, la main tamponnée neuf fois. Elle s'était levée pour fermer ce livre, ce que l'Édit de l'étage interdit. Le registre est clos. Toute lecture ultérieure sera consignée. »",
+    "m2": "Note de l'inspecteur Gao, encre encore fraîche : « Les escaliers ne laissent passer qu'une file et la croûte tient. La greffière tamponne toujours, plus lentement. Elle m'a demandé s'il existe un Édit sur les larmes. Je lui ai répondu que non. Pas encore. »",
+    "z": "Quelques lignes au charbon, d'un soufrier : « La greffière est sortie cueillir le soufre avec nous, puis elle est revenue s'asseoir à son pupitre. Elle dit que la lave hésite, comme elle. Le sceau attend toujours en bas. Personne n'est descendu ce mois-ci. »",
+    "p2": "Gratté au clou par un forçat évadé : « J'ai ouvert ma cangue et j'ai glissé jusqu'ici sur la coulée. La greffière m'a regardé passer sans lever son tampon. La croûte se fend sous son pupitre. Elle dit qu'elle reste pour noter ce que coûte la liberté. »",
+    "p5": "Au couteau, sur la couverture, par un enfant d'évadé : « Le troisième étage est tombé dans la lave avec la dame du livre. On a sauvé le livre, pas elle. On cuit notre riz sur les fontaines et personne ne nous dit quoi faire. Personne ne nous dit non plus où le feu sortira demain. »"
+   }
+  },
+  "MAR": {
+   "titre": "Annales du Chapitre de Givrecloche",
+   "auteur": "Frère Ansgar, chanoine-croupier rayé du Chapitre pour avoir dit un compte juste à voix haute, et qui tient depuis des annales que nul ne lui demande.",
+   "pages": [
+    {
+     "t": "Une foire sous le glacier",
+     "txt": "Givrecloche fut une foire avant d'être une Assemblée. Les pèlerins-joueurs montaient au clocher pris dans le glacier pour miser fourrures et reliques aux enchères, et le Chapitre des douze chanoines tenait la banque. Avec nos têtes de vautours gelés, nous faisions peur, mais nous ne mentions jamais. Nos règles étaient écrites à la craie au-dessus des tables. Toutes étaient justes, sauf une, qui était seulement vraie : la Maison prend le treizième lot."
+    },
+    {
+     "t": "La cloche de l'abbesse",
+     "txt": "L'hiver du Grand Brelan, l'abbesse Hildegonde misa la grande cloche contre trois dés, et elle perdit. Depuis, la cloche ne sonne plus pour personne, et la foire n'eut plus de signal pour ouvrir ni pour clore. Un orgue de barbarie prit sa place sur le parvis. Il tirait ses airs des cartons perforés qui numérotaient les lots, un trou par note, un carton par lot. Quand l'air sautait une mesure, le lot était vide, et le dernier carton de chaque série n'avait aucun trou."
+    },
+    {
+     "t": "Des lots aux lois",
+     "txt": "Il y a quarante hivers, les marchands de fourrures ont exigé qu'on vote les prix au lieu de les miser. Le Chapitre a accepté, car une loi s'adjuge aussi bien qu'un lot. Nous avons gardé les cartons, l'orgue et la règle de la Maison, qui prend désormais sa part des votes. Dans la brume, le scrutin est scellé dans la glace dépolie et nul ne sait qui a voté quoi. Par temps clair, chaque motion est lue à la craie devant tous, et la Maison n'a même plus besoin de tricher pour gagner."
+    },
+    {
+     "t": "Ce que coûte chaque ciel",
+     "txt": "J'ai vu les deux temps gouverner. La brume protège le délégué timide, qui peut voter contre son seigneur sans être vu ; elle protège aussi le fourbe, et les fanions de mousse givrée mènent aux crevasses. La clarté rend chaque vote juste et chaque erreur publique, et le perdant apprend par cœur le nom de ceux qui l'ont fait tomber. Pour avoir dit un compte tout haut, j'ai été rayé. Le Chapitre ne ment jamais : il préfère qu'on se taise."
+    }
+   ],
+   "fin": {
+    "m5": "Tracé dans le givre d'une page collée, par la chanoinesse de la brume : « Frère Ansgar a voté. Son bulletin est scellé, nous ignorons pour qui, et lui aussi désormais. Son pupitre dort sous une housse. Ce livre est soumis au scrutin, qui dira s'il a été lu. »",
+    "m2": "Au crayon de corne, d'un bonimenteur : « Le vieux chanoine m'a acheté une grille pour lire les cartons. Elle était fausse, il le savait, il a payé quand même. Il dit que dans la brume une fausse certitude vaut mieux que rien. Il ne sort plus sans tenir la corde. »",
+    "z": "À la craie, d'une pèlerine-joueuse : « J'ai trouvé frère Ansgar endormi sur ce livre, une main posée sur l'orgue pour sentir les mesures. Brume le matin, ciel clair à midi. Il dit que c'est le seul temps où l'Assemblée hésite, donc le seul où elle écoute. »",
+    "p2": "Sur une ardoise glissée entre les pages : « Le Chapitre a réintégré frère Ansgar pour tenir les comptes publics. Il compte juste, à voix haute, et toute la nef l'écoute. En un mois, il a perdu trois amis. Les chiffres étaient exacts. »",
+    "p5": "Chiffré au boulier dans la marge, par un parieur : « Ansgar compte chaque séance devant la nef entière : les votes, les dettes, les noms. Plus personne ne triche. La Maison gagne quand même, à la règle, et ceux qui ont compté trop lentement mendient au bas des terrasses. »"
+   }
+  },
+  "ASS152": {
+   "titre": "Saga de la pierre-de-parole",
+   "auteur": "Ragna la Tisonnière, gardienne des braseros du canyon, qui a juré de ne plus parler à voix haute et dépose ici, au pied de la pierre, ce qu'elle tait.",
+   "pages": [
+    {
+     "t": "La faille et la première voix",
+     "txt": "Avant l'assemblée, Fjorhel n'était qu'une faille rouge où le vent venait mourir. Le jarl Hallvard Bouche-de-Fer y descendit l'hiver de la Disette avec quarante familles, et il cria sa loi contre la paroi pour que les dieux l'entendent. La paroi lui répondit trois fois, et la dernière voix revint plus forte que la sienne. Les familles y virent un jugement. On posa une pierre à l'endroit où il s'était tenu, et ce fut la pierre-de-parole."
+    },
+    {
+     "t": "Le vote à l'écho",
+     "txt": "Depuis, l'assemblée ne vote pas à main levée. On monte sur la pierre, rouge et chaude des braseros, et l'on énonce sa loi ; si l'écho revient plus fort, la loi est juste et elle passe. Les orateurs se sont mis à chanter, car la paroi préfère le chant et le rend avec usure. Les grandes gorges ont gouverné le canyon pendant trois générations. Les autres ont appris à se taire, et ceux qui bégayaient n'ont jamais eu de loi."
+    },
+    {
+     "t": "Le tison des anciens",
+     "txt": "Les anciens ont fini par trouver une réponse aux chanteurs. Ils posent un tison au pied de la pierre et se taisent ; s'il s'éteint avant que quiconque ait parlé, la loi passe sans un mot et nul ne peut plus la contredire. Un tison dure trois souffles, et la règle ne précise pas de qui. Ma mère Sigrun fit passer ainsi le partage des grains contre le jarl Eyvind, qui avait la plus belle voix du canyon. Il ne lui pardonna jamais de n'avoir rien dit."
+    },
+    {
+     "t": "Deux manières de faire loi",
+     "txt": "Le canyon est divisé depuis entre le chant et le silence. Le chant rassemble : les échos finissent par descendre de la paroi pour marcher parmi nous, mais ils gardent les voix qu'on leur prête. Le silence protège : ce qui n'est pas dit ne se conteste pas, et chaque coup revient à qui l'a porté. Il protège aussi les lois que personne n'a eu le temps de refuser. J'entretiens les deux braseros sans choisir, ce qui est encore un choix."
+    }
+   ],
+   "fin": {
+    "m5": "Au poinçon sur la reliure, sans signature : « Ragna a posé le dernier tison, et il s'est éteint. Depuis, plus personne ne parle dans le canyon, pas même pour pleurer. Les lois passent seules, la nuit. Ce livre en est une, et vous venez de la voter en le refermant. »",
+    "m2": "Au charbon, par un jeune berger : « La gardienne m'a fait signe de lire à voix basse. Les anciens comptent les souffles autour de la pierre. Hier, un chanteur a ouvert la bouche trop tard ; la braise l'a brûlé jusqu'au menton. Personne ne l'a plaint à haute voix. »",
+    "z": "Quelques runes d'une voyageuse : « La gardienne entretient deux braseros, l'un couvert, l'autre vif. Elle m'a montré la pierre sans rien dire. J'ai chanté un vers et la paroi l'a rendu à peine plus fort. Une loi tiède, a-t-elle écrit sur ma paume. »",
+    "p2": "D'une écriture ronde, à l'ocre : « Ragna chante de nouveau, la voix éraillée par la braise. L'assemblée grossit à chaque séance, car les échos ont des pieds maintenant, et ils votent. Elle dit que c'est beau. Elle dit aussi qu'on ne sait plus combien d'entre nous sont de vraies voix. »",
+    "p5": "Mot d'un forgeron, sur la tranche : « Le canyon chante jour et nuit. Ragna n'a plus de voix : elle l'a prêtée à la paroi pour faire passer la loi des puits, et les puits sont creusés. Elle l'entend parfois, là-haut, voter des lois qu'elle n'a jamais dites. »"
+   }
+  },
+  "ANT120": {
+   "titre": "Ce que la source a compté",
+   "auteur": "Nomvula, fille du berger Sipho, qui garde l'auge depuis la mort de son père et écrit ici ce qu'il n'avait pas su graver.",
+   "pages": [
+    {
+     "t": "La source qui choisissait",
+     "txt": "Mon grand-père disait que la source de Maulu ne voulait servir qu'un troupeau à la fois. L'été où les rivières de l'est se turent, les bêtes de la nuit et celles du soleil vinrent boire ensemble. L'eau gela d'un côté, bouillit de l'autre, et la moitié des deux troupeaux mourut dans l'auge. Les clans comprirent ce jour-là qu'il fallait obéir à l'eau plutôt que la partager."
+    },
+    {
+     "t": "L'enclos à deux portes",
+     "txt": "Les bergers bâtirent autour de la source un enclos rond de pierres sèches, comme un kraal, avec deux portes. Par celle de l'aube entrent les bêtes de la nuit, et l'eau gèle sous elles en dalles bleues. Par celle de midi entrent les bêtes du soleil, et l'eau bout. Jamais ensemble. L'inyanga Mkhize fit graver la morale sur le linteau, puis elle partit vivre loin de l'oasis, et personne ne lui a jamais demandé pourquoi."
+    },
+    {
+     "t": "La part du berger",
+     "txt": "La source n'abreuve que trois bêtes ; la quatrième boit à la place de celui qui les mène. Mon père Sipho l'a appris à l'aube de ses quarante ans. Il a compté trois bœufs de givre, puis il a eu soif, et cette soif ne l'a plus quitté. Il a continué à mener le troupeau en mâchant de la racine pour tromper sa gorge. Il est mort contre l'auge pleine, en répétant qu'il n'avait pas vu le pelage de la quatrième."
+    },
+    {
+     "t": "Aube ou midi",
+     "txt": "Aujourd'hui, les clans se disputent l'enclos. Les gens de l'aube font entrer des bœufs lents qui tiennent l'auge et figent ce qui s'approche ; l'oasis devient sûre, mais les jardins meurent sous la glace. Les gens de midi lâchent des chacals de braise qui mordent vite et ne durent pas ; le feu chasse les pillards, mais il mange ce qu'il abreuve. Je garde l'auge entre les deux portes et je compte chaque bête qui entre. Je n'ai jamais eu soif, et je compte quand même."
+    }
+   ],
+   "fin": {
+    "m5": "Sur une écorce glissée dans le livre, par un pillard : « La gardienne est prise dans les dalles bleues, assise contre l'auge, le livre sur les genoux. Les bœufs veillent autour d'elle et ne laissent approcher personne. L'eau est pure, et personne ne peut la boire. Je repars avec ce livre et la gorge sèche. »",
+    "m2": "D'une main raidie de froid : « Nomvula a muré la porte de midi. Deux bœufs tiennent l'auge, et les enfants font fondre la glace entre leurs paumes pour boire. Elle compte toujours. Elle dit que le froid, au moins, se laisse compter. »",
+    "z": "Note d'un marchand de sel : « La gardienne ouvre l'aube au lever et midi au zénith, jamais les deux. Entre-temps, l'eau est seulement fraîche. J'ai bu un peu. Elle m'a regardé boire en comptant sur ses doigts, et je n'ai pas aimé où ses doigts se sont arrêtés. »",
+    "p2": "Au fer chaud sur la tranche : « La porte de l'aube est tombée. Les chacals de midi courent dans l'enclos et l'eau fume. Nomvula a perdu deux doigts à les écarter de l'auge. Elle dit que les pillards ne reviennent plus. Les bêtes non plus, une fois brûlées. »",
+    "p5": "Sur une feuille roussie, d'une enfant du clan de midi : « L'auge a bouilli jusqu'à la pierre. Toute la meute a plongé dans l'eau rouge, et la gardienne avec, pour compter jusqu'au bout. Plus personne n'ose nous voler. Il n'y a plus rien à voler, rien à boire, et la braise danse seule. »"
+   }
+  }
+ }
+}

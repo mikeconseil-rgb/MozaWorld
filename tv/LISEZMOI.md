@@ -12,6 +12,15 @@
 
 La tesselle (◇ dans le bandeau) est la monnaie des Citadelles, séparée du mana et jamais achetée : chaque Citadelle tenue en rapporte 1 + son palier par cycle, briser une horde 5, repousser un rival 4 ; la mort vide la bourse. À la Pierre d'éveil d'une Citadelle tenue, OK puis « Comptoir » : la carte utilitaire d'un secret déjà trouvé et absente du paquet, perdue à la mort (6 tesselles, +3 à chaque achat, une par cycle), la réparation des pièges d'un Donjon tenu (5), deux cycles de retard pour une horde en marche (8, une fois par horde), 1 mana du type de la Citadelle pour 4 tesselles. Tous les prix sont provisoires. Tests : `MZ.tesselles(n)` en donne, `MZ.comptoir(id?)` ouvre le Comptoir, `MZ.commerceCycle()` verse un cycle ; script `node tv/tools/test-commerce.js`.
 
+## Version 2.11 : livres des zones (19 novembre)
+
+Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'histoire de la zone ».
+
+- Chaque Antre, Assemblée, Donjon et Citadelle a **un livre ouvert sur un lutrin** (12 livres). Il est écrit par un personnage de la zone (greffier, relieur, pilote, chanoine…), dans la voix du conteur de la zone, et relu par le critique.
+- En passant près du lutrin, le cartouche montre le titre et l'auteur ; **A** ouvre le livre. Quatre pages racontent l'histoire de la zone ; la **dernière page**, d'une autre plume, change selon le niveau (cinq bandes, comme les inscriptions). ◀ ▶ ou A pour tourner, B pour refermer.
+- Une rune bleue flotte au-dessus d'un livre dont la dernière page n'a pas encore été lue à ce niveau.
+- Données : `design/inscriptions/livres_*.json`, assemblées avec les inscriptions par `python3 design/inscriptions/assembler.py`.
+
 ## Version 2.10 : boucle graphique 1 (19 novembre)
 
 Première boucle de l'équipe graphique (critique, direction artistique, rendu et performance, producteur, trois artisans, testeur-juge). Les trois améliorations ont été acceptées par le testeur ; détails dans les sections « Boucle 1 » plus bas, captures avant, après et intégrées dans `boucles/boucle-1/` du dossier du projet.

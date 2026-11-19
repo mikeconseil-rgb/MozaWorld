@@ -166,7 +166,7 @@ function act(a,rep){
     /* marche automatique : ▲ deux fois de suite, le héros avance seul (◀ ▶ pour diriger, ▼ ou OK pour s'arrêter) */
     if(a==='up'){const t=performance.now();if(t-lastUp<450)P.auto=1;lastUp=t}
     if(a==='down'&&P.auto){P.auto=0;held.down=0}
-    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else sauter()}
+    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else if(window.MZinscr&&MZinscr.proche())MZinscr.lire(MZinscr.proche(),0);else sauter()}
     if(a==='back'){P.auto=0;openMenu()}return}
   if(mode==='epreuve'){if(a==='back'&&!rep){pauseEpreuve();return}if(E&&E.input)E.input(a,rep);return}
   if(mode==='mue'){if(a==='ok'&&!rep&&mue.t>2.5)mue.t=99}
