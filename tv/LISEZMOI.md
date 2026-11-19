@@ -9,7 +9,7 @@
 - Quatre zones de plus ont leur scénario en 15 scènes (`src/scenarios-zones.js`) : **le Puits des Neuf Édits** (Tyrannie / Liberté : graver l'Édit ou ouvrir la cangue de Lan ; un ordre s'applique d'abord à la main qui le grave), **le Canyon de Fjorhel** (Silence / Chant : le tison qui dure trois souffles, l'écho qui finit par voter seul), **l'Oasis de Raak** (Pierre / Cristal : la loi gravée dans le grès ou écrite sur des barres de sel qui fondent), **les Cavernes de Balpak** (Cendre / Floraison : la résine qui noircit les bulletins ou l'eau qui fait fleurir les ongles).
 - Dans les trois Assemblées, l'épreuve qui suit le choix reste le Duel d'arguments.
 - Un prix peut maintenant coûter plusieurs cartes (« deux cartes perdues »).
-- 8 zones sur 15 non Ressources ont maintenant leur scénario.
+- 8 zones sur 12 (hors Ressources) ont maintenant leur scénario ; restent l'Antre et l'Assemblée d'origine, la Lande de Cezo et le Delta de Pama.
 
 ## Version 2.14 : choix moraux de trois nouvelles zones (19 novembre)
 
