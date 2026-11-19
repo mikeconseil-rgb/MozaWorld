@@ -121,7 +121,7 @@ function combatHorde(src){const h=S.hordes[src];if(!h)return;const Zc=ZB[h.cible
   startCombat(Zc,'horde');if(!CB)return;CB.horde=src;
   const foes=[0,1].map(i=>{const m=liste[Math.random()<.5?0:1],pv=Math.round(m.pv*(1+.4*L));return{nom:m.nom,pv,max:pv,atk:m.atk+L,g:0,mv:m.mv,mi:Math.floor(Math.random()*m.mv.length),z:h.cible}});
   const br=CB.foes[0]&&CB.foes[0].br;CB.foes=foes;$('cb-foes').innerHTML='';
-  foes.forEach((u,i)=>{u.voie=i%2;if(br)u.br=br.map(x=>x.slice());uniteEl(u,'cb-foes');intention(u)});
+  if(typeof rangerEnnemis==='function'&&CB.cases)rangerEnnemis(foes);foes.forEach((u,i)=>{if(u.voie==null)u.voie=i%2;if(br)u.br=br.map(x=>x.slice());uniteEl(u,'cb-foes');intention(u)});
   $('cb-sur').textContent='Avant-garde de la horde · '+court(src)+' (palier '+sgn(S.lv[src]||0)+')';
   journal(`L'avant-garde ${de_(court(src))} se jette sur vous. Brisez-la et la horde se disperse.`);if(typeof majUnites==='function')majUnites()}
 function finHorde(ok,C){const src=C.horde,h=S.hordes[src],Zs=ZB[src];
