@@ -103,6 +103,16 @@ Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au ba
 
 APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
 
+## Boucle 1-1 (web) : étalonnage signature par zone et par pôle (19 novembre)
+
+Dans la passe finale seulement (`src/styles.js`, uniformes `sigSh`, `sigMi`, `sigHi`, `sigK`, `sigOn` de `mFinal`) : aucun objet, aucun appel de dessin en plus.
+
+- **Table `SIG`** : chaque zone a trois couleurs (ombres, tons moyens, hautes lumières) au pôle −7 et trois au pôle +7. Berestograd ombres ardoise / lumières ambre, les Neuf Édits bordeaux / crème, les Lucioles vert abysse / écume, Givrecloche neutre froid, Tezcamixtli terre / jade, les Assemblées prune / braise à −7 et lavande / ivoire à +7 (ASS152 exactement). Les nouvelles tuiles prennent la famille de leur type (Donjon bordeaux / or rose, Ressource sarcelle / menthe, Antre olive / chartreuse…), mêlée à 30 % aux couleurs de leur mana et tournée selon le biome ; repli sur `PMANA` seul. La Taïga de Kobor (DON045) et la Taïga de Chika (RES374), même biome et même mana, ont maintenant des teintes opposées.
+- **Dans le shader** : split-toning à trois tons pondéré par la luminance ; vers −7, ombres relevées et plancher des noirs teinté (fin des aplats noirs), vignette teintée ; vers +7, un cran d'exposition en moins, épaule douce avant l'unique ACES, halo réduit, blancs désaturés de 10 %, ombres pastel (fin du blanc brûlé). Progression sur |niveau|/7 avec une petite marche nette aux paliers ±3 et ±6 ; fondu d'environ 2 s quand on change de zone ou de palier.
+- Givrecloche (noir et blanc) et Tezcamixtli (manga) gardent leur école : l'étalonnage n'y agit qu'à 30 %.
+- **Frange blanche de Givrecloche −7** corrigée : depuis la zone, à −7, les tuiles voisines au loin passent dans la brume de MAR et le ciel reste à la couleur du brouillard.
+- Mesure (rendu logiciel) : triangles et appels de dessin inchangés (même écart que d'une capture à l'autre).
+
 ## Version 2.8 (web) : décors par pôle partout, exploration épurée, monde animé (18 novembre)
 
 Choix de l'utilisateur après l'essai de la 2.6 (« C'est fluide », puis « Tout oui » sur les idées 1, 2 et 3 de la suite des graphismes).
