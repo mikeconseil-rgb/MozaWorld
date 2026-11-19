@@ -4,6 +4,16 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Boucle graphique 2 : ciels signature (19 novembre, boucle 2)
+
+Fichier neuf `src/ciels.js` (après `styles.js` dans `build.sh`) et rai des lieux refait dans `src/lieux.js`. Aucun objet ni appel de dessin en plus.
+- **Un ciel par famille** (lissé sur ~2 s en changeant de zone) : Glace, aurores en rideaux (Berestograd, Taïga…) ; Feu, plafond bas éclairé par en dessous de braise (Puits, Canyon, Désert) ; Eau et Sève, voûte de canopée assombrie et rayons verts autour du soleil (Lucioles, Oasis, Récif) ; Pierre, grand soleil bas (élévation 17° au plus) et bande de poussière à l'horizon ; Vent, cirrus longs et striés (Chinampas, Lande, Steppe). Givrecloche reste neutre (noir et blanc).
+- **Vers −7** : zénith assombri de 40 %, étoiles ; pour le Feu, soleil noir cerclé de lumière (éclipse). **Vers +7** : zénith saturé (luminance ≤ .45), halo de 22° autour du soleil, anneau Girih très pâle au-dessus de 30°.
+- **+7 colore au lieu d'éclaircir** : à niveau positif, exposition ≤ 1 (Puits : .62), halo ≤ .8 (Glace .45, Puits .5), météo ≤ 1,2, soleil des nouvelles tuiles ≤ 1,25 ; l'horizon (et donc le brouillard, toujours de la même couleur) glisse vers la dominante du pôle, saturé ×1,4, luminance ≤ .55 ; zénith et ombres prennent la complémentaire (Puits ambre / turquoise, RES374 jade / rose pâle, ANT120 vert tendre / prune ; les autres d'après leur mana, tournés selon le biome) ; brouillard ×.75. Givrecloche et Chinampas (manga) gardent leur horizon.
+- **Rais des lieux** : cône ouvert additif sans brouillard, invisible à moins de 18 m et éteint au-delà de 400 m, teinté du pôle de la zone ; plus de trait blanc diagonal dans le ciel. Il s'éteint toujours quand le secret est trouvé.
+- Mesures (rendu logiciel, même machine) : triangles et appels de dessin dans le bruit de mesure (±2 %) ; le rai coûte deux fois moins de triangles. Le shader du ciel passe à 4 octaves de bruit pour les nuages, le calque du mode n'en prend que 3.
+- Limite : sur le Puits à +7, l'orange vif vient surtout de la lave et du motif Girih lumineux du sol (émission du terrain), que cette boucle ne touche pas.
+
 ## Version 2.11 : livres des zones (19 novembre)
 
 Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'histoire de la zone ».
