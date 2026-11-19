@@ -112,6 +112,11 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
   - Si la horde passe et qu'elle visait un Donjon aménagé, elle saccage sa première salle piégée (le piège est perdu, sauf des Ronces) **(provisoire)**.
   - Si la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous qui tombe à 0 redevient sauvage (décidé le 19 nov.), en gardant votre empreinte pour la reprendre (confirmé le 19 nov.). La Pierre de bornage de Raak protège la zone bornée.
   - Une zone sauvage à ±6 de son pôle envahisseur peut **gronder** et monter à ±7 (1 chance sur 40 par cycle) **(provisoire)**, pour que la guerre existe aussi quand le monde tiré n'a aucune zone à ±7.
+- **Tours de guet** (18-19 nov., dans le jeu) : idée validée par l'utilisateur, « une Ressource ou un Donjon aménagé peut bâtir une tour qui annonce les hordes plus tôt et ajoute +2 de défense ».
+  - À la Pierre d'éveil d'une zone à vous et activée : Ressource de niveau 1 ou plus, Donjon, ou Citadelle **(provisoire : Citadelles ajoutées, cohérent avec « Citadelles, tours, remparts »)**. « Bâtir une tour de guet » coûte 3 mana du type de la zone **(provisoire)**. Une tour par zone.
+  - Effet : +2 de défense contre les hordes pour la zone de la tour et ses voisines à vous (portée 1) ; plusieurs tours ne se cumulent pas sur une même zone. Une horde qui vise une zone couverte est repérée de loin : elle arrive 2 cycles plus tard **(provisoire ; choisi plutôt qu'une annonce anticipée, plus simple)**, et l'annonce le dit.
+  - La tour tombe si sa zone n'est plus à vous (sauvage, rival, mort du héros) ou si une horde passe sur sa zone. L'assaut périodique contre le Donjon d'origine ne compte pas : la tour ne le repousse pas et n'est pas abattue par lui **(provisoire)**.
+  - Visible : ligne à la Pierre d'éveil, petite tour crénelée sur la minicarte, petite tour en 3D à côté de la Pierre.
 
 ## 9. Le beau et les juges
 
