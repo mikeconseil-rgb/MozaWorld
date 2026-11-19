@@ -13,6 +13,13 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
+## 19 novembre 2026
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Inscriptions | « Ajouts de texte et d'inscription pour enrichir chaque zone non ressources » : 4 objets écrits par Antre, Assemblée, Donjon et Citadelle, texte du conteur de la zone qui change en 5 bandes de niveau ; Ressources exclues | en vigueur (2.9) | rien |
+| Échéance | « Il faut tout terminer d'ici 10 jours » ; appliquer chaque lot une fois les tests acceptés par l'équipe | en vigueur | rien |
+
 ## 18 novembre 2026
 
 | Sujet | Décision | Statut | Remplace |
