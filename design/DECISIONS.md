@@ -28,7 +28,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Verrous | Le verrou de Citadelle empêche les prises des rivaux, pas leurs contestations | en vigueur | |
 | Tesselles | Primes gardées (horde brisée 5, rival repoussé 4) ; change de 4 tesselles contre 1 mana gardé | en vigueur | |
 | Tours de guet | Pas d'entretien en mana pour l'instant | en vigueur | |
-| Lot 3 | Caravanes sur les routes (4) et pouvoirs des Assemblées sur la carte du monde (7) ; siège final et pacte non retenus | en cours | |
+| Lot 3 | Les quatre idées : caravanes (4), pacte avec une maison (5), siège final d'une Citadelle épique (6), pouvoirs des Assemblées (7) (« Oui à tout », « Les deux ») | en cours | |
 | Lot 2 | Tours de guet (7), commerce en Citadelle avec les tesselles (9), aménager chaque Donjon possédé (10) | en cours | |
 
 ## 19 novembre 2026
