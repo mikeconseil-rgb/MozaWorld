@@ -48,6 +48,14 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Autour, les zones sont à ±6 (±5 avant le 18 nov. ; avec un départ au niveau 1, l'écart de 5 qui rend les gardiens mortels est gardé) ; au-delà, pôle et niveau au hasard à chaque partie. Les Ressources hors départ ont un niveau 0 à 3 au hasard.
 - Les zones hors départ sont scellées tant que le paquet compte moins de 15 cartes (6 au départ, une de plus par palier gagné). Une zone qui dépasse de 5 niveaux votre plus haute zone a des gardiens mortels.
 
+- **Contrôle des zones** (18-19 nov., dans le jeu ; « juste un peu comme le Go », référence Carcassonne) :
+  - **Domaine** : un groupe d'un seul tenant de tuiles voisines (qui partagent un côté) du même type, **2 tuiles au moins** (une tuile seule ne compte pas). Il est **fermé** quand toutes ses tuiles sont à vous et activées. Un domaine fermé donne un bonus propre à son type, un par domaine fermé **(provisoire)** : Ressources +1 mana par cycle (du mana de la première tuile) ; Antres +2 PV à chaque bête en combat ; Citadelles +5 PV au héros en combat (+2 cases avec les blessures) ; Donjons +1 de résistance ; Assemblées +1 voix au vote du Duel d'arguments. Un toast annonce chaque domaine qui se ferme ou s'ouvre ; le bandeau compte les domaines fermés.
+  - **Cœur du royaume** : une zone à vous dont toutes les voisines sont à vous et activées. Aucun rival ne peut la viser.
+  - **Encerclée** : une zone sauvage dont toutes les voisines sont à vous et activées. Ses gardiens d'activation sont affaiblis : PV −25 %, attaque −1 **(provisoire)**.
+  - **Verrou de Citadelle** : une Citadelle à vous et activée verrouille sa zone et ses voisines (même sauvages). Aucun rival ne peut viser une zone verrouillée ou au cœur.
+  - Défense d'une zone à vous face au monde (hordes, rivaux) **(provisoire)** : au cœur +2, domaine fermé +1, verrou de Citadelle +2, cumulables.
+  - La Pierre d'éveil d'une zone montre son domaine (tuiles tenues sur le total) et son statut : au cœur, encerclée, verrouillée.
+
 ## 5. Les cartes
 
 - Départ : **plus de cartes communes** (18 nov.). Le paquet de départ, ce sont les 6 cartes de palier 1 des zones à cartes du territoire de départ, chacune du pôle tiré pour sa zone.

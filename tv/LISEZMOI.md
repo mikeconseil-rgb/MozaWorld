@@ -4,6 +4,10 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Gameplay du monde : contrôle des zones (18-19 nov., `src/domaines.js`)
+
+Un peu de Go, un peu de Carcassonne. Un **domaine** est un groupe d'au moins 2 tuiles voisines du même type ; quand elles sont toutes à vous et activées, il est **fermé** et donne son bonus (Ressources +1 mana par cycle, Antres +2 PV par bête, Citadelles +5 PV au héros, Donjons +1 résistance, Assemblées +1 voix au vote du duel). Une zone à vous entourée des vôtres est **au cœur du royaume** ; une zone sauvage entourée des vôtres est **encerclée** et ses gardiens d'activation sont affaiblis (PV −25 %, attaque −1). Une Citadelle tenue **verrouille** sa zone et ses voisines contre les rivaux. Bandeau : ◈ domaines fermés, sur la ligne Domaines ; Pierre d'éveil : domaine et statut de la zone ; toast à chaque domaine fermé ou rouvert. Pour les autres modules : `verrouillee(id)`, `defenseMonde(id)` → `{bonus, raisons}`, `domaines()` → `[{type, ids, ferme}]`. Test : `window.MZ.domaines()`, `MZ.prendre(id)` (prend et active une zone ; `MZ.prendre(id,true)` la rend), `MZ.statutZone(id)`, `MZ.cycle()` ; script `node tv/tools/test-domaines.js`.
+
 
 ## Gameplay du monde : les rivaux (18-19 nov.)
 
