@@ -23,7 +23,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 
 - Chaque zone est unique : son histoire, ses deux pôles, ses cartes, son bonus. Les quatre conteurs écrivent, le critique juge le ton.
 - Une zone va de −7 à +7. Les deux pôles ne sont ni le bien ni le mal : ce sont deux évolutions opposées, chacune avec sa grandeur et son prix. L'écart entre −7 et +7 doit être frappant, avec un saut visible à chaque palier (la mue).
-- 5 Citadelles épiques donnent chacune une victoire à ±7 **(provisoire)** ; après une victoire, fin de ce monde et nouveau monde **(provisoire)**.
+- 5 Citadelles épiques donnent chacune une victoire à ±7 **(provisoire)** ; après une victoire, fin de ce monde et nouveau monde **(provisoire)**. Dans le jeu : le **siège final**, voir section 8 (19 nov.).
 
 ## 3. Prendre et faire monter une zone
 
@@ -124,6 +124,13 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
   - Effet : +2 de défense contre les hordes pour la zone de la tour et ses voisines à vous (portée 1) ; plusieurs tours ne se cumulent pas sur une même zone. Une horde qui vise une zone couverte est repérée de loin : elle arrive 2 cycles plus tard **(provisoire ; choisi plutôt qu'une annonce anticipée, plus simple)**, et l'annonce le dit.
   - La tour tombe si sa zone n'est plus à vous (sauvage, rival, mort du héros) ou si une horde passe sur sa zone. L'assaut périodique contre le Donjon d'origine ne compte pas : la tour ne le repousse pas et n'est pas abattue par lui **(provisoire)**.
   - Visible : ligne à la Pierre d'éveil, petite tour crénelée sur la minicarte, petite tour en 3D à côté de la Pierre.
+- **Siège final d'une Citadelle épique** (18-19 nov., dans le jeu ; idée retenue par l'utilisateur le 19 nov. : « trois hordes de suite à tenir pour gagner ») :
+  - Citadelles épiques : 5 par monde, tirées d'après la graine du monde parmi ses Citadelles, ou toutes s'il y en a 5 ou moins **(provisoire)**. Sur la carte jouée (21 zones, une seule Citadelle), Berestograd est épique. Affiché dans la fiche de zone (« ♛ Citadelle épique »), à la Pierre d'éveil (ce qu'il faut pour la victoire) et sur la minicarte (couronne dorée).
+  - Une Citadelle épique à vous et activée, au palier ±7 : sa Pierre propose « Lancer le siège final ». Rien n'est automatique : le joueur choisit son moment, après un avertissement (force des vagues, défense actuelle, prix de l'échec). Un seul siège à la fois.
+  - Le siège : trois vagues du monde sauvage de suite contre la Citadelle, chacune annoncée (message, ligne « Menaces » du bandeau « vague n/3 », double cercle rouge sur la minicarte) et arrivée 2 cycles après son annonce **(provisoire)**. Force d'une vague : celle d'une horde ordinaire (7 + 1 tous les 10 cycles) + 4, + 6, puis + 8, + 0 ou 1 **(provisoire)**. Défense : la même que contre une horde (niveau, Citadelle elle-même +3, rempart, Donjons aménagés, tours de guet, pouvoirs du domaine) ; elle tient à égalité et rapporte alors 1 mana du type de la Citadelle.
+  - Le héros peut briser la vague en cours à la Pierre de la Citadelle (« Briser la vague ») : combat contre les créatures de la zone sauvage la plus éveillée (deux, puis trois, puis deux et leur chef, de la force d'un palier 6, attaque + 0, 1, 2) **(provisoire)**. Victoire : la vague ne touche pas les murs, 3 mana du type de la Citadelle et la prime de horde en tesselles **(provisoire)**. Défaite : une blessure, la vague marche toujours.
+  - Une vague qui passe : la Citadelle recule d'un palier (règle des hordes, la Pierre de bornage protège), le siège échoue ; il se relance quand la Citadelle est revenue à ±7, après 5 cycles de repos **(provisoire)**. Le siège est levé, sans autre perte, si la Citadelle n'est plus à vous ou plus à ±7 (mort du héros, rival).
+  - Trois vagues tenues ou brisées : **victoire**. Écran de victoire avec le résumé du monde (zones tenues, hordes brisées, repoussées et passées, zones des maisons rivales, temps de jeu, héros tombés), victoire inscrite au **palmarès** (gardé dans le navigateur, menu Pause « Palmarès »), et proposition de **commencer un nouveau monde** (décision du 16 nov.). Le joueur peut rester un moment dans le monde gagné : il n'y a plus de siège à lancer, et le menu Pause comme la Pierre de la Citadelle proposent le nouveau monde **(provisoire)**.
 
 ## 9. Le beau et les juges
 
