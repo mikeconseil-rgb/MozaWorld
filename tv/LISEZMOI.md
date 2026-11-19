@@ -4,6 +4,37 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.13 : boucle graphique 2 (19 novembre)
+
+Trois améliorations acceptées par le testeur de l'équipe graphique, détaillées dans les sections « Boucle graphique 2 » ci-dessous :
+une grammaire de pôle propre à chaque type de zone (sol), un ciel signature par zone (le +7 se teinte au lieu de blanchir, rai des lieux adouci),
+et une image plus propre et plus légère (FXAA, ombres limitées à leur boîte, objets cachés par le brouillard non dessinés).
+Mesures (rendu logiciel, avant → après) : Citadelle 1 056 346 → 681 408 triangles et 832 → 395 appels ; RES227 765 664 → 670 438 et 638 → 396 ; ASS152 505 702 → 424 994 et 328 → 293.
+
+## Boucle graphique 2 : ciels signature (19 novembre, boucle 2)
+
+Fichier neuf `src/ciels.js` (après `styles.js` dans `build.sh`) et rai des lieux refait dans `src/lieux.js`. Aucun objet ni appel de dessin en plus.
+- **Un ciel par famille** (lissé sur ~2 s en changeant de zone) : Glace, aurores en rideaux (Berestograd, Taïga…) ; Feu, plafond bas éclairé par en dessous de braise (Puits, Canyon, Désert) ; Eau et Sève, voûte de canopée assombrie et rayons verts autour du soleil (Lucioles, Oasis, Récif) ; Pierre, grand soleil bas (élévation 17° au plus) et bande de poussière à l'horizon ; Vent, cirrus longs et striés (Chinampas, Lande, Steppe). Givrecloche reste neutre (noir et blanc).
+- **Vers −7** : zénith assombri de 40 %, étoiles ; pour le Feu, soleil noir cerclé de lumière (éclipse). **Vers +7** : zénith saturé (luminance ≤ .45), halo de 22° autour du soleil, anneau Girih très pâle au-dessus de 30°.
+- **+7 colore au lieu d'éclaircir** : à niveau positif, exposition ≤ 1 (Puits : .62), halo ≤ .8 (Glace .45, Puits .5), météo ≤ 1,2, soleil des nouvelles tuiles ≤ 1,25 ; l'horizon (et donc le brouillard, toujours de la même couleur) glisse vers la dominante du pôle, saturé ×1,4, luminance ≤ .55 ; zénith et ombres prennent la complémentaire (Puits ambre / turquoise, RES374 jade / rose pâle, ANT120 vert tendre / prune ; les autres d'après leur mana, tournés selon le biome) ; brouillard ×.75. Givrecloche et Chinampas (manga) gardent leur horizon.
+- **Rais des lieux** : cône ouvert additif sans brouillard, invisible à moins de 18 m et éteint au-delà de 400 m, teinté du pôle de la zone ; plus de trait blanc diagonal dans le ciel. Il s'éteint toujours quand le secret est trouvé.
+- Mesures (rendu logiciel, même machine) : triangles et appels de dessin dans le bruit de mesure (±2 %) ; le rai coûte deux fois moins de triangles. Le shader du ciel passe à 4 octaves de bruit pour les nuages, le calque du mode n'en prend que 3.
+- Limite : sur le Puits à +7, l'orange vif vient surtout de la lave et du motif Girih lumineux du sol (émission du terrain), que cette boucle ne touche pas.
+## Boucle graphique 2, amélioration 1 : une grammaire de pôle par type de zone (19 novembre 2026)
+
+- Sol (`src/sol.js`) : l'octet A de la carte du sol porte un code de grammaire (Citadelle, Donjon, Ressource, Antre, Assemblée, Marché). Fini le même tampon partout :
+  - **−7** : glace noire en plaques hexagonales, givre dans les joints (Citadelle) ; failles de braise de Voronoï (Donjon) ; flaques noires qui reflètent le ciel (Ressource) ; mycélium phosphorescent ramifié (Antre) ; dalles soulevées et fendues en damier (Assemblée) ; traînées de sel et de suie (Marché).
+  - **+7** : Girih or à 10 branches (Citadelle) ; zellige khatam cobalt et blanc (Donjon) ; terrasses concentriques de jade (Ressource) ; mosaïque d'hexagones turquoise et nacre (Antre) ; rosace à 12 branches lapis et argent (Assemblée) ; losanges blanc et bleu glacier (Marché).
+  - Couleurs saturées, mêlées à la teinte du mana ; la force suit le palier ; en qualité Fluide, le repli à une seule lecture de bruit garde la couleur et l'ordre de l'étoile de chaque grammaire.
+- Décors de pôle (`src/poles-decor.js`) : un jeu d'objets par type (même nombre d'objets par pôle) et un repère + différent par type : tour Girih, arche en fer à cheval, terrasses à degrés, aiguilles de cristal, coupole, kiosque.
+- Mesures contre la base (même code sans ces changements) : triangles et appels de dessin à moins de 1,5 % (bruit de mesure).
+- Reprise après le testeur (même jour, `src/sol.js` seul) :
+  - Ressource −7 : moins de flaques, mieux découpées ; noir d'eau profond, reflet au ton du mana (fresnel ramené de 0,08 + 1,6 f à 0,012 + 0,26 f), rides et éclats en points, frange de reflet au bord et liseré clair de berge ; la terre détrempée n'est presque plus assombrie.
+  - Ressource +7 : anneaux pleins alternés jade sombre / jade clair, contremarches dans l'ombre, rayon borné pour rester des cercles, opacité 0,35 + 0,09 par palier.
+  - Marqueterie posée (khatam, hexagones, losanges) : opacité 0,05 + 0,13 par palier (≈ 0,18 au palier 1, ≈ 0,96 au palier 7), bord fondu de 0,45 m au palier 1 à presque franc au palier 7 ; le khatam ne montre que ses étoiles aux bas paliers.
+  - Antre +7 : turquoise plus bleue, nacre plus irisée et plus présente, joints sombres et épais, mélange au mana ramené à 0,08.
+  - Donjon +7 : étoiles blanches sur champ de cobalt, mélange au mana à 0,05, un peu de cobalt émis et moins de reflet ; près du repère, le halo chaud de la zone (hors de `sol.js`) rosit encore le sol.
+  - Mesures (RES227) : sous +2 % par rapport à la version refusée, sous +15 % par rapport à la base.
 ## Gameplay du monde : lot 2 essayé ensemble (19 nov., testeur)
 
 `node tv/tools/test-monde.js` joue maintenant aussi le lot 2 dans la longue partie (tour, deuxième Donjon aménagé, les quatre achats du Comptoir, tentative de rival devancée puis réussie, horde sur une zone couverte par une tour et un Donjon, mort, rechargement) et affiche la défense de chaque zone de départ. Réglages (provisoires) : force d'une horde 7 + 1 tous les 10 cycles + 0 à 3 ; Citadelle +3 à 2 tuiles ou moins (au lieu de 3) ; une voisine d'un Donjon aménagé reçoit la moitié de sa traversée, +4 au plus ; deux dispositifs par Donjon tenu ; le Comptoir ne vend que les cartes des secrets déjà trouvés (perdues à la mort) ; à la mort, les pièges de tous les Donjons sont perdus. Corrigé : le message d'un secret ne dit plus « Carte utilitaire gagnée » quand la carte est déjà dans le paquet.
@@ -20,6 +51,45 @@ Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'hi
 - En passant près du lutrin, le cartouche montre le titre et l'auteur ; **A** ouvre le livre. Quatre pages racontent l'histoire de la zone ; la **dernière page**, d'une autre plume, change selon le niveau (cinq bandes, comme les inscriptions). ◀ ▶ ou A pour tourner, B pour refermer.
 - Une rune bleue flotte au-dessus d'un livre dont la dernière page n'a pas encore été lue à ce niveau.
 - Données : `design/inscriptions/livres_*.json`, assemblées avec les inscriptions par `python3 design/inscriptions/assembler.py`.
+
+## Boucle graphique 2, amélioration 3 : image propre et budget repris (19 novembre)
+
+Fichiers : `src/fluidite.js` (ombres, coupe, flocons) et `src/styles.js` (FXAA). Aucune règle du jeu ne change, aucune lumière ajoutée.
+- **Anticrénelage FXAA en Belle et Splendide** : depuis que la passe finale lit la profondeur, l'ancienne cible MSAA ×4 n'était plus utilisée. Une passe FXAA 3.11 « console » la remplace : 5 lectures de luminance et 2 lectures le long du bord. Le grain est posé ensuite, donc il reste net. L'effet est atténué sur les écoles d'encre (Givrecloche, Chinampas). Rien ne change en Fluide ni en Équilibrée.
+- **Ombres limitées à leur boîte** : la passe d'ombre ne dessine plus que ce qui touche la boîte de 240 m (marge de 30 m). Pour les carreaux de terrain, seuls tombent ceux qui sont hors de la boîte, ou à plus de 200 m du héros du côté opposé au soleil (leur ombre ne peut tomber que plus loin encore). Le plan lointain de la caméra d'ombre suit l'élévation du soleil : 260 + 120/tan(élévation) + 60 m, borné entre 300 et 520. Ainsi, tout ce qui reçoit une ombre dans la boîte reste entre near et far, même quand le soleil est rasant. La boîte est calée sur la grille des texels autour du héros, ce qui supprime le scintillement des bords d'ombre.
+- **La qualité choisie coupe vraiment les ombres** : choisir Fluide au menu supprime la passe d'ombre (avant, la carte 2048 restait active après un changement). En Équilibrée, la carte fait 1024. La baisse **automatique** de qualité, quand l'image ralentit, ne touche pas aux ombres.
+- **Coupe selon le brouillard** : la distance de coupe vaut 2,3/densité + 40 m, bornée entre 180 et 620 m. Elle part de la densité visée, ou de la densité lissée si celle-ci est plus claire. Un petit objet ordinaire, à plus de 80 m de la caméra, qui fait moins d'un pixel une fois noyé dans la brume, n'est pas envoyé à la vue de la caméra. Il garde son ombre, et son état « visible » est remis à l'identique avant la passe d'ombre.
+- **Flocons** : taille limitée à 18 px, fondu entre 1,5 et 5 m devant la caméra.
+
+### Reprise 2.3b : ombres perdues près du héros (refus du testeur)
+
+Constat du testeur : quand deux bancs tournent en même temps, les ombres du héros, de la coquille d'ANT120, du pilier de RES374 et de la pierre d'ASS152 manquent environ une fois sur deux. Ce n'était jamais le cas avec 3972fd9.
+- **Cause** : sous charge, la baisse automatique de qualité de `main.js` (sous 27 images/s, Belle → Équilibrée → Fluide) passait par l'enveloppe de `resize`, qui coupait alors les ombres. Ce que l'on voyait dépendait donc du rythme des images. Les planches de `boucles/boucle-2/apres-3` le montrent : ASS152 et RES374 n'y ont plus aucune ombre, et l'image y est moins définie.
+- **Correction** : seul le choix du joueur, au menu ou au démarrage, allume ou coupe les ombres. La baisse automatique ne change plus que la définition, comme avant.
+- **Points vérifiés et durcis en même temps** :
+  - (i) la passe d'ombre teste les carreaux de terrain contre la boîte ; il n'y a plus de rayon fixe de 130 m, qui oubliait les collines placées face au soleil bas ;
+  - (ii) le calage sur les texels ne fait que décaler ensemble la cible et le soleil, d'un demi-texel au plus, après `stepAtmo`, qui les replace à chaque image quel que soit dt, et donc aussi après `MZ.tp` et `MZ.set` ;
+  - (iii) le far suit l'élévation du soleil (voir plus haut) ;
+  - (iv) les « miettes » sont jugées dans `scene.onBeforeRender`, donc sur les matrices de l'image en cours, avec la position, l'échelle, la géométrie et le matériau lus à l'instant. Elles sont rendues visibles avant la passe d'ombre. Leur liste est refaite à chaque mue, ou quand la scène gagne ou perd un enfant, mais plus jamais au compte des images.
+- **Vérifié** : trois passages de `tools/boucle.js`, à chaque fois deux en parallèle (charge proche de 9 sur 4 cœurs). Au centre de chaque planche à 0, les ombres du héros, du pilier, de la coquille et de l'obélisque sont présentes à chaque fois. Hors du banc, sur la même page, une baisse automatique simulée vers Fluide garde les ombres, alors que Fluide choisi au menu les coupe.
+- **Gardé tel quel** : le FXAA, le plafonnement des flocons et la coupe selon le brouillard. Des recadrages à pleine résolution, avant et après FXAA, des arêtes de sapins à CIT +7 et DON045 sont dans `boucles/boucle-2/fxaa-3b/`.
+
+Mesures après la reprise (banc logiciel, Belle figée, hasard fixé, images pas à pas de 50 ms, par image, ombre comprise), triangles / appels de dessin. « Avant » correspond à 3972fd9, mesuré dans les mêmes conditions :
+
+| Zone | Avant (3972fd9) | Après (2.3b) | Écart |
+|---|---|---|---|
+| CIT | 521 004 / 413 | 410 405 / 213 | −21 % / −48 % |
+| DON | 398 982 / 277 | 302 959 / 202 | −24 % / −27 % |
+| RES | 678 765 / 373 | 612 427 / 258 | −10 % / −31 % |
+| ANT | 567 156 / 286 | 469 999 / 227 | −17 % / −21 % |
+| MAR | 563 434 / 346 | 420 240 / 252 | −25 % / −27 % |
+| DON045 | 264 863 / 181 | 230 451 / 173 | −13 % / −4 % |
+| ASS152 | 237 169 / 205 | 221 559 / 187 | −7 % / −9 % |
+| ANT120 | 247 492 / 211 | 218 178 / 196 | −12 % / −7 % |
+
+En Fluide, à CIT : 299 075 / 295 → 285 539 / 135. Aucune zone ne monte. Les gains de triangles sont un peu plus faibles qu'en 2.3 (CIT −25 %), parce que le far et les carreaux de terrain gardent désormais tout ce qui peut porter une ombre dans la boîte.
+
+Avec `tools/boucle.js` (mesures.json, deux images, qualité automatique), six passages sous charge comparés à `boucles/boucle-2/avant` : CIT 1 056 346 / 832 → 687 196 à 820 954 / 417 à 472 (−22 à −35 % / −43 à −50 %) ; RES227 765 664 / 638 → 691 881 à 733 316 / 375 à 428 (−4 à −10 % / −33 à −41 %) ; ASS152 505 702 / 328 → 428 930 à 463 580 / 285 à 298 (−8 à −15 % / −9 à −13 %). Aucune erreur JavaScript.
 
 ## Version 2.10 : boucle graphique 1 (19 novembre)
 

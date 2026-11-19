@@ -1347,7 +1347,13 @@ function cartesPoles(){
    − : arbres morts, colonnes brisées, éclats d'obsidienne fendus de la couleur du pôle, et trois flèches noires effondrées ;
    + : bannières, cristaux lumineux, lanternes, grandes fleurs, et trois tours Girih dorées couronnées de lumière.
    La végétation du biome, elle, se penche et dépérit vers −7, grandit et se redresse vers +7.
-   Coût : quelques centaines d'objets instanciés par tuile, sans ombre portée sauf les grands repères ; les objets éteints ne sont pas dessinés du tout (tasser), donc rien à zéro. */
+   Coût : quelques centaines d'objets instanciés par tuile, sans ombre portée sauf les grands repères ; les objets éteints ne sont pas dessinés du tout (tasser), donc rien à zéro.
+   Boucle 2 (19 novembre 2026) : fini le même jeu d'objets partout. FAM devient FAM_PAR_TYPE : mêmes géométries, mais un jeu et des
+   proportions propres à chaque type de zone (souches et aiguilles noires pour la Citadelle −, ruines et éclats pour l'Assemblée −,
+   bannières et lanternes pour le Donjon +, cristaux et grandes fleurs pour l'Antre +…), avec le même nombre total d'objets par pôle.
+   Le repère + change de silhouette : tour Girih (Citadelle), arche en fer à cheval (Donjon), terrasses à degrés (Ressource),
+   aiguilles de cristal (Antre), coupole (Assemblée), kiosque à toit pointu (Marché) ; sa couronne de lumière suit son sommet.
+   Toujours trois familles de repères, donc aucun appel de dessin en plus. */
 (function(){
 const geoD={
   souche:merge([[cyl(.35,.6,5.5,6,0,2.75,0),0x2a2420],[cyl(.12,.2,3,5,0,0,0).rotateZ(.9).translate(1,4.6,0),0x2a2420],[cyl(.1,.18,2.6,5,0,0,0).rotateZ(-1).translate(-.9,3.8,.2),0x2a2420]]),
@@ -1362,18 +1368,54 @@ const geoD={
   fleur:merge([[cyl(.12,.18,3.2,5,0,1.6,0),0x4f7a3a],[new THREE.SphereGeometry(1.5,7,4,0,Math.PI*2,0,1.2).translate(0,2.6,0),0xffffff],[new THREE.IcosahedronGeometry(.45,0).translate(0,3.3,0),0xffe9a0]]),
   tour:(()=>{const p=[];for(let i=0;i<5;i++){const r=3.2-i*.5,h=6-i*.6,y=[0,6,11.4,16.2,20.4][i];p.push([cyl(r*.86,r,h,10,0,y+h/2,0),i%2?0xc9a45c:0xe9dfc8]);p.push([cyl(r+.25,r+.25,.5,10,0,y+h,0),0xc9a45c])}
     p.push([new THREE.ConeGeometry(1.2,4,10).translate(0,26.5,0),0xc9a45c]);return merge(p)})(),
+  /* boucle 2 : les autres silhouettes du repère +, à peu près le même nombre de triangles que la tour */
+  arche:(()=>{const a=Math.PI/8,R=6,cx=R*Math.cos(a),cy=15-R*Math.sin(a);
+    return merge([[box(2.2,cy,2.6,-cx,cy/2,0),0xe8ecf2],[box(2.2,cy,2.6,cx,cy/2,0),0xe8ecf2],
+      [new THREE.TorusGeometry(R,1.15,6,14,Math.PI+2*a).rotateZ(-a).translate(0,15,0),0x1f3c8a],
+      [box(16,1.4,3,0,23,0),0x1f3c8a],[box(1.2,9,3,-7.4,18.5,0),0xe8ecf2],[box(1.2,9,3,7.4,18.5,0),0xe8ecf2],
+      [box(3,3,3,0,25.2,0,Math.PI/4),0xc9a45c],[box(18,1.2,3.6,0,.6,0),0xd8dce4]])})(),
+  degres:merge([[box(15,4,15,0,2,0),0x3f7a52],[box(11.5,4,11.5,0,6,0),0x5aa06a],[box(8,4,8,0,10,0),0x3f7a52],[box(5,4,5,0,14,0),0x5aa06a],
+    [cyl(1.6,1.6,4,8,0,18,0),0xe2d6a8],[new THREE.ConeGeometry(2.4,3,8).translate(0,21.5,0),0x2f6a44]]),
+  aiguilles:merge([[new THREE.OctahedronGeometry(1,0).scale(2.4,13,2.4).translate(0,12,0),0x38c0b8],
+    [new THREE.OctahedronGeometry(1,0).scale(1.6,8,1.6).rotateZ(.35).translate(3.2,7,0),0xe6d8e4],
+    [new THREE.OctahedronGeometry(1,0).scale(1.5,7,1.5).rotateZ(-.4).rotateY(2).translate(-2.4,6,2),0x2a9a9a],
+    [new THREE.OctahedronGeometry(1,0).scale(1.2,5,1.2).rotateX(.4).translate(0,4,-3),0xe6d8e4],[cyl(4,4.6,1.2,8,0,.6,0),0x1f5a5c]]),
+  coupole:merge([[box(14,2,14,0,1,0),0xc8ccd8],[cyl(5.4,5.6,7,8,0,5.5,0),0x2a3f9a],[cyl(6,6,.6,8,0,9.2,0),0xc8ccd8],
+    [new THREE.SphereGeometry(5.6,8,4,0,Math.PI*2,0,Math.PI/2).translate(0,9.4,0),0xc8ccd8],[cyl(.9,1.1,2.6,8,0,16,0),0x2a3f9a],
+    [new THREE.ConeGeometry(1,3,8).translate(0,18.8,0),0xe0e4ee],[cyl(.7,.8,14,6,6.6,7,6.6),0xc8ccd8],[cyl(.7,.8,14,6,-6.6,7,-6.6),0xc8ccd8]]),
+  kiosque:merge([[box(11,1.2,11,0,.6,0),0xe8eef4],[cyl(.5,.55,11,6,4,6.6,4),0xe8eef4],[cyl(.5,.55,11,6,-4,6.6,4),0xe8eef4],
+    [cyl(.5,.55,11,6,4,6.6,-4),0xe8eef4],[cyl(.5,.55,11,6,-4,6.6,-4),0xe8eef4],
+    [new THREE.ConeGeometry(7.6,5,4).rotateY(Math.PI/4).translate(0,14.5,0),0x3a7ec8],[box(4.6,3,4.6,0,18.2,0),0xe8eef4],
+    [new THREE.ConeGeometry(4,5,4).rotateY(Math.PI/4).translate(0,22.2,0),0x3a7ec8]]),
   couronne:new THREE.IcosahedronGeometry(1.4,0).translate(0,30,0)};
+/* la couronne de lumière se pose au-dessus de chaque silhouette */
+for(const[n,y]of[['arche',28.5],['degres',25],['aiguilles',27.5],['coupole',22.5],['kiosque',27.5]])geoD['couronne_'+n]=new THREE.IcosahedronGeometry(1.4,0).translate(0,y,0);
 /* les objets éteints (sous leur seuil) ne sont pas envoyés du tout : on range les allumés en tête et on réduit count */
 function tasser(it){const m=it.m,A=m.instanceMatrix.array,C=m.instanceColor?m.instanceColor.array:null;let n=0;
   for(let i=0;i<it.a.length;i++){if(Math.hypot(A[i*16],A[i*16+1],A[i*16+2])<.01)continue;
     if(n!==i){for(let j=0;j<16;j++)A[n*16+j]=A[i*16+j];if(C)for(let j=0;j<3;j++)C[n*3+j]=C[i*3+j]}n++}
   m.count=n;m.visible=n>0;done(m)}
 const matV=M(0xffffff,{vertexColors:true}),matG=new THREE.MeshBasicMaterial({color:0xffffff,vertexColors:true}),matB=new THREE.MeshBasicMaterial({color:0xffffff});
-/* [sorte, géométrie, matériau, pôle, nombre, taille, lueur] ; lueur : la teinte du pôle, poussée au-delà de 1 pour le halo */
-const FAM=[
-  ['souche','souche',matV,-1,46,[.8,1.4],0],['ruine','ruine',matV,-1,26,[.8,1.5],0],['eclat','eclat',matV,-1,34,[.8,1.6],0],['fente','fente',matB,-1,40,[.8,1.5],2.2],
-  ['banniere','banniere',matV,1,30,[.9,1.2],0],['cristal','cristal',matG,1,30,[.7,1.5],1.6],['poteau','poteau',matV,1,24,[1,1],0],['lanterne','lanterne',matB,1,24,[1,1],2.4],['fleur','fleur',matV,1,40,[.8,1.7],0]];
-const LANDMARK=[['fleche','fleche',matV,-1],['tour','tour',matV,1],['couronne','couronne',matB,1]];
+/* [sorte, géométrie, matériau, pôle, nombre, taille, lueur, part de la teinte du pôle] ; lueur : la teinte du pôle, poussée au-delà de 1 pour le halo.
+   Boucle 2 (19 nov. 2026) : un jeu par type de zone ; par pôle, toujours 146 objets (−) et 148 (+), lanternes posées sur les poteaux. */
+const F=(k,g,side,n,sz,glow,tm)=>[k,g,glow?(g==='cristal'?matG:matB):matV,side,n,sz,glow||0,tm];
+const FAM_PAR_TYPE={
+  Citadelle:[F('souche','souche',-1,62,[.9,1.5]),F('aiguille','fleche',-1,36,[.14,.28]),F('eclat','eclat',-1,22,[.8,1.4]),F('fente','fente',-1,26,[.8,1.5],2.2),
+    F('banniere','banniere',1,30,[.9,1.2]),F('cristal','cristal',1,30,[.7,1.5],1.6),F('poteau','poteau',1,24,[1,1]),F('lanterne','lanterne',1,24,[1,1],2.4),F('fleur','fleur',1,40,[.8,1.7])],
+  Donjon:[F('eclat','eclat',-1,52,[.9,1.8]),F('fente','fente',-1,50,[.9,1.7],2.4),F('souche','souche',-1,24,[.8,1.3]),F('ruine','ruine',-1,20,[.7,1.2]),
+    F('banniere','banniere',1,56,[.9,1.4]),F('poteau','poteau',1,34,[1,1.2]),F('lanterne','lanterne',1,34,[1,1],2.6),F('fleur','fleur',1,24,[.7,1.1])],
+  Ressource:[F('souche','souche',-1,70,[.6,1.2]),F('ruine','ruine',-1,26,[.6,1]),F('eclat','eclat',-1,20,[.5,.9]),F('fente','fente',-1,30,[.6,1],2),
+    F('fleur','fleur',1,76,[.7,1.5]),F('cristal','cristal',1,22,[.5,.9],1.4),F('poteau','poteau',1,25,[1,1]),F('lanterne','lanterne',1,25,[1,1],2.2)],
+  Antre:[F('champignon','fleur',-1,64,[.6,1.5],0,.7),F('fente','fente',-1,40,[.7,1.3],2.4),F('eclat','eclat',-1,24,[.6,1.2]),F('souche','souche',-1,18,[.6,1]),
+    F('cristal','cristal',1,62,[1,2.2],1.7),F('fleur','fleur',1,66,[1.3,2.4]),F('poteau','poteau',1,10,[1,1]),F('lanterne','lanterne',1,10,[1,1],2.4)],
+  'Assemblée':[F('ruine','ruine',-1,64,[.9,1.8]),F('eclat','eclat',-1,46,[.9,1.7]),F('pieu','poteau',-1,14,[1.2,1.8]),F('fente','fente',-1,22,[.8,1.4],2.2),
+    F('banniere','banniere',1,44,[1,1.3]),F('poteau','poteau',1,30,[1,1.1]),F('lanterne','lanterne',1,30,[1,1],2.4),F('cristal','cristal',1,44,[.6,1.1],1.5)],
+  'Marché':[F('pieu','poteau',-1,44,[1,1.6]),F('ruine','ruine',-1,40,[.6,1.1]),F('souche','souche',-1,30,[.5,.9]),F('fente','fente',-1,32,[.6,1.1],2),
+    F('banniere','banniere',1,64,[.8,1.1]),F('poteau','poteau',1,28,[1,1]),F('lanterne','lanterne',1,28,[1,1],2.4),F('fleur','fleur',1,28,[.7,1.2])]};
+/* le repère + de chaque type, et sa couronne */
+const REPERE_POS={Citadelle:'tour',Donjon:'arche',Ressource:'degres',Antre:'aiguilles','Assemblée':'coupole','Marché':'kiosque'};
+const TYPES=Object.keys(FAM_PAR_TYPE),TYPE_ORIG={CIT:'Citadelle',DON:'Donjon',RES:'Ressource',ANT:'Antre',ASS:'Assemblée',MAR:'Marché'};
+const typeDe=Z=>{const t=Z.plus?Z.d.type:TYPE_ORIG[Z.id];if(FAM_PAR_TYPE[t])return t;let h=7;for(const ch of String(Z.id))h=(h*31+ch.charCodeAt(0))>>>0;return TYPES[h%TYPES.length]};
 
 /* 2.8 : aussi les zones d'origine (pas Tezcamixtli : une Ressource n'a pas de pôle). Là, le cœur écrit à la main reste tel quel :
    les objets ne vont que dans la ceinture (Z.bw, mutations.js), et les repères à 70 % du rayon. */
@@ -1381,19 +1423,20 @@ const MANA_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',MAR:'Glace'};
 for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?Z.d.mana:MANA_ORIG[Z.id]]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),cBlanc=[1,1,1],tmp=[0,0,0];
   const zi=Z.i||0,cx=Z.plus?-20:0,ok=(u,v,m)=>Z.plus?Z.inside(u,v,m)&&Math.hypot(u+20,v)>=30:Z.inside(u,v,m)&&!!Z.bw&&Z.bw(u,v)>.6;
   const cN2=LIN(hexMix(neg,'#ff6040',.35)),cP2=LIN(hexMix(pos,'#ffffff',.3));
-  const build0=Z.build,update0=Z.update;let fams=[];
+  const build0=Z.build,update0=Z.update,TY=typeDe(Z),FAM=FAM_PAR_TYPE[TY],RP=REPERE_POS[TY];let fams=[];
+  const LANDMARK=[['fleche','fleche',matV,-1],['tour',RP,matV,1],['couronne',RP==='tour'?'couronne':'couronne_'+RP,matB,1]];
   Z.build=()=>{build0();fams=[];
     const R=Math.max(...Z.poly.map(p=>{const q=Z.loc(p[0],p[1]);return Math.hypot(q[0],q[1])}));
     /* lanternes et poteaux partagent leurs places */
     const places={};
-    for(const[k,g,mat,side,n0,sz,glow]of FAM){const it=inst(geoD[g],mat,false);it.k=k;it.side=side;it.glow=glow;fams.push(it);
+    for(const[k,g,mat,side,n0,sz,glow,tm]of FAM){const it=inst(geoD[g],mat,false);it.k=k;it.side=side;it.glow=glow;it.tm=tm;fams.push(it);
       const n=Math.round(n0*Math.min(2,SC*SC/4)*(Z.plus?1:1.6)),src=k==='lanterne'?places.poteau:null;
       if(src){for(const o of src)it.add(o.x,0,o.z,1,1,1,0,0,0,{u:o.e.u,v:o.e.v,th:o.e.th});it.make();continue}
       let t=0;while(it.a.length<n&&t++<n*40){
         /* la moitié autour de la Pierre (35 à 110 m), où le joueur regarde ; le reste partout dans la tuile */
         let u,v;if(Z.plus&&it.a.length%2===0){const a=rnd()*TAU,r=rr(35,110);u=-20+Math.cos(a)*r;v=Math.sin(a)*r}else{u=rr(-R,R);v=rr(-R,R)}
         if(!ok(u,v,10))continue;const p=Z.w(u,v),s=rr(sz[0],sz[1]);
-        it.add(p[0],0,p[1],s,s,s,rnd()*TAU,k==='ruine'||k==='souche'?rr(-.12,.12):0,k==='souche'?rr(-.15,.15):0,{u,v,th:rnd()})}
+        it.add(p[0],0,p[1],s,s,s,rnd()*TAU,k==='ruine'||k==='souche'||k==='pieu'?rr(-.12,.12):0,k==='souche'||k==='aiguille'||k==='pieu'?rr(-.25,.25):0,{u,v,th:rnd()})}
       it.make();if(k==='poteau')places.poteau=it.a}
     /* les trois grands repères, à 120° les uns des autres autour de la Pierre : on en voit toujours un */
     for(const[k,g,mat,side]of LANDMARK){const it=inst(geoD[g],mat,mat!==matB);it.k=k;it.side=side;it.glow=mat===matB?3:0;it.repere=1;fams.push(it);
@@ -1411,7 +1454,7 @@ for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?
       it.set(o=>{/* chaque objet a son seuil : plus on s'éloigne de zéro, plus il y en a ; les repères n'apparaissent qu'à partir de ±3 */
           const th=it.repere?.36+o.e.th:.05+o.e.th*.85,k=sst(th,th+.14,w);return k<.02?.0001:(it.repere?.35+.65*k:k)},
         (o,i,c)=>{if(it.glow){const e=it.glow*(.6+.4*w);const b=it.side<0?cN2:cP2;c[0]=b[0]*e;c[1]=b[1]*e;c[2]=b[2]*e;return}
-          if(it.k==='banniere'||it.k==='fleur'){mix3(c,cBlanc,cP,.85)}else if(it.k==='tour'){mix3(c,cBlanc,cP,.18)}else{mix3(c,cBlanc,cN,.35)}});
+          if(it.tm)mix3(c,cBlanc,it.side<0?cN2:cP,it.tm);else if(it.k==='banniere'||it.k==='fleur'){mix3(c,cBlanc,cP,.85)}else if(it.k==='tour'){mix3(c,cBlanc,cP,.18)}else{mix3(c,cBlanc,cN,.35)}});
       tasser(it)}};
 })();
 })();
@@ -1429,7 +1472,14 @@ for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?
    Elle est remplie au chargement puis réécrite pour la seule zone qui mue (on enveloppe rebuild).
    Qualité « Fluide » (#define SOL_FIN absent) : ni Voronoï ni Girih complet ; à la place, un repli bon marché
    (failles tirées d'une seule lecture de bruit, médaillon réduit à l'étoile et son décagone), pour que les pôles restent lisibles.
-   Lecture seule de core.js et zonesplus.js : rien n'y est modifié. */
+   Lecture seule de core.js et zonesplus.js : rien n'y est modifié.
+   Boucle 2 (19 novembre 2026) : fini le même tampon à −7 et à +7. L'octet A de la carte porte désormais une « grammaire de pôle »,
+   une par type de zone (0 Citadelle, 1 Donjon, 2 Ressource, 3 Antre, 4 Assemblée, 5 Marché), et le fragment change de recette :
+   −7 : glace noire en plaques hexagonales (Citadelle), failles de braise de Voronoï (Donjon, son identité), flaques qui reflètent
+        le ciel (Ressource), mycélium phosphorescent (Antre), dalles soulevées en damier (Assemblée), traînées de sel et de suie (Marché) ;
+   +7 : Girih or à 10 branches (Citadelle), zellige khatam cobalt et blanc (Donjon), terrasses concentriques de jade (Ressource),
+        mosaïque d'hexagones turquoise et nacre (Antre), rosace à 12 branches lapis et argent (Assemblée), losanges blanc et bleu glacier (Marché).
+   Couleurs saturées, mêlées à la teinte du mana (jamais au blanc) ; une passe Voronoï 3×3 au plus ; 0 triangle et 0 appel de dessin en plus. */
 (function(){
 /* codes de motif : 0 roche (repli, teinte selon la pente), 1 sable, 2 givre, 3 touffes, 4 dalles, 5 strates, 6 oasis (sable ou touffes selon la couleur) */
 const MOTIF_BIO={'Désert de sable':1,'Récif':1,'Oasis':6,'Forêt boréale':2,'Fjord':2,'Cavernes cristallines':2,
@@ -1450,12 +1500,18 @@ const motifDe=Z=>{if(!Z.plus)return MOTIF_ORIG[Z.id]||0;const d=Z.d,m=MOTIF_BIO[
   /* deux forêts boréales de même couleur : le Donjon garde le givre, les autres (Ressource, Antre…) ont des touffes de lichen */
   if(d.biome==='Forêt boréale'&&d.type!=='Donjon'&&d.type!=='Citadelle')return 3;return m===undefined?0:m};
 const manaDe=Z=>Z.plus?Math.max(0,MANA.indexOf(Z.d.mana)):(MANA_ORIG[Z.id]||0);
+/* boucle 2 (19 nov. 2026) : grammaire de pôle par type de zone ; une tuile au type inconnu en reçoit une par hachage de son nom */
+const GRAM={Citadelle:0,Donjon:1,Ressource:2,Antre:3,'Assemblée':4,'Marché':5},GRAM_ORIG={CIT:0,DON:1,RES:2,ANT:3,ASS:4,MAR:5};
+const grammaireDe=Z=>{if(!Z.plus)return GRAM_ORIG[Z.id]||0;const g=GRAM[Z.d.type];if(g!==undefined)return g;
+  let h=7;for(const ch of String(Z.id))h=(h*31+ch.charCodeAt(0))>>>0;return h%6};
+/* teinte saturée du pôle positif de chaque mana, pour colorer les marqueteries de +7 (au lieu de les blanchir) */
+const POS=[[1,.5,.12],[.45,.75,1],[.12,.85,.75],[.55,.95,.15],[.95,.72,.35],[.72,.5,1]];
 
-const data=new Uint8Array(GN*4);for(let k=0;k<GN;k++){data[k*4+1]=128;data[k*4+3]=255}
+const data=new Uint8Array(GN*4);for(let k=0;k<GN;k++){data[k*4+1]=128;data[k*4+3]=0}
 const tex=new THREE.DataTexture(data,GW,GH,THREE.RGBAFormat,THREE.UnsignedByteType);
 tex.magFilter=tex.minFilter=THREE.NearestFilter;tex.generateMipmaps=false;tex.flipY=false;tex.needsUpdate=true;
-function ecrire(Z){const r=motifDe(Z)+(STYLEES[Z.id]?128:0),g=Math.round(clamp((Z.lv+7)/14,0,1)*255),b=manaDe(Z),V=Z.verts;
-  for(let n=0;n<V.length;n++){const k=V[n]*4;data[k]=r;data[k+1]=g;data[k+2]=b}tex.needsUpdate=true}
+function ecrire(Z){const r=motifDe(Z)+(STYLEES[Z.id]?128:0),g=Math.round(clamp((Z.lv+7)/14,0,1)*255),b=manaDe(Z),a=grammaireDe(Z),V=Z.verts;
+  for(let n=0;n<V.length;n++){const k=V[n]*4;data[k]=r;data[k+1]=g;data[k+2]=b;data[k+3]=a}tex.needsUpdate=true}
 /* rebuild est appelée par son nom (main.js, mue, MZ.set) : la réaffecter suffit à suivre chaque mue */
 const _rebuildSol=rebuild;rebuild=function(Z){_rebuildSol(Z);ecrire(Z)};
 
@@ -1469,11 +1525,12 @@ const bruitTex=(()=>{const NT=256,NL=64,K=NT/NL,o=new Uint8Array(NT*NT*4);let g=
   const t=new THREE.DataTexture(o,NT,NT,THREE.RGBAFormat,THREE.UnsignedByteType);t.wrapS=t.wrapT=THREE.RepeatWrapping;
   t.magFilter=t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;   /* sans mipmaps (moins cher) : le grain fin est déjà fondu par la distance */t.needsUpdate=true;return t})();
 const U={tSol:{value:tex},tSolB:{value:bruitTex},uSolG:{value:new THREE.Vector4(X0,Z0,1/CELL,0)},uSolN:{value:new THREE.Vector2(GW,GH)},
-  uSolSty:{value:1},uSolNeg:{value:NEG.map(c=>new THREE.Vector3(c[0],c[1],c[2]))}};
+  uSolSty:{value:1},uSolNeg:{value:NEG.map(c=>new THREE.Vector3(c[0],c[1],c[2]))},
+  uSolPos:{value:POS.map(c=>new THREE.Vector3(c[0],c[1],c[2]))}};
 const fin=()=>QI>0?1:0;let finCompile=-1;
 
 const VERT_DEC='attribute float solEf;varying vec3 vSolP;varying float vSolNy,vSolEf;\n';
-const FRAG_DEC=`uniform sampler2D tSol,tSolB;uniform vec4 uSolG;uniform vec2 uSolN;uniform float uSolSty;uniform vec3 uSolNeg[6];
+const FRAG_DEC=`uniform sampler2D tSol,tSolB;uniform vec4 uSolG;uniform vec2 uSolN;uniform float uSolSty;uniform vec3 uSolNeg[6],uSolPos[6];
 varying vec3 vSolP;varying float vSolNy,vSolEf;
 float sH(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 vec2 sH2(vec2 p){vec3 q=fract(vec3(p.xyx)*vec3(.1031,.103,.0973));q+=dot(q,q.yzx+33.33);return fract((q.xx+q.yz)*q.zy);}
@@ -1492,20 +1549,29 @@ float solVor(vec2 x){vec2 n=floor(x),f=fract(x);float d1=8.,d2=8.;
   return (sqrt(d2)-sqrt(d1))*.5;}
 #endif
 float solSeg(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.,1.));}
-/* médaillon Girih : étoile à 10 branches entrelacée, couronne et rayons, en coordonnées polaires repliées.
-   k = palier (0 à 7), renvoie la distance (m) au trait le plus proche ; « dans » = intérieur de l'étoile */
-float solGirih(vec2 l,float k,out float dans){float r=length(l),a=atan(l.y,l.x);
-  a=mod(a,.6283185);a=abs(a-.3141593);vec2 q=r*vec2(cos(a),sin(a));
-  vec2 T=vec2(3.,0.),I=1.55*vec2(.9510565,.309017);
+/* médaillon Girih : étoile à n branches entrelacée (10 pour la Citadelle, 12 pour l'Assemblée…), couronne et rayons,
+   en coordonnées polaires repliées. k = palier (0 à 7), renvoie la distance (m) au trait le plus proche ; « dans » = intérieur de l'étoile */
+float solGirih(vec2 l,float k,float n,out float dans){float r=length(l),a=atan(l.y,l.x),w=6.2831853/n,h=w*.5;
+  a=mod(a,w);a=abs(a-h);vec2 q=r*vec2(cos(a),sin(a)),cs=vec2(cos(h),sin(h));
+  vec2 T=vec2(3.,0.),I=1.55*cs;
   float d=solSeg(q,T,I);dans=step(0.,(I.x-T.x)*(q.y-T.y)-(I.y-T.y)*(q.x-T.x));            /* palier 1 : l'étoile */
   if(k>2.5)d=min(min(d,abs(q.x-3.45)),solSeg(q,T,vec2(3.45,.13)));                           /* 3 : le décagone qui la cerne */
-  if(k>4.5)d=min(min(d,solSeg(q,2.15*vec2(.9510565,.309017),vec2(1.1,0.))),abs(q.x-.62));    /* 5 : étoile intérieure entrelacée, rosace */
-  if(k>5.5){d=min(d,q.x>3.45?q.y:1e3);d=min(d,r>3.63?abs(q.x*.309017-q.y*.9510565):1e3);}   /* 6 : rayons et treillis qui relient les médaillons */
+  if(k>4.5)d=min(min(d,solSeg(q,2.15*cs,vec2(1.1,0.))),abs(q.x-.62));    /* 5 : étoile intérieure entrelacée, rosace */
+  if(k>5.5){d=min(d,q.x>3.45?q.y:1e3);d=min(d,r>3.63?abs(q.x*cs.y-q.y*cs.x):1e3);}   /* 6 : rayons et treillis qui relient les médaillons */
   return d;}
+/* boucle 2 : pavage hexagonal (rayon inscrit 0,5) : xy = position dans la cellule, zw = centre de la cellule ; et distance « hexagonale » */
+vec4 solHex(vec2 p){vec2 s=vec2(1.,1.7320508),h=s*.5,a=mod(p,s)-h,b=mod(p-h,s)-h;vec2 g=dot(a,a)<dot(b,b)?a:b;return vec4(g,p-g);}
+float solHexD(vec2 g){g=abs(g);return max(g.x,dot(g,vec2(.5,.8660254)));}
+/* une pièce de marqueterie est posée ou non d'un bloc (lecture au centre de la pièce), selon la même carte de couverture que les failles */
+float solPose(vec2 c,float k){return step(texture2D(tSolB,c*.001094+vec2(.5,.1)).b,(.12+.13*k)*step(.5,k));}
+/* boucle 2 (reprise, 19 nov. 2026) : opacité d'une pièce posée, ~0,18 au palier 1 jusqu'à ~0,96 au palier 7,
+   et bord fondu (~0,45 m au palier 1, presque franc au palier 7) : aux bas paliers on devine la marqueterie, on ne voit pas des carreaux collés */
+float solOp(float k){return min(1.,.05+.13*k);}
+float solBord(float e,float k){return smoothstep(0.,max(.04,.5-.065*k),e);}
 `;
 /* fragment : après color_fragment (diffuseColor contient déjà la couleur du sommet) */
 const FRAG_COL=`
-vec3 solE=vec3(0.);float solGold=0.;
+vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
 {vec2 p=vSolP.xz;float dc=distance(vSolP,cameraPosition);
  vec2 zuv=(vec2((p.x-uSolG.x)*uSolG.z,(p.y-uSolG.y)*uSolG.z)+.5)/uSolN;vec4 zd=texture2D(tSol,zuv);
  float code=floor(zd.r*255.+.5),sty=step(127.5,code);code-=128.*sty;
@@ -1555,40 +1621,171 @@ vec3 solE=vec3(0.);float solGold=0.;
    float jt=1.-smoothstep(.03,.08+dc*.004,e);
    c*=mix(1.,(.9+.18*sH(id))*(1.-jt*.45*nMoy),keep*mo);}
  }
- /* (c) motif de pôle, palier après palier */
- if(mo>.001){
-  float k=solPal(abs(lv));
-  if(lv<-.25&&nLoin>0.){   /* (c−) failles : réseau de Voronoï, plus large et plus dense à chaque palier */
-   vec3 wv=texture2D(tSolB,p*.001094+vec2(.5,.1)).rgb;   /* dérive du tracé (r, g) et part du réseau ouverte (b), à ~14 m */
+ /* (c) motif de pôle, palier après palier, selon la grammaire du type de zone (boucle 2, 19 nov. 2026) */
+ if(mo>.001&&nLoin>0.&&abs(lv)>.25){
+  float k=solPal(abs(lv)),gr=floor(zd.a*255.+.5),aa=.02+dc*.004;
+  vec3 wv=texture2D(tSolB,p*.001094+vec2(.5,.1)).rgb;   /* dérive du tracé (r, g) et part couverte (b), à ~14 m */
+  float zone=smoothstep(.0,.06,(.12+.13*k)*step(.5,k)-wv.b);   /* part couverte : un quart au palier 1, tout au palier 7 */
+  if(lv<0.){
    vec2 w2=p+wv.rg*3.5;
-   #ifdef SOL_FIN
-   float db=solVor(w2/7.5)*7.5+(B07.a-.5)*.1;
-   #else
-   float db=abs(sN2(w2*.2)-.5)*6.5+(B07.a-.5)*.1;   /* repli « Fluide » : une courbe de niveau du bruit, des failles sinueuses pour une lecture */
-   #endif
-   float ouvert=smoothstep(.0,.06,(.12+.13*k)*step(.5,k)-wv.b);   /* part du réseau ouverte : un quart au palier 1, tout au palier 7 */
-   float wc=.02+.035*k,aa=.02+dc*.004;
-   float coeur=solTrait(db,wc,aa)*ouvert,bord=(1.-smoothstep(wc,wc+.12+.1*k+aa,db))*ouvert;
-   c*=1.-bord*(.25+.06*k)*mo;c=mix(c,vec3(.01),coeur*mo);
    vec3 nc=uSolNeg[0];if(mana>.5)nc=uSolNeg[1];if(mana>1.5)nc=uSolNeg[2];if(mana>2.5)nc=uSolNeg[3];if(mana>3.5)nc=uSolNeg[4];if(mana>4.5)nc=uSolNeg[5];
    float pul=.55+.45*B8.g;
-   solE+=nc*(coeur*(.2+.1*k)*pul+bord*bord*.012*k)*mo*nLoin;}
-  if(lv>.25&&nLoin>0.){   /* (c+) incrustation Girih : médaillons en quinconce, de plus en plus nombreux et ouvragés */
-   vec2 g=p/vec2(9.,7.8);float row=floor(g.y);g.x+=.5*mod(row,2.);vec2 id=floor(g),l=(fract(g)-.5)*vec2(9.,7.8);
-   float on=step(sH(id+vec2(31.,17.)),.16+.12*k)*step(.5,k);   /* part des médaillons posés : un quart au palier 1, tous au palier 7 */
-   float dans;
-   #ifdef SOL_FIN
-   float d=solGirih(l,k,dans);
-   #else
-   float d=solGirih(l,min(k,3.),dans);   /* repli « Fluide » : l'étoile et son décagone seulement */
+   #ifndef SOL_FIN
+   float db=abs(sN2(w2*.2)-.5)*6.5+(B07.a-.5)*.1;   /* repli « Fluide » : une courbe de niveau du bruit, une seule lecture, pour toutes les grammaires */
    #endif
-   float wl=.02+.006*k,aa=.02+dc*.0035;
-   float tr=solTrait(d,wl,aa)*on,ombre=solTrait(d,wl+.05,aa)*on;
-   float fond=dans*on*step(3.5,k)*(k>5.5?.32:.18);
-   c*=1.-(ombre-tr)*.3*mo*nMoy;
-   c=mix(c,vec3(.3,.6,.62)*max(.45,dot(c,vec3(.45))*1.2),fond*mo*nMoy);   /* faïence turquoise dans l'étoile, à partir du palier 4 */
-   c=mix(c,vec3(.95,.7,.3),tr*mo);solGold=tr*mo;
-   solE+=vec3(.9,.65,.25)*tr*(.04+.03*k)*mo*nLoin;}
+   if(gr<.5){   /* (c−) Citadelle : glace noire fendue en plaques hexagonales mates, givre blanc dans les joints, sans lueur */
+    #ifdef SOL_FIN
+    vec4 hx=solHex(w2/3.4);float hp=sH(hx.zw),dj=(.5-solHexD(hx.xy))*3.4;
+    vec2 fd=vec2(cos(hp*6.283),sin(hp*6.283));dj=min(dj,abs(dot(hx.xy,fd))*3.4+step(.45,fract(hp*7.3))*9.);   /* une fêlure droite sur une plaque sur deux */
+    #else
+    float hp=B8.b,dj=db;
+    #endif
+    float wj=.02+.016*k,joint=solTrait(dj,wj,aa)*zone,givre=1.-smoothstep(wj,wj+.16+.05*k+aa,dj);givre*=givre*zone;
+    vec3 noire=vec3(.010,.014,.022)*(.7+.8*hp)+nc*.004;
+    c=mix(c,noire*(1.+(B07.g-.5)*.6*nPres),zone*min(1.,.3+.1*k)*mo);
+    c=mix(c,vec3(.6,.68,.78)*(.8+.3*B07.r),max(joint,givre*.55)*mo);}
+   else if(gr>1.5&&gr<2.5){   /* (c−) Ressource : flaques sombres et miroitantes, le ciel s'y reflète au ras du regard (fresnel), aucun trait qui luit */
+    #ifdef SOL_FIN
+    float pz=sN(w2*.085+vec2(3.1,7.7))+(B07.b-.5)*.05;
+    #else
+    float pz=1.-db*.14;
+    #endif
+    /* reprise boucle 2 : moins de flaques et mieux découpées, berge claire, noir d'eau profond, reflet au ton du mana (et non le brouillard brut) */
+    float plat=1.-smoothstep(.1,.28,pente),on=step(.5,k)*plat,sf=.8-.028*k,fl=smoothstep(sf,sf+.006+aa*.03,pz)*on;   /* l'eau ne tient que sur le plat */
+    float berge=smoothstep(sf-.05,sf-.008,pz)*(1.-fl)*on,mouil=smoothstep(sf-.15,sf-.03,pz)*step(.5,k);
+    float frange=fl*(1.-smoothstep(sf+.004,sf+.028+aa*.03,pz));   /* frange de reflet nette, juste à l'intérieur du bord */
+    vec3 ciel=vec3(.42,.46,.52);
+    #ifdef USE_FOG
+    ciel=fogColor;
+    #endif
+    vec3 refl=mix(ciel*.5,nc,.6);
+    float fres=pow(1.-abs((vSolP.y-cameraPosition.y)/dc),5.);
+    float ride=(sin(dot(p,vec2(.71,.7))*5.+B07.g*9.)*.5+.5)*nPres;   /* rides que le vent pousse sur l'eau */
+    c*=1.-mouil*(.12+.02*k)*mo;                             /* terre détrempée, à peine plus sombre : elle reste plus claire que l'eau */
+    c=mix(c,c*1.18+vec3(.05,.052,.055),berge*min(1.,.3+.1*k)*mo);   /* liseré clair de berge (sel, sable lavé) */
+    c=mix(c,vec3(.003,.004,.006),fl*mo);
+    solE+=refl*((.012+.26*fres)*(.45+1.1*ride)+frange*(.3+.04*k))*fl*mo*nLoin;solLisse=fl*mo;
+    if(dc<16.){vec2 ce=floor(p*5.);vec3 vd=(vSolP-cameraPosition)/dc;   /* éclats de lumière en points sur l'eau, comme le givre */
+     float tw=sH(ce+floor(vd.xz*24.)*5.31),sp=step(.975,tw)*(1.-smoothstep(.05,.18,length(fract(p*5.)-.5)));
+     solE+=mix(nc,vec3(1.),.6)*sp*fl*mo*(.6+ride)*(1.-smoothstep(6.,16.,dc));}}
+   else if(gr>2.5&&gr<3.5){   /* (c−) Antre : mycélium phosphorescent, lignes fines et ramifiées tirées d'un bruit à domaine déformé */
+    #ifdef SOL_FIN
+    vec2 q=w2*.16;q+=(texture2D(tSolB,q*.008+vec2(.3,.6)).ba-.5)*2.6;
+    float d1=abs(sN(q)-.5)*4.,d2=abs(sN2(q*2.7+3.)-.5)*1.5;
+    float wm=.016+.006*k,ram=1.-smoothstep(.25,.9+.12*k,d1);   /* les ramifications ne poussent qu'auprès des filaments */
+    float fil=max(solTrait(d1,wm,aa),solTrait(d2,wm*.6,aa)*ram),halo=1.-smoothstep(wm,wm+.35+.03*k,d1);
+    #else
+    float wm=.02+.007*k,fil=solTrait(db,wm,aa),halo=1.-smoothstep(wm,wm+.4,db);
+    #endif
+    fil*=zone;halo*=halo*zone;
+    vec3 ph=mix(vec3(.2,.85,1.6),nc,.25);
+    c=mix(c,vec3(dot(c,vec3(.3,.4,.3)))*vec3(.3,.3,.36),zone*min(1.,.25+.11*k)*mo);   /* sol étouffé, gris de cendre */
+    c=mix(c,ph*.2,fil*mo);
+    solE+=ph*(fil*(.2+.09*k)*pul+halo*.012*k)*mo*nLoin;}
+   else if(gr>3.5&&gr<4.5){   /* (c−) Assemblée : dalles soulevées et fendues en damier, bords qui prennent la lumière, centres assombris */
+    #ifdef SOL_FIN
+    vec2 g=w2/3.6,id=floor(g),f=fract(g)-.5;float hs=sH(id+7.),ch=mod(id.x+id.y,2.);
+    float e=(.5-max(abs(f.x),abs(f.y)))*3.6,dj=min(e,abs(f.x*(hs>.5?1.:-1.)+f.y+(hs-.5)*.4)*2.55+step(.6,sH(id+2.))*9.);
+    #else
+    float e=db,dj=db,ch=step(.5,B8.b),hs=B8.a;
+    #endif
+    float fente=solTrait(dj,.025+.016*k,aa)*zone,rim=1.-smoothstep(0.,.25+.04*k,e),leve=ch*(.55+.45*hs);
+    c*=1.-zone*mo*min(.85,.2+.08*k)*(1.-rim)*(.55+.45*leve);   /* centres assombris */
+    c=mix(c,c*2.2+vec3(.035,.03,.028),rim*leve*zone*mo*min(1.,.3+.1*k));   /* bords soulevés, éclairés */
+    c=mix(c,vec3(.006),fente*mo);
+    solE+=nc*(fente*.04*k*pul+rim*leve*.01*k*zone)*mo*nLoin;}
+   else if(gr>4.5){   /* (c−) Marché : traînées de sel et de suie couchées par le vent, grain sombre, sans lueur */
+    vec2 r2=vec2(dot(w2,vec2(.8,.6)),dot(w2,vec2(-.6,.8)));
+    #ifdef SOL_FIN
+    float sel=sN(vec2(r2.x*.04,r2.y*.5)),suie=sN2(vec2(r2.x*.05,r2.y*.7)+4.);
+    #else
+    float sel=1.-db*.22,suie=B8.b;
+    #endif
+    float ks=.66-.022*k,ms=smoothstep(ks,ks+.07,sel)*zone,mn=smoothstep(ks-.03,ks+.06,suie)*zone;
+    c*=1.-zone*mo*(.15+.06*k)*(1.+(B07.a-.5)*1.6*nPres);
+    c=mix(c,vec3(.008,.007,.006),mn*.9*mo);
+    c=mix(c,vec3(.46,.45,.43)*(.65+.7*B07.r),ms*(1.-mn)*.85*mo);}
+   else{   /* (c−) Donjon : failles de braise en réseau de Voronoï, son identité depuis la boucle 1 */
+    #ifdef SOL_FIN
+    float db=solVor(w2/7.5)*7.5+(B07.a-.5)*.1;
+    #endif
+    float wc=.02+.035*k;
+    float coeur=solTrait(db,wc,aa)*zone,bord=(1.-smoothstep(wc,wc+.12+.1*k+aa,db))*zone;
+    c*=1.-bord*(.25+.06*k)*mo;c=mix(c,vec3(.01),coeur*mo);
+    solE+=nc*(coeur*(.2+.1*k)*pul+bord*bord*.012*k)*mo*nLoin;}
+  }else{
+   vec3 mp=uSolPos[0];if(mana>.5)mp=uSolPos[1];if(mana>1.5)mp=uSolPos[2];if(mana>2.5)mp=uSolPos[3];if(mana>3.5)mp=uSolPos[4];if(mana>4.5)mp=uSolPos[5];
+   /* deux couleurs saturées par grammaire (trait ou première pièce, fond ou seconde pièce), et l'ordre de l'étoile du repli */
+   vec3 cA=vec3(.95,.7,.3),cB=vec3(.3,.6,.62);float n=10.;
+   if(gr>.5&&gr<1.5){cA=vec3(0.,.08,.5);cB=vec3(.5,.55,.66);n=8.;}       /* Donjon : cobalt et blanc */
+   if(gr>1.5&&gr<2.5){cA=vec3(.01,.22,.11);cB=vec3(.2,.62,.4);n=6.;}     /* Ressource : jade */
+   if(gr>2.5&&gr<3.5){cA=vec3(0.,.48,.72);cB=vec3(.92,.78,.9);n=6.;}      /* Antre : turquoise et nacre */
+   if(gr>3.5&&gr<4.5){cA=vec3(.78,.8,.88);cB=vec3(.04,.08,.55);n=12.;}    /* Assemblée : argent sur lapis */
+   if(gr>4.5){cA=vec3(.2,.55,.95);cB=vec3(.82,.88,.93);n=4.;}             /* Marché : bleu glacier et blanc */
+   float mt=(gr>.5&&gr<1.5)?.05:(gr>2.5&&gr<3.5?.08:.18);   /* reprise : le cobalt et la turquoise se protègent du mana */
+   cA=mix(cA,mp*max(cA.r,max(cA.g,cA.b)),mt);cB=mix(cB,mp*max(cB.r,max(cB.g,cB.b)),mt);   /* teinte du mana, jamais le blanc */
+   float gi=1.;
+   #ifdef SOL_FIN
+   gi=(gr<.5||gr>3.5&&gr<4.5)?1.:0.;   /* Citadelle et Assemblée : médaillons ; les autres : marqueteries pleines */
+   #endif
+   if(gi>.5){   /* (c+) médaillons Girih en quinconce, de plus en plus nombreux et ouvragés (10 branches or, ou 12 branches argent sur lapis) */
+    vec2 g=p/vec2(9.,7.8);float row=floor(g.y);g.x+=.5*mod(row,2.);vec2 id=floor(g),l=(fract(g)-.5)*vec2(9.,7.8);
+    float on=step(sH(id+vec2(31.,17.)),.16+.12*k)*step(.5,k);
+    float dans;
+    #ifdef SOL_FIN
+    float d=solGirih(l,k,n,dans);
+    #else
+    float d=solGirih(l,min(k,3.),n,dans);   /* repli « Fluide » : l'étoile et son polygone seulement */
+    #endif
+    float wl=.02+.006*k,a2=.02+dc*.0035;
+    float tr=solTrait(d,wl,a2)*on,ombre=solTrait(d,wl+.05,a2)*on;
+    float fond=dans*on*(gr>3.5&&gr<4.5?step(1.5,k)*min(.95,.4+.08*k):step(3.5,k)*(k>5.5?.32:.18));
+    c*=1.-(ombre-tr)*.3*mo*nMoy;
+    c=mix(c,cB*(gr>3.5&&gr<4.5?1.:max(.45,dot(c,vec3(.45))*1.2)),fond*mo*nMoy);
+    c=mix(c,cA,tr*mo);solGold=max(tr,fond*.6)*mo;
+    solE+=cA*.95*tr*(.04+.03*k)*mo*nLoin;}
+   #ifdef SOL_FIN
+   else if(gr<1.5){   /* (c+) Donjon : zellige khatam, étoiles blanches à 8 branches sur champ de cobalt, octogone central dès le palier 5 */
+    float S=5.2;vec2 id=floor(p/S),l=(fract(p/S)-.5)*S;
+    float sa=max(abs(l.x),abs(l.y)),sb=(abs(l.x)+abs(l.y))*.7071,R=1.78,on=solPose((id+.5)*S,k),op=solOp(k)*solBord(S*.5-sa,k);
+    float dd=abs(min(sa,sb)-R),ins=step(min(sa,sb),R),oct=step(max(sa,sb),R*.6)*step(4.5,k);
+    if(k>2.5)dd=min(dd,S*.5-sa);
+    if(k>4.5)dd=min(dd,abs(max(sa,sb)-R*.6));
+    /* reprise : étoiles blanches sur champ de cobalt (le cobalt domine) ; aux bas paliers l'étoile seule, le champ vient à partir du palier 2 */
+    vec3 f=mix(cA,cB,ins-oct);
+    c=mix(c,f*(.88+.24*sH(id+3.)),on*mo*op*mix(ins,1.,smoothstep(1.5,4.5,k)));
+    float tr=solTrait(dd,.03+.006*k,aa)*on*solOp(k);
+    c=mix(c,cA*.45,tr*mo);solGold=on*mo*op*.3;
+    solE+=cA*(1.-ins+oct)*on*op*smoothstep(1.5,4.5,k)*.22*mo*nLoin;}   /* un peu de cobalt propre, que la lumière chaude et le voile ne rosissent pas */   /* peu de reflet : le ciel chaud ne rosit plus le cobalt */
+   else if(gr<2.5){   /* (c+) Ressource : terrasses concentriques de jade, plus larges à chaque palier, contremarches dans l'ombre */
+    /* reprise boucle 2 : anneaux pleins alternés jade sombre / jade clair, ombre de contremarche, rayon borné pour rester des cercles */
+    float S=30.;vec4 hx=solHex(p/S);float r=length(hx.xy)*S,hs=sH(hx.zw);
+    float on=step(hs,.3+.1*k)*step(.5,k),Rm=min(13.6,(3.5+1.6*k)*(.85+.2*hs));
+    float pas=2.2,ri=floor(r/pas),fr=fract(r/pas);
+    float dedans=on*(1.-smoothstep(Rm-.3,Rm+.3,r));
+    vec3 f=mix(cA,cB,mix(.5,mod(ri,2.),nMoy));   /* au loin, une teinte moyenne (pas de moiré) */
+    f*=(1.-.6*smoothstep(.7,.98,fr)*nMoy)*(1.+.3*(1.-smoothstep(0.,.14,fr))*nMoy);   /* contremarche dans l'ombre, nez de marche éclairé */
+    c=mix(c,f,dedans*mo*min(1.,.35+.09*k));
+    float tr=solTrait((1.-fr)*pas,.03+.004*k,aa)*dedans;
+    c=mix(c,cA*.2,tr*mo);solGold=dedans*mo*.35;}
+   else if(gr<3.5){   /* (c+) Antre : mosaïque d'hexagones turquoise et nacre (la nacre change avec le regard), joints sombres */
+    float S=1.4;vec4 hx=solHex(p/S);float e=(.5-solHexD(hx.xy))*S,hs=sH(hx.zw),on=solPose(hx.zw*S,k),op=solOp(k)*solBord(e,k);
+    hs=mix(hs,.5,smoothstep(30.,80.,dc));   /* au loin, les pièces se fondent en une teinte moyenne (pas de moiré) */
+    float nac=smoothstep(.6,.64,hs*.55+B8.b*.6);
+    vec3 vd=(vSolP-cameraPosition)/dc;float ir=hs*11.+(vd.x+vd.z)*5.;
+    vec3 nacre=cB*(vec3(1.)+.28*vec3(sin(ir),sin(ir+2.1),sin(ir+4.2)));
+    c=mix(c,mix(cA*(.85+.35*hs),nacre,nac),on*mo*op);
+    float tr=solTrait(e,.034+.006*k,aa)*on*solOp(k);   /* joints sombres et épais */
+    c=mix(c,vec3(.01,.015,.025),tr*mo);solGold=on*mo*op*.85;}
+   else{   /* (c+) Marché : losanges en arlequin blanc et bleu glacier, petit losange inversé au cœur dès le palier 5 */
+    vec2 a=vec2(p.x/2.6+p.y/4.4,p.x/2.6-p.y/4.4),id=floor(a),f=fract(a)-.5;
+    float m=max(abs(f.x),abs(f.y)),e=(.5-m)*2.24,on=solPose(vec2((id.x+id.y+1.)*1.3,(id.x-id.y)*2.2),k),op=solOp(k)*solBord(e,k);
+    float bl=mod(id.x+id.y,2.);if(k>4.5&&m<.17)bl=1.-bl;
+    c=mix(c,mix(cB,cA,bl)*(.9+.2*sH(id)),on*mo*op);
+    float tr=solTrait(min(e,k>4.5?abs(m-.17)*2.24:9.),.025+.005*k,aa)*on*solOp(k);
+    c=mix(c,cA*.35,tr*mo);solGold=on*mo*op*.7;}
+   #endif
+  }
  }
  diffuseColor.rgb=c;}
 `;
@@ -1603,7 +1800,7 @@ buildTerrain=function(){_buildSol();
     s.vertexShader=VERT_DEC+s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvSolP=(modelMatrix*vec4(transformed,1.)).xyz;vSolNy=normal.y;vSolEf=solEf;');
     s.fragmentShader=(finCompile?'#define SOL_FIN\n':'')+FRAG_DEC+s.fragmentShader
       .replace('#include <color_fragment>','#include <color_fragment>\n'+FRAG_COL)
-      .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.38,solGold);')
+      .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(mix(roughnessFactor,.38,solGold),.06,solLisse);')
       .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=solE;')};
   m.customProgramCacheKey=()=>'sol'+fin();m.needsUpdate=true};
 /* à chaque image : style de zone actif ou non, et recompilation si la qualité passe en Fluide ou en sort */
@@ -1620,7 +1817,20 @@ draw=function(t){U.uSolSty.value=(typeof STYLE_ON==='undefined'||STYLE_ON)?1:0;
 const LIEUX=[];
 (function(){
 const vc=M(0xffffff,{vertexColors:true}),lueur=new THREE.MeshBasicMaterial({color:new THREE.Color(3,1.9,.8)});
-const rai=new THREE.MeshBasicMaterial({color:new THREE.Color(1.4,1.1,.6),transparent:true,opacity:.28,depthWrite:false,blending:THREE.AdditiveBlending});
+/* boucle 2 (19 nov. 2026) : le rai devient un cône ouvert additif, sans brouillard et sans écriture de profondeur.
+   Alpha = (1 − y/140)² × smoothstep(18, 45, d) × (1 − smoothstep(140, 400, d)) × .22, d = distance horizontale caméra → lieu :
+   invisible de près (on est dessus), éteint au-delà de 400 m (il ne raye plus le ciel de loin en trait blanc diagonal).
+   Bords adoucis par l'angle de vue (f³) (le cône n'a plus de silhouette dure). Couleur : le pôle positif de la zone du lieu, saturé (un pôle presque blanc, comme la Glace, ne redonne pas un trait blanc).
+   L'échelle d'instance (L.rai.set) continue d'éteindre le rai quand le secret est trouvé. */
+const raiMat=c=>new THREE.ShaderMaterial({uniforms:{col:{value:new THREE.Color(c[0],c[1],c[2])}},transparent:true,depthWrite:false,fog:false,blending:THREE.AdditiveBlending,
+  vertexShader:`varying float vA;varying vec3 vN,vV;void main(){mat4 m=modelMatrix;
+#ifdef USE_INSTANCING
+m=m*instanceMatrix;
+#endif
+vec4 w=m*vec4(position,1.);vec3 o=(m*vec4(0.,0.,0.,1.)).xyz;float d=distance(o.xz,cameraPosition.xz),y=clamp(position.y/140.,0.,1.);
+vA=(1.-y)*(1.-y)*smoothstep(18.,45.,d)*(1.-smoothstep(140.,400.,d))*.22;
+vN=mat3(m)*vec3(normal.x,0.,normal.z);vV=cameraPosition-w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+  fragmentShader:`uniform vec3 col;varying float vA;varying vec3 vN,vV;void main(){float f=abs(dot(normalize(vN),normalize(vV)));gl_FragColor=vec4(col,vA*f*f*f);}`});
 const tente=(x,z,r,c)=>[new THREE.ConeGeometry(r,r*1.5,4).rotateY(Math.PI/4).translate(x,r*.75,z),c];
 const GEO={
   camp:merge([tente(-5,0,3.2,0x8a6a4a),tente(4,-4,2.6,0x7a5a3a),tente(3,5,2.4,0x9a7a52),
@@ -1633,12 +1843,13 @@ const GEO={
   belvedere:merge([[cyl(3.5,5,13,6,0,6.5,0),0x6a6258],[cyl(4.2,4.2,.8,6,0,13.4,0),0x8a8070],
     ...Array.from({length:14},(_,i)=>{const a=i*.55,y=i*.9+.45;return[box(2.2,.45,1.4,Math.cos(a)*5.6,y,Math.sin(a)*5.6,-a),0x7a7268]}),
     [cyl(.1,.1,5,5,0,16.3,0),0x3a2a1a],[box(2.2,1.4,.06,1.1,18,0),0xffffff]]),
-  rai:cyl(.9,.9,140,8,0,70,0)};
+  rai:new THREE.CylinderGeometry(2.5,.3,140,8,1,true).translate(0,70,0)}; /* boucle 2 : cône ouvert, 0,3 m au pied, 2,5 m au sommet */
 const SORTES=[['camp','Le camp abandonné','Des cendres encore tièdes, trois tentes et un panneau de bois. Quelqu\'un a quitté ce camp en hâte.'],
   ['cercle','Le cercle de pierres','Neuf pierres levées autour d\'un autel. Le glyphe qui flotte au-dessus tourne dans le sens du pôle.'],
   ['belvedere','Le belvédère','Une tour de roc et son escalier en spirale. D\'en haut, on voit toute la tuile et ses voisines.']];
 
 for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),bl=[1,1,1];
+  const rL=cP[0]*.2126+cP[1]*.7152+cP[2]*.0722,rC=cP.map(x=>Math.max(0,rL+(x-rL)*2.2)*.5),raiZ=raiMat(rC); /* boucle 2 : rai teinté par le pôle de la zone */
   const build0=Z.build,update0=Z.update;Z.lieux=[];
   Z.build=()=>{build0();const R=Math.max(...Z.poly.map(p=>{const q=Z.loc(p[0],p[1]);return Math.hypot(q[0],q[1])}));
     SORTES.forEach(([k,titre,texte],i)=>{
@@ -1648,7 +1859,7 @@ for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,
       const add=(g,mat,sh)=>{const it=inst(g,mat,sh);it.add(p[0],0,p[1],1,1,1,ry);it.make();L.parts.push(it);return it};
       L.corps=add(GEO[k],vc,true);
       if(k==='camp')L.eclat=add(GEO.feu,lueur,false);if(k==='cercle')L.eclat=add(GEO.glyphe,lueur,false);
-      L.rai=add(GEO.rai,rai,false);L.rai.m.renderOrder=5;L.rai.m.receiveShadow=false;
+      L.rai=add(GEO.rai,raiZ,false);L.rai.m.renderOrder=5;L.rai.m.receiveShadow=false;
       Z.lieux.push(L);LIEUX.push(L)})};
   Z.update=lv=>{update0(lv);const an=wneg(lv),ap=wpos(lv);
     for(const L of Z.lieux){const y=groundZ(Z,L.x,L.z,lv)-.3;
@@ -9526,6 +9737,8 @@ const closed=P=>P.concat([P[0]]).map(p=>new THREE.Vector2(p[0],p[1]));
 const styU={tD:{value:null},pInv:{value:camera.projectionMatrixInverse},cW:{value:camera.matrixWorld},cP:{value:camera.position},
   pM:{value:closed(MAR.poly)},pR:{value:closed(RES.poly)},lvM:{value:0},lvR:{value:0},cdM:{value:0},cdR:{value:0},
   skM:{value:0},skR:{value:0},on:{value:1},tt:{value:0},px:{value:new THREE.Vector2(1/800,1/450)},
+  /* boucle 2 (19 nov. 2026) : 1 quand la passe FXAA suit (Belle, Splendide) ; le grain part alors dans l'alpha */
+  fxOn:{value:0},
   /* boucle 1 (19 nov. 2026) : étalonnage signature de la zone où se trouve la caméra (voir SIG plus bas) */
   sigSh:{value:new THREE.Vector3(.1,.1,.1)},sigMi:{value:new THREE.Vector3(.5,.5,.5)},sigHi:{value:new THREE.Vector3(1,1,1)},sigK:{value:0},sigOn:{value:0}};
 Object.assign(mFinal.uniforms,styU);mFinal.uniforms.expo=mFinal.uniforms.exp; /* « exp » cache la fonction exp() du GLSL */
@@ -9535,7 +9748,7 @@ const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
     vec2 e=b-a;float t=clamp(dot(p-a,e)/dot(e,e),0.,1.);d=min(d,length(p-a-e*t));}
   float s=smoothstep(0.,3.,d)*.5;return ins?.5+s:.5-s;}`;
 mFinal.defines={STY_DEPTH:STY_DEPTH?1:0};
-mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
+mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
 uniform mat4 pInv,cW;uniform vec2 pM[5],pR[7],px;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 ${polyGL('inM','pM',4)}
@@ -9620,16 +9833,57 @@ if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty))
   /* +7 : blancs désaturés de 10 %, ombres teintées pastel froid (le relief tient sans boucher) */
   L=dot(c,Y);c=mix(c,vec3(L),.1*sP*wh*fo);c=mix(c,c*sh,.18*sP*ws*fo);
   c=clamp(c,0.,1.);}
+/* boucle 2 (19 nov. 2026) : avec le FXAA, le grain est posé après lui (sinon il le lisse et le brouille) ; on lui passe dans l'alpha
+   la force du grain et le poids des écoles d'encre (fusain, manga), sur 4 bits chacun */
+if(fxOn>.5){gl_FragColor=vec4(c,(floor(clamp(sty,0.,1.)*15.+.5)*16.+floor(clamp(gr/.08,0.,1.)*15.+.5))/255.);return;}
 c+=(fract(sin(dot(vUv*vec2(1920.,1080.)+time,vec2(12.9898,78.233)))*43758.5453)-.5)*gr;gl_FragColor=vec4(c,1.);}`;
 mFinal.needsUpdate=true;
 
 /* La profondeur de la scène devient une texture que la passe finale peut lire. */
 const _resizeSty=resize;
-resize=function(){_resizeSty();if(!STY_DEPTH)return;
+resize=function(){_resizeSty();majFxaa();if(!STY_DEPTH)return;
   if(rtS.isWebGLMultisampleRenderTarget){const o={type:rtS.texture.type,format:THREE.RGBAFormat,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter};
     const w=rtS.width,h=rtS.height;rtS.dispose();rtS=new THREE.WebGLRenderTarget(w,h,o)}
   rtS.depthTexture=new THREE.DepthTexture(rtS.width,rtS.height);rtS.depthTexture.type=THREE.UnsignedIntType;
   styU.tD.value=rtS.depthTexture;styU.px.value.set(1/rtS.width,1/rtS.height)};
+
+/* ---------- Boucle 2 (19 nov. 2026) : anticrénelage FXAA en Belle et Splendide ----------
+   Depuis que la passe finale lit la profondeur, la cible multi-échantillons (MSAA ×4) a été remplacée par une cible simple :
+   les sapins, les pieux et les filets Girih crénelaient en escalier. FXAA 3.11 version « console » : cinq lectures de luminance
+   (quatre coins à un demi-pixel, lissés par le filtrage, et le centre), la direction du bord, puis deux lectures le long de ce bord.
+   Le grain vient après (net). Sur les écoles d'encre (Givrecloche, Chinampas) l'effet est atténué : les traits gardent leur mordant.
+   En Fluide et en Équilibrée rien ne change : pas de cible en plus, pas de passe en plus. */
+let rtF=null;
+const mFxaa=new THREE.ShaderMaterial({uniforms:{t:{value:null},px:{value:new THREE.Vector2(1/800,1/450)},time:{value:0}},vertexShader:FV,depthTest:false,depthWrite:false,
+  fragmentShader:`varying vec2 vUv;uniform sampler2D t;uniform vec2 px;uniform float time;
+#define REDUCE_MIN (1./128.)
+#define REDUCE_MUL (1./8.)
+#define SPAN_MAX 8.
+float lu(vec3 c){return dot(c,vec3(.299,.587,.114));}
+void main(){vec4 M=texture2D(t,vUv);
+  float lNW=lu(texture2D(t,vUv+vec2(-.5,-.5)*px).rgb),lNE=lu(texture2D(t,vUv+vec2(.5,-.5)*px).rgb),
+        lSW=lu(texture2D(t,vUv+vec2(-.5,.5)*px).rgb),lSE=lu(texture2D(t,vUv+vec2(.5,.5)*px).rgb),lM=lu(M.rgb);
+  float a=floor(M.a*255.+.5),sty=floor(a/16.)/15.,gr=mod(a,16.)/15.*.08;
+  float mn=min(lM,min(min(lNW,lNE),min(lSW,lSE))),mx=max(lM,max(max(lNW,lNE),max(lSW,lSE)));
+  vec3 c=M.rgb;
+  if(mx-mn>max(.05,mx*.125)){   /* seuil « console » : on ne touche qu'aux vrais bords */
+    vec2 dir=vec2(-((lNW+lNE)-(lSW+lSE)),(lNW+lSW)-(lNE+lSE));
+    float red=max((lNW+lNE+lSW+lSE)*(.25*REDUCE_MUL),REDUCE_MIN),rcp=1./(min(abs(dir.x),abs(dir.y))+red);
+    dir=clamp(dir*rcp,vec2(-SPAN_MAX),vec2(SPAN_MAX))*px;
+    /* deux lectures aux extrémités du segment (±dir/2, jusqu'à 4 pixels de part et d'autre), mêlées au centre déjà lu :
+       c'est la moitié large du FXAA classique, sans ses deux lectures proches (le centre en tient lieu) */
+    vec3 B=.5*c+.25*(texture2D(t,vUv-dir*.5).rgb+texture2D(t,vUv+dir*.5).rgb);
+    float lB=lu(B);if(lB>=mn&&lB<=mx)c=mix(B,c,sty*.8);}
+  c+=(fract(sin(dot(vUv*vec2(1920.,1080.)+time,vec2(12.9898,78.233)))*43758.5453)-.5)*gr;gl_FragColor=vec4(c,1.);}`});
+function majFxaa(){const on=QUAL().ms>0&&!!rtS;
+  if(rtF&&(!on||rtF.width!==rtS.width||rtF.height!==rtS.height)){rtF.dispose();rtF=null}
+  if(on&&!rtF){rtF=new THREE.WebGLRenderTarget(rtS.width,rtS.height,{type:THREE.UnsignedByteType,format:THREE.RGBAFormat,
+    minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false});rtF.texture.generateMipmaps=false}
+  if(rtF)mFxaa.uniforms.px.value.set(1/rtF.width,1/rtF.height);mFinal.uniforms.fxOn.value=rtF?1:0}
+/* la passe finale écrit dans rtF, puis le FXAA (et le grain) à l'écran */
+const _passFx=pass;
+pass=function(mat,target){if(mat===mFinal&&target===null&&rtF){_passFx(mat,rtF);mFxaa.uniforms.t.value=rtF.texture;mFxaa.uniforms.time.value=mFinal.uniforms.time.value;_passFx(mFxaa,null)}
+  else _passFx(mat,target)};
 
 /* À chaque image : niveaux des deux zones, distance de la caméra à chacune (le brouillard ne compte que ce qui est dedans),
    et poids du ciel selon la zone où l'on se trouve (sans profondeur, ce poids sert pour toute l'image). */
@@ -9696,6 +9950,147 @@ draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCu
   sigCur.on=lerp(sigCur.on,Z&&STYLE_ON?1:0,f);
   const U=mFinal.uniforms;U.sigSh.value.set(sigCur.sh[0],sigCur.sh[1],sigCur.sh[2]);U.sigMi.value.set(sigCur.mi[0],sigCur.mi[1],sigCur.mi[2]);
   U.sigHi.value.set(sigCur.hi[0],sigCur.hi[1],sigCur.hi[2]);U.sigK.value=sigCur.k;U.sigOn.value=sigCur.on;_drawSig(t)};
+/* ---------- Boucle 2 (19 nov. 2026) : ciel signature par zone et par pôle ----------
+   Constat : toutes les zones partageaient le même ciel (dégradé + nuages), seules les couleurs changeaient ; vers +7 le ciel
+   et l'horizon montaient vers le blanc (DON +7 orange brûlé, RES374 +7 voile blanc, ANT120 délavé).
+   1) Le ciel (créé dans core.js, compilé à la première image) reçoit ici un nouveau fragmentShader : un « mode » par famille
+      (aurores, plafond de braise, voûte de canopée, grand soleil et poussière, cirrus), et les deux pôles :
+      vers −7 zénith assombri, étoiles, éclipse pour le Feu ; vers +7 zénith saturé, halo de 22°, anneau Girih au zénith.
+   2) L'atmosphère des zones est corrigée quand le niveau est positif : on colore au lieu d'éclaircir (dominante du pôle à
+      l'horizon, complémentaire au zénith et dans les ombres), exposition et halo plafonnés, brouillard plus léger.
+   Aucun objet en plus, aucun appel de dessin en plus : tout se passe dans le shader du ciel et dans les couleurs de stepAtmo. */
+(function(){
+/* --- modes de ciel : 0 Glace (aurores), 1 Feu (plafond de braise), 2 Eau/Sève (canopée), 3 Pierre (soleil bas, poussière),
+       4 Vent (cirrus) ; −1 : neutre (Givrecloche, noir et blanc : on ne colore rien) --- */
+const MODE_MANA={Glace:0,Feu:1,'Eau':2,'Sève':2,Pierre:3,Vent:4};
+const MODE_ORIG={CIT:0,DON:1,ANT:2,RES:4,MAR:-1}; /* Berestograd boréale, Puits de braise, Mangrove des Lucioles, Îles flottantes au vent */
+const modeOf=Z=>Z._cielM!==undefined?Z._cielM:(Z._cielM=Z.plus?(MODE_MANA[Z.d.mana]===undefined?3:MODE_MANA[Z.d.mana]):(MODE_ORIG[Z.id]===undefined?-1:MODE_ORIG[Z.id]));
+
+/* --- 1. le shader du ciel --- */
+const U=sky.material.uniforms;
+U.skM={value:[0,0,0,0,0]};U.skP={value:0};U.skS={value:0};
+sky.material.fragmentShader=`varying vec3 vd;uniform vec3 top,hor,sunC,sunD,clC;uniform float cl,time,skM[5],skP,skS;
+const vec3 Y=vec3(.2126,.7152,.0722);
+float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+/* boucle 2 : 4 octaves au lieu de 5 (le calque du mode en ajoute ailleurs, le coût reste à peu près constant) */
+float fbm(vec2 p){float a=.5,s=0.;for(int i=0;i<4;i++){s+=a*n(p);p=p*2.03+vec2(17.,9.);a*=.5;}return s;}
+float fb3(vec2 p){return n(p)*.57+n(p*2.03+vec2(17.,9.))*.29+n(p*4.12+vec2(5.,31.))*.14;}
+void main(){vec3 d=normalize(vd);float y=max(d.y,0.),pN=max(-skP,0.),pP=max(skP,0.);
+float sv=smoothstep(-.06,.04,sunD.y); /* repli : soleil sous l'horizon, ni disque, ni halo, ni rayons */
+float wG=skM[0],wF=skM[1],wC=skM[2],wP=skM[3],wV=skM[4];
+/* zénith : −7 assombri d'environ 40 % ; +7 saturé, luminance plafonnée à .45 (fini le ciel blanc) */
+vec3 tp=top*(1.-.4*pN);float lt=dot(tp,Y);tp=max(mix(vec3(lt),tp,1.+.6*pP),0.);lt=dot(tp,Y);tp*=mix(1.,min(1.,.45/max(lt,1e-4)),pP);
+vec3 c=mix(hor,tp,pow(y,.5));
+float sd=dot(d,sunD),sp=max(sd,0.);
+/* −7 : étoiles par hachage de la direction, seulement là où le ciel est sombre */
+if(pN>.01&&d.y>0.){vec3 q=floor(d*360.);float r=h(q.xy+q.z*7.31+skS*13.);
+  c+=vec3(.85,.9,1.)*step(.997,r)*smoothstep(.04,.25,d.y)*pN*(1.4+.8*sin(time*2.+r*90.))*(1.-smoothstep(.04,.3,dot(c,Y)));}
+/* Glace : aurores. Rideaux posés sur la voûte (coordonnées d'azimut, sans couture) : un bord bas ondulé par une fbm étirée
+   sur d.x, des stries verticales fines, vert en bas, violet en haut ; plus forts vers −7, pastel vers +7 */
+if(wG>.001&&d.y>0.){vec2 az=normalize(d.xz+vec2(1e-4));float el=d.y;
+  float e0=.1+.16*fb3(vec2(az.x*1.6+skS*9.+time*.01,az.y*1.6));
+  float sh=fb3(vec2(az.x*3.+time*.02,az.y*3.+skS*4.));
+  float cu=.45+.55*n(vec2(az.x*38.+time*.15,az.y*38.));
+  float au=smoothstep(e0-.025,e0+.01,el)*exp(-max(el-e0,0.)*5.5)*smoothstep(.38,.62,sh)*cu*smoothstep(.02,.1,el);
+  vec3 ac=mix(vec3(.1,1.,.5),vec3(.6,.22,1.),smoothstep(0.,.35,el-e0));ac=mix(ac,vec3(.65,.95,1.),pP*.45);
+  c+=ac*au*wG*(.3+1.1*pN+.1*pP);}
+/* Feu : plafond bas, sombre dessus, éclairé par en dessous d'un rougeoiement de braise (or ambré vers +7) */
+if(wF>.001&&d.y>0.){vec2 p=d.xz/(d.y+.07)*.7+vec2(time*.004,skS*11.);float f=fb3(p);
+  float bas=1.-smoothstep(0.,.5,d.y);vec3 br=mix(vec3(1.,.3,.07),vec3(1.,.62,.26),pP);
+  vec3 ce=mix(mix(hor*.5,vec3(.05,.025,.02),.45*pN+.2),br*(.35+.9*bas)*(1.-.35*pP),smoothstep(.35,.75,f)*bas);
+  float cov=smoothstep(.25,.55,f)*smoothstep(0.,.08,d.y);c=mix(c,ce,cov*wF*(.65+.25*pN));c*=1.-.3*wF*y*(1.-.5*pP);}
+/* Eau/Sève : voûte de canopée assombrie au-dessus, rayons verts peints dans les trouées autour du soleil */
+float leaf=0.;
+if(wC>.001&&d.y>0.){leaf=smoothstep(.42,.6,fb3(d.xz/(d.y+.45)*3.2+skS*7.))*smoothstep(.22,.7,d.y);
+  c*=1.-.3*wC*smoothstep(.15,.8,d.y);
+  vec3 cv=mix(vec3(.012,.035,.02),hor*vec3(.25,.4,.25),.3+.4*pP);c=mix(c,cv,leaf*wC*(.85-.25*pP));
+  vec3 e1=normalize(cross(sunD,vec3(0.,1.,.001))),e2=cross(e1,sunD),r=d-sunD*sd;float an=atan(dot(r,e1),dot(r,e2));
+  float ry=max(0.,sin(an*11.+skS*6.)*.55+sin(an*17.+1.3)*.35+.15);ry*=ry;
+  c+=vec3(.45,1.,.4)*ry*pow(sp,4.)*(1.-leaf)*wC*sv*(.3+.5*pP)*(1.-.6*pN);}
+/* Pierre/désert : grand soleil bas (disque plus large, gloire chaude) */
+float big=wP;
+/* soleil : disque, gloire ; Feu à −7 : soleil noir cerclé de lumière (éclipse) */
+float ec=wF*smoothstep(.3,.8,pN);
+float dk=smoothstep(mix(.9994,.9972,big),mix(.9998,.9986,big),sp);
+c+=sunC*sv*(dk*5.*(1.-ec)+(pow(sp,60.)*.3+pow(sp,7.)*.1)*(1.-.8*ec)+big*(pow(sp,14.)*.35+pow(sp,3.)*.08));
+if(ec>.001){float co=exp(-pow((sd-.9991)/.0005,2.))*7.+pow(sp,900.)*.6;c=mix(c,vec3(.004,.002,.002),dk*ec);c+=mix(sunC,vec3(1.,.55,.3),.5)*co*ec*sv;}
+/* nuages habituels (couverture donnée par l'atmosphère de la zone) */
+if(d.y>.005){vec2 p=d.xz/(d.y+.14)*1.5+vec2(time*.006,time*.002)+skS*3.;float f=fbm(p);float m=smoothstep(.72-cl*.5,.98-cl*.5,f)*smoothstep(0.,.16,d.y)*min(1.,cl*3.);
+  vec3 cc=mix(clC*.6,clC+sunC*(.12+.5*pow(sp,5.)),smoothstep(.4,.9,f));c=mix(c,cc,m*.92*(1.-leaf*wC));}
+/* Vent : cirrus longs et striés (filaments déformés, orientés selon la graine de la zone, discrets près de l'horizon) */
+if(wV>.001&&d.y>0.){vec2 p=d.xz/(d.y+.35);float o=skS*6.283;vec2 u=vec2(cos(o),sin(o));
+  vec2 q=vec2(dot(p,u)*.6+time*.01,dot(p,vec2(-u.y,u.x))*2.4);q.y+=fb3(q*.7+skS*3.)*1.6;
+  float f=fb3(q),g=n(q*vec2(1.,7.)+3.);float st=smoothstep(.52,.8,f)*(.4+.6*g)*smoothstep(.06,.35,d.y)*(1.-smoothstep(.8,1.,d.y));
+  vec3 ci=mix(hor,vec3(1.,.98,.96),.4)*mix(1.,.5,pN)+sunC*.06*pow(sp,3.);c=mix(c,ci,st*wV*.55);}
+/* Pierre : bande de poussière à l'horizon */
+if(wP>.001){float bd=exp(-pow((d.y-.05)/.045,2.))*(.75+.25*n(d.xz*9.+vec2(time*.05,skS*5.)));
+  vec3 du=mix(hor,vec3(.9,.58,.3)*max(dot(hor,Y),.05)*2.,.55);c=mix(c,du,bd*wP*.7);}
+/* +7 : halo de 22° autour du soleil (rouge dedans, bleu dehors), anneau Girih très pâle au-dessus de 30° */
+if(pP>.01){float ha=exp(-pow((sd-.927)/.0055,2.));vec3 pr=mix(vec3(1.,.55,.35),vec3(.55,.75,1.),smoothstep(.921,.933,sd));
+  c+=pr*ha*pP*sv*min(dot(sunC,Y),2.)*.09;
+  if(d.y>.5){float ph=atan(d.z,d.x),rz=acos(clamp(d.y,-1.,1.)),k=.6283,R=.62;
+    float l1=R*.951/cos(mod(ph,k)-k*.5),l2=R*.951/cos(mod(ph+k*.5,k)-k*.5);
+    float li=max(1.-smoothstep(.002,.006,abs(rz-l1)),1.-smoothstep(.002,.006,abs(rz-l2)));li=max(li,1.-smoothstep(.002,.006,abs(rz-R*.58)));
+    c+=(vec3(.06)+hor*.06)*li*pP*smoothstep(.5,.62,d.y);}}
+c=mix(hor,c,smoothstep(-.03,.04,d.y));gl_FragColor=vec4(c,1.);}`;
+sky.material.needsUpdate=true;
+
+/* --- 2. atmosphère du pôle positif : colorer au lieu d'éclaircir ---
+   Dominante (horizon, brouillard, sol du ciel hémisphérique, soleil) et complémentaire (zénith, ombres).
+   [dominante, complémentaire] ; null : pas de coloration de l'horizon (Givrecloche noir et blanc, Chinampas en manga). */
+const DUO_ZONE={DON:['#f0902a','#2ab8b4'],     /* ambre / turquoise */
+  RES374:['#2fae78','#f6c2cc'],                  /* jade / rose pâle */
+  ANT120:['#9ade5a','#7a3268'],                  /* vert tendre / prune */
+  CIT:['#e8603a','#2e9a86'],                     /* minium / malachite */
+  ANT:['#ff8a5a','#4a5ad0'],                     /* aurore / indigo */
+  RES:null,MAR:null};
+const DUO_MANA={Feu:['#ff7a26','#22a8c8'],Glace:['#4ab0f0','#f4b49a'],Eau:['#22c0b0','#f08a76'],'Sève':['#9ad860','#7a3a6a'],
+  Pierre:['#e8a040','#5a6ad8'],Vent:['#a88af0','#e8c860']};
+const Yl=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
+/* couleur ramenée à la luminance l (même teinte) */
+const atL=(c,l,o)=>{const k=l/Math.max(Yl(c),1e-4);o[0]=c[0]*k;o[1]=c[1]*k;o[2]=c[2]*k;return o};
+const t3=[0,0,0];
+function duoOf(Z){if(Z._duo!==undefined)return Z._duo;let r=Z.id in DUO_ZONE?DUO_ZONE[Z.id]:undefined;
+  if(r===undefined&&Z.plus){r=DUO_MANA[Z.d.mana]||DUO_MANA.Pierre;const rot=(typeof SIG_BIO!=='undefined'&&SIG_BIO[Z.d.biome])||0;
+    /* deux tuiles du même mana ne se confondent pas : la paire tourne un peu selon le biome (rotation de styles.js) */
+    return Z._duo=r.map(h=>{const c=LIN(h);return rot&&typeof sigRot==='function'?sigRot(c,rot*1.5):c})}
+  return Z._duo=r?r.map(LIN):null}
+/* exposition plafond à +7 quand le sol lui-même brille (Puits de braise : lave et motif Girih lumineux) */
+const EXP7={DON:.62},BL7={DON:.5,Glace:.45}; /* halo plafond : neige blanche + halo = voile laiteux (RES374 +7) */
+const bl7=Z=>BL7[Z.id]||(Z.plus&&BL7[Z.d.mana])||.8;
+const capTo=(v,cap,k)=>v>cap?lerp(v,cap,k):v;
+for(const Z of ZN){const a0=Z.atm;if(typeof a0!=='function')continue;
+  Z.atm=(lv,o)=>{a0(lv,o);
+    if(modeOf(Z)===3)o.el=Math.min(o.el,17); /* Pierre : grand soleil bas, ombres longues */
+    if(!(lv>0))return o;
+    const k=clamp(lv/7,0,1),kc=Math.min(1,k*2.5); /* plafonds atteints dès le palier 3 */
+    o.exp=capTo(o.exp,lerp(1,EXP7[Z.id]||1,k),kc);o.bl=capTo(o.bl,lerp(.8,bl7(Z),k),kc);
+    if(Z.plus)o.sunI=capTo(o.sunI,1.25,k); /* le soleil colore, il n'éclaircit plus */o.wI=capTo(o.wI,1.2,kc);
+    o.fog*=lerp(1,.75,k); /* zone sereine : on voit loin */
+    const D=duoOf(Z);
+    if(D){const dom=D[0],com=D[1],h=o.hor;
+      /* horizon : glisse vers la teinte du pôle, saturé ×1,4, luminance ramenée à .55 au plus */
+      const L0=Yl(h);mix3(h,h,atL(dom,L0,t3),.6*k);const L=Yl(h),s=1+.4*k;
+      for(let j=0;j<3;j++)h[j]=Math.max(0,L+(h[j]-L)*s);const L2=Yl(h),cap=lerp(1,.55,k);if(L2>cap){const f=cap/L2;h[0]*=f;h[1]*=f;h[2]*=f}
+      /* zénith et ombres (ciel hémisphérique) : la complémentaire, à luminance gardée */
+      mix3(o.top,o.top,atL(com,Yl(o.top),t3),.5*k);mix3(o.hs,o.hs,atL(com,Yl(o.hs),t3),.22*k);
+      /* sol du ciel hémisphérique, soleil et nuages : la dominante */
+      mix3(o.hg,o.hg,atL(dom,Math.max(Yl(o.hg),.05),t3),.7*k);mix3(o.sun,o.sun,atL(dom,Yl(o.sun),t3),.4*k);
+      mix3(o.clc,o.clc,atL(dom,Yl(o.clc),t3),.3*k);}
+    /* le brouillard prend toujours A.hor dans stepAtmo : il se fond exactement dans l'horizon du ciel */
+    return o}}
+
+/* --- lissage des uniforms du ciel à chaque image, comme sigCur dans styles.js (fondu ~2 s) --- */
+const cur={w:[0,0,0,0,0],p:0,s:0,t:0,on:false};
+const _d=draw;
+draw=function(t){const now=performance.now(),dt=cur.t?Math.min(.25,(now-cur.t)/1000):0;cur.t=now;
+  const Z=zoneAt(camera.position.x,camera.position.z);
+  if(Z){let f=cur.on?1-Math.exp(-dt*1.6):1;cur.on=true;const m=modeOf(Z),s=((Z.i*.6180339)%1);
+    for(let i=0;i<5;i++)cur.w[i]=lerp(cur.w[i],i===m?1:0,f);
+    cur.p=lerp(cur.p,clamp((Z.lv||0)/7,-1,1),f);cur.s=Math.abs(cur.s-s)>.5?s:lerp(cur.s,s,f)}
+  const w=U.skM.value;for(let i=0;i<5;i++)w[i]=cur.w[i];U.skP.value=cur.p;U.skS.value=cur.s;_d(t)};
+})();
 /* MozaWorld TV : combat au tour par tour (v1).
    Le héros et jusqu'à 3 bêtes alliées affrontent les gardiens d'une zone. Chaque tour : le mana se remplit,
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
@@ -11865,7 +12260,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.12';
+const MZ_VERSION='2.13';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -12280,6 +12675,108 @@ function terrainCarreaux(){const g=terrain.geometry,A=g.attributes,src=g.index.a
     const m=new THREE.Mesh(cg,terrain.material);m.receiveShadow=true;m.castShadow=true;m.frustumCulled=false;scene.add(m);
     CULL.list.push({o:m,c:new THREE.Vector3((x0+x1)/2,10,(z0+z1)/2),r:Math.hypot(x1-x0,z1-z0,200)/2,fixe:true})}
   terrain.visible=false;CULL.carreaux=true}
+
+/* ---------- Boucle 2 (19 nov. 2026) : budget repris (ombres limitées à leur boîte, coupe selon le brouillard) ----------
+   Mesuré au banc (Belle, rendu logiciel) : à Berestograd, la passe d'ombre envoyait ~229 000 triangles et ~100 appels
+   par image, alors que la boîte d'ombre ne fait que 240 m de côté autour du héros. Ici :
+   (a) la passe d'ombre ne voit plus que ce qui touche sa boîte (marge 30 m), terrain compris ;
+       la boîte est calée sur la grille de ses texels (les bords d'ombre ne scintillent plus quand on marche) ;
+   (b) choisir une qualité au menu allume ou coupe vraiment les ombres (en Fluide, aucune passe d'ombre) ;
+   (c) la distance de coupe suit le brouillard : ce qui y est noyé à plus de 99 % n'est plus envoyé ;
+   (d) les flocons tout près de la caméra ne font plus de gros disques flous.
+   Aucune lumière ajoutée ni retirée (sinon tous les matériaux se recompileraient). */
+const OMB={fr:new THREE.Frustum(),pm:new THREE.Matrix4(),sp:new THREE.Sphere(),cach:[],
+  x:new THREE.Vector3(),y:new THREE.Vector3(),z:new THREE.Vector3(),up:new THREE.Vector3(0,1,0),d:new THREE.Vector3()};
+const OMB_MARGE=30,OMB_BOITE=240,OMB_AVAL=200;
+/* Boucle 2, reprise du 19 nov. 2026 (refus du testeur : ombres perdues près du héros, une fois sur deux sous charge).
+   Cause principale : la baisse AUTOMATIQUE de qualité (main.js, quand l'image tombe sous 27 images/s, ce qui arrive vite
+   sur une machine chargée) passait par notre enveloppe de resize et coupait les ombres en arrivant à « Fluide ».
+   Les ombres dépendaient donc du rythme des images. Désormais :
+   - seul le choix du joueur (menu Qualité, ou réglage gardé au démarrage) allume ou coupe les ombres ; la baisse
+     automatique ne touche que la définition de l'image, comme avant cette boucle ;
+   - la passe d'ombre ne masque que des objets réellement hors de sa boîte ; pour les carreaux de terrain, plus de rayon
+     fixe de 130 m (qui oubliait les collines placées face au soleil bas) : seuls tombent ceux qui sont hors de la boîte,
+     ou à plus de 200 m du côté opposé au soleil ;
+   - les « miettes » ne valent que pour la caméra : elles sont rendues visibles avant la passe d'ombre, et leur tri se
+     fait sur les matrices de l'image en cours (plus de positions ni d'échelles d'il y a 90 images) ;
+   - la profondeur de la boîte (far) suit l'élévation du soleil : tout ce qui reçoit une ombre dans la boîte est entre
+     near et far, même soleil rasant. */
+/* (iii) far : la cible est à 260 m du soleil. Un sol à d mètres derrière le héros (vu du soleil) reste dans la boîte tant que
+   d·sin(él) ≤ 120 m ; il est alors à 260 + 120/tan(él) m du soleil, plus 60 m de relief. Entre 300 et 520 (valeur d'origine). */
+function farOmbre(sinEl){const s=clamp(sinEl,.05,1);return clamp(260+120*Math.sqrt(1-s*s)/s+60,300,520)}
+/* (a) passe d'ombre : le temps de l'appel, on masque ce qui est hors de la boîte (+30 m), puis on rend l'état exact */
+{const SM=renderer.shadowMap,_ombre=SM.render;
+ SM.render=function(lights,sc,cam){
+  if(sc!==scene||!SM.enabled||!sun.castShadow||!lights||!lights.length)return _ombre.call(SM,lights,sc,cam);
+  rendreMiettes();   /* les miettes ne servent qu'à la caméra (la liste de la passe principale est déjà faite) */
+  const S=sun.shadow,C=S.camera;S.updateMatrices(sun);
+  OMB.pm.multiplyMatrices(C.projectionMatrix,C.matrixWorldInverse);OMB.fr.setFromProjectionMatrix(OMB.pm);
+  for(const p of OMB.fr.planes)p.constant+=OMB_MARGE;   /* plans normalisés, tournés vers l'intérieur : 30 m de plus de chaque côté */
+  /* Carreaux de terrain : même test, plus un seul raccourci sûr. Un carreau à plus de 200 m du héros (au-delà du coin de la
+     boîte, 170 m, plus la marge) et du côté opposé au soleil ne peut jeter son ombre que plus loin encore : jamais près du héros. */
+  const K=OMB.cach,hs=TCH*CELL/2,d=OMB.d.subVectors(sun.position,sun.target.position).normalize(),sx=d.x,sz=d.z;K.length=0;
+  for(const e of CULL.list){const o=e.o;if(!o.visible||e.r<0)continue;let dehors;
+    if(e.fixe){const ex=e.c.x-P.x,ez=e.c.z-P.z;dehors=ex*sx+ez*sz<0&&Math.hypot(Math.max(0,Math.abs(ex)-hs),Math.max(0,Math.abs(ez)-hs))>OMB_AVAL}
+    if(!dehors){OMB.sp.center.copy(e.c);OMB.sp.radius=e.r;dehors=!OMB.fr.intersectsSphere(OMB.sp)}
+    if(dehors){o.visible=false;K.push(o)}}
+  try{_ombre.call(SM,lights,sc,cam)}finally{for(let i=0;i<K.length;i++)K[i].visible=true;K.length=0}}}
+/* (ii) Calage sur la grille des texels, dans le plan de la lumière. stepAtmo vient de replacer la cible sur le héros (P, pas la
+   caméra) et le soleil à 260 m d'elle, à chaque image, quel que soit dt (et donc aussi juste après MZ.tp ou MZ.set) ;
+   on arrondit la cible au texel près (pas = 240 m / taille de la carte) et le soleil suit du même décalage : la direction et la
+   distance soleil-cible ne changent pas, le héros reste au centre de la boîte à un demi-texel près. */
+function calerOmbre(){if(!sun.castShadow)return;const T=sun.target.position,d=OMB.d.subVectors(sun.position,T),L=d.length();
+  if(L<1e-3)return;OMB.z.copy(d).divideScalar(L);OMB.x.crossVectors(OMB.up,OMB.z);
+  if(OMB.x.lengthSq()<1e-8)OMB.x.set(1,0,0);else OMB.x.normalize();OMB.y.crossVectors(OMB.z,OMB.x);
+  const pas=OMB_BOITE/sun.shadow.mapSize.x,u=OMB.x.dot(T),v=OMB.y.dot(T);
+  T.addScaledVector(OMB.x,Math.round(u/pas)*pas-u).addScaledVector(OMB.y,Math.round(v/pas)*pas-v);sun.position.copy(T).add(d);
+  const C=sun.shadow.camera,f=farOmbre(OMB.z.y);if(Math.abs(C.far-f)>2){C.far=f;C.updateProjectionMatrix()}}
+sun.shadow.camera.far=farOmbre(Math.sin(30*D2R));sun.shadow.camera.updateProjectionMatrix();
+/* (b) qualité : choisir « Fluide » au menu coupe vraiment la passe d'ombre ; ailleurs la carte prend la taille du réglage.
+   La baisse automatique (main.js : autoQ, juste après la remise à zéro de fpsT et fpsN) ne touche pas aux ombres :
+   ce que l'on voit ne doit pas dépendre du rythme des images. */
+function baisseAuto(){try{return autoQ&&frame>0&&fpsT===0&&fpsN===0}catch(_){return false}}
+const _resizeOmb=resize;
+resize=function(){_resizeOmb();if(baisseAuto())return;const sh=QUAL().sh;renderer.shadowMap.enabled=sun.castShadow=sh>0;
+  if(sh>0&&sun.shadow.mapSize.x!==sh){if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}sun.shadow.mapSize.set(sh,sh)}};
+/* (c) coupe selon le brouillard. FogExp2 : à 2,3/densité, il reste 0,5 % de l'objet ; +40 m de marge, entre 180 et 620 m.
+   Densité visée (AT.fog) ; si le brouillard lissé est encore plus clair (on entre dans une zone plus brumeuse), on garde
+   le plus clair des deux : rien ne surgit, rien ne s'efface sous les yeux. Même atténuation en hauteur que stepAtmo. */
+function densiteVisee(){const fh=AT.fh,y=camera.position.y,h=fh>.5?(y<-1.5?.1:lerp(1,.1,sst(fh-5,fh+7,y))):1;
+  return Math.min(AT.fog||0,A.fog||0)*h}
+const _cullOmb=cullScene;
+cullScene=function(){const d=densiteVisee();CULL.far=d>0?clamp(2.3/d+40,180,620):620;calerOmbre();
+  if(CULL.dirty||MIET.nb!==scene.children.length)prepMiettes();_cullOmb();MIET.arme=true};
+/* (c bis) Les miettes. Au banc, à Berestograd, ~160 petits objets ordinaires (pièces des pierres d'éveil et des décors des
+   autres zones, à plus de 300 m) coûtaient chacun un appel de dessin pour moins d'un pixel une fois passés dans la brume.
+   Pour la seule vue de la caméra, on masque un objet dont la taille à l'écran × ce qui reste après le brouillard est sous
+   1 pixel (0,75 pixel pour ce qui ignore le brouillard : lanternes, halos). Jamais à moins de 80 m de la caméra.
+   Le tri se fait dans scene.onBeforeRender, c'est-à-dire APRÈS la mise à jour des matrices de l'image en cours : positions,
+   échelles, géométrie et brouillard sont lus à l'instant (un objet déplacé par MZ.tp, regonflé par MZ.set ou tout neuf est
+   jugé tel qu'il est). La liste ne fait que nommer les candidats ; elle est refaite à chaque mue (CULL.dirty) ou quand la
+   scène gagne ou perd un enfant, jamais au compte des images. L'état « visible » du jeu est rendu à l'identique avant la
+   passe d'ombre et après l'image : la logique du jeu ne voit rien. */
+const MIET={l:[],cach:[],nb:-1,arme:false,v:new THREE.Vector3(),t:new THREE.Vector2()};
+function prepMiettes(){MIET.nb=scene.children.length;const L=MIET.l;L.length=0;const dans=new Set();for(const e of CULL.list)dans.add(e.o);
+  scene.traverse(o=>{if(o.isMesh&&!o.isInstancedMesh&&o.frustumCulled&&!dans.has(o)&&o!==sky&&o.geometry)L.push(o)})}
+function masquerMiettes(){const K=MIET.cach;K.length=0;if(!MIET.l.length)return;
+  const cp=camera.position,kpx=renderer.getDrawingBufferSize(MIET.t).y/Math.tan(camera.fov*D2R/2),fd=scene.fog?scene.fog.density:0;
+  for(const o of MIET.l){if(!o.visible)continue;const g=o.geometry;if(!g)continue;if(!g.boundingSphere)g.computeBoundingSphere();
+    const b=g.boundingSphere;if(!b||!(b.radius>0))continue;MIET.v.copy(b.center).applyMatrix4(o.matrixWorld);
+    const r=b.radius*o.matrixWorld.getMaxScaleOnAxis(),d=cp.distanceTo(MIET.v)-r;if(d<80)continue;
+    const m=o.material,fog=Array.isArray(m)?m.some(q=>q&&q.fog&&!q.isShaderMaterial):!!(m&&m.fog&&!m.isShaderMaterial);
+    let px=r/d*kpx;if(fog){const x=d*fd;px*=Math.exp(-x*x)}
+    if(px<(fog?1:.75)){o.visible=false;K.push(o)}}}
+function rendreMiettes(){const K=MIET.cach;for(let i=0;i<K.length;i++)K[i].visible=true;K.length=0}
+{const _obr=scene.onBeforeRender;
+ scene.onBeforeRender=function(r,s,c,rt){if(_obr)_obr.call(this,r,s,c,rt);if(MIET.arme&&c===camera){MIET.arme=false;masquerMiettes()}}}
+const _drawMiet=draw;
+draw=function(t){try{_drawMiet(t)}finally{MIET.arme=false;rendreMiettes()}};
+/* (d) flocons : taille plafonnée à 18 px, fondu entre 1,5 et 5 m devant la caméra (plus de gros disques flous) */
+if(typeof weather!=='undefined'&&weather&&weather.material){const wm=weather.material,_obc=wm.onBeforeCompile;
+  wm.onBeforeCompile=function(s,r){if(_obc)_obc.call(this,s,r);
+    s.vertexShader='varying float vPres;\n'+s.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=min(gl_PointSize,18.);vPres=smoothstep(1.5,5.,-mvPosition.z);');
+    s.fragmentShader='varying float vPres;\n'+s.fragmentShader.replace('#include <fog_fragment>','#include <fog_fragment>\ngl_FragColor.a*=vPres;')};
+  wm.customProgramCacheKey=()=>'meteo-b2';wm.needsUpdate=true}
 /* MozaWorld TV 2.1 : le Grimoire (demande du 17 nov. : « ajoute un menu dans le jeu pour y mettre le grimoire »).
    Toutes les cartes du jeu, zone par zone : où les gagner, la carte de chaque pôle, et ce qu'elle devient de palier en palier.
    Tout est lu dans les cartes elles-mêmes (CK), au niveau voulu : le Grimoire suit donc les cartes, quelle que soit leur version. */
