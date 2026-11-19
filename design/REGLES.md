@@ -134,6 +134,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - **Livres (19 nov., 2.11)** : chaque zone non Ressource a un livre ouvert sur un lutrin, écrit par un personnage de la zone (conteur de la zone), qui raconte son histoire en 4 pages ; la dernière page, d'une autre plume, change selon le niveau (mêmes 5 bandes). A devant le lutrin pour l'ouvrir ; ◀ ▶ pour tourner les pages ; B pour refermer. Les Ressources n'ont ni livre ni inscription (confirmé le 19 nov.). Textes : `design/inscriptions/livres_*.json`.
 - Le combat est animé (carte qui vole, élan, impact), sans que les animations changent les règles.
 - Chaque zone a son étalonnage signature, propre à chaque pôle (fin du noir bouché à −7 et du blanc brûlé à +7), et un sol vivant : grain par biome, failles vers −7, motif Girih vers +7 (boucle 1, 19 nov.).
+- Chaque type de zone a sa grammaire de pôle au sol, chaque zone son ciel signature (le +7 se teinte, il ne blanchit pas) ; l'image passe par un FXAA et les ombres restent dans leur boîte (boucle 2, 19 nov.).
 - Le monde est animé : vent dans la végétation, braises vers −7 et lucioles vers +7, créatures qui errent (décoratives) (2.8).
 - Exploration épurée par défaut : fiche de zone quelques secondes à l'entrée, aide qui s'efface, minicarte réduite ; RB ou Tab affiche l'interface complète (2.8).
 - Le juge visuel des zones (note de 80 % au moins) est **suspendu** tant que le jeu est la version web. Il reprendra sous Unreal. Le critique reste en place pour les textes et les cartes.

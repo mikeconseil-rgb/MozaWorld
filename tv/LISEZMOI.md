@@ -4,6 +4,13 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.13 : boucle graphique 2 (19 novembre)
+
+Trois améliorations acceptées par le testeur de l'équipe graphique, détaillées dans les sections « Boucle graphique 2 » ci-dessous :
+une grammaire de pôle propre à chaque type de zone (sol), un ciel signature par zone (le +7 se teinte au lieu de blanchir, rai des lieux adouci),
+et une image plus propre et plus légère (FXAA, ombres limitées à leur boîte, objets cachés par le brouillard non dessinés).
+Mesures (rendu logiciel, avant → après) : Citadelle 1 056 346 → 681 408 triangles et 832 → 395 appels ; RES227 765 664 → 670 438 et 638 → 396 ; ASS152 505 702 → 424 994 et 328 → 293.
+
 ## Boucle graphique 2 : ciels signature (19 novembre, boucle 2)
 
 Fichier neuf `src/ciels.js` (après `styles.js` dans `build.sh`) et rai des lieux refait dans `src/lieux.js`. Aucun objet ni appel de dessin en plus.
