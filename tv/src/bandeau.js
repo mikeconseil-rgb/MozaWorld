@@ -13,20 +13,31 @@ const BTYPES=[['CIT','⛫','Citadelles'],['DON','⬟','Donjons'],['RES','⬢','R
 .bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}
 /* 19 nov. : avec les lignes Menaces et Rivaux, la barre peut dépasser 1280 px ; elle passe alors sur deux lignes au lieu d'être coupée */
 .hud.etat,.hud.etat .bandeau{flex-wrap:wrap!important;row-gap:calc(var(--u)*.3)}`;document.head.appendChild(st)})();
+/* Boucle 1 (19 novembre 2026) : la barre du haut se lit en trois îlots, mana · territoire · ressources.
+   Chaque îlot porte une valeur clé plus grande (le compte de zones, le paquet), le reste est en petit ; un seul accent, l'or.
+   Les cases fixes de head.html (blessures, secrets) sont rangées dans l'îlot des ressources : main.js les met à jour par leur id. */
+let BANDEAU_FIXES=null;
 function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;let b=document.getElementById('bandeau');
   if(!b){b=document.createElement('div');b.id='bandeau';b.className='bandeau';box.prepend(b)}
-  const mana=`<span class="m"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');
+  if(!BANDEAU_FIXES)BANDEAU_FIXES=['h-vies','h-deck','h-sec'].map(id=>{const e=document.getElementById(id);return e&&e.closest('.hud.etat>div')}).filter(Boolean).map(d=>(d.classList.add('fixe'),d));
+  const mana=`<span class="m" title="Mana gris, sans limite"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');
   const dom=BTYPES.map(([m,ic,nom])=>{const tot=ZN.filter(Z=>(Z.mod||Z.id)===m),own=tot.filter(Z=>S.own[Z.id]).length;
-    return`<span class="d" title="${nom}"><span>${ic}</span>${own}<small>/${tot.length}</small></span>`}).join('');
+    return`<span class="d petit" title="${nom}"><span>${ic}</span>${own}<small>/${tot.length}</small></span>`}).join('');
   const dfe=typeof bandeauDomaines==='function'?(suivreDomaines(),bandeauDomaines()):'';   /* domaines fermés (domaines.js) */
-  const prod=typeof prodTexte==='function'&&prodRessource()?`<span class="titre">+ ${prodTexte()} par cycle</span>`:'';
+  const prod=typeof prodTexte==='function'&&prodRessource()?`<span class="d" title="Production des Ressources"><small>+ ${prodTexte()} par cycle</small></span>`:'';
   /* territoire : zones à vous, et le plus grand bloc de zones voisines d'un seul tenant */
-  const mes=ZN.filter(Z=>S.own[Z.id]).map(Z=>Z.id),vu=new Set();let bloc=0;
-  if(typeof VOISINES!=='undefined')for(const id of mes){if(vu.has(id))continue;let n=0;const pile=[id];vu.add(id);
+  const ids=ZN.filter(Z=>S.own[Z.id]).map(Z=>Z.id),vu=new Set();let bloc=0;
+  if(typeof VOISINES!=='undefined')for(const id of ids){if(vu.has(id))continue;let n=0;const pile=[id];vu.add(id);
     while(pile.length){const z=pile.pop();n++;for(const v of VOISINES[z]||[])if(S.own[v]&&!vu.has(v)){vu.add(v);pile.push(v)}}bloc=Math.max(bloc,n)}
   const niv=ZN.reduce((a,Z)=>a+(S.own[Z.id]?Math.abs(S.lv[Z.id]||0):0),0);
-  const terr=`<span class="d" title="Zones à vous"><span>⚑</span>${mes.length}<small>/${ZN.length}</small></span>${typeof ZONES_DEP!=='undefined'?`<span class="d" title="Territoire de départ pris (les zones autour ne cèdent qu'après)"><span>⌂</span>${departPris()}<small>/${ZONES_DEP.length} départ</small></span>`:''}<span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}<small> d'un tenant</small></span><span class="d" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}<small> niv.</small></span>`;
-  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne prod">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}${dfe}</div><div class="ligne"><span class="titre">Territoire</span>${terr}</div>${royaume()}${(()=>{const m=typeof menacesHordes==='function'?menacesHordes():[];return m.length?`<div class="ligne"><span class="titre">Menaces</span>${m.join('')}</div>`:''})()}${typeof ligneRivaux==='function'?ligneRivaux():''}`}
+  const dep=typeof ZONES_DEP!=='undefined'?`<span class="d" title="Territoire de départ pris (les zones autour ne cèdent qu'après)"><span>⌂</span>${departPris()}<small>/${ZONES_DEP.length}</small></span>`:'';
+  const terr=`<span class="d cle" title="Zones à vous"><span>⚑</span>${ids.length}<small>/${ZN.length}</small></span>${dep}<span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}</span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}</span><i class="pt"></i>${dom}${dfe}`;
+  const res=`<span class="d cle" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span>${royaume()}`;
+  const men=typeof menacesHordes==='function'?menacesHordes():[];
+  /* boucle 1 + fils domaines, hordes, rivaux (19 nov.) : trois îlots, puis menaces et rivaux s'il y en a */
+  b.innerHTML=`<div class="ilot i-mana">${mana}${prod}</div><i class="sep"></i><div class="ilot i-terr">${terr}</div><i class="sep"></i><div class="ilot i-res">${res}</div>`+
+    (men.length?`<i class="sep"></i><div class="ilot i-men"><span class="titre">Menaces</span>${men.join('')}</div>`:'')+(typeof ligneRivaux==='function'?ligneRivaux():'');
+  const ir=b.querySelector('.i-res');for(const d of BANDEAU_FIXES)ir.appendChild(d)}
 /* 17 nov. (« affichons ces chiffres dans la barre d'état ») : la boucle de jeu en chiffres — cartes de zone éveillées dans le paquet,
    bêtes, bonus greffés, routes — et le danger estimé de la zone où l'on se trouve. */
 function puissancePaquet(){return(S.deck||[]).filter(k=>k.indexOf('#')>0&&(typeof eveillee!=='function'||eveillee(k))||CK[k]&&CK[k].z&&k.indexOf('#')<0).length}
@@ -36,5 +47,5 @@ function royaume(){const own=Z=>S.own[Z.id]&&S.act[Z.id];
   const betes=ZN.filter(Z=>(Z.mod||Z.id)==='ANT'&&own(Z)).length;
   let routes=0,bonus=0;if(typeof etatRoutes==='function'){etatRoutes();for(const r in S.routes){routes+=S.routes[r].length;if(Math.abs(S.lv[r]||0)>=3&&S.atout[r]!==undefined)bonus+=S.routes[r].length}}
   const dz=typeof curZ!=='undefined'&&curZ?dangerZone(curZ):null;
-  return`<div class="ligne"><span class="titre">Royaume</span><span class="d" title="Cartes de zone éveillées dans le paquet"><span>🂠</span>${puissancePaquet()}</span><span class="d" title="Antres actifs : vos bêtes"><span>✦</span>${betes}</span><span class="d" title="Bonus greffés par les routes"><span>⬢</span>${bonus}</span><span class="d" title="Routes ouvertes"><span>═</span>${routes}</span></div>`+
-    (dz?`<div class="ligne"><span class="titre">Danger ici</span><span class="dg ${dz[0]}">${dz[1]}</span></div>`:'')}
+  return`<span class="d petit" title="Cartes de zone éveillées dans le paquet"><span>❖</span>${puissancePaquet()}</span><span class="d petit" title="Antres actifs : vos bêtes"><span>✦</span>${betes}</span><span class="d petit" title="Bonus greffés par les routes"><span>⬢</span>${bonus}</span><span class="d petit" title="Routes ouvertes"><span>═</span>${routes}</span>`+
+    (dz?`<i class="pt"></i><span class="dg ${dz[0]}" title="Danger dans cette zone">${dz[1]}</span>`:'')}

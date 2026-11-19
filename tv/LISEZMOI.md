@@ -284,3 +284,10 @@ Code : tv/src/assemblees.js. Une Assemblée n'agit pas en combat : sa loi agit s
 - 2.5.1 (retour de test du 18 nov.) : l'état tient sur une seule barre sombre en haut de l'écran (mana, domaines, territoire, royaume, danger, blessures, secrets).
 - tv/src/ecrin.js : habillage commun des interfaces (cadres à filets d'or, coins ornés, fleurons, menus en lignes de manuscrit, bandeau en tableau, mue mise en scène). MZ_VERSION (affiché au titre et dans la pause) : à monter à chaque PR de jeu.
 - Graphismes : la version web part en qualité « Belle » (ombres 2048, anticrénelage ×4) ; nouveau réglage « Splendide » (image en pleine largeur 1920). Si l'image tombe sous 27 images/s, la qualité baisse seule. Poussières de lumière autour du héros, couleur de la zone (tv/src/poussiere.js).
+
+### Boucle 1.3 · Interface classieuse (19 nov. 2026)
+- Un seul titre de zone : tant que le bandeau central est visible, le cartouche du haut à gauche s'efface (`body.toast-vu`, MutationObserver sur `#toast`), puis revient. À l'entrée dans une zone, le bandeau part au bout de ~3 s, sans répéter la phrase du palier que le cartouche affiche ensuite ; un léger voile sombre (60 %, sans cadre) le détache du décor.
+- Surtitre du cartouche : deux éléments (type · biome) sur une seule ligne ; le détail complet reste en infobulle.
+- Barre du haut en trois îlots (mana · territoire · ressources) séparés d'un filet d'or à losange ; valeurs clés en grand (zones à vous, paquet), un seul accent (l'or). Blessures et secrets rejoignent l'îlot des ressources (bandeau.js).
+- Cartes de combat : les cartes non choisies montrent nom, type et trois lignes de texte avec fondu bas ; la carte choisie a une hauteur fixe et `ajuster()` réduit sa police par pas de 4 % (6 au plus), une mesure par carte et par main ; elle s'écarte de ses voisines et porte une ombre de la couleur de son mana. Mana du tour en grille de pastilles.
+- Fichiers : ecrin.js, bandeau.js, cartes-visuel.js. Rien ne change dans main.js, combat.js, cartes.js ni anim-combat.js, ni dans la scène 3D (triangles et appels de dessin identiques, aux variations du tirage près).
