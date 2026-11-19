@@ -54,7 +54,8 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     ok('une zone sauvage entourée est encerclée',e.enc,e.id+' : '+e.statut.join(', '));
     await p.evaluate(id=>window.MZ.combat(id,'eveil'),e.id);await p.waitForTimeout(1200);
     const f=await p.evaluate(()=>{const C=window.MZ.CB;if(!C)return null;const ch=C.foes.find(m=>m.chef);return{pv:ch.pv,atk:ch.atk,enc:!!ch.encercle,passifs:C.passifs.join(' | ')}});
-    ok('ses gardiens d\'activation sont affaiblis',!!f&&f.enc&&f.pv===Math.max(1,Math.round(e.base*.75))&&f.atk===Math.max(1,e.baseAtk-1),f?`chef ${e.base}→${f.pv} PV, atk ${e.baseAtk}→${f.atk}`:'pas de combat');
+    /* 2.12 : le Plateau donne +30 % de PV au chef ; l'encerclement doit rester visible (PV sous ce plafond, attaque −1) */
+    ok('ses gardiens d\'activation sont affaiblis',!!f&&f.enc&&f.pv<Math.round(e.base*1.3)&&f.atk===Math.max(1,e.baseAtk-1),f?`chef ${e.base}→${f.pv} PV, atk ${e.baseAtk}→${f.atk}`:'pas de combat');
     /* 5. bonus des Antres et Donjons fermés en combat */
     const b=await p.evaluate(()=>{const C=window.MZ.CB;if(!C)return null;invoquer({nom:'Bête de test',pv:5,max:5,atk:1,g:0,bete:1});const bt=C.allies[C.allies.length-1];
       return{ant:domFermes('ANT').length,don:domFermes('DON').length,bete:bt.pv,res:C.hero.res,dons:zonesA('DON').length}});

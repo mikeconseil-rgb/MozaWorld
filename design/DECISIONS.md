@@ -10,9 +10,23 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Blessures façon Shadowrun | 17 nov. | Deux ou trois soirs de jeu, puis un seul système |
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
 | Gameplay du monde, lot 1 : hordes (5 cycles de colère, 3 de marche, cibles 2 à 3 paliers plus faibles), domaines dès 2 tuiles et leurs bonus, défense +2/+1/+2, rivaux (1 chance sur 6 par cycle, préavis 2 cycles, verrou contestable), reprise par l'empreinte en un palier | 19 nov. | Les jouer ; réglages proposés par l'équipe, pas encore tranchés par l'utilisateur |
+| Plateau de combat (3 voies, avant/arrière, cases Girih à effet, Manœuvre, Sentinelle, soutien de l'arrière, plancher de capacité) | 19 nov. | Le jouer sur la Xbox ; notes des testeurs à chaque passe (design/plateau/notes.md) |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
+
+
+## 19 novembre 2026 (gameplay du monde, réponses de l'utilisateur)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Hordes | Une horde ne vise que les zones plus faibles de 2 ou 3 paliers | en vigueur | |
+| Hordes | Une zone à vous qui tombe à 0 sous une horde redevient sauvage (« Non » à « elle reste à vous ») ; elle garde votre empreinte (« Bonne idée », 19 nov.) | en vigueur | « reste à vous » (essai du 19 nov.) |
+| Rivaux | Un rival ne prend pas une zone sauvage sans rien faire : il doit réussir une épreuve annoncée et visible | en vigueur | prise sans combat (essai du 19 nov.) |
+| Empreinte | Reprendre une ancienne zone en réussissant un seul palier | en vigueur | |
+| Domaines | Un domaine compte dès 2 tuiles sur la petite carte, 3 sur la grande | en vigueur | |
+| Verrous | Le verrou de Citadelle empêche les prises des rivaux, pas leurs contestations | en vigueur | |
+| Lot 2 | Tours de guet (7), commerce en Citadelle avec les tesselles (9), aménager chaque Donjon possédé (10) | en cours | |
 
 ## 19 novembre 2026
 
@@ -20,8 +34,10 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 |---|---|---|---|
 | Choix moraux | Continuer les scénarios sur d'autres zones sans attendre le verdict sur Kobor (testé ce week-end) : lot 1 = Berestograd, l'Oasis de Maulu, le Fjord de Rames | en vigueur | |
 | Livres | « Ajoute également des livres à laisser dans les zones, racontant l'histoire de la zone » : un livre par zone non Ressource (4 pages + dernière page selon le niveau) ; Ressources sans livre pour l'instant (design simple) | en vigueur (2.11) | rien |
+| Livres | « Ajoute également des livres à laisser dans les zones, racontant l'histoire de la zone » : un livre par zone non Ressource (4 pages + dernière page selon le niveau) ; Ressources sans livre (design simple), confirmé par l'utilisateur le 19 nov. (« Ressources sans livre ») | en vigueur (2.11) | rien |
 | Graphismes | Équipe graphique en boucles quotidiennes jusqu'à l'échéance (~28 nov.) : critique, direction artistique, rendu et performance, producteur, artisans, testeur-juge ; ce que le testeur accepte est fusionné sans attendre l'utilisateur | en vigueur | |
 | Inscriptions | « Ajouts de texte et d'inscription pour enrichir chaque zone non ressources » : 4 objets écrits par Antre, Assemblée, Donjon et Citadelle, texte du conteur de la zone qui change en 5 bandes de niveau ; Ressources exclues | en vigueur (2.9) | rien |
+| Combat | « Un plateau de bataille relativement petit, en mosaïque », placement défensif des créatures, équipe de 4 testeurs (fonctionnel, joueur de cartes à échanges, joueur de défense par étages, joueur tactique généraliste) qui notent chaque passe : le Plateau (3 voies × avant/arrière) agrandit le Nœud ; la Garde passe devant le héros, derrière les voies | provisoire | le Nœud à 2 voies (17 nov.) |
 | Échéance | « Il faut tout terminer d'ici 10 jours » ; appliquer chaque lot une fois les tests acceptés par l'équipe | en vigueur | rien |
 
 ## 18 novembre 2026

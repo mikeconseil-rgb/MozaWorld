@@ -7,7 +7,20 @@
 const LIEUX=[];
 (function(){
 const vc=M(0xffffff,{vertexColors:true}),lueur=new THREE.MeshBasicMaterial({color:new THREE.Color(3,1.9,.8)});
-const rai=new THREE.MeshBasicMaterial({color:new THREE.Color(1.4,1.1,.6),transparent:true,opacity:.28,depthWrite:false,blending:THREE.AdditiveBlending});
+/* boucle 2 (19 nov. 2026) : le rai devient un cône ouvert additif, sans brouillard et sans écriture de profondeur.
+   Alpha = (1 − y/140)² × smoothstep(18, 45, d) × (1 − smoothstep(140, 400, d)) × .22, d = distance horizontale caméra → lieu :
+   invisible de près (on est dessus), éteint au-delà de 400 m (il ne raye plus le ciel de loin en trait blanc diagonal).
+   Bords adoucis par l'angle de vue (f³) (le cône n'a plus de silhouette dure). Couleur : le pôle positif de la zone du lieu, saturé (un pôle presque blanc, comme la Glace, ne redonne pas un trait blanc).
+   L'échelle d'instance (L.rai.set) continue d'éteindre le rai quand le secret est trouvé. */
+const raiMat=c=>new THREE.ShaderMaterial({uniforms:{col:{value:new THREE.Color(c[0],c[1],c[2])}},transparent:true,depthWrite:false,fog:false,blending:THREE.AdditiveBlending,
+  vertexShader:`varying float vA;varying vec3 vN,vV;void main(){mat4 m=modelMatrix;
+#ifdef USE_INSTANCING
+m=m*instanceMatrix;
+#endif
+vec4 w=m*vec4(position,1.);vec3 o=(m*vec4(0.,0.,0.,1.)).xyz;float d=distance(o.xz,cameraPosition.xz),y=clamp(position.y/140.,0.,1.);
+vA=(1.-y)*(1.-y)*smoothstep(18.,45.,d)*(1.-smoothstep(140.,400.,d))*.22;
+vN=mat3(m)*vec3(normal.x,0.,normal.z);vV=cameraPosition-w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+  fragmentShader:`uniform vec3 col;varying float vA;varying vec3 vN,vV;void main(){float f=abs(dot(normalize(vN),normalize(vV)));gl_FragColor=vec4(col,vA*f*f*f);}`});
 const tente=(x,z,r,c)=>[new THREE.ConeGeometry(r,r*1.5,4).rotateY(Math.PI/4).translate(x,r*.75,z),c];
 const GEO={
   camp:merge([tente(-5,0,3.2,0x8a6a4a),tente(4,-4,2.6,0x7a5a3a),tente(3,5,2.4,0x9a7a52),
@@ -20,12 +33,13 @@ const GEO={
   belvedere:merge([[cyl(3.5,5,13,6,0,6.5,0),0x6a6258],[cyl(4.2,4.2,.8,6,0,13.4,0),0x8a8070],
     ...Array.from({length:14},(_,i)=>{const a=i*.55,y=i*.9+.45;return[box(2.2,.45,1.4,Math.cos(a)*5.6,y,Math.sin(a)*5.6,-a),0x7a7268]}),
     [cyl(.1,.1,5,5,0,16.3,0),0x3a2a1a],[box(2.2,1.4,.06,1.1,18,0),0xffffff]]),
-  rai:cyl(.9,.9,140,8,0,70,0)};
+  rai:new THREE.CylinderGeometry(2.5,.3,140,8,1,true).translate(0,70,0)}; /* boucle 2 : cône ouvert, 0,3 m au pied, 2,5 m au sommet */
 const SORTES=[['camp','Le camp abandonné','Des cendres encore tièdes, trois tentes et un panneau de bois. Quelqu\'un a quitté ce camp en hâte.'],
   ['cercle','Le cercle de pierres','Neuf pierres levées autour d\'un autel. Le glyphe qui flotte au-dessus tourne dans le sens du pôle.'],
   ['belvedere','Le belvédère','Une tour de roc et son escalier en spirale. D\'en haut, on voit toute la tuile et ses voisines.']];
 
 for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),bl=[1,1,1];
+  const rL=cP[0]*.2126+cP[1]*.7152+cP[2]*.0722,rC=cP.map(x=>Math.max(0,rL+(x-rL)*2.2)*.5),raiZ=raiMat(rC); /* boucle 2 : rai teinté par le pôle de la zone */
   const build0=Z.build,update0=Z.update;Z.lieux=[];
   Z.build=()=>{build0();const R=Math.max(...Z.poly.map(p=>{const q=Z.loc(p[0],p[1]);return Math.hypot(q[0],q[1])}));
     SORTES.forEach(([k,titre,texte],i)=>{
@@ -35,7 +49,7 @@ for(const Z of ZN)if(Z.plus)(()=>{const [neg,pos]=PMANA[Z.d.mana]||PMANA.Pierre,
       const add=(g,mat,sh)=>{const it=inst(g,mat,sh);it.add(p[0],0,p[1],1,1,1,ry);it.make();L.parts.push(it);return it};
       L.corps=add(GEO[k],vc,true);
       if(k==='camp')L.eclat=add(GEO.feu,lueur,false);if(k==='cercle')L.eclat=add(GEO.glyphe,lueur,false);
-      L.rai=add(GEO.rai,rai,false);L.rai.m.renderOrder=5;L.rai.m.receiveShadow=false;
+      L.rai=add(GEO.rai,raiZ,false);L.rai.m.renderOrder=5;L.rai.m.receiveShadow=false;
       Z.lieux.push(L);LIEUX.push(L)})};
   Z.update=lv=>{update0(lv);const an=wneg(lv),ap=wpos(lv);
     for(const L of Z.lieux){const y=groundZ(Z,L.x,L.z,lv)-.3;

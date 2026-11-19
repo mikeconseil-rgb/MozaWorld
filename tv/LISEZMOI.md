@@ -4,11 +4,50 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
-## Version 2.12 : choix moraux de trois nouvelles zones (19 novembre)
+## Version 2.14 : choix moraux de trois nouvelles zones (19 novembre)
 
 - Trois zones de plus ont leur scénario en 15 scènes (`src/scenarios-zones.js`), sur le modèle de la Taïga de Kobor : **Berestograd** (Oubli / Mémoire : l'écorce pliée en huit d'Ouliana, le frère noyé du kniaz), **l'Oasis de Maulu** (Glace / Feu : une source pour un seul troupeau, la quatrième bête boit à votre place), **le Fjord de Rames** (Cauchemar / Rêve : le cent quarante et unième coup de rame, les embaumés sous la glace).
 - Nouveau type de prix : du mana d'un type précis (Sève, Glace).
 - L'épreuve qui suit le choix reste celle de la zone ; l'habillage par la scène viendra avec le soir 2 de Kobor.
+## Version 2.13 : boucle graphique 2 (19 novembre)
+
+Trois améliorations acceptées par le testeur de l'équipe graphique, détaillées dans les sections « Boucle graphique 2 » ci-dessous :
+une grammaire de pôle propre à chaque type de zone (sol), un ciel signature par zone (le +7 se teinte au lieu de blanchir, rai des lieux adouci),
+et une image plus propre et plus légère (FXAA, ombres limitées à leur boîte, objets cachés par le brouillard non dessinés).
+Mesures (rendu logiciel, avant → après) : Citadelle 1 056 346 → 681 408 triangles et 832 → 395 appels ; RES227 765 664 → 670 438 et 638 → 396 ; ASS152 505 702 → 424 994 et 328 → 293.
+
+## Boucle graphique 2 : ciels signature (19 novembre, boucle 2)
+
+Fichier neuf `src/ciels.js` (après `styles.js` dans `build.sh`) et rai des lieux refait dans `src/lieux.js`. Aucun objet ni appel de dessin en plus.
+- **Un ciel par famille** (lissé sur ~2 s en changeant de zone) : Glace, aurores en rideaux (Berestograd, Taïga…) ; Feu, plafond bas éclairé par en dessous de braise (Puits, Canyon, Désert) ; Eau et Sève, voûte de canopée assombrie et rayons verts autour du soleil (Lucioles, Oasis, Récif) ; Pierre, grand soleil bas (élévation 17° au plus) et bande de poussière à l'horizon ; Vent, cirrus longs et striés (Chinampas, Lande, Steppe). Givrecloche reste neutre (noir et blanc).
+- **Vers −7** : zénith assombri de 40 %, étoiles ; pour le Feu, soleil noir cerclé de lumière (éclipse). **Vers +7** : zénith saturé (luminance ≤ .45), halo de 22° autour du soleil, anneau Girih très pâle au-dessus de 30°.
+- **+7 colore au lieu d'éclaircir** : à niveau positif, exposition ≤ 1 (Puits : .62), halo ≤ .8 (Glace .45, Puits .5), météo ≤ 1,2, soleil des nouvelles tuiles ≤ 1,25 ; l'horizon (et donc le brouillard, toujours de la même couleur) glisse vers la dominante du pôle, saturé ×1,4, luminance ≤ .55 ; zénith et ombres prennent la complémentaire (Puits ambre / turquoise, RES374 jade / rose pâle, ANT120 vert tendre / prune ; les autres d'après leur mana, tournés selon le biome) ; brouillard ×.75. Givrecloche et Chinampas (manga) gardent leur horizon.
+- **Rais des lieux** : cône ouvert additif sans brouillard, invisible à moins de 18 m et éteint au-delà de 400 m, teinté du pôle de la zone ; plus de trait blanc diagonal dans le ciel. Il s'éteint toujours quand le secret est trouvé.
+- Mesures (rendu logiciel, même machine) : triangles et appels de dessin dans le bruit de mesure (±2 %) ; le rai coûte deux fois moins de triangles. Le shader du ciel passe à 4 octaves de bruit pour les nuages, le calque du mode n'en prend que 3.
+- Limite : sur le Puits à +7, l'orange vif vient surtout de la lave et du motif Girih lumineux du sol (émission du terrain), que cette boucle ne touche pas.
+## Boucle graphique 2, amélioration 1 : une grammaire de pôle par type de zone (19 novembre 2026)
+
+- Sol (`src/sol.js`) : l'octet A de la carte du sol porte un code de grammaire (Citadelle, Donjon, Ressource, Antre, Assemblée, Marché). Fini le même tampon partout :
+  - **−7** : glace noire en plaques hexagonales, givre dans les joints (Citadelle) ; failles de braise de Voronoï (Donjon) ; flaques noires qui reflètent le ciel (Ressource) ; mycélium phosphorescent ramifié (Antre) ; dalles soulevées et fendues en damier (Assemblée) ; traînées de sel et de suie (Marché).
+  - **+7** : Girih or à 10 branches (Citadelle) ; zellige khatam cobalt et blanc (Donjon) ; terrasses concentriques de jade (Ressource) ; mosaïque d'hexagones turquoise et nacre (Antre) ; rosace à 12 branches lapis et argent (Assemblée) ; losanges blanc et bleu glacier (Marché).
+  - Couleurs saturées, mêlées à la teinte du mana ; la force suit le palier ; en qualité Fluide, le repli à une seule lecture de bruit garde la couleur et l'ordre de l'étoile de chaque grammaire.
+- Décors de pôle (`src/poles-decor.js`) : un jeu d'objets par type (même nombre d'objets par pôle) et un repère + différent par type : tour Girih, arche en fer à cheval, terrasses à degrés, aiguilles de cristal, coupole, kiosque.
+- Mesures contre la base (même code sans ces changements) : triangles et appels de dessin à moins de 1,5 % (bruit de mesure).
+- Reprise après le testeur (même jour, `src/sol.js` seul) :
+  - Ressource −7 : moins de flaques, mieux découpées ; noir d'eau profond, reflet au ton du mana (fresnel ramené de 0,08 + 1,6 f à 0,012 + 0,26 f), rides et éclats en points, frange de reflet au bord et liseré clair de berge ; la terre détrempée n'est presque plus assombrie.
+  - Ressource +7 : anneaux pleins alternés jade sombre / jade clair, contremarches dans l'ombre, rayon borné pour rester des cercles, opacité 0,35 + 0,09 par palier.
+  - Marqueterie posée (khatam, hexagones, losanges) : opacité 0,05 + 0,13 par palier (≈ 0,18 au palier 1, ≈ 0,96 au palier 7), bord fondu de 0,45 m au palier 1 à presque franc au palier 7 ; le khatam ne montre que ses étoiles aux bas paliers.
+  - Antre +7 : turquoise plus bleue, nacre plus irisée et plus présente, joints sombres et épais, mélange au mana ramené à 0,08.
+  - Donjon +7 : étoiles blanches sur champ de cobalt, mélange au mana à 0,05, un peu de cobalt émis et moins de reflet ; près du repère, le halo chaud de la zone (hors de `sol.js`) rosit encore le sol.
+  - Mesures (RES227) : sous +2 % par rapport à la version refusée, sous +15 % par rapport à la base.
+## Gameplay du monde : lot 2 essayé ensemble (19 nov., testeur)
+
+`node tv/tools/test-monde.js` joue maintenant aussi le lot 2 dans la longue partie (tour, deuxième Donjon aménagé, les quatre achats du Comptoir, tentative de rival devancée puis réussie, horde sur une zone couverte par une tour et un Donjon, mort, rechargement) et affiche la défense de chaque zone de départ. Réglages (provisoires) : force d'une horde 7 + 1 tous les 10 cycles + 0 à 3 ; Citadelle +3 à 2 tuiles ou moins (au lieu de 3) ; une voisine d'un Donjon aménagé reçoit la moitié de sa traversée, +4 au plus ; deux dispositifs par Donjon tenu ; le Comptoir ne vend que les cartes des secrets déjà trouvés (perdues à la mort) ; à la mort, les pièges de tous les Donjons sont perdus. Corrigé : le message d'un secret ne dit plus « Carte utilitaire gagnée » quand la carte est déjà dans le paquet.
+
+## Gameplay du monde : le commerce en Citadelle (19 nov., `src/commerce.js`)
+
+La tesselle (◇ dans le bandeau) est la monnaie des Citadelles, séparée du mana et jamais achetée : chaque Citadelle tenue en rapporte 1 + son palier par cycle, briser une horde 5, repousser un rival 4 ; la mort vide la bourse. À la Pierre d'éveil d'une Citadelle tenue, OK puis « Comptoir » : la carte utilitaire d'un secret déjà trouvé et absente du paquet, perdue à la mort (6 tesselles, +3 à chaque achat, une par cycle), la réparation des pièges d'un Donjon tenu (5), deux cycles de retard pour une horde en marche (8, une fois par horde), 1 mana du type de la Citadelle pour 4 tesselles. Tous les prix sont provisoires. Tests : `MZ.tesselles(n)` en donne, `MZ.comptoir(id?)` ouvre le Comptoir, `MZ.commerceCycle()` verse un cycle ; script `node tv/tools/test-commerce.js`.
+
 ## Version 2.11 : livres des zones (19 novembre)
 
 Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'histoire de la zone ».
@@ -18,6 +57,45 @@ Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'hi
 - Une rune bleue flotte au-dessus d'un livre dont la dernière page n'a pas encore été lue à ce niveau.
 - Données : `design/inscriptions/livres_*.json`, assemblées avec les inscriptions par `python3 design/inscriptions/assembler.py`.
 
+## Boucle graphique 2, amélioration 3 : image propre et budget repris (19 novembre)
+
+Fichiers : `src/fluidite.js` (ombres, coupe, flocons) et `src/styles.js` (FXAA). Aucune règle du jeu ne change, aucune lumière ajoutée.
+- **Anticrénelage FXAA en Belle et Splendide** : depuis que la passe finale lit la profondeur, l'ancienne cible MSAA ×4 n'était plus utilisée. Une passe FXAA 3.11 « console » la remplace : 5 lectures de luminance et 2 lectures le long du bord. Le grain est posé ensuite, donc il reste net. L'effet est atténué sur les écoles d'encre (Givrecloche, Chinampas). Rien ne change en Fluide ni en Équilibrée.
+- **Ombres limitées à leur boîte** : la passe d'ombre ne dessine plus que ce qui touche la boîte de 240 m (marge de 30 m). Pour les carreaux de terrain, seuls tombent ceux qui sont hors de la boîte, ou à plus de 200 m du héros du côté opposé au soleil (leur ombre ne peut tomber que plus loin encore). Le plan lointain de la caméra d'ombre suit l'élévation du soleil : 260 + 120/tan(élévation) + 60 m, borné entre 300 et 520. Ainsi, tout ce qui reçoit une ombre dans la boîte reste entre near et far, même quand le soleil est rasant. La boîte est calée sur la grille des texels autour du héros, ce qui supprime le scintillement des bords d'ombre.
+- **La qualité choisie coupe vraiment les ombres** : choisir Fluide au menu supprime la passe d'ombre (avant, la carte 2048 restait active après un changement). En Équilibrée, la carte fait 1024. La baisse **automatique** de qualité, quand l'image ralentit, ne touche pas aux ombres.
+- **Coupe selon le brouillard** : la distance de coupe vaut 2,3/densité + 40 m, bornée entre 180 et 620 m. Elle part de la densité visée, ou de la densité lissée si celle-ci est plus claire. Un petit objet ordinaire, à plus de 80 m de la caméra, qui fait moins d'un pixel une fois noyé dans la brume, n'est pas envoyé à la vue de la caméra. Il garde son ombre, et son état « visible » est remis à l'identique avant la passe d'ombre.
+- **Flocons** : taille limitée à 18 px, fondu entre 1,5 et 5 m devant la caméra.
+
+### Reprise 2.3b : ombres perdues près du héros (refus du testeur)
+
+Constat du testeur : quand deux bancs tournent en même temps, les ombres du héros, de la coquille d'ANT120, du pilier de RES374 et de la pierre d'ASS152 manquent environ une fois sur deux. Ce n'était jamais le cas avec 3972fd9.
+- **Cause** : sous charge, la baisse automatique de qualité de `main.js` (sous 27 images/s, Belle → Équilibrée → Fluide) passait par l'enveloppe de `resize`, qui coupait alors les ombres. Ce que l'on voyait dépendait donc du rythme des images. Les planches de `boucles/boucle-2/apres-3` le montrent : ASS152 et RES374 n'y ont plus aucune ombre, et l'image y est moins définie.
+- **Correction** : seul le choix du joueur, au menu ou au démarrage, allume ou coupe les ombres. La baisse automatique ne change plus que la définition, comme avant.
+- **Points vérifiés et durcis en même temps** :
+  - (i) la passe d'ombre teste les carreaux de terrain contre la boîte ; il n'y a plus de rayon fixe de 130 m, qui oubliait les collines placées face au soleil bas ;
+  - (ii) le calage sur les texels ne fait que décaler ensemble la cible et le soleil, d'un demi-texel au plus, après `stepAtmo`, qui les replace à chaque image quel que soit dt, et donc aussi après `MZ.tp` et `MZ.set` ;
+  - (iii) le far suit l'élévation du soleil (voir plus haut) ;
+  - (iv) les « miettes » sont jugées dans `scene.onBeforeRender`, donc sur les matrices de l'image en cours, avec la position, l'échelle, la géométrie et le matériau lus à l'instant. Elles sont rendues visibles avant la passe d'ombre. Leur liste est refaite à chaque mue, ou quand la scène gagne ou perd un enfant, mais plus jamais au compte des images.
+- **Vérifié** : trois passages de `tools/boucle.js`, à chaque fois deux en parallèle (charge proche de 9 sur 4 cœurs). Au centre de chaque planche à 0, les ombres du héros, du pilier, de la coquille et de l'obélisque sont présentes à chaque fois. Hors du banc, sur la même page, une baisse automatique simulée vers Fluide garde les ombres, alors que Fluide choisi au menu les coupe.
+- **Gardé tel quel** : le FXAA, le plafonnement des flocons et la coupe selon le brouillard. Des recadrages à pleine résolution, avant et après FXAA, des arêtes de sapins à CIT +7 et DON045 sont dans `boucles/boucle-2/fxaa-3b/`.
+
+Mesures après la reprise (banc logiciel, Belle figée, hasard fixé, images pas à pas de 50 ms, par image, ombre comprise), triangles / appels de dessin. « Avant » correspond à 3972fd9, mesuré dans les mêmes conditions :
+
+| Zone | Avant (3972fd9) | Après (2.3b) | Écart |
+|---|---|---|---|
+| CIT | 521 004 / 413 | 410 405 / 213 | −21 % / −48 % |
+| DON | 398 982 / 277 | 302 959 / 202 | −24 % / −27 % |
+| RES | 678 765 / 373 | 612 427 / 258 | −10 % / −31 % |
+| ANT | 567 156 / 286 | 469 999 / 227 | −17 % / −21 % |
+| MAR | 563 434 / 346 | 420 240 / 252 | −25 % / −27 % |
+| DON045 | 264 863 / 181 | 230 451 / 173 | −13 % / −4 % |
+| ASS152 | 237 169 / 205 | 221 559 / 187 | −7 % / −9 % |
+| ANT120 | 247 492 / 211 | 218 178 / 196 | −12 % / −7 % |
+
+En Fluide, à CIT : 299 075 / 295 → 285 539 / 135. Aucune zone ne monte. Les gains de triangles sont un peu plus faibles qu'en 2.3 (CIT −25 %), parce que le far et les carreaux de terrain gardent désormais tout ce qui peut porter une ombre dans la boîte.
+
+Avec `tools/boucle.js` (mesures.json, deux images, qualité automatique), six passages sous charge comparés à `boucles/boucle-2/avant` : CIT 1 056 346 / 832 → 687 196 à 820 954 / 417 à 472 (−22 à −35 % / −43 à −50 %) ; RES227 765 664 / 638 → 691 881 à 733 316 / 375 à 428 (−4 à −10 % / −33 à −41 %) ; ASS152 505 702 / 328 → 428 930 à 463 580 / 285 à 298 (−8 à −15 % / −9 à −13 %). Aucune erreur JavaScript.
+
 ## Version 2.10 : boucle graphique 1 (19 novembre)
 
 Première boucle de l'équipe graphique (critique, direction artistique, rendu et performance, producteur, trois artisans, testeur-juge). Les trois améliorations ont été acceptées par le testeur ; détails dans les sections « Boucle 1 » plus bas, captures avant, après et intégrées dans `boucles/boucle-1/` du dossier du projet.
@@ -26,13 +104,25 @@ Première boucle de l'équipe graphique (critique, direction artistique, rendu e
 - Interface : un seul titre de zone, barre du haut en îlots (avec domaines, hordes et rivaux), texte des cartes de combat lisible.
 - Mesures intégrées contre la 2.9 : triangles +0 à +9 %, appels de dessin +2 à +7 %.
 
+## Gameplay du monde : tours de guet (19 nov., `src/tours.js`)
+
+À la Pierre d'éveil d'une zone à vous (Ressource de niveau 1 ou plus, Donjon ou Citadelle tenus), OK puis « Bâtir une tour de guet » : 3 mana du type de la zone, une tour par zone. La tour donne +2 de défense contre les hordes à sa zone et à vos zones voisines (sans cumul de plusieurs tours), et une horde qui vise une zone couverte arrive 2 cycles plus tard (l'annonce le dit). Elle tombe si la zone n'est plus à vous (sauvage, rival, mort du héros) ou si une horde passe sur elle. Visible : ligne « Tour de guet » ou « Sous la garde d'une tour de guet » à la Pierre, petite tour crénelée sur la minicarte, petite tour 3D à côté de la Pierre. Pour les autres modules : `defenseTours(id)` → `{bonus, raisons}`, `preavisTours(id)` → cycles gagnés. Tests : `MZ.tour(id?)` bâtit sans payer, `MZ.tourTombe(id)` l'abat ; script `node tv/tools/test-tours.js`.
+
+## Gameplay du monde : Donjons aménagés (19 nov., `src/donjons.js`)
+
+Chaque Donjon à vous et activé s'aménage, et plus seulement celui d'origine : à sa Pierre d'éveil, OK puis « Aménager les salles ». Le Donjon d'origine garde ses 4 salles des Neuf Édits et son assaut périodique ; les autres ont 2 salles au palier 0 ou 1, 3 au palier 2, 4 au palier 3 et plus (une salle au-delà est scellée), nommées d'après la zone (« Porte de Kobor », « Galerie des racines gelées », « Crypte slave », « Chambre du Sceau de Kobor »). Un piège par salle, payé en mana de son type. Chaque Donjon tenu déverrouille un dispositif : 1 Donjon, Herse et Glyphe ; puis Lave, Gardien, et deux pièges nouveaux, Ronces de sève (Sève) et Voûte d'éboulis (Pierre). Une horde qui vise un Donjon tenu ou une de ses voisines à vous traverse ses salles : chaque piège éveillé ajoute sa force à la défense, la Glyphe double le suivant (le plafond de 2 a disparu). Si la horde passe sur le Donjon lui-même, elle saccage sa première salle piégée. L'entretien suit le rythme du menu (par cycle, à l'assaut, usure) pour tous les Donjons. Un rival qui conteste un Donjon aménagé a 10 points de chance en moins par piège actif. Pour les autres modules : `piegesDonjon(id)` (pièges actifs d'un Donjon tenu) et `reparerPieges(id)` (réveille et remet l'usure à 3, sans mana). Tests : `MZ.amenager(id)` ouvre les salles, `MZ.amenager(id, ['herse','lave'])` pose sans payer et rend l'état ; script `node tv/tools/test-donjons.js`.
+
+## Gameplay du monde : l'épreuve des rivaux (19 nov.)
+
+Décision de l'utilisateur : un rival ne prend plus une zone sauvage d'un coup, il doit en réussir l'épreuve (`src/rivaux.js`). La maison annonce sa tentative (« La maison Grisaille tente l'épreuve de … : elle s'y attaque dans 2 cycles »), la zone apparaît en pointillés de sa couleur sur la minicarte, avec un « ? » après le blason dans la ligne Rivaux du bandeau, dans l'écran Rivaux, la fiche de zone et à la Pierre d'éveil. À l'échéance, elle réussit 75 fois sur 100 au palier 0 ou ±1, puis 60, 40 et 25 jusqu'à ±7 (provisoire) ; sinon ses gens repartent. Pour la devancer : activer la zone avant elle, ou, à la Pierre, « Défier les gens de la maison » et battre son champion. Une tentative par maison à la fois ; zones verrouillées ou au cœur jamais visées ; rythme, plafond et contestations inchangés. Tests : `MZ.rival('prise')` lance une tentative, `MZ.rivalTente()` les résout tout de suite (`MZ.rivalTente(true)` ou `(false)` force le résultat, `MZ.rivalTente('gri', true)` pour une maison) ; script `node tv/tools/test-rivaux.js`.
+
 ## Gameplay du monde : test d'ensemble (19 nov.)
 
-Domaines, hordes et rivaux joués ensemble : `node tv/tools/test-monde.js [dossier]` lance une longue partie simulée (40 cycles, prises, hordes, rivaux, combats d'avant-garde et de champion, mort du héros, rechargement de la sauvegarde), vérifie la cohérence de l'état et les menus, et prend trois captures (bandeau, Pierre d'une zone menacée, écran Rivaux). Réglages du 19 nov. (provisoires) : une horde ne vise que des zones plus faibles de 2 ou 3 paliers ; une zone à vous tombée à 0 reste à vous ; la même Citadelle ne compte qu'une fois dans la défense contre une horde ; les rivaux agissent une fois sur 6 cycles, pas avant le 10e ; une contestation tombe si la zone n'est plus à vous. Quand la barre d'état est trop pleine, elle passe sur deux lignes au lieu d'être coupée.
+Domaines, hordes et rivaux joués ensemble : `node tv/tools/test-monde.js [dossier]` lance une longue partie simulée (40 cycles, prises, hordes, rivaux, combats d'avant-garde et de champion, mort du héros, rechargement de la sauvegarde), vérifie la cohérence de l'état et les menus, et prend trois captures (bandeau, Pierre d'une zone menacée, écran Rivaux). Réglages du 19 nov. (provisoires) : une horde ne vise que des zones plus faibles de 2 ou 3 paliers ; une zone à vous tombée à 0 redevient sauvage, avec empreinte (décidé le 19 nov.) ; la même Citadelle ne compte qu'une fois dans la défense contre une horde ; les rivaux agissent une fois sur 6 cycles, pas avant le 10e ; une contestation tombe si la zone n'est plus à vous. Quand la barre d'état est trop pleine, elle passe sur deux lignes au lieu d'être coupée.
 
 ## Gameplay du monde : les hordes du sauvage (18-19 nov.)
 
-Fichier `src/hordes.js`. Chaque zone a un pôle envahisseur (−7, +7 ou les deux), affiché dans la fiche de zone et à la Pierre d'éveil. Une zone au palier 7 de ce pôle lève une horde après 5 cycles ; la horde est annoncée (message, flèche rouge sur la minicarte, ligne « Menaces » du bandeau) et arrive 3 cycles plus tard sur une zone voisine (2 tuiles au plus) plus faible de 2 ou 3 paliers (pas au-delà), vos zones d'abord. Pour la briser : allez à la Pierre d'éveil de la zone visée, OK, « Affronter l'avant-garde ». Sinon, à l'arrivée, sa force affronte la défense de la zone (niveau, Citadelle à 3 tuiles, rempart, pièges du Donjon, lois) ; si elle passe, la zone recule d'un palier (une Ressource perd aussi ses routes) et une zone à vous tombée à 0 reste à vous. Au palier 7 de l'autre pôle, pas de horde et une carte de palier 7 plus forte. Les zones sauvages à ±6 peuvent gronder et monter à ±7. L'assaut contre le Donjon d'origine (economie.js) ne change pas.
+Fichier `src/hordes.js`. Chaque zone a un pôle envahisseur (−7, +7 ou les deux), affiché dans la fiche de zone et à la Pierre d'éveil. Une zone au palier 7 de ce pôle lève une horde après 5 cycles ; la horde est annoncée (message, flèche rouge sur la minicarte, ligne « Menaces » du bandeau) et arrive 3 cycles plus tard sur une zone voisine (2 tuiles au plus) plus faible de 2 ou 3 paliers (pas au-delà), vos zones d'abord. Pour la briser : allez à la Pierre d'éveil de la zone visée, OK, « Affronter l'avant-garde ». Sinon, à l'arrivée, sa force affronte la défense de la zone (niveau, Citadelle à 3 tuiles, rempart, pièges du Donjon, lois) ; si elle passe, la zone recule d'un palier (une Ressource perd aussi ses routes) et une zone à vous tombée à 0 redevient sauvage, avec votre empreinte. Au palier 7 de l'autre pôle, pas de horde et une carte de palier 7 plus forte. Les zones sauvages à ±6 peuvent gronder et monter à ±7. L'assaut contre le Donjon d'origine (economie.js) ne change pas.
 
 Tests : `MZ.horde(source?, cible?)` lève une horde tout de suite (sans argument, il choisit ou crée une source à ±7), `MZ.hordeArrive(source?)` la résout. Script : `node tv/tools/test-hordes.js`.
 

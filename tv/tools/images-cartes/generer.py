@@ -18,8 +18,11 @@ ESPACES = ['mcp-tools/qwen-image-fast']   # espaces ZeroGPU gratuits, essayés d
 def manifeste():
     DOSSIER.mkdir(parents=True, exist_ok=True)
     noms = sorted(f.stem for f in DOSSIER.glob('*.webp'))
+    fonds = sorted(f.stem for f in (DOSSIER / 'fonds').glob('*.webp') if f.stem not in noms)
     MANIFESTE.write_text('/* Images IA des cartes présentes dans img/cartes/ (généré par tools/images-cartes/generer.py, ne pas modifier à la main). */\n'
-                         'window.CARTES_IMG=new Set(' + json.dumps(noms, ensure_ascii=False) + ');\n', encoding='utf-8')
+                         'window.CARTES_IMG=new Set(' + json.dumps(noms, ensure_ascii=False) + ');\n'
+                         '/* Décors peints (Pollinations) : le sujet vectoriel de la carte est dessiné par-dessus. */\n'
+                         'window.CARTES_FOND=new Set(' + json.dumps(fonds, ensure_ascii=False) + ');\n', encoding='utf-8')
     return len(noms)
 
 def main():

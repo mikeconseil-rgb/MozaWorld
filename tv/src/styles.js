@@ -14,6 +14,8 @@ const closed=P=>P.concat([P[0]]).map(p=>new THREE.Vector2(p[0],p[1]));
 const styU={tD:{value:null},pInv:{value:camera.projectionMatrixInverse},cW:{value:camera.matrixWorld},cP:{value:camera.position},
   pM:{value:closed(MAR.poly)},pR:{value:closed(RES.poly)},lvM:{value:0},lvR:{value:0},cdM:{value:0},cdR:{value:0},
   skM:{value:0},skR:{value:0},on:{value:1},tt:{value:0},px:{value:new THREE.Vector2(1/800,1/450)},
+  /* boucle 2 (19 nov. 2026) : 1 quand la passe FXAA suit (Belle, Splendide) ; le grain part alors dans l'alpha */
+  fxOn:{value:0},
   /* boucle 1 (19 nov. 2026) : étalonnage signature de la zone où se trouve la caméra (voir SIG plus bas) */
   sigSh:{value:new THREE.Vector3(.1,.1,.1)},sigMi:{value:new THREE.Vector3(.5,.5,.5)},sigHi:{value:new THREE.Vector3(1,1,1)},sigK:{value:0},sigOn:{value:0}};
 Object.assign(mFinal.uniforms,styU);mFinal.uniforms.expo=mFinal.uniforms.exp; /* « exp » cache la fonction exp() du GLSL */
@@ -23,7 +25,7 @@ const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
     vec2 e=b-a;float t=clamp(dot(p-a,e)/dot(e,e),0.,1.);d=min(d,length(p-a-e*t));}
   float s=smoothstep(0.,3.,d)*.5;return ins?.5+s:.5-s;}`;
 mFinal.defines={STY_DEPTH:STY_DEPTH?1:0};
-mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
+mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
 uniform mat4 pInv,cW;uniform vec2 pM[5],pR[7],px;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 ${polyGL('inM','pM',4)}
@@ -108,16 +110,57 @@ if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty))
   /* +7 : blancs désaturés de 10 %, ombres teintées pastel froid (le relief tient sans boucher) */
   L=dot(c,Y);c=mix(c,vec3(L),.1*sP*wh*fo);c=mix(c,c*sh,.18*sP*ws*fo);
   c=clamp(c,0.,1.);}
+/* boucle 2 (19 nov. 2026) : avec le FXAA, le grain est posé après lui (sinon il le lisse et le brouille) ; on lui passe dans l'alpha
+   la force du grain et le poids des écoles d'encre (fusain, manga), sur 4 bits chacun */
+if(fxOn>.5){gl_FragColor=vec4(c,(floor(clamp(sty,0.,1.)*15.+.5)*16.+floor(clamp(gr/.08,0.,1.)*15.+.5))/255.);return;}
 c+=(fract(sin(dot(vUv*vec2(1920.,1080.)+time,vec2(12.9898,78.233)))*43758.5453)-.5)*gr;gl_FragColor=vec4(c,1.);}`;
 mFinal.needsUpdate=true;
 
 /* La profondeur de la scène devient une texture que la passe finale peut lire. */
 const _resizeSty=resize;
-resize=function(){_resizeSty();if(!STY_DEPTH)return;
+resize=function(){_resizeSty();majFxaa();if(!STY_DEPTH)return;
   if(rtS.isWebGLMultisampleRenderTarget){const o={type:rtS.texture.type,format:THREE.RGBAFormat,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter};
     const w=rtS.width,h=rtS.height;rtS.dispose();rtS=new THREE.WebGLRenderTarget(w,h,o)}
   rtS.depthTexture=new THREE.DepthTexture(rtS.width,rtS.height);rtS.depthTexture.type=THREE.UnsignedIntType;
   styU.tD.value=rtS.depthTexture;styU.px.value.set(1/rtS.width,1/rtS.height)};
+
+/* ---------- Boucle 2 (19 nov. 2026) : anticrénelage FXAA en Belle et Splendide ----------
+   Depuis que la passe finale lit la profondeur, la cible multi-échantillons (MSAA ×4) a été remplacée par une cible simple :
+   les sapins, les pieux et les filets Girih crénelaient en escalier. FXAA 3.11 version « console » : cinq lectures de luminance
+   (quatre coins à un demi-pixel, lissés par le filtrage, et le centre), la direction du bord, puis deux lectures le long de ce bord.
+   Le grain vient après (net). Sur les écoles d'encre (Givrecloche, Chinampas) l'effet est atténué : les traits gardent leur mordant.
+   En Fluide et en Équilibrée rien ne change : pas de cible en plus, pas de passe en plus. */
+let rtF=null;
+const mFxaa=new THREE.ShaderMaterial({uniforms:{t:{value:null},px:{value:new THREE.Vector2(1/800,1/450)},time:{value:0}},vertexShader:FV,depthTest:false,depthWrite:false,
+  fragmentShader:`varying vec2 vUv;uniform sampler2D t;uniform vec2 px;uniform float time;
+#define REDUCE_MIN (1./128.)
+#define REDUCE_MUL (1./8.)
+#define SPAN_MAX 8.
+float lu(vec3 c){return dot(c,vec3(.299,.587,.114));}
+void main(){vec4 M=texture2D(t,vUv);
+  float lNW=lu(texture2D(t,vUv+vec2(-.5,-.5)*px).rgb),lNE=lu(texture2D(t,vUv+vec2(.5,-.5)*px).rgb),
+        lSW=lu(texture2D(t,vUv+vec2(-.5,.5)*px).rgb),lSE=lu(texture2D(t,vUv+vec2(.5,.5)*px).rgb),lM=lu(M.rgb);
+  float a=floor(M.a*255.+.5),sty=floor(a/16.)/15.,gr=mod(a,16.)/15.*.08;
+  float mn=min(lM,min(min(lNW,lNE),min(lSW,lSE))),mx=max(lM,max(max(lNW,lNE),max(lSW,lSE)));
+  vec3 c=M.rgb;
+  if(mx-mn>max(.05,mx*.125)){   /* seuil « console » : on ne touche qu'aux vrais bords */
+    vec2 dir=vec2(-((lNW+lNE)-(lSW+lSE)),(lNW+lSW)-(lNE+lSE));
+    float red=max((lNW+lNE+lSW+lSE)*(.25*REDUCE_MUL),REDUCE_MIN),rcp=1./(min(abs(dir.x),abs(dir.y))+red);
+    dir=clamp(dir*rcp,vec2(-SPAN_MAX),vec2(SPAN_MAX))*px;
+    /* deux lectures aux extrémités du segment (±dir/2, jusqu'à 4 pixels de part et d'autre), mêlées au centre déjà lu :
+       c'est la moitié large du FXAA classique, sans ses deux lectures proches (le centre en tient lieu) */
+    vec3 B=.5*c+.25*(texture2D(t,vUv-dir*.5).rgb+texture2D(t,vUv+dir*.5).rgb);
+    float lB=lu(B);if(lB>=mn&&lB<=mx)c=mix(B,c,sty*.8);}
+  c+=(fract(sin(dot(vUv*vec2(1920.,1080.)+time,vec2(12.9898,78.233)))*43758.5453)-.5)*gr;gl_FragColor=vec4(c,1.);}`});
+function majFxaa(){const on=QUAL().ms>0&&!!rtS;
+  if(rtF&&(!on||rtF.width!==rtS.width||rtF.height!==rtS.height)){rtF.dispose();rtF=null}
+  if(on&&!rtF){rtF=new THREE.WebGLRenderTarget(rtS.width,rtS.height,{type:THREE.UnsignedByteType,format:THREE.RGBAFormat,
+    minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false});rtF.texture.generateMipmaps=false}
+  if(rtF)mFxaa.uniforms.px.value.set(1/rtF.width,1/rtF.height);mFinal.uniforms.fxOn.value=rtF?1:0}
+/* la passe finale écrit dans rtF, puis le FXAA (et le grain) à l'écran */
+const _passFx=pass;
+pass=function(mat,target){if(mat===mFinal&&target===null&&rtF){_passFx(mat,rtF);mFxaa.uniforms.t.value=rtF.texture;mFxaa.uniforms.time.value=mFinal.uniforms.time.value;_passFx(mFxaa,null)}
+  else _passFx(mat,target)};
 
 /* À chaque image : niveaux des deux zones, distance de la caméra à chacune (le brouillard ne compte que ce qui est dedans),
    et poids du ciel selon la zone où l'on se trouve (sans profondeur, ce poids sert pour toute l'image). */

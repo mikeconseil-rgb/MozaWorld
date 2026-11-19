@@ -14,6 +14,8 @@ const HORDE_GRACE=6;      /* aucune horde ni grondement avant ce cycle d'une par
 const HORDE_GRONDE=1/40;  /* chance par cycle qu'une zone sauvage à ±6 de son pôle envahisseur monte à ±7 (provisoire) */
 const HORDE_L7=9;         /* puissance de la carte de palier 7 du pôle qui n'envahit pas (provisoire) */
 const HORDE_BUTIN=3;      /* mana du type de la source quand le héros brise l'avant-garde (provisoire) */
+const HORDE_CROIT=10;      /* la force des hordes monte de 1 tous les HORDE_CROIT cycles de partie (provisoire, 19 nov., critique game design) */
+const HORDE_CIT=2;        /* une Citadelle tenue défend à HORDE_CIT tuiles ou moins (+3) (provisoire, 19 nov. : était 3) */
 
 /* pôle envahisseur : −1, +1, ou 2 (les deux), d'après l'id de la zone */
 function poleEnvahisseur(id){let h=2166136261;for(const c of String(id))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
@@ -48,21 +50,21 @@ function cibleHorde(src){const L=Math.abs(S.lv[src]||0),d=aPortee(src,2),prises=
   return c[0]||null}
 function defenseHorde(id){const parts=[],L=Math.abs(S.lv[id]||0);parts.push(['niveau de la zone',L]);
   if(S.own[id]){
-    const d=aPortee(id,3),cit=ZN.find(Z=>estCIT(Z)&&tient(Z.id)&&d[Z.id]!==undefined);
+    const d=aPortee(id,HORDE_CIT),cit=ZN.find(Z=>estCIT(Z)&&tient(Z.id)&&d[Z.id]!==undefined);
     if(cit)parts.push([d[cit.id]?`Citadelle tenue à ${d[cit.id]} tuile${d[cit.id]>1?'s':''} (${court(cit.id)})`:'la Citadelle elle-même',3,1]);
     if(typeof etatRoutes==='function'){etatRoutes();const vois=VOISINES[id]||[];
       const rp=Object.keys(S.routes).some(a=>estCIT(ZB[a])&&S.routes[a].some(b=>a===id||b===id||vois.indexOf(a)>=0||vois.indexOf(b)>=0));
       if(rp)parts.push(['rempart',3])}
-    if(tient('DON')&&(id==='DON'||(VOISINES.DON||[]).indexOf(id)>=0)&&Array.isArray(S.pieges)){
-      const n=Math.min(2,S.pieges.filter(x=>x&&!x.dort).length);if(n)parts.push(['pièges du Donjon aménagé',n])}}
-  /* le verrou de Citadelle (+2) ne s'ajoute pas au +3 de la Citadelle à 3 tuiles : la même Citadelle ne compte qu'une fois, la plus forte (provisoire) */
+    if(typeof piegesDonjon==='function')parts.push(...piegesHorde(id))}   /* donjons.js : la horde traverse les salles de chaque Donjon tenu, cible ou voisin (remplace « 2 au plus ») */
+  /* le verrou de Citadelle (+2) ne s'ajoute pas au +3 de la Citadelle à 2 tuiles : la même Citadelle ne compte qu'une fois, la plus forte (provisoire) */
   if(typeof defenseMonde==='function'){const dm=defenseMonde(id)||{},b=(+dm.bonus||0)-(parts.some(p=>p[2])&&dm.verrou?Math.min(dm.verrou,3):0);if(b)parts.push(['pouvoirs du domaine',b])}
+  if(typeof defenseTours==='function'){const dt=defenseTours(id)||{};if(dt.bonus)parts.push([(dt.raisons||[]).join(', ')||'tour de guet',dt.bonus])}
   return{total:parts.reduce((a,p)=>a+p[1],0),parts}}
 
 /* ---------- Lever, annoncer, résoudre ---------- */
 function leverHorde(src,cible,force){initHordes();if(!ZB[src]||S.hordes[src])return null;cible=cible||cibleHorde(src);if(!cible||!ZB[cible]||cible===src)return null;
-  const greniers=S.own[cible]&&typeof loi==='function'&&loi('ASS150'),delai=HORDE_DELAI*(greniers?2:1);
-  const h=S.hordes[src]={src,cible,nee:S.nc,arrive:S.nc+delai,force:force||Math.abs(S.lv[src]||0)+Math.floor(Math.random()*4)};
+  const greniers=S.own[cible]&&typeof loi==='function'&&loi('ASS150'),delai=HORDE_DELAI*(greniers?2:1)+(typeof preavisTours==='function'?preavisTours(cible):0);   /* tour de guet : préavis */
+  const h=S.hordes[src]={src,cible,nee:S.nc,arrive:S.nc+delai,force:force||Math.abs(S.lv[src]||0)+Math.floor((S.nc||0)/HORDE_CROIT)+Math.floor(Math.random()*4)};
   save();hudKey='';etatHud();
   if(started&&(S.own[cible]||S.own[src]))toast('Une horde se lève · '+court(src),'Elle marche sur '+ZB[cible].info.nom,
     `Arrivée dans ${delai} cycles (environ ${fmt(resteHorde(h))})${greniers?', retardée par les Greniers de Pama':''}. Allez à la Pierre d'éveil de la zone visée pour briser son avant-garde.`);
@@ -81,18 +83,18 @@ function hordeArrive(src){initHordes();src=src||Object.keys(S.hordes).sort((a,b)
   if(aVous||S.own[src]||h.vu)hordeRapports.push({ok:!passe,force:h.force,cible:h.cible,lignes:l});
   else if(started)toast('Le sauvage gronde','Horde '+de_(nomS),l[l.length-1]);
   montrerHorde();return{passe,lignes:l}}
-/* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous à 0 reste à vous (19 nov.) */
+/* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous qui tombe à 0 redevient sauvage, avec votre empreinte (réponse de l'utilisateur, 19 nov.) */
 function defaite(id){const Z=ZB[id],l=[],a=S.own[id],lv=S.lv[id]||0;
   if(typeof borne==='function'&&borne(id)){l.push('La Pierre de bornage de Raak tient : la zone ne recule pas.');return l}
   if(estRESh(id)){if(S.routes&&S.routes[id]&&S.routes[id].length){delete S.routes[id];l.push('Ses routes sont coupées.')}}
   if(lv!==0){const n=lv-Math.sign(lv);S.lv[id]=n;Z.lvT=n;l.push(`${Z.info.nom} recule d'un palier (${sgn(n)||'0'}).`)}
-  if(a&&(S.lv[id]||0)===0)l.push('La zone tombe à 0, mais elle reste à vous.');   /* une seule horde ne la rend pas sauvage (provisoire) */
+  if(a&&(S.lv[id]||0)===0){S.own[id]=false;S.act[id]=false;S.emp[id]=true;l.push('La zone tombe à 0 et redevient sauvage. Votre empreinte y reste : vous la reprendrez plus facilement.')}
   if(typeof etatRoutes==='function')etatRoutes();
   return l}
 function montrerHorde(){if(!hordeRapports.length||mode!=='monde')return;const r=hordeRapports.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
   const Z=ZB[r.cible];
   ui('menu',{sur:'Horde du sauvage · force '+r.force,t:r.ok?Z.info.nom+' tient':Z.info.nom+' est forcée',
-    corps:`<p class="petit">${r.lignes.join('<br>')}</p><p class="petit">Hordes brisées par le héros ${S.hordesBilan.brisees}, repoussées ${S.hordesBilan.repoussees}, passées ${S.hordesBilan.passees}. Une Citadelle tenue à 3 tuiles ou moins, un rempart et les pièges du Donjon aménagé renforcent la défense.</p>`,
+    corps:`<p class="petit">${r.lignes.join('<br>')}</p><p class="petit">Hordes brisées par le héros ${S.hordesBilan.brisees}, repoussées ${S.hordesBilan.repoussees}, passées ${S.hordesBilan.passees}. Une Citadelle tenue à ${HORDE_CIT} tuiles ou moins, un rempart et les pièges du Donjon aménagé renforcent la défense.</p>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde},{l:'Aller '+a_(court(r.cible)),ic:'✧',go:()=>{tp(r.cible);toMonde()}}]})}
 
 /* ---------- Le cycle : colère, grondement, arrivées ---------- */
@@ -121,13 +123,14 @@ function combatHorde(src){const h=S.hordes[src];if(!h)return;const Zc=ZB[h.cible
   startCombat(Zc,'horde');if(!CB)return;CB.horde=src;
   const foes=[0,1].map(i=>{const m=liste[Math.random()<.5?0:1],pv=Math.round(m.pv*(1+.4*L));return{nom:m.nom,pv,max:pv,atk:m.atk+L,g:0,mv:m.mv,mi:Math.floor(Math.random()*m.mv.length),z:h.cible}});
   const br=CB.foes[0]&&CB.foes[0].br;CB.foes=foes;$('cb-foes').innerHTML='';
-  foes.forEach((u,i)=>{u.voie=i%2;if(br)u.br=br.map(x=>x.slice());uniteEl(u,'cb-foes');intention(u)});
+  if(typeof rangerEnnemis==='function'&&CB.cases)rangerEnnemis(foes);foes.forEach((u,i)=>{if(u.voie==null)u.voie=i%2;if(br)u.br=br.map(x=>x.slice());uniteEl(u,'cb-foes');intention(u)});
   $('cb-sur').textContent='Avant-garde de la horde · '+court(src)+' (palier '+sgn(S.lv[src]||0)+')';
   journal(`L'avant-garde ${de_(court(src))} se jette sur vous. Brisez-la et la horde se disperse.`);if(typeof majUnites==='function')majUnites()}
 function finHorde(ok,C){const src=C.horde,h=S.hordes[src],Zs=ZB[src];
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
     ui('menu',{sur:'Défaite',t:'L\'avant-garde passe',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). La horde marche toujours${h?' sur '+ZB[h.cible].info.nom+', arrivée dans environ '+fmt(resteHorde(h)):''}.</p><p class="petit">Vous pouvez retenter le combat à la Pierre d'éveil de la zone visée avant son arrivée.</p>`,
       back:toMonde,opts:[{l:'Repartir',ic:'◆',go:toMonde}]});return}
+  if(h&&typeof gagnerTesselles==='function')gagnerTesselles(TESS_PRIMES.horde,'horde');   /* commerce.js : prime en tesselles */
   const t=ZMANA[src]||'Pierre';gagner(t,HORDE_BUTIN);if(h){finirHorde(src);S.hordesBilan.brisees++}save();etatHud();hudKey='';sfx('hit');
   ui('menu',{sur:'Victoire · horde brisée',t:'La horde '+de_(court(src))+' se disperse',corps:`<p>Son avant-garde est tombée : la horde n'arrivera pas. Les vaincus lâchent ${HORDE_BUTIN} ${t}. Réserve : ${resTexte()}.</p><p class="petit">La zone source reprend des forces ; elle pourra lever une nouvelle horde dans ${HORDE_MUR} cycles si elle reste au palier 7.</p>`,
     back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]})}
@@ -166,7 +169,8 @@ setTimeout(()=>{try{renforcerPaliers7()}catch(e){}},0);
 
 /* ---------- Tests : MZ.horde(source?, cible?) lève une horde tout de suite, MZ.hordeArrive(source?) la résout ---------- */
 function hordeTest(src,cible){initHordes();
-  if(!src)src=ZN.map(Z=>Z.id).find(id=>sourceHorde(id)&&!S.hordes[id])||ZN.filter(Z=>!estRESh(Z.id)&&!S.own[Z.id]&&!S.hordes[Z.id]).sort((a,b)=>Math.abs(S.lv[b.id]||0)-Math.abs(S.lv[a.id]||0))[0].id;
+  /* (19 nov., testeur) sans zone libre pour lever une horde (toutes déjà en marche), on renvoie null au lieu de planter */
+  if(!src){src=ZN.map(Z=>Z.id).find(id=>sourceHorde(id)&&!S.hordes[id]);if(!src){const Z=ZN.filter(Z=>!estRESh(Z.id)&&!S.own[Z.id]&&!S.hordes[Z.id]).sort((a,b)=>Math.abs(S.lv[b.id]||0)-Math.abs(S.lv[a.id]||0))[0];if(!Z)return null;src=Z.id}}
   if(S.hordes[src])return S.hordes[src];
   if(!estRESh(src)&&!sourceHorde(src)){const p=poleEnvahisseur(src),n=7*(p===2?(Math.sign(S.lv[src]||0)||1):p);S.lv[src]=n;ZB[src].lvT=n}
   if(!cible){cible=cibleHorde(src);if(!cible){const d=aPortee(src,6);cible=Object.keys(d).filter(id=>id!==src&&S.own[id]).sort((a,b)=>d[a]-d[b])[0]||null}}

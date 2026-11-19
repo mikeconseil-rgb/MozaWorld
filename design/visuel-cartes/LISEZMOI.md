@@ -36,3 +36,11 @@ Demande : « les images des cartes sont assez basiques, il faut des images bien 
 - `tv/tools/images-cartes/generer.py --max 20` (variable `HF_TOKEN`) génère les images manquantes en WebP 480×320 dans `tv/img/cartes/` et réécrit `tv/src/cartes-images.js`. Relancer ensuite `sh tv/build.sh`.
 - Noms de fichiers : `ZONE_m3` / `ZONE_p7` pour les paliers, `S-<titre-du-secret>` pour les secrets. La carte de base d'une zone prend l'image de son palier actuel.
 - Affichage (`cartes-visuel.js`, `fichierImage` et `peint`) : l'image remplace la scène vectorielle, chargée en différé ; les effets animés, losanges de palier, cadre et bandeau restent par-dessus. Si l'image manque ou ne charge pas, le dessin vectoriel s'affiche.
+
+### Décors peints Pollinations (19 nov.)
+
+Échéance du 28 nov. : le quota Hugging Face (8 images par jour) ne suffit pas. Choix de l'utilisateur : Pollinations, gratuit et sans compte (1 image toutes les 45 s). Son seul modèle gratuit (« sana ») peint bien les paysages mais rate les sujets, donc :
+- `tv/tools/images-cartes/generer-pollinations.py` peint un **décor par carte** (biome, culture, pôle, palette, heure tirée de la clé) dans `tv/img/cartes/fonds/` ; secrets exclus (kraft).
+- `cartes-visuel.js` pose le sujet vectoriel et les effets de la carte par-dessus ce décor (`scene(…, nu)`, classe `.kpeint.decor`).
+- Une image complète Hugging Face dans `tv/img/cartes/` gagne toujours sur le décor ; `generer.py` continue d'en ajouter par lots.
+- `generer.py --manifeste` liste les deux jeux (`CARTES_IMG`, `CARTES_FOND`) dans `tv/src/cartes-images.js`.
