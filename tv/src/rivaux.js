@@ -141,6 +141,7 @@ function finRival(ok,C){const Z=C.Z,R=riv(),tk=!(R.c&&R.c.id===Z.id)&&tentativeS
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
     ui('menu',{sur:'Défense perdue',t:'Le champion tient la Pierre',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). La contestation continue : vous pouvez revenir avant l'échéance, sinon la maison tentera l'épreuve seule.</p>`,
       back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
+  if(r&&typeof gagnerTesselles==='function')gagnerTesselles(TESS_PRIMES.rival,'rival');   /* commerce.js : prime en tesselles */
   if(R.c&&R.c.id===Z.id)R.c=null;const t=ZMANA[Z.id]||'Vent';gagner(t,2);S.hurt=Math.max(0,S.hurt-1);save();etatHud();sfx('hit');
   ui('menu',{sur:'Défense réussie',t:Z.info.nom,corps:`<p>Le champion ${r?dela(r)+' ':''}tombe devant la Pierre. La maison renonce : la zone garde son palier. Les vaincus lâchent 2 ${t}.</p>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}

@@ -19,7 +19,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 | Nœud papillon | Antre | 246 | Bêtes alliées ; passif de combat propre à chaque Antre et à chaque pôle |
 | Losange | Assemblée | 182 | Siège politique ; cartes de loi ; pouvoir sur la carte du monde **(provisoire)** |
 | Pentagone | Donjon | 130 | Cartes de puissance ; passif résistance et piège ; s'aménage une fois conquis |
-| Décagone | Citadelle | 45 | Capitale ; passif endurance et Garde levée ; commerce **(pas encore dans le jeu)** |
+| Décagone | Citadelle | 45 | Capitale ; passif endurance et Garde levée ; commerce : le Comptoir (19 nov., dans le jeu, voir section 6) |
 
 - Chaque zone est unique : son histoire, ses deux pôles, ses cartes, son bonus. Les quatre conteurs écrivent, le critique juge le ton.
 - Une zone va de −7 à +7. Les deux pôles ne sont ni le bien ni le mal : ce sont deux évolutions opposées, chacune avec sa grandeur et son prix. L'écart entre −7 et +7 doit être frappant, avec un saut visible à chaque palier (la mue).
@@ -61,7 +61,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Départ : **plus de cartes communes** (18 nov.). Le paquet de départ, ce sont les 6 cartes de palier 1 des zones à cartes du territoire de départ, chacune du pôle tiré pour sa zone.
 - **Une seule sorte de carte** : la carte de combat. On en gagne une, distincte, à chaque palier réussi d'une zone (paliers 1 à 6). Au palier 7, la carte change de nature et porte une résonance (Braise, Givre, Sang, Racine, Sceau, Abîme) qui permet les grands combos. La « carte de pouvoir » de la première version (Mineure, Majeure, Ultime) est supprimée **(retrait en cours dans le jeu)**.
 - Les cartes diffèrent selon le pôle et viennent toujours de l'histoire de la zone. Chaque carte doit avoir un impact et un crochet de combo.
-- Un secret trouvé donne une carte utilitaire. Les combats ne donnent jamais de carte. Les Ressources ne donnent pas de carte (les Gerbes sont retirées, leurs textes gardés pour de futurs atouts).
+- Un secret trouvé donne une carte utilitaire ; le Comptoir d'une Citadelle vend aussi ces cartes de secret, une par cycle au plus (19 nov., section 6). Les combats ne donnent jamais de carte. Les Ressources ne donnent pas de carte (les Gerbes sont retirées, leurs textes gardés pour de futurs atouts).
 - Paquet : 40 cartes au plus. La forge du paquet en Citadelle est gardée pour plus tard.
 - Contre-pouvoir : une carte de zone a son effet doublé dans la zone qu'elle contre.
 
@@ -77,7 +77,14 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
   - Le Donjon d'origine garde ses 4 salles (Vestibule des Édits, Galerie des scribes, Puits de lave, Chambre du Sceau) et son assaut périodique du monde sauvage. Les autres Donjons ont 2 salles au palier 0 ou 1, 3 au palier 2, 4 au palier 3 et au-delà, vers l'un ou l'autre pôle **(provisoire)** ; une salle au-delà du palier actuel est scellée, son piège attend sans jouer. Les salles portent des noms tirés de la zone (son lieu, son biome, sa culture).
   - Un piège par salle, payé à la pose avec le mana de son type. Chaque Donjon possédé déverrouille un dispositif : 1 Donjon tenu, 2 dispositifs (Herse de givre, Glyphe de brume) ; 2 Donjons, + Fosse de lave ; 3, + Gardien des marais ; 4, + Ronces de sève (Sève, pose 3, force 4, jamais saccagées par une horde) ; 5, + Voûte d'éboulis (Pierre, pose 4, force 2 + 1 par Donjon tenu) **(provisoire)**. Un piège déjà posé reste, même si le dispositif n'est plus déverrouillé.
   - Entretien : à chaque cycle, 1 mana par piège (sinon il dort jusqu'au cycle suivant) ; ou à l'assaut, 2 mana par piège à chaque assaut ou horde qui traverse le Donjon (sinon il ne se déclenche pas) ; ou usure, chaque piège sert 3 assauts puis casse. Le Comptoir des Citadelles peut réparer les pièges (réveil des pièges endormis, usure remise à 3).
-- La monnaie du commerce est la tesselle, séparée du mana **(pas encore dans le jeu)**.
+- La monnaie du commerce est la tesselle, séparée du mana (18-19 nov., dans le jeu). Elle ne s'achète pas : elle se gagne seulement en jouant.
+- **Commerce en Citadelle** (18-19 nov., dans le jeu ; idée validée le 19 nov. : « les tesselles achètent des cartes de secret, des réparations de pièges ou un retard de horde ») :
+  - Gains : chaque Citadelle tenue rapporte 1 + son palier (en valeur absolue) tesselles par cycle **(provisoire)** ; briser l'avant-garde d'une horde rapporte 5 tesselles, repousser le champion d'un rival 4 **(provisoire)**. À la mort, le héros perd toute sa bourse (« on perd tout »). Le bandeau montre la bourse (◇).
+  - Le **Comptoir** s'ouvre à la Pierre d'éveil de toute Citadelle tenue. On y achète :
+    - une carte utilitaire de secret absente du paquet (d'abord celles des secrets déjà trouvés, perdues à la mort ; puis les plus proches), **une par cycle au plus**, au prix de 6 tesselles, +3 à chaque achat du même héros **(provisoire)**. Les combats ne donnent toujours aucune carte ; on gagne des cartes aux paliers, aux secrets, et au Comptoir des cartes de secret seulement ;
+    - la réparation des pièges d'un Donjon tenu, 5 tesselles **(provisoire)** : pièges réveillés et usure effacée (Donjon d'origine ; les autres Donjons quand le module Donjons aménagés est là) ;
+    - deux cycles de retard pour une horde en marche, 8 tesselles, une fois par horde **(provisoire)** ;
+    - 1 mana du type de la Citadelle pour 4 tesselles **(provisoire ; taux volontairement défavorable)**.
 
 ## 7. Le combat
 
