@@ -3,7 +3,7 @@
    Usage (depuis la racine du dépôt) :
      node tv/tools/jouer.js --graine 3 --profil depart --zone ANT120 --actions "j0 p1,0 j1>0 f"
        → rejoue les actions dans l'ordre et affiche l'état du combat (plateau, main, intentions, journal)
-       actions : jI = jouer la carte I de la main (jI>K : sur l'ennemi vivant K) ; pV,R = poser l'unité en attente en voie V (0 haute,1 milieu,2 basse), rang R (0 avant, 1 arrière) ;
+       actions : jI = jouer la carte I de la main (jI>K : sur l'ennemi « cible K ») ; mI = manœuvre de votre unité I (ordre de « unites »), puis pV,R ; pV,R = poser l'unité en attente en voie V (0 haute,1 milieu,2 basse), rang R (0 avant, 1 arrière) ;
                  ok = garder la case proposée ; f = fin du tour
      node tv/tools/jouer.js --lot 40 --profil milieu        → 40 combats joués par le robot, statistiques
      options : --kind renc|eveil (défaut renc) · --niveau N (niveau de la zone combattue) · --noeud (ancien Nœud, pour comparer) · --capture fichier.png
@@ -18,8 +18,8 @@ const graine=+(opt('graine')||1),lot=+(opt('lot')||0),profil=opt('profil')||'dep
   await p.route('**/three.min.js',r=>r.fulfill({body:three,contentType:'application/javascript'}));
   await p.route(/^https?:\/\/(?!.*three\.min\.js)/,r=>r.abort());
   await p.addInitScript(g=>{let a=g>>>0||1;Math.random=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};try{localStorage.clear()}catch(e){}},graine);
-  await p.goto('file://'+path.join(racine,'index.html'));
-  await p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function',null,{timeout:30000});
+  await p.goto('file://'+path.join(racine,'index.html'),{timeout:240000,waitUntil:'domcontentloaded'});
+  await p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function',null,{timeout:240000});
   await p.evaluate(()=>window.MZ.start());await p.waitForTimeout(800);
   /* outils dans la page */
   await p.evaluate(({profil,noeud})=>{window.JR={log:[]};const jA=jouer;jouer=function(){if(CB)CB.mzVol=1;return jA.apply(this,arguments)};const j0=journal;journal=function(t){JR.log.push(t);return j0.apply(this,arguments)};
@@ -35,10 +35,10 @@ const graine=+(opt('graine')||1),lot=+(opt('lot')||0),profil=opt('profil')||'dep
       const intn=m=>m.int?m.int.ic+(m.int.v?m.int.v:'')+' '+m.int.t+(m.chef&&m.cv!=null?' (voie '+m.cv+')':''):'';
       const vo=[0,1,2].map(v=>{const av=C.cases?occupant(v,0):null,ar=C.cases?occupant(v,1):null,e=vivants(C.foes).filter(m=>!m.chef&&m.voie===v).sort((a,b)=>rangDe(a)-rangDe(b));
         return{voie:v,cases:C.cases?{a_arriere:caseType('a',v,1),a_avant:caseType('a',v,0),e_avant:caseType('e',v,0)}:null,arriere:nom(ar)+(ar?' ⚔'+forceBete(ar):''),avant:nom(av)+(av?' ⚔'+forceBete(av):''),
-          ennemis:e.map(m=>nom(m)+' ['+intn(m)+']'+(m.br&&m.br.length?' brûle':'')+(m.vul?' vuln'+m.vul:''))}});
+          ennemis:e.map(m=>'cible '+vivants(C.foes).indexOf(m)+' : '+nom(m)+' ['+intn(m)+']'+(m.br&&m.br.length?' brûle':'')+(m.vul?' vuln'+m.vul:''))}});
       const chef=vivants(C.foes).find(m=>m.chef);
-      return{tour:C.tour,heros:nom(C.hero),garde:nom(gardeU()),mana:dispo()+'/'+C.capT,centre:C.centre,attente:C.pl?{unite:C.pl.u.nom,propose:[C.pl.v,C.pl.r]}:null,
-        voies:vo,chef:chef?nom(chef)+' ['+intn(chef)+']':null,menaces:C.cases?menaces():null,
+      return{tour:C.tour,heros:nom(C.hero),garde:nom(gardeU()),mana:dispo()+'/'+C.capT,centre:C.centre,attente:C.pl?{unite:C.pl.u.nom,propose:[C.pl.v,C.pl.r]}:null,unites:C.cases?surTerrain().map((u,i)=>i+' : '+u.nom+' voie '+u.voie+' rang '+(u.rang||0)):null,manoeuvre:C.cases?manoeuvrePossible():null,
+        voies:vo,chef:chef?'cible '+vivants(C.foes).indexOf(chef)+' : '+nom(chef)+' ['+intn(chef)+']':null,menaces:C.cases?menaces():null,
         main:C.main.map((k,i)=>i+': '+CK[k].nom()+' (coût '+CK[k].cout+(enGris(k)?', gris':'')+(jouable(k)?'':', trop cher')+') '+String(CK[k].txt(k)).replace(/<[^>]+>/g,'')),
         pioche:C.pile.length,defausse:C.defausse.length,passifs:C.passifs}};
     const fc=finCombat;finCombat=function(ok){JR.issue=ok?'victoire':'défaite';JR.tours=CB.tour;JR.pvFin=CB.hero.pv;JR.pvMax=CB.hero.max;return fc.apply(this,arguments)};
@@ -64,6 +64,7 @@ const graine=+(opt('graine')||1),lot=+(opt('lot')||0),profil=opt('profil')||'dep
     for(const a of acts){const r=await p.evaluate(a=>{if(!CB)return'combat déjà fini';let m;
         if(a==='f'){if(CB.pl)return'une unité attend sa case (pV,R ou ok)';finTour()}
         else if(a==='ok'){if(!CB.pl)return'rien à poser';plInput('ok')}
+        else if(m=a.match(/^m(\d)$/)){if(CB.pl)return'une unité attend sa case';if(!manoeuvrePossible())return'manœuvre impossible';debutManoeuvre();CB.man.i=+m[1];manInput('ok')}
         else if(m=a.match(/^p(\d),(\d)$/)){if(!CB.pl)return'rien à poser';CB.pl.v=+m[1];CB.pl.r=+m[2];plInput('ok')}
         else if(m=a.match(/^j(\d+)(?:>(\d+))?$/)){if(CB.pl)return'une unité attend sa case (pV,R ou ok)';const k=CB.main[+m[1]];if(!k)return'pas de carte '+m[1];if(!jouable(k))return'trop cher';
           const v=vivants(CB.foes);jouer(+m[1],CK[k].cible?v[m[2]!=null?+m[2]:0]:undefined)}
