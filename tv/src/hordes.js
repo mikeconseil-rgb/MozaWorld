@@ -128,6 +128,7 @@ function finHorde(ok,C){const src=C.horde,h=S.hordes[src],Zs=ZB[src];
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
     ui('menu',{sur:'Défaite',t:'L\'avant-garde passe',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). La horde marche toujours${h?' sur '+ZB[h.cible].info.nom+', arrivée dans environ '+fmt(resteHorde(h)):''}.</p><p class="petit">Vous pouvez retenter le combat à la Pierre d'éveil de la zone visée avant son arrivée.</p>`,
       back:toMonde,opts:[{l:'Repartir',ic:'◆',go:toMonde}]});return}
+  if(h&&typeof gagnerTesselles==='function')gagnerTesselles(TESS_PRIMES.horde,'horde');   /* commerce.js : prime en tesselles */
   const t=ZMANA[src]||'Pierre';gagner(t,HORDE_BUTIN);if(h){finirHorde(src);S.hordesBilan.brisees++}save();etatHud();hudKey='';sfx('hit');
   ui('menu',{sur:'Victoire · horde brisée',t:'La horde '+de_(court(src))+' se disperse',corps:`<p>Son avant-garde est tombée : la horde n'arrivera pas. Les vaincus lâchent ${HORDE_BUTIN} ${t}. Réserve : ${resTexte()}.</p><p class="petit">La zone source reprend des forces ; elle pourra lever une nouvelle horde dans ${HORDE_MUR} cycles si elle reste au palier 7.</p>`,
     back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]})}

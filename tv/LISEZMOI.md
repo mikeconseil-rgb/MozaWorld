@@ -4,6 +4,10 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Gameplay du monde : le commerce en Citadelle (19 nov., `src/commerce.js`)
+
+La tesselle (◇ dans le bandeau) est la monnaie des Citadelles, séparée du mana et jamais achetée : chaque Citadelle tenue en rapporte 1 + son palier par cycle, briser une horde 5, repousser un rival 4 ; la mort vide la bourse. À la Pierre d'éveil d'une Citadelle tenue, OK puis « Comptoir » : une carte utilitaire de secret absente du paquet (6 tesselles, +3 à chaque achat, une par cycle), la réparation des pièges d'un Donjon tenu (5), deux cycles de retard pour une horde en marche (8, une fois par horde), 1 mana du type de la Citadelle pour 4 tesselles. Tous les prix sont provisoires. Tests : `MZ.tesselles(n)` en donne, `MZ.comptoir(id?)` ouvre le Comptoir, `MZ.commerceCycle()` verse un cycle ; script `node tv/tools/test-commerce.js`.
+
 ## Version 2.10 : boucle graphique 1 (19 novembre)
 
 Première boucle de l'équipe graphique (critique, direction artistique, rendu et performance, producteur, trois artisans, testeur-juge). Les trois améliorations ont été acceptées par le testeur ; détails dans les sections « Boucle 1 » plus bas, captures avant, après et intégrées dans `boucles/boucle-1/` du dossier du projet.

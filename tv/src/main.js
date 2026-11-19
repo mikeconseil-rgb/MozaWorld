@@ -260,6 +260,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
   if(typeof optionsRivaux==='function')o.unshift(...optionsRivaux(Z));
   if(typeof optionsDomaines==='function')o.push(...optionsDomaines(Z));
+  if(typeof optionsCommerce==='function')o.push(...optionsCommerce(Z));   /* lot 2 : le Comptoir des Citadelles tenues (commerce.js) */
   if(typeof optionsHorde==='function'){const h=optionsHorde(Z);o.unshift(...h.filter(x=>x.go));o.push(...h.filter(x=>!x.go))}   /* l'avant-garde à affronter en tête, comme la défense contre un rival */
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
@@ -562,3 +563,4 @@ window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(o
 Object.assign(window.MZ,{rival:s=>typeof rivalAgit==='function'?rivalAgit(true,s):null,rivalArrive:g=>typeof rivalArrive==='function'?rivalArrive(g):null});
 if(typeof domaines==='function')Object.assign(window.MZ,{domaines,verrouillee,defenseMonde,statutZone,prendre:domPrendre,cycle:()=>cycle()});
 if(typeof hordeTest==='function')Object.assign(window.MZ,{horde:hordeTest,hordeArrive,poleEnvahisseur,hordeDefense:defenseHorde});
+if(typeof tessellesTest==='function')Object.assign(window.MZ,{tesselles:tessellesTest,comptoir:id=>openComptoir(ZB[id||'CIT']),commerceCycle});
