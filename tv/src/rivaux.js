@@ -9,9 +9,9 @@
    - Reprendre une zone de rival : la réactiver comme une zone sauvage, gardiens renforcés.
    - Empreinte (complément) : une ancienne zone à vous, redevenue sauvage, se reprend aussi en réussissant un seul palier.
    État : S.riv = {z:{id:maison}, c:{r,id,du,de}|null, nc, vu:{maison:nb d'actions}}. */
-const RIV_TOUS=3;      /* une maison agit en moyenne une fois tous les 3 cycles (provisoire) */
+const RIV_TOUS=6;      /* une maison agit en moyenne une fois tous les 6 cycles (provisoire) */
 const RIV_DELAI=2;     /* une contestation est annoncée 2 cycles avant l'épreuve (provisoire) */
-const RIV_GRACE=3;     /* aucune maison n'agit pendant les 3 premiers cycles d'une partie (provisoire) */
+const RIV_GRACE=10;    /* aucune maison n'agit avant le 10e cycle d'une partie (provisoire) */
 const RIV_CHANCE=.55;  /* chance de réussite d'une maison si vous ne défendez pas (provisoire) */
 const RIV_PROT=.1;     /* chaque point de protection (defenseMonde(id).bonus) retire 10 % (provisoire) */
 const RIV_MAX=()=>1+Math.floor(ZN.length/20);   /* zones au plus par maison : 2 sur la carte de 21 zones (provisoire) */
@@ -31,6 +31,7 @@ const dela=r=>'de la '+r.nom.replace(/^Maison/,'maison');   /* « de la maison G
 function riv(){if(!S.riv||typeof S.riv!=='object')S.riv={z:{},c:null,nc:S.nc||0,vu:{}};const R=S.riv;
   if(!R.z||typeof R.z!=='object')R.z={};if(R.c===undefined)R.c=null;if(typeof R.nc!=='number')R.nc=S.nc||0;if(!R.vu)R.vu={};
   for(const id in R.z)if(!ZB[id]||S.own[id]||!RIVK[R.z[id]])delete R.z[id];   /* zone reprise par le joueur : elle n'est plus à la maison */
+  if(R.c&&(!ZB[R.c.id]||!S.own[R.c.id]||!RIVK[R.c.r]))R.c=null;   /* zone contestée perdue (mort du héros, horde) : la contestation tombe */
   return R}
 const maisonDe=id=>{const k=S.riv&&S.riv.z&&S.riv.z[id];return k&&!S.own[id]?RIVK[k]:null};
 const zonesMaison=k=>ZN.filter(Z=>S.riv&&S.riv.z[Z.id]===k&&!S.own[Z.id]);
@@ -121,14 +122,14 @@ function dessinerRivaux(mc,s,ox,oz){if(!S.riv)return;const R=S.riv,pl=.5+.5*Math
     if(ct){const m=RIVK[R.c.r];mc.lineWidth=2+2*pl;mc.strokeStyle=m?m.col:'#ff7a6a';mc.setLineDash([5,4]);mc.stroke();mc.setLineDash([])}}}
 function ligneRivaux(){if(!S.riv)return'';const R=S.riv;
   const m=RIVAUX.map(r=>`<span class="d" title="${r.nom}"><span style="color:${r.col}">${r.bl}</span>${zonesMaison(r.k).length}</span>`).join('');
-  const c=R.c&&ZB[R.c.id]?`<span class="titre" style="color:#ff9a8a">${RIVK[R.c.r].bl} ${ZB[R.c.id].info.nom.split(',')[0]} · ${Math.max(0,R.c.du-R.nc)} cycle(s)</span>`:'';
+  const c=R.c&&ZB[R.c.id]?`<span class="d" title="${RIVK[R.c.r].nom} conteste ${ZB[R.c.id].info.nom}" style="color:#ff9a8a"><span style="color:${RIVK[R.c.r].col}">${RIVK[R.c.r].bl}</span>${court(R.c.id).split(' ').pop()}<small> ${(n=>n+' cycle'+(n>1?'s':''))(Math.max(0,R.c.du-R.nc))}</small></span>`:'';
   return`<div class="ligne"><span class="titre">Rivaux</span>${m}${c}</div>`}
 
 /* ---------- écran « Rivaux » (menu Pause) ---------- */
 function menaceDe(r){const R=riv();if(R.c&&R.c.r===r.k&&ZB[R.c.id]){const n=Math.max(0,R.c.du-R.nc);return`conteste ${ZB[R.c.id].info.nom} : épreuve dans ${n} cycle${n>1?'s':''}`}return'aucune menace annoncée'}
 function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv();
   ui('menu',{sur:'Pause · les maisons rivales',t:'Rivaux',f:typeof f==='number'?f:0,
-    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une prend une zone sauvage, ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour la baisser d'un palier. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, ou une zone au repos, ne peut pas être visée.</p>`,
+    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une prend une zone sauvage, ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour la baisser d'un palier. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, verrouillée par votre Citadelle (la Citadelle et ses voisines), au cœur du royaume ou au repos ne peut pas être visée.</p>`,
     back:openMenu,opts:[...RIVAUX.map((r,i)=>{const z=zonesMaison(r.k);
       return{l:`${r.nom} · ${z.length} zone${z.length>1?'s':''}`,ic:`<span style="color:${r.col}">${r.bl}</span>`,d:menaceDe(r),go:()=>openMaison(r,i)}}),{l:'Retour',ic:'◆',go:()=>openMenu()}]})}
 function openMaison(r,i){const z=zonesMaison(r.k),R=riv(),cz=R.c&&R.c.r===r.k?ZB[R.c.id]:null;

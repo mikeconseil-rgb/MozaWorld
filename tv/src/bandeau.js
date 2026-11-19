@@ -10,7 +10,9 @@ const BTYPES=[['CIT','⛫','Citadelles'],['DON','⬟','Donjons'],['RES','⬢','R
 .bandeau .d{display:inline-flex;align-items:center;gap:.25em;font-size:calc(var(--u)*1.25);color:var(--ivoire)}
 .bandeau .d span{color:#ffd98a;font-size:1.1em}.bandeau .d small{color:var(--sable);font-size:.75em}
 .bandeau .dg{font-size:calc(var(--u)*1.1);font-weight:600;padding:.05em .5em;border-radius:3px;border:1px solid currentColor}.bandeau .dg.faible{color:#8fc06f}.bandeau .dg.reel{color:#e8c77f}.bandeau .dg.mortel{color:#ff7a6a}
-.bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}`;document.head.appendChild(st)})();
+.bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}
+/* 19 nov. : avec les lignes Menaces et Rivaux, la barre peut dépasser 1280 px ; elle passe alors sur deux lignes au lieu d'être coupée */
+.hud.etat,.hud.etat .bandeau{flex-wrap:wrap!important;row-gap:calc(var(--u)*.3)}`;document.head.appendChild(st)})();
 function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;let b=document.getElementById('bandeau');
   if(!b){b=document.createElement('div');b.id='bandeau';b.className='bandeau';box.prepend(b)}
   const mana=`<span class="m"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');

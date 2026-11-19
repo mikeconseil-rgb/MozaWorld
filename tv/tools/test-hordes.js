@@ -51,10 +51,10 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
       ok('butin : mana du type de la source',apres.res===avant+3,avant+' → '+apres.res);
       await p.evaluate(()=>toMonde());
     }
-    /* 4. une horde qui passe : la zone à vous recule ; à 0 elle redevient sauvage */
+    /* 4. une horde qui passe : la zone à vous recule ; à 0 elle reste à vous (19 nov.) */
     const r1=await p.evaluate(()=>{const cible=MZ.ZN.find(Z=>MZ.S.own[Z.id]&&(Z.mod||Z.id)!=='RES'&&Z.id!=='CIT').id;MZ.S.lv[cible]=1;
       const h=MZ.horde(null,cible);if(!h)return null;h.force=99;const r=MZ.hordeArrive(h.src);return{cible,lv:MZ.S.lv[cible],own:MZ.S.own[cible],passe:r&&r.passe,lignes:r&&r.lignes}});
-    ok('horde sans réponse : la zone recule et redevient sauvage',!!r1&&r1.passe&&r1.lv===0&&!r1.own,JSON.stringify(r1));
+    ok('horde sans réponse : la zone recule, à 0 elle reste à vous',!!r1&&r1.passe&&r1.lv===0&&r1.own,JSON.stringify(r1));
     await p.waitForTimeout(800);
     ok('rapport à l\'écran',await p.evaluate(()=>MZ.mode==='menu'&&/forcée|tient/.test(document.getElementById('menu-t').textContent)));
     await p.evaluate(()=>toMonde());
@@ -70,6 +70,7 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     await p.evaluate(()=>toMonde());
     /* 7. le cycle : colère qui mûrit, horde levée, arrivée résolue d'elle-même */
     const r4=await p.evaluate(()=>{const z=MZ.ZN.find(Z=>(Z.mod||Z.id)!=='RES'&&!MZ.S.own[Z.id]&&MZ.poleEnvahisseur(Z.id)!==2&&!MZ.S.hordes[Z.id]);const n=7*MZ.poleEnvahisseur(z.id);MZ.S.lv[z.id]=n;z.lvT=n;
+      if(!cibleHorde(z.id)){const v=VOISINES[z.id].find(v=>(ZB[v].mod||v)!=='RES');MZ.S.lv[v]=4*(MZ.S.lv[v]<0?-1:1)}   /* une cible plus faible de 3 paliers */
       MZ.S.nc=Math.max(MZ.S.nc,HORDE_GRACE);for(let i=0;i<HORDE_MUR;i++)hordesCycle();return{src:z.id,h:MZ.S.hordes[z.id]||null}});
     ok('au palier 7 envahisseur, la colère mûrit puis la horde se lève',!!r4.h,JSON.stringify(r4));
     if(r4.h){await p.evaluate(s=>{MZ.S.nc=MZ.S.hordes[s].arrive},r4.src);await p.waitForTimeout(2000);

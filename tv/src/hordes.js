@@ -4,7 +4,7 @@
    accorde un pouvoir plus fort. » L'assaut périodique sur le Donjon d'origine (economie.js) reste tel quel ; les hordes s'y ajoutent.
    - Chaque zone (sauf les Ressources) a un pôle envahisseur fixé d'après son id : − , + , ou les deux (une zone sur six).
    - Une zone au palier 7 de son pôle envahisseur, à vous ou sauvage, mûrit sa colère (HORDE_MUR cycles), puis lève une horde
-     annoncée à l'avance vers une zone à 2 tuiles au plus, d'au moins 2 paliers plus faible, en visant d'abord vos zones.
+     annoncée à l'avance vers une zone à 2 tuiles au plus, plus faible de 2 ou 3 paliers exactement, en visant d'abord vos zones.
    - Le héros peut briser l'avant-garde à la Pierre d'éveil de la zone visée ; sinon, à l'arrivée, force contre défense.
    - Une zone sauvage à ±6 de son pôle envahisseur peut gronder et monter à ±7 (rare), pour que la guerre existe dans une partie normale.
    - Au palier 7 du pôle qui n'envahit pas, la carte de palier 7 de la zone joue comme un palier 9. */
@@ -40,8 +40,8 @@ function initHordes(){
 /* ---------- Cibles et défense ---------- */
 function cibleHorde(src){const L=Math.abs(S.lv[src]||0),d=aPortee(src,2),prises=new Set(Object.values(S.hordes).map(h=>h.cible));
   const c=Object.keys(d).filter(id=>{if(id===src||!ZB[id]||prises.has(id))return false;const l=Math.abs(S.lv[id]||0);
-    if(l>L-2)return false;                                   /* au moins deux paliers plus faible */
-    if(!S.own[id]&&l===0)return false;                       /* une zone sauvage à 0 n'a plus rien à perdre */
+    if(l>L-2||l<L-3)return false;                            /* plus faible de deux ou trois paliers, pas au-delà (provisoire) */
+    if(l===0)return false;                                   /* une zone à 0 n'a plus rien à perdre */
     if(S.own[id]&&typeof cacheParBrume==='function'&&cacheParBrume(id))return false;   /* Brume de Givrecloche */
     return true});
   c.sort((a,b)=>(S.own[b]?1:0)-(S.own[a]?1:0)||d[a]-d[b]||Math.abs(S.lv[a]||0)-Math.abs(S.lv[b]||0));
@@ -49,13 +49,14 @@ function cibleHorde(src){const L=Math.abs(S.lv[src]||0),d=aPortee(src,2),prises=
 function defenseHorde(id){const parts=[],L=Math.abs(S.lv[id]||0);parts.push(['niveau de la zone',L]);
   if(S.own[id]){
     const d=aPortee(id,3),cit=ZN.find(Z=>estCIT(Z)&&tient(Z.id)&&d[Z.id]!==undefined);
-    if(cit)parts.push([d[cit.id]?`Citadelle tenue à ${d[cit.id]} tuile${d[cit.id]>1?'s':''} (${court(cit.id)})`:'la Citadelle elle-même',3]);
+    if(cit)parts.push([d[cit.id]?`Citadelle tenue à ${d[cit.id]} tuile${d[cit.id]>1?'s':''} (${court(cit.id)})`:'la Citadelle elle-même',3,1]);
     if(typeof etatRoutes==='function'){etatRoutes();const vois=VOISINES[id]||[];
       const rp=Object.keys(S.routes).some(a=>estCIT(ZB[a])&&S.routes[a].some(b=>a===id||b===id||vois.indexOf(a)>=0||vois.indexOf(b)>=0));
       if(rp)parts.push(['rempart',3])}
     if(tient('DON')&&(id==='DON'||(VOISINES.DON||[]).indexOf(id)>=0)&&Array.isArray(S.pieges)){
       const n=Math.min(2,S.pieges.filter(x=>x&&!x.dort).length);if(n)parts.push(['pièges du Donjon aménagé',n])}}
-  if(typeof defenseMonde==='function'){const b=+((defenseMonde(id)||{}).bonus)||0;if(b)parts.push(['pouvoirs du domaine',b])}
+  /* le verrou de Citadelle (+2) ne s'ajoute pas au +3 de la Citadelle à 3 tuiles : la même Citadelle ne compte qu'une fois, la plus forte (provisoire) */
+  if(typeof defenseMonde==='function'){const dm=defenseMonde(id)||{},b=(+dm.bonus||0)-(parts.some(p=>p[2])&&dm.verrou?Math.min(dm.verrou,3):0);if(b)parts.push(['pouvoirs du domaine',b])}
   return{total:parts.reduce((a,p)=>a+p[1],0),parts}}
 
 /* ---------- Lever, annoncer, résoudre ---------- */
@@ -80,12 +81,12 @@ function hordeArrive(src){initHordes();src=src||Object.keys(S.hordes).sort((a,b)
   if(aVous||S.own[src]||h.vu)hordeRapports.push({ok:!passe,force:h.force,cible:h.cible,lignes:l});
   else if(started)toast('Le sauvage gronde','Horde '+de_(nomS),l[l.length-1]);
   montrerHorde();return{passe,lignes:l}}
-/* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous à 0 redevient sauvage */
+/* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous à 0 reste à vous (19 nov.) */
 function defaite(id){const Z=ZB[id],l=[],a=S.own[id],lv=S.lv[id]||0;
   if(typeof borne==='function'&&borne(id)){l.push('La Pierre de bornage de Raak tient : la zone ne recule pas.');return l}
   if(estRESh(id)){if(S.routes&&S.routes[id]&&S.routes[id].length){delete S.routes[id];l.push('Ses routes sont coupées.')}}
   if(lv!==0){const n=lv-Math.sign(lv);S.lv[id]=n;Z.lvT=n;l.push(`${Z.info.nom} recule d'un palier (${sgn(n)||'0'}).`)}
-  if(a&&(S.lv[id]||0)===0){S.own[id]=false;S.act[id]=false;S.emp[id]=false;if(S.borne===id)S.borne=null;l.push('La zone tombe à 0 : elle redevient sauvage. Il faudra la reprendre à sa Pierre d\'éveil.')}
+  if(a&&(S.lv[id]||0)===0)l.push('La zone tombe à 0, mais elle reste à vous.');   /* une seule horde ne la rend pas sauvage (provisoire) */
   if(typeof etatRoutes==='function')etatRoutes();
   return l}
 function montrerHorde(){if(!hordeRapports.length||mode!=='monde')return;const r=hordeRapports.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
@@ -146,8 +147,8 @@ function ficheHorde(Z){const el=$('h-mai');if(!el||!Z)return;initHordes();let t=
   else if(!estRESh(Z.id)){const p=poleEnvahisseur(Z.id);t=S.hordes[Z.id]?`<b style="color:#ff8a6a">Lève une horde</b>`:p===2?'Hordes : les deux pôles':`Hordes : ${p<0?'−7':'+7'} ${nomPole(Z,p)}`}
   if(t)el.innerHTML+=`<br><small>${t}</small>`}
 function menacesHordes(){initHordes();const L=Object.values(S.hordes).sort((a,b)=>(S.own[b.cible]?1:0)-(S.own[a.cible]?1:0)||a.arrive-b.arrive);
-  return L.slice(0,3).map(h=>`<span class="d" title="Horde ${de_(court(h.src))} vers ${ZB[h.cible].info.nom}" style="${S.own[h.cible]?'color:#ff8a6a':''}"><span>⚔</span>${ZB[h.src].info.nom.split(',')[0].split(' ').pop()} → ${ZB[h.cible].info.nom.split(',')[0].split(' ').pop()}<small> ${fmt(resteHorde(h))}</small></span>`)
-    .concat(L.length>3?[`<span class="d"><small>et ${L.length-3} autre(s)</small></span>`]:[])}
+  return L.slice(0,2).map(h=>`<span class="d" title="Horde ${de_(court(h.src))} vers ${ZB[h.cible].info.nom}" style="${S.own[h.cible]?'color:#ff8a6a':''}"><span>⚔</span>${ZB[h.src].info.nom.split(',')[0].split(' ').pop()} → ${ZB[h.cible].info.nom.split(',')[0].split(' ').pop()}<small> ${fmt(resteHorde(h))}</small></span>`)
+    .concat(L.length>2?[`<span class="d"><small>+${L.length-2}</small></span>`]:[])}
 function dessinerHordes(mc,s,ox,oz,T){if(typeof S==='undefined'||!S.hordes)return;const pulse=.55+.45*Math.sin((T||0)*5);
   for(const src in S.hordes){const h=S.hordes[src],A=ZB[src],B=ZB[h.cible];if(!A||!B)continue;
     const x0=(A.c[0]+ox)*s,y0=(A.c[1]+oz)*s,x1=(B.c[0]+ox)*s,y1=(B.c[1]+oz)*s,a=Math.atan2(y1-y0,x1-x0);

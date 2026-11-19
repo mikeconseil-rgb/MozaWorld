@@ -37,7 +37,7 @@ function verrouillee(id){return!!citVerrou(id)||auCoeur(id)}
 function defenseMonde(id){const r={bonus:0,raisons:[]};if(!S.own[id])return r;
   if(auCoeur(id)){r.bonus+=2;r.raisons.push('au cœur du royaume +2')}
   const d=domaineDe(id);if(d&&d.ferme){r.bonus+=1;r.raisons.push('domaine '+DOM_NOMS[d.type][1]+' fermé +1')}
-  const c=citVerrou(id);if(c){r.bonus+=2;r.raisons.push('verrou de '+(ZB[c]?ZB[c].info.nom:'la Citadelle')+' +2')}
+  const c=citVerrou(id);if(c){r.bonus+=2;r.verrou=2;r.raisons.push('verrou de '+(ZB[c]?ZB[c].info.nom:'la Citadelle')+' +2')}
   return r}
 
 /* ---------- effets des domaines fermés ---------- */

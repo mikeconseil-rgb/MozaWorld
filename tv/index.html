@@ -9893,7 +9893,7 @@ function verrouillee(id){return!!citVerrou(id)||auCoeur(id)}
 function defenseMonde(id){const r={bonus:0,raisons:[]};if(!S.own[id])return r;
   if(auCoeur(id)){r.bonus+=2;r.raisons.push('au cœur du royaume +2')}
   const d=domaineDe(id);if(d&&d.ferme){r.bonus+=1;r.raisons.push('domaine '+DOM_NOMS[d.type][1]+' fermé +1')}
-  const c=citVerrou(id);if(c){r.bonus+=2;r.raisons.push('verrou de '+(ZB[c]?ZB[c].info.nom:'la Citadelle')+' +2')}
+  const c=citVerrou(id);if(c){r.bonus+=2;r.verrou=2;r.raisons.push('verrou de '+(ZB[c]?ZB[c].info.nom:'la Citadelle')+' +2')}
   return r}
 
 /* ---------- effets des domaines fermés ---------- */
@@ -9953,7 +9953,7 @@ function domPrendre(id,non){if(!ZB[id])return false;S.own[id]=S.act[id]=!non;sav
    accorde un pouvoir plus fort. » L'assaut périodique sur le Donjon d'origine (economie.js) reste tel quel ; les hordes s'y ajoutent.
    - Chaque zone (sauf les Ressources) a un pôle envahisseur fixé d'après son id : − , + , ou les deux (une zone sur six).
    - Une zone au palier 7 de son pôle envahisseur, à vous ou sauvage, mûrit sa colère (HORDE_MUR cycles), puis lève une horde
-     annoncée à l'avance vers une zone à 2 tuiles au plus, d'au moins 2 paliers plus faible, en visant d'abord vos zones.
+     annoncée à l'avance vers une zone à 2 tuiles au plus, plus faible de 2 ou 3 paliers exactement, en visant d'abord vos zones.
    - Le héros peut briser l'avant-garde à la Pierre d'éveil de la zone visée ; sinon, à l'arrivée, force contre défense.
    - Une zone sauvage à ±6 de son pôle envahisseur peut gronder et monter à ±7 (rare), pour que la guerre existe dans une partie normale.
    - Au palier 7 du pôle qui n'envahit pas, la carte de palier 7 de la zone joue comme un palier 9. */
@@ -9989,8 +9989,8 @@ function initHordes(){
 /* ---------- Cibles et défense ---------- */
 function cibleHorde(src){const L=Math.abs(S.lv[src]||0),d=aPortee(src,2),prises=new Set(Object.values(S.hordes).map(h=>h.cible));
   const c=Object.keys(d).filter(id=>{if(id===src||!ZB[id]||prises.has(id))return false;const l=Math.abs(S.lv[id]||0);
-    if(l>L-2)return false;                                   /* au moins deux paliers plus faible */
-    if(!S.own[id]&&l===0)return false;                       /* une zone sauvage à 0 n'a plus rien à perdre */
+    if(l>L-2||l<L-3)return false;                            /* plus faible de deux ou trois paliers, pas au-delà (provisoire) */
+    if(l===0)return false;                                   /* une zone à 0 n'a plus rien à perdre */
     if(S.own[id]&&typeof cacheParBrume==='function'&&cacheParBrume(id))return false;   /* Brume de Givrecloche */
     return true});
   c.sort((a,b)=>(S.own[b]?1:0)-(S.own[a]?1:0)||d[a]-d[b]||Math.abs(S.lv[a]||0)-Math.abs(S.lv[b]||0));
@@ -9998,13 +9998,14 @@ function cibleHorde(src){const L=Math.abs(S.lv[src]||0),d=aPortee(src,2),prises=
 function defenseHorde(id){const parts=[],L=Math.abs(S.lv[id]||0);parts.push(['niveau de la zone',L]);
   if(S.own[id]){
     const d=aPortee(id,3),cit=ZN.find(Z=>estCIT(Z)&&tient(Z.id)&&d[Z.id]!==undefined);
-    if(cit)parts.push([d[cit.id]?`Citadelle tenue à ${d[cit.id]} tuile${d[cit.id]>1?'s':''} (${court(cit.id)})`:'la Citadelle elle-même',3]);
+    if(cit)parts.push([d[cit.id]?`Citadelle tenue à ${d[cit.id]} tuile${d[cit.id]>1?'s':''} (${court(cit.id)})`:'la Citadelle elle-même',3,1]);
     if(typeof etatRoutes==='function'){etatRoutes();const vois=VOISINES[id]||[];
       const rp=Object.keys(S.routes).some(a=>estCIT(ZB[a])&&S.routes[a].some(b=>a===id||b===id||vois.indexOf(a)>=0||vois.indexOf(b)>=0));
       if(rp)parts.push(['rempart',3])}
     if(tient('DON')&&(id==='DON'||(VOISINES.DON||[]).indexOf(id)>=0)&&Array.isArray(S.pieges)){
       const n=Math.min(2,S.pieges.filter(x=>x&&!x.dort).length);if(n)parts.push(['pièges du Donjon aménagé',n])}}
-  if(typeof defenseMonde==='function'){const b=+((defenseMonde(id)||{}).bonus)||0;if(b)parts.push(['pouvoirs du domaine',b])}
+  /* le verrou de Citadelle (+2) ne s'ajoute pas au +3 de la Citadelle à 3 tuiles : la même Citadelle ne compte qu'une fois, la plus forte (provisoire) */
+  if(typeof defenseMonde==='function'){const dm=defenseMonde(id)||{},b=(+dm.bonus||0)-(parts.some(p=>p[2])&&dm.verrou?Math.min(dm.verrou,3):0);if(b)parts.push(['pouvoirs du domaine',b])}
   return{total:parts.reduce((a,p)=>a+p[1],0),parts}}
 
 /* ---------- Lever, annoncer, résoudre ---------- */
@@ -10029,12 +10030,12 @@ function hordeArrive(src){initHordes();src=src||Object.keys(S.hordes).sort((a,b)
   if(aVous||S.own[src]||h.vu)hordeRapports.push({ok:!passe,force:h.force,cible:h.cible,lignes:l});
   else if(started)toast('Le sauvage gronde','Horde '+de_(nomS),l[l.length-1]);
   montrerHorde();return{passe,lignes:l}}
-/* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous à 0 redevient sauvage */
+/* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous à 0 reste à vous (19 nov.) */
 function defaite(id){const Z=ZB[id],l=[],a=S.own[id],lv=S.lv[id]||0;
   if(typeof borne==='function'&&borne(id)){l.push('La Pierre de bornage de Raak tient : la zone ne recule pas.');return l}
   if(estRESh(id)){if(S.routes&&S.routes[id]&&S.routes[id].length){delete S.routes[id];l.push('Ses routes sont coupées.')}}
   if(lv!==0){const n=lv-Math.sign(lv);S.lv[id]=n;Z.lvT=n;l.push(`${Z.info.nom} recule d'un palier (${sgn(n)||'0'}).`)}
-  if(a&&(S.lv[id]||0)===0){S.own[id]=false;S.act[id]=false;S.emp[id]=false;if(S.borne===id)S.borne=null;l.push('La zone tombe à 0 : elle redevient sauvage. Il faudra la reprendre à sa Pierre d\'éveil.')}
+  if(a&&(S.lv[id]||0)===0)l.push('La zone tombe à 0, mais elle reste à vous.');   /* une seule horde ne la rend pas sauvage (provisoire) */
   if(typeof etatRoutes==='function')etatRoutes();
   return l}
 function montrerHorde(){if(!hordeRapports.length||mode!=='monde')return;const r=hordeRapports.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
@@ -10095,8 +10096,8 @@ function ficheHorde(Z){const el=$('h-mai');if(!el||!Z)return;initHordes();let t=
   else if(!estRESh(Z.id)){const p=poleEnvahisseur(Z.id);t=S.hordes[Z.id]?`<b style="color:#ff8a6a">Lève une horde</b>`:p===2?'Hordes : les deux pôles':`Hordes : ${p<0?'−7':'+7'} ${nomPole(Z,p)}`}
   if(t)el.innerHTML+=`<br><small>${t}</small>`}
 function menacesHordes(){initHordes();const L=Object.values(S.hordes).sort((a,b)=>(S.own[b.cible]?1:0)-(S.own[a.cible]?1:0)||a.arrive-b.arrive);
-  return L.slice(0,3).map(h=>`<span class="d" title="Horde ${de_(court(h.src))} vers ${ZB[h.cible].info.nom}" style="${S.own[h.cible]?'color:#ff8a6a':''}"><span>⚔</span>${ZB[h.src].info.nom.split(',')[0].split(' ').pop()} → ${ZB[h.cible].info.nom.split(',')[0].split(' ').pop()}<small> ${fmt(resteHorde(h))}</small></span>`)
-    .concat(L.length>3?[`<span class="d"><small>et ${L.length-3} autre(s)</small></span>`]:[])}
+  return L.slice(0,2).map(h=>`<span class="d" title="Horde ${de_(court(h.src))} vers ${ZB[h.cible].info.nom}" style="${S.own[h.cible]?'color:#ff8a6a':''}"><span>⚔</span>${ZB[h.src].info.nom.split(',')[0].split(' ').pop()} → ${ZB[h.cible].info.nom.split(',')[0].split(' ').pop()}<small> ${fmt(resteHorde(h))}</small></span>`)
+    .concat(L.length>2?[`<span class="d"><small>+${L.length-2}</small></span>`]:[])}
 function dessinerHordes(mc,s,ox,oz,T){if(typeof S==='undefined'||!S.hordes)return;const pulse=.55+.45*Math.sin((T||0)*5);
   for(const src in S.hordes){const h=S.hordes[src],A=ZB[src],B=ZB[h.cible];if(!A||!B)continue;
     const x0=(A.c[0]+ox)*s,y0=(A.c[1]+oz)*s,x1=(B.c[0]+ox)*s,y1=(B.c[1]+oz)*s,a=Math.atan2(y1-y0,x1-x0);
@@ -10130,9 +10131,9 @@ function hordeTest(src,cible){initHordes();
    - Reprendre une zone de rival : la réactiver comme une zone sauvage, gardiens renforcés.
    - Empreinte (complément) : une ancienne zone à vous, redevenue sauvage, se reprend aussi en réussissant un seul palier.
    État : S.riv = {z:{id:maison}, c:{r,id,du,de}|null, nc, vu:{maison:nb d'actions}}. */
-const RIV_TOUS=3;      /* une maison agit en moyenne une fois tous les 3 cycles (provisoire) */
+const RIV_TOUS=6;      /* une maison agit en moyenne une fois tous les 6 cycles (provisoire) */
 const RIV_DELAI=2;     /* une contestation est annoncée 2 cycles avant l'épreuve (provisoire) */
-const RIV_GRACE=3;     /* aucune maison n'agit pendant les 3 premiers cycles d'une partie (provisoire) */
+const RIV_GRACE=10;    /* aucune maison n'agit avant le 10e cycle d'une partie (provisoire) */
 const RIV_CHANCE=.55;  /* chance de réussite d'une maison si vous ne défendez pas (provisoire) */
 const RIV_PROT=.1;     /* chaque point de protection (defenseMonde(id).bonus) retire 10 % (provisoire) */
 const RIV_MAX=()=>1+Math.floor(ZN.length/20);   /* zones au plus par maison : 2 sur la carte de 21 zones (provisoire) */
@@ -10152,6 +10153,7 @@ const dela=r=>'de la '+r.nom.replace(/^Maison/,'maison');   /* « de la maison G
 function riv(){if(!S.riv||typeof S.riv!=='object')S.riv={z:{},c:null,nc:S.nc||0,vu:{}};const R=S.riv;
   if(!R.z||typeof R.z!=='object')R.z={};if(R.c===undefined)R.c=null;if(typeof R.nc!=='number')R.nc=S.nc||0;if(!R.vu)R.vu={};
   for(const id in R.z)if(!ZB[id]||S.own[id]||!RIVK[R.z[id]])delete R.z[id];   /* zone reprise par le joueur : elle n'est plus à la maison */
+  if(R.c&&(!ZB[R.c.id]||!S.own[R.c.id]||!RIVK[R.c.r]))R.c=null;   /* zone contestée perdue (mort du héros, horde) : la contestation tombe */
   return R}
 const maisonDe=id=>{const k=S.riv&&S.riv.z&&S.riv.z[id];return k&&!S.own[id]?RIVK[k]:null};
 const zonesMaison=k=>ZN.filter(Z=>S.riv&&S.riv.z[Z.id]===k&&!S.own[Z.id]);
@@ -10242,14 +10244,14 @@ function dessinerRivaux(mc,s,ox,oz){if(!S.riv)return;const R=S.riv,pl=.5+.5*Math
     if(ct){const m=RIVK[R.c.r];mc.lineWidth=2+2*pl;mc.strokeStyle=m?m.col:'#ff7a6a';mc.setLineDash([5,4]);mc.stroke();mc.setLineDash([])}}}
 function ligneRivaux(){if(!S.riv)return'';const R=S.riv;
   const m=RIVAUX.map(r=>`<span class="d" title="${r.nom}"><span style="color:${r.col}">${r.bl}</span>${zonesMaison(r.k).length}</span>`).join('');
-  const c=R.c&&ZB[R.c.id]?`<span class="titre" style="color:#ff9a8a">${RIVK[R.c.r].bl} ${ZB[R.c.id].info.nom.split(',')[0]} · ${Math.max(0,R.c.du-R.nc)} cycle(s)</span>`:'';
+  const c=R.c&&ZB[R.c.id]?`<span class="d" title="${RIVK[R.c.r].nom} conteste ${ZB[R.c.id].info.nom}" style="color:#ff9a8a"><span style="color:${RIVK[R.c.r].col}">${RIVK[R.c.r].bl}</span>${court(R.c.id).split(' ').pop()}<small> ${(n=>n+' cycle'+(n>1?'s':''))(Math.max(0,R.c.du-R.nc))}</small></span>`:'';
   return`<div class="ligne"><span class="titre">Rivaux</span>${m}${c}</div>`}
 
 /* ---------- écran « Rivaux » (menu Pause) ---------- */
 function menaceDe(r){const R=riv();if(R.c&&R.c.r===r.k&&ZB[R.c.id]){const n=Math.max(0,R.c.du-R.nc);return`conteste ${ZB[R.c.id].info.nom} : épreuve dans ${n} cycle${n>1?'s':''}`}return'aucune menace annoncée'}
 function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv();
   ui('menu',{sur:'Pause · les maisons rivales',t:'Rivaux',f:typeof f==='number'?f:0,
-    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une prend une zone sauvage, ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour la baisser d'un palier. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, ou une zone au repos, ne peut pas être visée.</p>`,
+    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une prend une zone sauvage, ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour la baisser d'un palier. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, verrouillée par votre Citadelle (la Citadelle et ses voisines), au cœur du royaume ou au repos ne peut pas être visée.</p>`,
     back:openMenu,opts:[...RIVAUX.map((r,i)=>{const z=zonesMaison(r.k);
       return{l:`${r.nom} · ${z.length} zone${z.length>1?'s':''}`,ic:`<span style="color:${r.col}">${r.bl}</span>`,d:menaceDe(r),go:()=>openMaison(r,i)}}),{l:'Retour',ic:'◆',go:()=>openMenu()}]})}
 function openMaison(r,i){const z=zonesMaison(r.k),R=riv(),cz=R.c&&R.c.r===r.k?ZB[R.c.id]:null;
@@ -11455,7 +11457,9 @@ const BTYPES=[['CIT','⛫','Citadelles'],['DON','⬟','Donjons'],['RES','⬢','R
 .bandeau .d{display:inline-flex;align-items:center;gap:.25em;font-size:calc(var(--u)*1.25);color:var(--ivoire)}
 .bandeau .d span{color:#ffd98a;font-size:1.1em}.bandeau .d small{color:var(--sable);font-size:.75em}
 .bandeau .dg{font-size:calc(var(--u)*1.1);font-weight:600;padding:.05em .5em;border-radius:3px;border:1px solid currentColor}.bandeau .dg.faible{color:#8fc06f}.bandeau .dg.reel{color:#e8c77f}.bandeau .dg.mortel{color:#ff7a6a}
-.bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}`;document.head.appendChild(st)})();
+.bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}
+/* 19 nov. : avec les lignes Menaces et Rivaux, la barre peut dépasser 1280 px ; elle passe alors sur deux lignes au lieu d'être coupée */
+.hud.etat,.hud.etat .bandeau{flex-wrap:wrap!important;row-gap:calc(var(--u)*.3)}`;document.head.appendChild(st)})();
 function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;let b=document.getElementById('bandeau');
   if(!b){b=document.createElement('div');b.id='bandeau';b.className='bandeau';box.prepend(b)}
   const mana=`<span class="m"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');
@@ -12184,12 +12188,12 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(res?lv>=3:Math.abs(lv)>=cap)o.push({l:'Niveau maximal atteint',ic:'◆',off:true,d:'une Ressource va de 0 à 3, sans pôle'})}
   if(Z.id==='DON'&&S.act.DON&&S.own.DON)o.unshift({l:'Aménager le Donjon',ic:'⛬',cls:'p',d:`${nbPieges()} piège(s) · réserve ${resTot()}`,go:()=>openDonjon()});
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
-  if(ct.pw)o.push({l:`Contre-pouvoir de ${ct.Z.info.nom}`,ic:'⚔',off:true,d:`vous possédez la zone qui la contre : épreuve −${ct.pw}`});
+  if(ct.pw)o.push({l:`Contre-pouvoir ${typeof de_==='function'?de_(ct.Z.info.nom):'de '+ct.Z.info.nom}`,ic:'⚔',off:true,d:`vous possédez la zone qui la contre : épreuve −${ct.pw}`});
   if(typeof optionsRoutes==='function')o.push(...optionsRoutes(Z));
   if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
   if(typeof optionsRivaux==='function')o.unshift(...optionsRivaux(Z));
   if(typeof optionsDomaines==='function')o.push(...optionsDomaines(Z));
-  if(typeof optionsHorde==='function')o.push(...optionsHorde(Z));
+  if(typeof optionsHorde==='function'){const h=optionsHorde(Z);o.unshift(...h.filter(x=>x.go));o.push(...h.filter(x=>!x.go))}   /* l'avant-garde à affronter en tête, comme la défense contre un rival */
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
     corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
