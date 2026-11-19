@@ -1,0 +1,143 @@
+{
+ "conteur": "A",
+ "zones": {
+  "CIT": [
+   {
+    "support": "stele",
+    "titre": "La lignée du kniaz",
+    "textes": {
+     "m5": "Stèle de mélèze rabotée jusqu'au cœur, lisse comme une joue. Au sommet, un visage de vermillon passé, sans nom ni yeux. Gratté dans le givre du socle : « Ici régna quelqu'un. »",
+     "m2": "La généalogie neuve, d'une encre encore fraîche : « Iaropolk, fils unique, seul héritier du trône. » Le mot « unique » a été repassé trois fois par trois scribes différents.",
+     "z": "Sur la stèle, la lignée officielle : « Iaropolk, kniaz de Berestograd, fils de son père. » Sous l'encre, là où le raclage fut bâclé, l'ombre d'un autre nom précède le sien.",
+     "p2": "L'enduit a été gratté par plaques. Deux textes se lisent l'un sur l'autre : « Iaropolk, fils unique » et, dessous, en ocre ancienne, « ... l'aîné, noyé au gué ». Un racloir traîne au pied.",
+     "p5": "Repeinte au minium, la généalogie d'origine : « L'aîné, noyé par ordre. Iaropolk, cadet, monté au trône par l'eau. » Suivent les noms des scribes qui la falsifièrent, avec leur salaire."
+    }
+   },
+   {
+    "support": "mur",
+    "titre": "Les écorces de la boue",
+    "textes": {
+     "m5": "Mur blanc d'aubier raclé, copeaux collés au gel. Une ligne a survécu, sans débiteur ni créancier : « ... me doit trois mesures. » Plus personne ne sait qui doit quoi, et la ville s'en porte bien.",
+     "m2": "Avis cloué au mur de la cour : « Toute écorce tirée de la boue sera remise à la racleuse. Salaire : trois mesures de seigle la saison. » Dessous, les copeaux montent jusqu'au genou.",
+     "z": "Au pied du mur, des écorces affleurent dans la boue : « Tu me dois deux zibelines », « Viens au gué après la nuit ». Une troisième, à moitié enfoncée, commence par le nom d'un prince.",
+     "p2": "Les écorces ramassées sont cousues au mur au fil de tendon, comme des écailles : « Je reconnais devoir au potier une hache et demie. » Chacune porte en marge la croix d'un témoin.",
+     "p5": "Le mur n'est plus qu'écorces cousues, rondin par rondin, rehaussées de malachite. Au centre : « Toutes ces dettes restent dues. Les morts aussi réclament. » Plusieurs désignent des vivants qui passent."
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "Borne de la route",
+    "textes": {
+     "m5": "Borne grattée jusqu'à la pierre nue. Un seul fragment au couteau : « Ne dis pas ton nom. » La neige referme la piste derrière vous, comme si vous n'étiez jamais venu.",
+     "m2": "Les noms des villages ont été raclés ; reste l'ordre des scribes : « Passant, oublie ce que tu as vu à la porte. L'oubli est gratuit. La mémoire est taxée. »",
+     "z": "Borne de mélèze : « Berestograd, deux verstes. Péage à la tour de la porte. » Plus bas, un marchand a gravé : « La racleuse dort dans la tour. Inutile de lui parler, elle ne lit pas. »",
+     "p2": "La borne a été regravée, les villages rendus à leur nom. Ajout récent, au fer : « Passant, si l'on te doit, la ville tient registre. Si tu dois, aussi. »",
+     "p5": "Couverte de noms gravés serré jusqu'au pied. En tête, au minium : « Chaque nom écrit ici sera appelé au Tribunal des Bouleaux. Le tien en fait partie depuis que tu as lu. »"
+    }
+   },
+   {
+    "support": "panneau",
+    "titre": "Logement de la racleuse",
+    "textes": {
+     "m5": "Planche de la tour de la porte, blanchie au racloir. Plus un mot, seulement des encoches, une par saison : onze hivers d'encoches et pas de nom au bout.",
+     "m2": "Planche clouée à la tour : « Logement de la racleuse. Ration : trois mesures de seigle. Défense de lui apprendre les lettres. » Seule la dernière phrase est soulignée.",
+     "z": "Planche de la tour : « Ouliana, racleuse au service du kniaz, onze hivers. » Dessous, une écorce pliée en huit, prise dans le gel. Personne ne l'a dépliée.",
+     "p2": "L'écorce pliée en huit a été ouverte à moitié et mise sous ambre. On lit : « ... mon frère ... au gué ... par ordre ». Une main a ajouté : « Elle ne savait pas lire. Elle savait garder. »",
+     "p5": "Repeinte en ocre d'icône, la planche est devenue reliquaire : « Ouliana, qui racla onze hivers la mémoire des autres et sauva celle-ci. Payée : trois mesures de seigle. Due : tout le reste. »"
+    }
+   }
+  ],
+  "DON045": [
+   {
+    "support": "panneau",
+    "titre": "Livraisons au trésor",
+    "textes": {
+     "m5": "Lettres dorées sur la planche : « An 23 : quatre mille. Kobor ne ment jamais. Mstisla, voïévode. » Le chiffre a été repeint si souvent que le bois s'est bombé sous la suie.",
+     "m2": "Tableau des livraisons : « An 14 : 400. An 15 : 400. An 16 : 400. » Le 15 a été corrigé, la suie n'a pas pris sur le zéro. Ans 17 à 22 : « idem », d'une seule main.",
+     "z": "Tableau des livraisons : « An 14 : 400 promises. An 15 : 390. An 16 : 400, toutes noires. » Six lignes vides, puis l'An 23, qui tombe juste. Signé Mstisla, voïévode.",
+     "p2": "À la craie, dans les six lignes vides : « Ans 17 à 22 : les chiens du hameau, puis les trappeurs. » La planche a été lavée au seau ; les chiffres noirs ont coulé jusqu'au bas.",
+     "p5": "Un seul compte, gravé au fer rouge : « Promis : 400 par hiver. Livré en zibelines vraies : moins de la moitié. Le reste : chiens, hommes, suie. » Le nom de Mstisla est cloué à l'envers."
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "La plainte d'Oustina",
+    "textes": {
+     "m5": "Borne du hameau, peinte d'un noir égal : « Ici, nul n'a disparu. Les trappeurs sont partis vendre au sud. » Une main a tenté d'ajouter un nom, puis l'a recouvert de suie.",
+     "m2": "Sur la borne : « Oustina, veuve, déclare son mari parti à la chasse l'An 20. » Le mot « parti » est d'une autre encre que le reste, et d'une autre écriture.",
+     "z": "Gravé de travers : « Oustina, veuve de trappeur, demande où est son homme. Il est parti l'An 20 au Coffre, quand la suie a manqué. » Personne n'a répondu au pied de la borne.",
+     "p2": "La plainte d'Oustina, repassée au couteau, s'allonge : sept noms de trappeurs, tous de l'An 20. Au bas : « Ils ne sont pas partis vendre. Ils sont partis à quatre pattes. »",
+     "p5": "La borne est devenue liste, sur ses quatre faces : chaque trappeur, chaque chien, avec l'année. Au sommet, de la main d'Oustina : « Compte juste. Je n'y ai rien gagné, sauf de pleurer au bon endroit. »"
+    }
+   },
+   {
+    "support": "mur",
+    "titre": "La porte du Coffre",
+    "textes": {
+     "m5": "Le mur du Coffre disparaît sous les peaux clouées, toutes d'un noir égal. Gratté dessous, à peine visible : « Z ». Le reste a été couvert d'une peau de plus.",
+     "m2": "Plaque officielle sur la porte scellée : « Inspection de l'An 23 : conforme. Zakhar, inspecteur. » La signature est appliquée, régulière, et ce n'est pas la sienne.",
+     "z": "Sur la porte du Coffre, sous les mélèzes : « Scellé par ordre. Ne pas ouvrir avant le dégel. » Au ras du sol, gravé de l'intérieur, à l'ongle : « Elles déteignent. »",
+     "p2": "Le sceau est brisé, la porte entrouverte. Gravé dedans, à l'ongle, sur toute la hauteur : « Quatre mille. Frottées au pouce. Elles déteignent. Zakhar. » Une rigole de suie franchit le seuil.",
+     "p5": "Le mur intérieur du Coffre est mis à nu : le journal de Zakhar, gravé à l'ongle, jour par jour, jusqu'au onzième. Dernière ligne : « Le registre tombera juste. Moi en moins. »"
+    }
+   },
+   {
+    "support": "stele",
+    "titre": "Avis du voïévode",
+    "textes": {
+     "m5": "Stèle au carrefour, passée elle-même à la suie : « Il ne pleut pas à Kobor. Qui affirme le contraire paie une zibeline d'amende. » L'amende, précise-t-on, est payable en noir.",
+     "m2": "Stèle du voïévode : « Défense de mouiller les peaux du tribut. Défense de compter les niches. » Ajouté à la craie, d'une main pressée : « Défense de demander. »",
+     "z": "Sur la stèle : « Peaux de Kobor : à garder au sec, loin des lampes. » Les lampes du hameau, elles, ont été raclées jusqu'au métal ; on veille dans le noir.",
+     "p2": "Le dégel a lavé la stèle, et la suie coule en larmes noires sur l'avis. On lit encore : « Défense de mouiller les peaux », et dessous, gravé profond : « Mouillez-les. »",
+     "p5": "La pierre est usée à hauteur de main par les pouces mouillés. Inscription neuve : « Ici, on frotte avant de compter. Ici, tout le monde a les doigts noirs. Les autres prennent la route du sud. »"
+    }
+   }
+  ],
+  "ASS006": [
+   {
+    "support": "stele",
+    "titre": "Le dossier du banc",
+    "textes": {
+     "m5": "Le dossier a été retaillé ; une seule ligne, fraîche et profonde : « BANC ET VENT, PROPRIÉTÉ DE LA MAISON DES SAUNIERS. » L'ancienne inscription sert de marchepied, face contre la bruyère.",
+     "m2": "Sur le dossier : « ICI LE VENT VOTE, NUL NE L'ACHÈTE. » Plus bas, d'une main plus fine : « BANC CÉDÉ À LA MAISON DES SAUNIERS, AVEC LE VENT. » Les trous des paravents sont graissés.",
+     "z": "Le dossier porte : « ICI LE VENT VOTE, NUL NE L'ACHÈTE. » Plus bas, mangée de lichen, une ligne d'une main plus fine commence par « BANC CÉDÉ ». Dans la pierre, des trous de paravents.",
+     "p2": "La seconde ligne a été martelée au burin ; on devine encore « BANC CÉDÉ ». La première, repassée, brille : « ICI LE VENT VOTE, NUL NE L'ACHÈTE. » Les trous sont bouchés à l'argile.",
+     "p5": "Les deux lignes sont gardées, et une troisième, gravée par les bergers : « NOUS AVONS REPRIS LE VENT. IL VOTE AUSSI CONTRE NOUS. » Les trous des paravents restent ouverts, pour mémoire."
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "Borne du commun",
+    "textes": {
+     "m5": "Borne noircie, couchée dans la cendre. On a regravé son dos : « Terre des Sauniers, cadastre du troisième feu. » Les bergers la contournent comme on contourne un mort.",
+     "m2": "La borne du commun a reculé de trente pas ; son ancien trou se voit encore. Gravure fraîche : « Limite après incendie. Signé au banc. » Derrière, la bruyère est noire, et le ciel était sans orage.",
+     "z": "Borne de granit au bord de la bruyère : « Pâture commune de Cezo. Nul ne la clôt. » Le lichen a pris sur une face, la cendre sur l'autre.",
+     "p2": "Replantée dans son trou d'origine, à l'argile fraîche : « Pâture commune de Cezo. » Ajouté au couteau par les bergers : « Remise en place après le troisième feu. Pas par les sauniers. »",
+     "p5": "Autour de la borne, la bruyère repousse par parcelles. Gravé : « Brûlis réglé, une parcelle par hiver, au vu de tous. Feu hors tour : amende en moutons. » Trois amendes déjà, toutes de bergers."
+    }
+   },
+   {
+    "support": "panneau",
+    "titre": "Règle du jet",
+    "textes": {
+     "m5": "Panneau cloué au banc, tenu à jour à la craie : « Fève lestée : deux livres de sel. Paravent, la séance : six. Incendie : sur devis. » En bas : « Prière de ne pas tousser pendant le vote. »",
+     "m2": "Panneau de toile goudronnée qui claque contre ses montants : « Séance close. Le vent est prié de patienter. » Au dos, un compte de livres de sel, sans aucun nom.",
+     "z": "Panneau de la séance : « Fèves de bruyère fournies par le greffier. Chacun lance les siennes. On ne compte que celles du cercle. » Ajouté au charbon : « Pesez-les. »",
+     "p2": "Panneau du greffier : « Toute fève sera pesée avant le jet. Fève creuse ou lourde : à la lande. » Au pied, un tas de fèves fendues ; dedans, le plomb des sceaux de l'ancien conseil.",
+     "p5": "Panneau neuf : « Fèves cueillies le matin même par un berger tiré au sort, lancées sans paravent. » Dessous, au charbon : « Le vent a voté la disette deux hivers de suite. Personne n'a pu l'accuser. »"
+    }
+   },
+   {
+    "support": "mur",
+    "titre": "Le conseiller qui toussa",
+    "textes": {
+     "m5": "Sur le muret, une plaque de marbre poli : « À un conseiller dévoué à la Maison. » Le nom a été poncé : la Maison des Sauniers n'aime pas les fournisseurs qu'on identifie.",
+     "m2": "Plaque sur le muret, lettres coulées au plomb : « Au conseiller fidèle, emporté par une toux, présent au banc jusqu'au dernier jet. Offerte par la Maison des Sauniers. »",
+     "z": "Pierre scellée dans le muret : « Ci-gît un conseiller de Cezo. Il toussa trois hivers. » Une main a ajouté au couteau, sans signer : « Plomb. »",
+     "p2": "L'épitaphe a été complétée : « Ci-gît un conseiller de Cezo. Il toussa trois hivers, pour avoir creusé les fèves au poinçon et fondu le plomb des sceaux. Il jurait plaisanter. »",
+     "p5": "Sous sa pierre, six autres noms de conseillers : « Tous ont creusé, tous ont toussé. On les garde ici, avec leurs fèves. » Leurs petits-fils siègent au banc et passent devant chaque séance."
+    }
+   }
+  ]
+ }
+}
