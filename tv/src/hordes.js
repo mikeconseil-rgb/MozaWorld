@@ -53,8 +53,7 @@ function defenseHorde(id){const parts=[],L=Math.abs(S.lv[id]||0);parts.push(['ni
     if(typeof etatRoutes==='function'){etatRoutes();const vois=VOISINES[id]||[];
       const rp=Object.keys(S.routes).some(a=>estCIT(ZB[a])&&S.routes[a].some(b=>a===id||b===id||vois.indexOf(a)>=0||vois.indexOf(b)>=0));
       if(rp)parts.push(['rempart',3])}
-    if(tient('DON')&&(id==='DON'||(VOISINES.DON||[]).indexOf(id)>=0)&&Array.isArray(S.pieges)){
-      const n=Math.min(2,S.pieges.filter(x=>x&&!x.dort).length);if(n)parts.push(['pièges du Donjon aménagé',n])}}
+    if(typeof piegesDonjon==='function')parts.push(...piegesHorde(id))}   /* donjons.js : la horde traverse les salles de chaque Donjon tenu, cible ou voisin (remplace « 2 au plus ») */
   /* le verrou de Citadelle (+2) ne s'ajoute pas au +3 de la Citadelle à 3 tuiles : la même Citadelle ne compte qu'une fois, la plus forte (provisoire) */
   if(typeof defenseMonde==='function'){const dm=defenseMonde(id)||{},b=(+dm.bonus||0)-(parts.some(p=>p[2])&&dm.verrou?Math.min(dm.verrou,3):0);if(b)parts.push(['pouvoirs du domaine',b])}
   return{total:parts.reduce((a,p)=>a+p[1],0),parts}}
