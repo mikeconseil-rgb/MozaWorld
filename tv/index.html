@@ -9526,6 +9526,8 @@ const closed=P=>P.concat([P[0]]).map(p=>new THREE.Vector2(p[0],p[1]));
 const styU={tD:{value:null},pInv:{value:camera.projectionMatrixInverse},cW:{value:camera.matrixWorld},cP:{value:camera.position},
   pM:{value:closed(MAR.poly)},pR:{value:closed(RES.poly)},lvM:{value:0},lvR:{value:0},cdM:{value:0},cdR:{value:0},
   skM:{value:0},skR:{value:0},on:{value:1},tt:{value:0},px:{value:new THREE.Vector2(1/800,1/450)},
+  /* boucle 2 (19 nov. 2026) : 1 quand la passe FXAA suit (Belle, Splendide) ; le grain part alors dans l'alpha */
+  fxOn:{value:0},
   /* boucle 1 (19 nov. 2026) : étalonnage signature de la zone où se trouve la caméra (voir SIG plus bas) */
   sigSh:{value:new THREE.Vector3(.1,.1,.1)},sigMi:{value:new THREE.Vector3(.5,.5,.5)},sigHi:{value:new THREE.Vector3(1,1,1)},sigK:{value:0},sigOn:{value:0}};
 Object.assign(mFinal.uniforms,styU);mFinal.uniforms.expo=mFinal.uniforms.exp; /* « exp » cache la fonction exp() du GLSL */
@@ -9535,7 +9537,7 @@ const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
     vec2 e=b-a;float t=clamp(dot(p-a,e)/dot(e,e),0.,1.);d=min(d,length(p-a-e*t));}
   float s=smoothstep(0.,3.,d)*.5;return ins?.5+s:.5-s;}`;
 mFinal.defines={STY_DEPTH:STY_DEPTH?1:0};
-mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
+mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
 uniform mat4 pInv,cW;uniform vec2 pM[5],pR[7],px;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 ${polyGL('inM','pM',4)}
@@ -9620,16 +9622,57 @@ if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty))
   /* +7 : blancs désaturés de 10 %, ombres teintées pastel froid (le relief tient sans boucher) */
   L=dot(c,Y);c=mix(c,vec3(L),.1*sP*wh*fo);c=mix(c,c*sh,.18*sP*ws*fo);
   c=clamp(c,0.,1.);}
+/* boucle 2 (19 nov. 2026) : avec le FXAA, le grain est posé après lui (sinon il le lisse et le brouille) ; on lui passe dans l'alpha
+   la force du grain et le poids des écoles d'encre (fusain, manga), sur 4 bits chacun */
+if(fxOn>.5){gl_FragColor=vec4(c,(floor(clamp(sty,0.,1.)*15.+.5)*16.+floor(clamp(gr/.08,0.,1.)*15.+.5))/255.);return;}
 c+=(fract(sin(dot(vUv*vec2(1920.,1080.)+time,vec2(12.9898,78.233)))*43758.5453)-.5)*gr;gl_FragColor=vec4(c,1.);}`;
 mFinal.needsUpdate=true;
 
 /* La profondeur de la scène devient une texture que la passe finale peut lire. */
 const _resizeSty=resize;
-resize=function(){_resizeSty();if(!STY_DEPTH)return;
+resize=function(){_resizeSty();majFxaa();if(!STY_DEPTH)return;
   if(rtS.isWebGLMultisampleRenderTarget){const o={type:rtS.texture.type,format:THREE.RGBAFormat,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter};
     const w=rtS.width,h=rtS.height;rtS.dispose();rtS=new THREE.WebGLRenderTarget(w,h,o)}
   rtS.depthTexture=new THREE.DepthTexture(rtS.width,rtS.height);rtS.depthTexture.type=THREE.UnsignedIntType;
   styU.tD.value=rtS.depthTexture;styU.px.value.set(1/rtS.width,1/rtS.height)};
+
+/* ---------- Boucle 2 (19 nov. 2026) : anticrénelage FXAA en Belle et Splendide ----------
+   Depuis que la passe finale lit la profondeur, la cible multi-échantillons (MSAA ×4) a été remplacée par une cible simple :
+   les sapins, les pieux et les filets Girih crénelaient en escalier. FXAA 3.11 version « console » : cinq lectures de luminance
+   (quatre coins à un demi-pixel, lissés par le filtrage, et le centre), la direction du bord, puis deux lectures le long de ce bord.
+   Le grain vient après (net). Sur les écoles d'encre (Givrecloche, Chinampas) l'effet est atténué : les traits gardent leur mordant.
+   En Fluide et en Équilibrée rien ne change : pas de cible en plus, pas de passe en plus. */
+let rtF=null;
+const mFxaa=new THREE.ShaderMaterial({uniforms:{t:{value:null},px:{value:new THREE.Vector2(1/800,1/450)},time:{value:0}},vertexShader:FV,depthTest:false,depthWrite:false,
+  fragmentShader:`varying vec2 vUv;uniform sampler2D t;uniform vec2 px;uniform float time;
+#define REDUCE_MIN (1./128.)
+#define REDUCE_MUL (1./8.)
+#define SPAN_MAX 8.
+float lu(vec3 c){return dot(c,vec3(.299,.587,.114));}
+void main(){vec4 M=texture2D(t,vUv);
+  float lNW=lu(texture2D(t,vUv+vec2(-.5,-.5)*px).rgb),lNE=lu(texture2D(t,vUv+vec2(.5,-.5)*px).rgb),
+        lSW=lu(texture2D(t,vUv+vec2(-.5,.5)*px).rgb),lSE=lu(texture2D(t,vUv+vec2(.5,.5)*px).rgb),lM=lu(M.rgb);
+  float a=floor(M.a*255.+.5),sty=floor(a/16.)/15.,gr=mod(a,16.)/15.*.08;
+  float mn=min(lM,min(min(lNW,lNE),min(lSW,lSE))),mx=max(lM,max(max(lNW,lNE),max(lSW,lSE)));
+  vec3 c=M.rgb;
+  if(mx-mn>max(.05,mx*.125)){   /* seuil « console » : on ne touche qu'aux vrais bords */
+    vec2 dir=vec2(-((lNW+lNE)-(lSW+lSE)),(lNW+lSW)-(lNE+lSE));
+    float red=max((lNW+lNE+lSW+lSE)*(.25*REDUCE_MUL),REDUCE_MIN),rcp=1./(min(abs(dir.x),abs(dir.y))+red);
+    dir=clamp(dir*rcp,vec2(-SPAN_MAX),vec2(SPAN_MAX))*px;
+    /* deux lectures aux extrémités du segment (±dir/2, jusqu'à 4 pixels de part et d'autre), mêlées au centre déjà lu :
+       c'est la moitié large du FXAA classique, sans ses deux lectures proches (le centre en tient lieu) */
+    vec3 B=.5*c+.25*(texture2D(t,vUv-dir*.5).rgb+texture2D(t,vUv+dir*.5).rgb);
+    float lB=lu(B);if(lB>=mn&&lB<=mx)c=mix(B,c,sty*.8);}
+  c+=(fract(sin(dot(vUv*vec2(1920.,1080.)+time,vec2(12.9898,78.233)))*43758.5453)-.5)*gr;gl_FragColor=vec4(c,1.);}`});
+function majFxaa(){const on=QUAL().ms>0&&!!rtS;
+  if(rtF&&(!on||rtF.width!==rtS.width||rtF.height!==rtS.height)){rtF.dispose();rtF=null}
+  if(on&&!rtF){rtF=new THREE.WebGLRenderTarget(rtS.width,rtS.height,{type:THREE.UnsignedByteType,format:THREE.RGBAFormat,
+    minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false});rtF.texture.generateMipmaps=false}
+  if(rtF)mFxaa.uniforms.px.value.set(1/rtF.width,1/rtF.height);mFinal.uniforms.fxOn.value=rtF?1:0}
+/* la passe finale écrit dans rtF, puis le FXAA (et le grain) à l'écran */
+const _passFx=pass;
+pass=function(mat,target){if(mat===mFinal&&target===null&&rtF){_passFx(mat,rtF);mFxaa.uniforms.t.value=rtF.texture;mFxaa.uniforms.time.value=mFinal.uniforms.time.value;_passFx(mFxaa,null)}
+  else _passFx(mat,target)};
 
 /* À chaque image : niveaux des deux zones, distance de la caméra à chacune (le brouillard ne compte que ce qui est dedans),
    et poids du ciel selon la zone où l'on se trouve (sans profondeur, ce poids sert pour toute l'image). */
@@ -11685,6 +11728,78 @@ function terrainCarreaux(){const g=terrain.geometry,A=g.attributes,src=g.index.a
     const m=new THREE.Mesh(cg,terrain.material);m.receiveShadow=true;m.castShadow=true;m.frustumCulled=false;scene.add(m);
     CULL.list.push({o:m,c:new THREE.Vector3((x0+x1)/2,10,(z0+z1)/2),r:Math.hypot(x1-x0,z1-z0,200)/2,fixe:true})}
   terrain.visible=false;CULL.carreaux=true}
+
+/* ---------- Boucle 2 (19 nov. 2026) : budget repris (ombres limitées à leur boîte, coupe selon le brouillard) ----------
+   Mesuré au banc (Belle, rendu logiciel) : à Berestograd, la passe d'ombre envoyait ~229 000 triangles et ~100 appels
+   par image, alors que la boîte d'ombre ne fait que 240 m de côté autour du héros. Ici :
+   (a) la passe d'ombre ne voit plus que ce qui touche sa boîte (marge 30 m) et les carreaux de terrain proches du héros ;
+       la boîte est calée sur la grille de ses texels (les bords d'ombre ne scintillent plus quand on marche) ;
+   (b) changer de qualité allume ou coupe vraiment les ombres (en Fluide, aucune passe d'ombre) ;
+   (c) la distance de coupe suit le brouillard : ce qui y est noyé à plus de 99 % n'est plus envoyé ;
+   (d) les flocons tout près de la caméra ne font plus de gros disques flous.
+   Aucune lumière ajoutée ni retirée (sinon tous les matériaux se recompileraient). */
+const OMB={fr:new THREE.Frustum(),pm:new THREE.Matrix4(),sp:new THREE.Sphere(),cach:[],
+  x:new THREE.Vector3(),y:new THREE.Vector3(),z:new THREE.Vector3(),up:new THREE.Vector3(0,1,0),d:new THREE.Vector3()};
+const OMB_MARGE=30,OMB_SOL=130,OMB_BOITE=240;
+sun.shadow.camera.far=300;sun.shadow.camera.updateProjectionMatrix(); /* le soleil est à 260 m de sa cible : 300 suffit, et la profondeur gagne en précision */
+/* (a) passe d'ombre : le temps de l'appel, on masque ce qui est hors de la boîte, puis on rend l'état exact */
+{const SM=renderer.shadowMap,_ombre=SM.render;
+ SM.render=function(lights,sc,cam){
+  if(!sun.castShadow||sc!==scene||!lights||!lights.length)return _ombre.call(SM,lights,sc,cam);
+  const S=sun.shadow,C=S.camera;S.updateMatrices(sun);
+  OMB.pm.multiplyMatrices(C.projectionMatrix,C.matrixWorldInverse);OMB.fr.setFromProjectionMatrix(OMB.pm);
+  for(const p of OMB.fr.planes)p.constant+=OMB_MARGE;   /* plans tournés vers l'intérieur : la boîte grandit de 30 m de chaque côté */
+  const hs=TCH*CELL/2,K=OMB.cach;K.length=0;
+  for(const e of CULL.list){const o=e.o;if(!o.visible||e.r<0)continue;let dehors;
+    if(e.fixe){const dx=Math.max(0,Math.abs(e.c.x-P.x)-hs),dz=Math.max(0,Math.abs(e.c.z-P.z)-hs);dehors=Math.hypot(dx,dz)>OMB_SOL} /* carreau de terrain */
+    else{OMB.sp.center.copy(e.c);OMB.sp.radius=e.r;dehors=!OMB.fr.intersectsSphere(OMB.sp)}
+    if(dehors){o.visible=false;K.push(o)}}
+  try{_ombre.call(SM,lights,sc,cam)}finally{for(let i=0;i<K.length;i++)K[i].visible=true;K.length=0}}}
+/* Calage sur la grille des texels, dans le plan de la lumière. stepAtmo vient de placer la cible sur le héros (P, pas la caméra) ;
+   on arrondit sa position au texel près (pas = 240 m / taille de la carte) et le soleil suit du même décalage. */
+function calerOmbre(){if(!sun.castShadow)return;const T=sun.target.position,d=OMB.d.subVectors(sun.position,T);
+  if(d.lengthSq()<1e-6)return;OMB.z.copy(d).normalize();OMB.x.crossVectors(OMB.up,OMB.z);
+  if(OMB.x.lengthSq()<1e-8)OMB.x.set(1,0,0);else OMB.x.normalize();OMB.y.crossVectors(OMB.z,OMB.x);
+  const pas=OMB_BOITE/sun.shadow.mapSize.x,u=OMB.x.dot(T),v=OMB.y.dot(T);
+  T.addScaledVector(OMB.x,Math.round(u/pas)*pas-u).addScaledVector(OMB.y,Math.round(v/pas)*pas-v);sun.position.copy(T).add(d)}
+/* (b) qualité : en Fluide, plus de passe d'ombre du tout ; ailleurs, la carte d'ombre prend la taille du réglage */
+const _resizeOmb=resize;
+resize=function(){_resizeOmb();const sh=QUAL().sh;renderer.shadowMap.enabled=sun.castShadow=sh>0;
+  if(sh>0&&sun.shadow.mapSize.x!==sh){if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}sun.shadow.mapSize.set(sh,sh)}};
+/* (c) coupe selon le brouillard. FogExp2 : à 2,3/densité, il reste 0,5 % de l'objet ; +40 m de marge, entre 180 et 620 m.
+   Densité visée (AT.fog) ; si le brouillard lissé est encore plus clair (on entre dans une zone plus brumeuse), on garde
+   le plus clair des deux : rien ne surgit, rien ne s'efface sous les yeux. Même atténuation en hauteur que stepAtmo. */
+function densiteVisee(){const fh=AT.fh,y=camera.position.y,h=fh>.5?(y<-1.5?.1:lerp(1,.1,sst(fh-5,fh+7,y))):1;
+  return Math.min(AT.fog||0,A.fog||0)*h}
+const _cullOmb=cullScene;
+cullScene=function(){const d=densiteVisee();CULL.far=d>0?clamp(2.3/d+40,180,620):620;calerOmbre();
+  if(CULL.dirty||++MIET.n>=90)prepMiettes();_cullOmb()};
+/* (c bis) Les miettes. Au banc, à Berestograd, ~160 petits objets ordinaires (pièces des pierres d'éveil et des décors des
+   autres zones, à plus de 300 m) coûtaient chacun un appel de dessin pour moins d'un pixel une fois passés dans la brume.
+   Pendant le rendu seulement, on masque un objet dont la taille à l'écran × ce qui reste après le brouillard est sous
+   1 pixel (0,75 pixel pour ce qui ignore le brouillard : lanternes, halos). Jamais à moins de 80 m de la caméra.
+   L'état « visible » du jeu est rendu à l'identique juste après l'image : la logique du jeu ne voit rien. */
+const MIET={l:[],cach:[],n:0,v:new THREE.Vector3(),t:new THREE.Vector2()};
+function prepMiettes(){MIET.n=0;const L=MIET.l;L.length=0;const dans=new Set();for(const e of CULL.list)dans.add(e.o);
+  scene.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||!o.frustumCulled||dans.has(o)||o===sky)return;const g=o.geometry;if(!g)return;
+    if(!g.boundingSphere)g.computeBoundingSphere();if(!g.boundingSphere||!(g.boundingSphere.radius>0))return;
+    const ms=Array.isArray(o.material)?o.material:[o.material];
+    L.push({o,b:g.boundingSphere,s:o.matrixWorld.getMaxScaleOnAxis(),fog:ms.some(m=>m&&m.fog&&!m.isShaderMaterial)})})}
+function masquerMiettes(){const K=MIET.cach;K.length=0;if(!MIET.l.length)return;
+  const cp=camera.position,kpx=renderer.getDrawingBufferSize(MIET.t).y/Math.tan(camera.fov*D2R/2),fd=scene.fog?scene.fog.density:0;
+  for(const e of MIET.l){const o=e.o;if(!o.visible)continue;MIET.v.copy(e.b.center).applyMatrix4(o.matrixWorld);
+    const r=e.b.radius*e.s,d=cp.distanceTo(MIET.v)-r;if(d<80)continue;
+    let px=r/d*kpx;if(e.fog){const x=d*fd;px*=Math.exp(-x*x)}
+    if(px<(e.fog?1:.75)){o.visible=false;K.push(o)}}}
+function rendreMiettes(){const K=MIET.cach;for(let i=0;i<K.length;i++)K[i].visible=true;K.length=0}
+const _drawMiet=draw;
+draw=function(t){masquerMiettes();try{_drawMiet(t)}finally{rendreMiettes()}};
+/* (d) flocons : taille plafonnée à 18 px, fondu entre 1,5 et 5 m devant la caméra (plus de gros disques flous) */
+if(typeof weather!=='undefined'&&weather&&weather.material){const wm=weather.material,_obc=wm.onBeforeCompile;
+  wm.onBeforeCompile=function(s,r){if(_obc)_obc.call(this,s,r);
+    s.vertexShader='varying float vPres;\n'+s.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=min(gl_PointSize,18.);vPres=smoothstep(1.5,5.,-mvPosition.z);');
+    s.fragmentShader='varying float vPres;\n'+s.fragmentShader.replace('#include <fog_fragment>','#include <fog_fragment>\ngl_FragColor.a*=vPres;')};
+  wm.customProgramCacheKey=()=>'meteo-b2';wm.needsUpdate=true}
 /* MozaWorld TV 2.1 : le Grimoire (demande du 17 nov. : « ajoute un menu dans le jeu pour y mettre le grimoire »).
    Toutes les cartes du jeu, zone par zone : où les gagner, la carte de chaque pôle, et ce qu'elle devient de palier en palier.
    Tout est lu dans les cartes elles-mêmes (CK), au niveau voulu : le Grimoire suit donc les cartes, quelle que soit leur version. */

@@ -13,6 +13,30 @@ Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'hi
 - Une rune bleue flotte au-dessus d'un livre dont la dernière page n'a pas encore été lue à ce niveau.
 - Données : `design/inscriptions/livres_*.json`, assemblées avec les inscriptions par `python3 design/inscriptions/assembler.py`.
 
+## Boucle graphique 2, amélioration 3 : image propre et budget repris (19 novembre)
+
+Fichiers : `src/fluidite.js` (ombres, coupe, flocons) et `src/styles.js` (FXAA). Aucune règle du jeu ne change, aucune lumière ajoutée.
+- **Anticrénelage FXAA en Belle et Splendide** : depuis que la passe finale lit la profondeur, l'ancienne cible MSAA ×4 n'était plus utilisée. Une passe FXAA 3.11 « console » la remplace : 5 lectures de luminance et 2 lectures le long du bord. Le grain est posé ensuite, donc il reste net. L'effet est atténué sur les écoles d'encre (Givrecloche, Chinampas). Rien ne change en Fluide ni en Équilibrée.
+- **Ombres limitées à leur boîte** : la passe d'ombre ne dessine plus que ce qui touche la boîte de 240 m (marge de 30 m) et les carreaux de terrain à moins de 130 m du héros. Le plan lointain de la caméra d'ombre passe de 520 à 300. La boîte est calée sur la grille des texels autour du héros, ce qui supprime le scintillement des bords d'ombre.
+- **La qualité coupe vraiment les ombres** : en Fluide, il n'y a plus de passe d'ombre (avant, la carte 2048 restait active). En Équilibrée, la carte fait 1024.
+- **Coupe selon le brouillard** : la distance de coupe vaut 2,3/densité + 40 m, bornée entre 180 et 620 m. Elle part de la densité visée, ou de la densité lissée si celle-ci est plus claire. Un petit objet ordinaire, à plus de 80 m, qui fait moins d'un pixel une fois noyé dans la brume, n'est plus envoyé pendant le rendu. Son état « visible » est remis à l'identique juste après.
+- **Flocons** : taille limitée à 18 px, fondu entre 1,5 et 5 m devant la caméra.
+
+Mesures (banc logiciel, Belle figée, hasard fixé, par image, ombre comprise) : triangles / appels de dessin, avant → après :
+
+| Zone | Avant | Après | Écart |
+|---|---|---|---|
+| CIT | 528 041 / 396 | 394 089 / 222 | −25 % / −44 % |
+| DON | 452 346 / 301 | 346 123 / 174 | −23 % / −42 % |
+| RES | 684 685 / 322 | 591 210 / 194 | −14 % / −40 % |
+| ANT | 547 923 / 246 | 482 876 / 209 | −12 % / −15 % |
+| MAR | 517 055 / 362 | 429 576 / 278 | −17 % / −23 % |
+| DON045 | 334 688 / 202 | 276 921 / 161 | −17 % / −20 % |
+| ASS152 | 255 062 / 236 | 179 723 / 139 | −30 % / −41 % |
+| ANT120 | 317 089 / 228 | 309 394 / 140 | −2 % / −39 % |
+
+En Fluide, à CIT : 519 632 / 387 → 214 552 / 119, car il n'y a plus de passe d'ombre. Avec `tools/boucle.js` (mesures.json, deux images, qualité automatique), comparé à `boucles/boucle-2/avant` : CIT 1 056 346 / 832 → 645 308 / 394 (−39 % / −53 %) ; RES227 765 664 / 638 → 645 268 / 353 (−16 % / −45 %) ; ASS152 505 702 / 328 → 420 252 / 291 (−17 % / −11 %).
+
 ## Version 2.10 : boucle graphique 1 (19 novembre)
 
 Première boucle de l'équipe graphique (critique, direction artistique, rendu et performance, producteur, trois artisans, testeur-juge). Les trois améliorations ont été acceptées par le testeur ; détails dans les sections « Boucle 1 » plus bas, captures avant, après et intégrées dans `boucles/boucle-1/` du dossier du projet.
