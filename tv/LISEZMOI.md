@@ -4,6 +4,12 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Gameplay du monde : les hordes du sauvage (18-19 nov.)
+
+Fichier `src/hordes.js`. Chaque zone a un pôle envahisseur (−7, +7 ou les deux), affiché dans la fiche de zone et à la Pierre d'éveil. Une zone au palier 7 de ce pôle lève une horde après 5 cycles ; la horde est annoncée (message, flèche rouge sur la minicarte, ligne « Menaces » du bandeau) et arrive 3 cycles plus tard sur une zone voisine (2 tuiles au plus) plus faible de 2 paliers, vos zones d'abord. Pour la briser : allez à la Pierre d'éveil de la zone visée, OK, « Affronter l'avant-garde ». Sinon, à l'arrivée, sa force affronte la défense de la zone (niveau, Citadelle à 3 tuiles, rempart, pièges du Donjon, lois) ; si elle passe, la zone recule d'un palier (une Ressource perd aussi ses routes) et une zone à vous tombée à 0 redevient sauvage. Au palier 7 de l'autre pôle, pas de horde et une carte de palier 7 plus forte. Les zones sauvages à ±6 peuvent gronder et monter à ±7. L'assaut contre le Donjon d'origine (economie.js) ne change pas.
+
+Tests : `MZ.horde(source?, cible?)` lève une horde tout de suite (sans argument, il choisit ou crée une source à ±7), `MZ.hordeArrive(source?)` la résout. Script : `node tv/tools/test-hordes.js`.
+
 ## Historique : édition salon (Sony Bravia / Google TV), 15 novembre
 
 Version légère de la démo « grandes zones », pensée pour une télé vue du canapé et pilotée à la télécommande.

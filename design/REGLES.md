@@ -62,7 +62,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Six types de mana, un par famille de biomes : Feu, Glace, Eau, Sève, Pierre, Vent. Une réserve par type.
 - Une Ressource donne 1 mana de son type au niveau 1, 2 au niveau 2, 2 et un atout au niveau 3 (on choisit un atout parmi trois ; ce choix tient lieu de pôle).
 - En combat, la capacité de dépense vaut le numéro du tour (1, 2, 3…), tous types confondus. Les boosts sont très rares. Le mana gris est infini, avec 25 % d'effet en moins : une carte de zone sans assez de son mana se joue en gris. Il n'y a plus de cartes communes à payer avec n'importe quel mana (18 nov.).
-- Une route relie une Ressource de niveau 2 à une tuile voisine ; au niveau 3, elle greffe l'atout sur les cartes de cette tuile. Une tuile reçoit au plus autant de routes qu'elle a de côtés. Route coupée, atout perdu. Une horde fait baisser une Ressource d'un niveau et coupe ses routes **(pas encore dans le jeu)**.
+- Une route relie une Ressource de niveau 2 à une tuile voisine ; au niveau 3, elle greffe l'atout sur les cartes de cette tuile. Une tuile reçoit au plus autant de routes qu'elle a de côtés. Route coupée, atout perdu. Une horde fait baisser une Ressource d'un niveau et coupe ses routes (18-19 nov., dans le jeu).
 - Sur une route, pas de rencontre, sauf dans une Citadelle ou près d'un rempart adverse actif.
 - Le mana paie aussi les pièges du Donjon possédé. Le rythme d'entretien des pièges n'est pas tranché (trois rythmes à comparer dans le menu).
 - La monnaie du commerce est la tesselle, séparée du mana **(pas encore dans le jeu)**.
@@ -79,7 +79,16 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 
 - Une défaite coûte une blessure de campagne ; à la troisième, le héros meurt.
 - À la mort, le héros perd tout. L'héritier reçoit de nouveau le territoire de départ au niveau 1, pôles retirés au hasard, avec ses 6 cartes de palier 1. Ses autres zones gardent leur niveau mais redeviennent sauvages. Son empreinte rend leur reprise plus facile, tant que personne d'autre ne les a prises. La mort nourrit le monde sauvage.
-- Les zones à ±7 lèvent des hordes qui envahissent les zones plus faibles ; souvent un seul des deux pôles envahit, et l'autre donne un pouvoir plus fort. Citadelles, remparts et Donjons aménagés défendent **(dans le jeu : seulement les assauts contre le Donjon aménagé)**.
+- Les zones à ±7 lèvent des hordes qui envahissent les zones plus faibles ; souvent un seul des deux pôles envahit, et l'autre donne un pouvoir plus fort. Citadelles, remparts et Donjons aménagés défendent L'assaut périodique contre le Donjon d'origine aménagé reste en place ; les hordes s'y ajoutent.
+- **Hordes du sauvage** (18-19 nov., dans le jeu) :
+  - Chaque zone (sauf les Ressources) a un **pôle envahisseur** fixé une fois pour toutes : −7, +7, ou les deux (environ une zone sur six) **(provisoire)**. Il est affiché dans la fiche de zone et à la Pierre d'éveil.
+  - Au palier 7 de son pôle envahisseur, une zone, à vous ou sauvage, lève une horde après 5 cycles **(provisoire)** ; après chaque horde, elle attend de nouveau 5 cycles. Une seule horde par zone à la fois ; aucune avant le cycle 6 d'une partie **(provisoire)**.
+  - Au palier 7 de l'autre pôle, la zone ne lève pas de horde et sa carte de palier 7 joue comme un palier 9 **(provisoire)**.
+  - La horde est annoncée (message, flèche rouge sur la minicarte, ligne « Menaces » du bandeau) et arrive 3 cycles plus tard **(provisoire)** ; les Greniers de Pama doublent ce délai pour vos zones. Elle vise une zone à 2 tuiles au plus, d'au moins 2 paliers plus faible, vos zones d'abord, la plus proche d'abord. La Brume de Givrecloche cache vos zones voisines.
+  - Le héros peut aller à la Pierre d'éveil de la zone visée et affronter l'avant-garde (deux créatures de la zone source, de la force du palier de la cible +2) **(provisoire)**. Victoire : la horde est brisée, 3 mana du type de la source **(provisoire)**. Défaite : une blessure, la horde marche toujours.
+  - Sans réponse, à l'arrivée : force de la horde (7 + 0 à 3) contre défense = niveau de la cible + 3 si une Citadelle tenue est à 3 tuiles ou moins + 3 si un rempart touche la zone + pièges actifs du Donjon aménagé voisin (2 au plus) + pouvoirs du domaine **(provisoire)**. La défense tient à égalité ; elle rapporte alors 1 mana du type de la source.
+  - Si la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous qui tombe à 0 redevient sauvage, sans empreinte. La Pierre de bornage de Raak protège la zone bornée.
+  - Une zone sauvage à ±6 de son pôle envahisseur peut **gronder** et monter à ±7 (1 chance sur 40 par cycle) **(provisoire)**, pour que la guerre existe aussi quand le monde tiré n'a aucune zone à ±7.
 
 ## 9. Le beau et les juges
 
