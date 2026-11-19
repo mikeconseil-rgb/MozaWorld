@@ -3,6 +3,9 @@
    et de champion, mort du héros, rechargement de la page avec la sauvegarde. À chaque étape : aucune erreur JavaScript,
    état S cohérent, menus qui s'ouvrent. Vérifie aussi les réglages du 19 nov. (cibles des hordes à 2 ou 3 paliers, zone à vous
    gardée à 0, Citadelle comptée une fois, rythme des rivaux) et prend des captures du monde avec le bandeau.
+   Lot 2 (19 nov.) joué dans la même partie : tour de guet, deuxième Donjon aménagé, tesselles gagnées et dépensées au Comptoir
+   (les quatre achats), tentative de rival devancée puis réussie, horde contre une zone couverte par une tour et un Donjon,
+   mort (tours, bourse, salles), rechargement ; défense de chaque zone de départ calculée et rapportée.
    Usage : sh tv/build.sh && node tv/tools/test-monde.js [dossier des captures]   (depuis la racine du dépôt ; Playwright et Chromium installés) */
 const path=require('path'),fs=require('fs');
 const {chromium}=require('playwright');
@@ -24,7 +27,23 @@ const COHERENT=()=>{const S=MZ.S,p=[];
   for(const s in S.hordes||{}){const h=S.hordes[s];if(!ZB[s]||!ZB[h.cible]||!isFinite(h.arrive)||!isFinite(h.force))p.push('horde '+s+' '+JSON.stringify(h))}
   if(S.riv&&S.riv.c){const c=S.riv.c;if(!ZB[c.id]||!isFinite(c.du))p.push('contestation '+JSON.stringify(c))}
   if(S.hurt<0||S.hurt>2)p.push('blessures '+S.hurt);
+  /* lot 2 : tesselles, pièges, tours */
+  if(typeof S.tess!=='number'||!isFinite(S.tess)||S.tess<0||S.tess!==Math.floor(S.tess))p.push('tesselles = '+S.tess);
+  for(const k of['tessCartes','tessAchat'])if(S[k]!==undefined&&(typeof S[k]!=='number'||!isFinite(S[k])))p.push(k+' = '+S[k]);
+  const piegeOk=x=>x===null||!!x&&!!PIEGES[x.k]&&(x.u===undefined||isFinite(x.u))&&typeof x.dort==='boolean';
+  if(!Array.isArray(S.pieges)||S.pieges.length!==4||!S.pieges.every(piegeOk))p.push('pièges du Donjon d\'origine '+JSON.stringify(S.pieges));
+  for(const id in S.donjons||{}){const d=S.donjons[id];if(!ZB[id]||(ZB[id].mod||id)!=='DON')p.push('salles sur une zone qui n\'est pas un Donjon : '+id);
+    if(!d||!Array.isArray(d.p)||!d.p.every(piegeOk))p.push('pièges de '+id+' '+JSON.stringify(d))}
+  for(const id in S.tours||{})if(!ZB[id]||!S.own[id])p.push('tour sur '+id+', qui n\'est pas à vous');
+  for(const s in S.hordes||{}){const h=S.hordes[s];if(typeof h.force!=='number'||!isFinite(h.arrive))p.push('horde '+s+' NaN')}
+  for(const t in S.res)if(S.res[t]!==Math.floor(S.res[t]))p.push('mana non entier '+t+' = '+S.res[t]);
   return p};
+/* défense de chaque zone de départ contre une horde : telle quelle, et au palier 4 (le palier qu'une horde de ±7 vise au plus fort,
+   3 paliers plus faible) ; chance de tenir contre une horde levée maintenant (force 7 + 1 par tranche de HORDE_CROIT cycles + 0 à 3) */
+const DEFENSES=()=>{const S=MZ.S,F=7+Math.floor(S.nc/(typeof HORDE_CROIT==='number'?HORDE_CROIT:1e9));
+  return ZONES_DEP.map(id=>{const D=defenseHorde(id),L=Math.abs(S.lv[id]||0),d4=D.total-L+4,tient=f=>[0,1,2,3].filter(r=>F+r<=f).length/4;
+    return{id,t:ZB[id].mod||id,L,def:D.total,d4,p4:tient(d4),parts:D.parts.filter(x=>x[0]!=='niveau de la zone').map(x=>x[0].replace(/ \(.*\)/,'')+' +'+x[1]).join(', ')}})};
+const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${x.id.padEnd(14)} ${x.t} palier ${x.L} : défense ${String(x.def).padStart(2)} · au palier 4 : ${String(x.d4).padStart(2)} (tient ${Math.round(x.p4*100)} %)${x.parts?' · '+x.parts:''}`).join('\n');
 (async()=>{
   const nav=await chromium.launch({args:['--no-sandbox','--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const ctx=await nav.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1});
@@ -32,6 +51,10 @@ const COHERENT=()=>{const S=MZ.S,p=[];
   const erreurs=[];p.on('pageerror',e=>erreurs.push(String(e.message||e)));
   await p.route('**/three.min.js',r=>r.fulfill({body:three,contentType:'application/javascript'}));
   await p.route(/^https?:\/\/(?!.*three\.min\.js)/,r=>r.abort());
+  /* (19 nov., testeur) partie déterministe : Math.random de la page suit une graine fixe (MZ_GRAINE=n pour en essayer une autre).
+     Les minuteries restent réelles, donc chaque étape prépare aussi elle-même l'état dont elle a besoin. */
+  const GRAINE=+process.env.MZ_GRAINE||20261119;info('graine du hasard',GRAINE);
+  await p.addInitScript(g=>{let a=g>>>0;Math.random=()=>{a=a+0x6D2B79F5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}},GRAINE);
   await p.goto(page0);
   const pret=await p.waitForFunction(()=>window.MZ&&['start','cycle','horde','hordeArrive','rival','rivalArrive','prendre','domaines'].every(k=>typeof window.MZ[k]==='function'),null,{timeout:30000}).then(()=>true,()=>false);
   ok('la page démarre, les accélérateurs MZ existent',pret);
@@ -46,6 +69,9 @@ const COHERENT=()=>{const S=MZ.S,p=[];
   ok('nouvelle partie : le territoire de départ est à vous',dep.own===dep.n,dep.own+'/'+dep.n);
   info('verrous au départ',`${dep.verr} zones de départ sur ${dep.n} sont verrouillées ou au cœur ; contestables : ${dep.cont.join(', ')||'aucune'}`);
   await coherent('départ');
+  const def0=await p.evaluate(DEFENSES),F0=await p.evaluate(()=>7+Math.floor(MZ.S.nc/HORDE_CROIT));
+  info('défenses de départ (carte neuve, aucun aménagement)',fmtDef(def0,F0));
+  ok('au départ, une zone de départ au palier 4 sans aménagement ne tient pas toujours',def0.some(x=>x.p4<1),def0.map(x=>x.p4).join(' '));
 
   /* 2. réglages des rivaux : rien avant le cycle 10, une chance sur 6 */
   const rg=await p.evaluate(()=>({tous:RIV_TOUS,grace:RIV_GRACE}));
@@ -81,8 +107,8 @@ const COHERENT=()=>{const S=MZ.S,p=[];
 
   /* 5. une horde contre une zone à vous à ±1 : elle tombe à 0 et reste à vous */
   const zero=await p.evaluate(()=>{const S=MZ.S,id=MZ.ZN.find(Z=>S.own[Z.id]&&(Z.mod||Z.id)!=='RES'&&Math.abs(S.lv[Z.id])===1&&S.borne!==Z.id).id;const l=defaite(id);
-    return{id,lv:S.lv[id],own:S.own[id],act:S.act[id],l}});
-  ok('une zone à vous tombée à 0 par une horde reste à vous',zero.lv===0&&zero.own&&zero.act,JSON.stringify(zero));
+    return{id,lv:S.lv[id],own:S.own[id],act:S.act[id],emp:S.emp[id],l}});
+  ok('une zone à vous tombée à 0 par une horde redevient sauvage avec empreinte',zero.lv===0&&!zero.own&&!zero.act&&zero.emp,JSON.stringify(zero));
 
   /* 6. défense : la Citadelle ne compte qu'une fois (pas de +3 et de +2 pour la même) */
   const dfn=await p.evaluate(()=>{const S=MZ.S,id=(VOISINES.CIT||[]).find(v=>S.own[v]);S.own.CIT=S.act.CIT=true;const D=defenseHorde(id),dm=defenseMonde(id);
@@ -117,21 +143,118 @@ const COHERENT=()=>{const S=MZ.S,p=[];
   await monde();await coherent('combats');
 
   /* 9. une zone de rival à ±7 lève une horde, contre vos zones d'abord */
-  const rh=await p.evaluate(()=>{const S=MZ.S;let id=Object.keys(S.riv.z).find(id=>(ZB[id].mod||id)!=='RES');
-    if(!id){const Z=MZ.ZN.find(Z=>(Z.mod||Z.id)!=='RES'&&!S.own[Z.id]&&!ESTDEP.has(Z.id)&&!S.riv.z[Z.id]);if(Z){prendre(RIVAUX[0],Z);id=Z.id}}if(!id)return{id:null};
+  /* (19 nov., testeur) l'ancienne version échouait parfois : la zone de rival prise au hasard n'avait aucune zone (hors Ressources, pas déjà
+     visée, pas cachée par la Brume) à 2 tuiles, et une horde ne peut pas se lever sans cible. Ce n'est pas un défaut du jeu : on choisit
+     une zone de rival qui a une cible possible, et on met cette cible au palier 4. */
+  const rh=await p.evaluate(()=>{const S=MZ.S,nonRes=id=>(ZB[id].mod||id)!=='RES';
+    const visees=()=>new Set(Object.values(S.hordes).map(h=>h.cible));
+    const cibleFaisable=id=>Object.keys(aPortee(id,2)).find(v=>v!==id&&nonRes(v)&&!visees().has(v)&&!S.hordes[v]&&!(S.own[v]&&typeof cacheParBrume==='function'&&cacheParBrume(v)));
+    let id=Object.keys(S.riv.z).find(id=>S.riv.z[id]&&!S.own[id]&&nonRes(id)&&cibleFaisable(id));
+    if(!id){const Z=MZ.ZN.find(Z=>nonRes(Z.id)&&!S.own[Z.id]&&!ESTDEP.has(Z.id)&&!S.riv.z[Z.id]&&cibleFaisable(Z.id));if(Z){prendre(RIVAUX[0],Z,true);id=Z.id}}
+    if(!id)return{id:null};
     const pe=poleEnvahisseur(id),s=pe===2?1:pe;S.lv[id]=7*s;delete S.hordes[id];
-    if(!cibleHorde(id)){const v=(VOISINES[id]||[]).find(v=>(ZB[v].mod||v)!=='RES'&&!Object.values(S.hordes).some(h=>h.cible===v));if(v)S.lv[v]=4*(S.lv[v]<0?-1:1)}   /* une voisine à portée de horde */
+    if(!cibleHorde(id)){const v=cibleFaisable(id);S.lv[v]=4*(S.lv[v]<0?-1:1)}
     const h=leverHorde(id);
     return{id,maison:S.riv.z[id],cible:h&&h.cible,cibleAVous:h?!!S.own[h.cible]:null}});
   ok('une zone de rival à ±7 lève une horde',!!rh.id&&!!rh.cible,JSON.stringify(rh));
   await coherent('horde d\'une zone de rival');
 
-  /* 10. bandeau : lignes Domaines, Menaces, Rivaux ; le cadre d'état ne déborde pas */
+  /* 10. LOT 2 joué ensemble : tesselles, tour de guet, deuxième Donjon aménagé, Comptoir, rivaux, horde sur une zone couverte */
+  await monde();
+  const t0=await p.evaluate(()=>({tess:MZ.S.tess,revenu:revenuTess(),cits:citadellesTenues().map(Z=>Z.id)}));
+  ok('lot 2 : des tesselles gagnées pendant la partie (Citadelles, primes)',t0.tess>0,JSON.stringify(t0));
+  /* deuxième Donjon tenu, au palier 3 (4 salles) */
+  const D2=await p.evaluate(()=>{const S=MZ.S;let d=MZ.ZN.find(Z=>(Z.mod||Z.id)==='DON'&&Z.id!=='DON'&&S.own[Z.id]&&S.act[Z.id]);
+    if(!d){d=MZ.ZN.find(Z=>(Z.mod||Z.id)==='DON'&&Z.id!=='DON'&&!S.riv.z[Z.id]);MZ.prendre(d.id)}
+    if(!S.own.DON||!S.act.DON)MZ.prendre('DON');
+    const s=Math.sign(S.lv[d.id]||1)||1;MZ.set(d.id,3*s);S.ent=2;return d.id});   /* entretien « usure » : les pièges ne dorment pas faute de mana */
+  /* tour de guet bâtie par la Pierre d'éveil du Donjon */
+  const tr=await p.evaluate(id=>{const S=MZ.S,m=ZMANA[id]||'Pierre';S.res[m]=(S.res[m]||0)+5;const avant=S.res[m];openEveil(ZB[id]);
+    const o=UI.opts.find(o=>/Bâtir une tour de guet/.test(o.l));if(!o||o.off)return{o:!!o,off:o&&o.off};o.go();const t=document.getElementById('menu-choix').textContent;toMonde();
+    return{tour:!!S.tours[id],paye:avant-S.res[m],ligne:/Tour de guet/.test(t)}},D2);
+  ok('lot 2 : tour de guet bâtie à la Pierre du Donjon (3 mana)',tr.tour&&tr.paye===3&&tr.ligne,JSON.stringify(tr));
+  /* aménager le deuxième Donjon par le menu (un piège), puis compléter */
+  const am=await p.evaluate(id=>{const S=MZ.S;S.res.Glace=(S.res.Glace||0)+4;openEveil(ZB[id]);const o=UI.opts.find(o=>o.l==='Aménager les salles');if(!o)return{o:false};o.go();
+    const titre=document.getElementById('menu-t').textContent;UI.opts[0].go();const h=UI.opts.find(o=>/^Herse de givre/.test(o.l));if(!h||h.off)return{h:false};const g0=S.res.Glace;h.go();
+    const pose=S.donjons[id]&&S.donjons[id].p[0]&&S.donjons[id].p[0].k,paye=g0-S.res.Glace;toMonde();
+    const e=MZ.amenager(id,['glyphe','lave','herse','gardien']);MZ.amenager('DON',['glyphe','lave','herse','gardien']);
+    return{titre,pose,paye,salles:e.salles,traversee:e.traversee,actifs:e.actifs,catalogue:e.catalogue.length,tenus:e.tenus.length}},D2);
+  ok('lot 2 : deuxième Donjon aménagé par son menu (Herse posée, 2 Glace)',am.pose==='herse'&&am.paye===2,JSON.stringify(am));
+  ok('lot 2 : deux dispositifs par Donjon tenu',am.catalogue===Math.min(6,2*am.tenus),JSON.stringify(am));
+  await coherent('tour et Donjon aménagé');
+  /* horde contre une voisine couverte par la tour du Donjon et par ses salles */
+  const hz=await p.evaluate(id=>{const S=MZ.S;
+    /* (19 nov.) les deux voisines pouvaient être cachées par la Brume de Givrecloche (loi de MAR vers −) : on la lève pour l'essai, comme le bornage */
+    if(typeof loi==='function'&&loi('MAR')<0)MZ.set('MAR',Math.abs(S.lv.MAR));S.borne=null;
+    const libre=v=>!(typeof cacheParBrume==='function'&&cacheParBrume(v))&&!(typeof borne==='function'&&borne(v));
+    /* une voisine du Donjon, à vous de préférence ; les hordes qui la visent déjà sont oubliées (simulation), une voisine sauvage est prise */
+    const v=(VOISINES[id]||[]).filter(libre).sort((a,b)=>(S.own[b]&&S.act[b]?1:0)-(S.own[a]&&S.act[a]?1:0))[0];if(!v)return{v:null,vois:VOISINES[id]};
+    for(const s in S.hordes)if(S.hordes[s].cible===v)delete S.hordes[s];if(!S.own[v]||!S.act[v]){delete S.riv.z[v];MZ.prendre(v)}
+    const libreSrc=s=>s!==v&&s!==id&&(ZB[s].mod||s)!=='RES'&&!S.hordes[s]&&!S.own[s];
+    let src=MZ.ZN.map(Z=>Z.id).find(libreSrc);
+    if(!src){const s0=MZ.ZN.map(Z=>Z.id).find(s=>s!==v&&s!==id&&(ZB[s].mod||s)!=='RES'&&!S.own[s]);if(s0){finirHorde(s0);src=s0}}   /* toutes en marche : on en disperse une */
+    if(!src)return{v,src:null};
+    const greniers=typeof loi==='function'&&loi('ASS150');const h=MZ.horde(src,v);if(!h)return{v,h:null};
+    const D=defenseHorde(v),Dd=defenseHorde(id);
+    return{v,src,delai:h.arrive-S.nc,attendu:3*(greniers?2:1)+2,tour:!!h.tour,parts:D.parts.map(x=>x[0]+' +'+x[1]),total:D.total,force:h.force,
+      partTour:(D.parts.find(x=>/tour de guet/.test(x[0]))||[0,0])[1],partDon:(D.parts.find(x=>/Donjon voisin/.test(x[0]))||[0,0])[1],
+      defDonjon:Dd.total,sallesDonjon:(Dd.parts.find(x=>/salles piégées/.test(x[0]))||[0,0])[1]}},D2);
+  info('horde contre une zone couverte par une tour et un Donjon',JSON.stringify(hz));
+  ok('lot 2 : la tour repère la horde (2 cycles de préavis en plus)',hz.tour&&hz.delai===hz.attendu,JSON.stringify({delai:hz.delai,attendu:hz.attendu}));
+  ok('lot 2 : défense de la voisine = tour +2 et moitié des salles du Donjon, +4 au plus',hz.partTour===2&&hz.partDon===4,hz.parts&&hz.parts.join(', '));
+  ok('lot 2 : le Donjon aménagé défend bien sa propre zone (salles 21)',hz.sallesDonjon===21,JSON.stringify({defDonjon:hz.defDonjon,salles:hz.sallesDonjon}));
+  const defL2=await p.evaluate(DEFENSES),F2=await p.evaluate(()=>7+Math.floor(MZ.S.nc/HORDE_CROIT));
+  info('défenses de départ (cycle '+(await p.evaluate(()=>MZ.S.nc))+', tour sur '+D2+', deux Donjons à 4 pièges, Citadelle tenue)',fmtDef(defL2,F2));
+  ok('lot 2 : tour, Citadelle, Donjons et domaines ne rendent pas toute la défense certaine',defL2.some(x=>x.p4<1),defL2.map(x=>x.p4).join(' '));
+  /* Comptoir : retarder cette horde, réparer, échanger ; la carte est achetée après la mort (secret trouvé, carte perdue) */
+  const cp=await p.evaluate(([id,src])=>{const S=MZ.S;MZ.tesselles(40);
+    if(!src||!S.hordes[src]){src=Object.keys(S.hordes).find(s=>!S.hordes[s].retard)||null;if(!src){const h=MZ.horde();src=h&&h.src}}if(!src||!S.hordes[src])return{horde:null};
+    S.hordes[src].retard=0;const T=piegesTab(id);T.forEach(x=>{if(x){x.dort=true;x.u=1}});
+    const cit=citadellesTenues()[0]||ZB.CIT;if(!tient(cit.id))MZ.prendre(cit.id);openEveil(cit);const c=UI.opts.find(o=>o.l==='Comptoir');if(!c)return{comptoir:false};c.go();
+    const r={titre:document.getElementById('menu-t').textContent};const t0=S.tess,a0=S.hordes[src].arrive;
+    const ro=UI.opts.find(o=>o.l===`Retarder la horde ${de_(nomCourt(src))}`);if(!ro||ro.off)return{r,retarder:ro?'grisé':'absent',src};
+    ro.go();r.retard=S.hordes[src]?S.hordes[src].arrive-a0:null;r.payeRetard=t0-S.tess;
+    const t1=S.tess,rp=UI.opts.find(o=>o.l==='Réparer les pièges · '+ZB[id].info.nom.split(',')[0]);r.rep=!!rp;if(rp)rp.go();r.payeRep=t1-S.tess;r.reveilles=piegesTab(id).filter(x=>x&&!x.dort&&x.u===3).length;
+    const t2=S.tess,m=ZMANA[cit.id]||'Pierre',m0=S.res[m]||0,eo=UI.opts.find(o=>/^Échanger/.test(o.l));if(eo)eo.go();r.payeEch=t2-S.tess;r.mana=(S.res[m]||0)-m0;
+    const ca=UI.opts.find(o=>o.l==='Une carte de secret');r.carte=ca?{off:ca.off,d:ca.d}:null;toMonde();return r},[D2,hz.src||null]);
+  ok('Comptoir : retarder la horde, 8 tesselles, +2 cycles',cp.retard===2&&cp.payeRetard===8,JSON.stringify(cp));
+  ok('Comptoir : réparer les pièges du deuxième Donjon, 5 tesselles',cp.rep&&cp.payeRep===5&&cp.reveilles===4,JSON.stringify(cp));
+  ok('Comptoir : 4 tesselles contre 1 mana',cp.payeEch===4&&cp.mana===1,JSON.stringify(cp));
+  const r0=await p.evaluate(()=>{const s=Object.keys(MZ.S.hordes).find(s=>MZ.S.hordes[s].retard);return s?MZ.hordeArrive(s):null});
+  info('arrivée de la horde retardée',r0&&r0.lignes.join(' '));
+  await monde();await coherent('Comptoir et horde couverte');
+  /* rivaux : une tentative devancée (défi gagné à la Pierre), une réussie */
+  const rv=await p.evaluate(async()=>{const S=MZ.S;for(const k in S.riv.t)delete S.riv.t[k];
+    /* (19 nov.) MZ.rival('prise') renvoie null, à bon droit, quand aucune zone sauvage n'est libre ou que toutes les maisons sont au plafond :
+       on prépare l'un et l'autre. Une zone libre : hors départ, sauvage, ni verrouillée ni au cœur ni à une maison. */
+    const prepare=()=>{for(const r of RIVAUX){const z=zonesMaison(r.k);if(z.length>=RIV_MAX())delete S.riv.z[z[0].id]}
+      if(ciblesPrise().length)return true;
+      const loin=MZ.ZN.filter(Z=>!ESTDEP.has(Z.id)&&!(typeof verrouillee==='function'&&verrouillee(Z.id))).sort((a,b)=>(S.own[a.id]?1:0)-(S.own[b.id]?1:0));
+      for(const Z of loin){if(S.own[Z.id]){S.own[Z.id]=false;S.act[Z.id]=false;delete S.tours[Z.id]}delete S.riv.z[Z.id];if(ciblesPrise().length)return true}
+      return false};
+    if(!prepare())return{prepare:false};const a=MZ.rival('prise');if(!a||a.sorte!=='tentative')return{a};
+    openEveil(ZB[a.id]);const o=UI.opts.find(o=>/^Défier les gens/.test(o.l));if(!o)return{a,defi:false};o.go();await new Promise(r=>setTimeout(r,700));
+    const kind=MZ.CB&&MZ.CB.kind;finCombat(true);const devancee=!S.riv.t[a.r]&&!S.riv.z[a.id];toMonde();
+    prepare();const b=MZ.rival('prise');if(!b||b.sorte!=='tentative')return{a,kind,devancee,b};const res=MZ.rivalTente(b.r,true);
+    return{a,kind,devancee,b,res:res&&res[0]&&res[0].fin,maison:S.riv.z[b.id],emp:S.emp[b.id]}});
+  ok('rivaux : tentative devancée par un défi gagné à la Pierre',rv.kind==='rival'&&rv.devancee,JSON.stringify(rv));
+  ok('rivaux : tentative réussie, la zone est à la maison',rv.res==='prise'&&rv.maison===(rv.b&&rv.b.r)&&!rv.emp,JSON.stringify(rv));
+  await monde();await coherent('rivaux du lot 2');
+
+  /* 10 bis. bandeau : il est en îlots depuis la boucle graphique 1 (.ilot) : territoire (avec les domaines fermés ◈), ressources (avec la bourse ◇),
+     menaces (îlot à titre) et rivaux (ligne à titre) ; le cadre d'état ne déborde pas */
   await p.evaluate(()=>{const S=MZ.S;if(!Object.keys(S.hordes).length)MZ.horde();if(!S.riv.c)MZ.rival('conteste');if(!Object.keys(S.riv.z).length)MZ.rival('prise');hudKey='';etatHud();toMonde()});
   await p.waitForTimeout(1500);
   const bd=await p.evaluate(()=>{const b=document.getElementById('bandeau'),box=document.querySelector('.hud.etat'),r=box.getBoundingClientRect();
-    return{t:b.textContent,lignes:[...b.querySelectorAll('.ligne .titre')].map(e=>e.textContent),r:{top:r.top,bottom:r.bottom,left:r.left,right:r.right},h:innerHeight,w:innerWidth}});
-  ok('bandeau : lignes Domaines, Menaces et Rivaux',['Domaines','Menaces','Rivaux'].every(t=>bd.lignes.indexOf(t)>=0),bd.lignes.join(', '));
+    const q=s=>b.querySelector(s),dom=q('.i-terr [title^="Domaines fermés"]'),tess=q('.i-res [title^="Tesselles"]'),men=q('.ilot.i-men .titre'),rivx=[...b.querySelectorAll('.ligne .titre')].find(e=>e.textContent==='Rivaux');
+    const deb=[...b.querySelectorAll('.ilot,.ligne')].filter(e=>e.scrollWidth>e.clientWidth+1).map(e=>e.className);
+    return{t:b.textContent,ilots:[...b.querySelectorAll('.ilot')].map(e=>e.className.replace('ilot ','')),dom:dom&&dom.textContent,tess:tess&&tess.textContent,tessS:String(MZ.S.tess),men:men&&men.textContent,riv:!!rivx,deb,
+      r:{top:r.top,bottom:r.bottom,left:r.left,right:r.right},h:innerHeight,w:innerWidth}});
+  ok('bandeau : îlots mana, territoire et ressources',['i-mana','i-terr','i-res'].every(c=>bd.ilots.indexOf(c)>=0),bd.ilots.join(', '));
+  ok('bandeau : domaines fermés (◈) dans l\'îlot du territoire',!!bd.dom&&/◈/.test(bd.dom),bd.dom);
+  ok('bandeau : îlot Menaces et ligne Rivaux',bd.men==='Menaces'&&bd.riv,JSON.stringify({men:bd.men,riv:bd.riv}));
+  ok('bandeau : la bourse de tesselles (◇) dans l\'îlot des ressources',!!bd.tess&&bd.tess==='◇'+bd.tessS,bd.tess);
+  ok('bandeau : aucun îlot coupé',bd.deb.length===0,bd.deb.join(', ')||undefined);
   ok('le cadre d\'état tient dans l\'écran (1280×720)',bd.r.top>=0&&bd.r.left>=0&&bd.r.bottom<=bd.h&&bd.r.right<=bd.w,JSON.stringify(bd.r));
   await p.screenshot({path:path.join(dossier,'monde-bandeau.png')});
 
@@ -143,24 +266,41 @@ const COHERENT=()=>{const S=MZ.S,p=[];
   await monde();
 
   /* 12. mort du héros avec des menaces en cours */
-  const mt=await p.evaluate(()=>{const S=MZ.S;const id=MZ.ZN.map(Z=>Z.id).find(id=>S.own[id]&&!ESTDEP.has(id)&&S.lv[id]!==0);
+  const mt=await p.evaluate(async()=>{const S=MZ.S;const id=MZ.ZN.map(Z=>Z.id).find(id=>S.own[id]&&!ESTDEP.has(id)&&S.lv[id]!==0);
     if(id)S.riv.c={r:'gri',id,de:S.riv.nc,du:S.riv.nc+2};const hAvant=Object.keys(S.hordes).length;
-    mort();riv();return{cHorsDepart:id||null,c:S.riv.c,hAvant,hApres:Object.keys(S.hordes).length,own:ZONES_DEP.filter(z=>S.own[z]).length,autres:MZ.ZN.filter(Z=>!ESTDEP.has(Z.id)&&S.own[Z.id]).length,hurt:S.hurt}});
+    const sec=MZ.secrets.findIndex((q,i)=>!q.found&&CK['S'+i]);if(sec>=0){MZ.secrets[sec].found=true;carteDeSecret(MZ.secrets[sec])}
+    const nbPg=()=>piegesTab('DON').filter(Boolean).length+Object.values(S.donjons||{}).reduce((a,d)=>a+d.p.filter(Boolean).length,0);
+    const tAvant=Object.keys(S.tours||{}).length,bAvant=S.tess,salAvant=nbPg(),carteAvant=sec>=0&&S.deck.indexOf('S'+sec)>=0;
+    mort();riv();await new Promise(r=>setTimeout(r,1300));
+    const lot2={tAvant,tApres:Object.keys(S.tours||{}).length,bAvant,bApres:S.tess,salAvant,salApres:nbPg(),sec,carteAvant,carteApres:sec>=0&&S.deck.indexOf('S'+sec)>=0};
+    return{lot2,cHorsDepart:id||null,c:S.riv.c,hAvant,hApres:Object.keys(S.hordes).length,own:ZONES_DEP.filter(z=>S.own[z]).length,autres:MZ.ZN.filter(Z=>!ESTDEP.has(Z.id)&&S.own[Z.id]).length,hurt:S.hurt}});
   ok('mort : l\'héritier reprend le départ, rien d\'autre',mt.own===12&&mt.autres===0&&mt.hurt===0,JSON.stringify(mt));
   ok('mort : la contestation d\'une zone perdue tombe',!mt.cHorsDepart||mt.c===null,JSON.stringify(mt.c));
+  ok('mort : les tours tombent',mt.lot2.tAvant>0&&mt.lot2.tApres===0,JSON.stringify(mt.lot2));
+  ok('mort : la bourse de tesselles est perdue',mt.lot2.bAvant>0&&mt.lot2.bApres===0,JSON.stringify(mt.lot2));
+  ok('mort : les pièges des Donjons sont perdus',mt.lot2.salAvant>0&&mt.lot2.salApres===0,JSON.stringify(mt.lot2));
+  ok('mort : la carte du secret trouvé est perdue',mt.lot2.sec<0||mt.lot2.carteAvant&&!mt.lot2.carteApres,JSON.stringify(mt.lot2));
   info('mort : hordes en cours',`${mt.hAvant} avant, ${mt.hApres} après (elles marchent toujours)`);
   await p.evaluate(()=>toMonde());await coherent('après la mort');
   for(let i=0;i<5;i++){await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1050);await monde()}
   await coherent('cinq cycles après la mort');
 
   /* 13. rechargement avec la sauvegarde */
-  const avant=await p.evaluate(()=>{save();return JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c})});
+  await p.evaluate(()=>{MZ.tour('CIT');MZ.amenager('DON',['herse']);MZ.tesselles(7)});
+  const avant=await p.evaluate(()=>{save();return JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c,t:MZ.S.riv.t,tess:MZ.S.tess,tours:Object.keys(MZ.S.tours),pg:MZ.S.pieges,dj:MZ.S.donjons,found:MZ.S.found})});
   await p.reload();await p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function',null,{timeout:30000});
   await p.evaluate(()=>startGame(false));await p.waitForTimeout(2500);
-  const apres=await p.evaluate(()=>JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c}));
+  const apres=await p.evaluate(()=>JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c,t:MZ.S.riv.t,tess:MZ.S.tess,tours:Object.keys(MZ.S.tours),pg:MZ.S.pieges,dj:MZ.S.donjons,found:MZ.S.found}));
   ok('rechargement : la partie reprend à l\'identique',avant===apres,avant===apres?undefined:avant.slice(0,200)+' ≠ '+apres.slice(0,200));
   for(let i=0;i<5;i++){await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1050);await monde()}
   await coherent('après rechargement et cinq cycles');
+  /* Comptoir après la mort : la carte du secret trouvé par le héros précédent est en vente, et elle seule */
+  const ct=await p.evaluate(()=>{const S=MZ.S;MZ.tesselles(20);S.tessAchat=-1;openEveil(ZB.CIT);UI.opts.find(o=>o.l==='Comptoir').go();const o=UI.opts.find(o=>o.l==='Une carte de secret');
+    if(!o||o.off)return{o:o&&o.d};o.go();const v=cartesEnVente(ZB.CIT).map(x=>x.k),tous=cartesEnVente(ZB.CIT).every(x=>x.q.found),k=v[0],t0=S.tess,d0=S.deck.length;
+    UI.opts[0].go();const r={v,tous,k,paye:t0-S.tess,dans:S.deck.indexOf(k)>=0,d:S.deck.length-d0};toMonde();return r});
+  ok('Comptoir : après la mort, la carte du secret trouvé est en vente (et seulement des secrets trouvés)',!!ct.v&&ct.v.length>0&&ct.tous,JSON.stringify(ct));
+  ok('Comptoir : achat de la carte de secret',ct.dans&&ct.d===1&&ct.paye>=6,JSON.stringify(ct));
+  await monde();await coherent('fin du lot 2');
 
   /* 14. textes visibles : pas de « undefined », « NaN », « null » */
   const txt=await p.evaluate(()=>{const S=MZ.S,o=[];const id=MZ.ZN.find(Z=>S.own[Z.id]).id;openEveil(ZB[id]);o.push(document.getElementById('menu').textContent);

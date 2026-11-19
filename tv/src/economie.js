@@ -66,6 +66,7 @@ function cycle(){S.nc++;const lignes=[];
     lignes.push(`−${paye} mana d'entretien${dorment?`, ${dorment} piège(s) endormi(s)`:''}`)}
   if(typeof peages==='function')peages(lignes);
   if(typeof domainesCycle==='function')domainesCycle(lignes);
+  if(typeof donjonsCycle==='function')donjonsCycle(lignes);   /* entretien par cycle des autres Donjons aménagés (donjons.js) */
   save();etatHud();
   if(donjonAVous()&&S.nc-S.dernierAssaut>=(typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES)){S.dernierAssaut=S.nc;
     if(typeof cacheParBrume==='function'&&cacheParBrume('DON')){lignes.push('Une horde rôde, mais la Brume de Givrecloche cache le Donjon : elle passe son chemin')}else{assaut(lignes);return}}

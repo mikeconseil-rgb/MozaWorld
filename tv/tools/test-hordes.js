@@ -53,8 +53,8 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     }
     /* 4. une horde qui passe : la zone à vous recule ; à 0 elle reste à vous (19 nov.) */
     const r1=await p.evaluate(()=>{const cible=MZ.ZN.find(Z=>MZ.S.own[Z.id]&&(Z.mod||Z.id)!=='RES'&&Z.id!=='CIT').id;MZ.S.lv[cible]=1;
-      const h=MZ.horde(null,cible);if(!h)return null;h.force=99;const r=MZ.hordeArrive(h.src);return{cible,lv:MZ.S.lv[cible],own:MZ.S.own[cible],passe:r&&r.passe,lignes:r&&r.lignes}});
-    ok('horde sans réponse : la zone recule, à 0 elle reste à vous',!!r1&&r1.passe&&r1.lv===0&&r1.own,JSON.stringify(r1));
+      const h=MZ.horde(null,cible);if(!h)return null;h.force=99;const r=MZ.hordeArrive(h.src);return{cible,lv:MZ.S.lv[cible],own:MZ.S.own[cible],emp:MZ.S.emp[cible],passe:r&&r.passe,lignes:r&&r.lignes}});
+    ok('horde sans réponse : la zone recule, à 0 elle redevient sauvage avec empreinte',!!r1&&r1.passe&&r1.lv===0&&!r1.own&&r1.emp,JSON.stringify(r1));
     await p.waitForTimeout(800);
     ok('rapport à l\'écran',await p.evaluate(()=>MZ.mode==='menu'&&/forcée|tient/.test(document.getElementById('menu-t').textContent)));
     await p.evaluate(()=>toMonde());
@@ -75,8 +75,11 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
       if(!z)return{src:null,h:null};
       MZ.S.nc=Math.max(MZ.S.nc,HORDE_GRACE);for(let i=0;i<HORDE_MUR;i++)hordesCycle();return{src:z.id,h:MZ.S.hordes[z.id]||null}});
     ok('au palier 7 envahisseur, la colère mûrit puis la horde se lève',!!r4.h,JSON.stringify(r4));
-    if(r4.h){await p.evaluate(s=>{MZ.S.nc=MZ.S.hordes[s].arrive},r4.src);await p.waitForTimeout(2000);
-      ok('à l\'arrivée, la horde est résolue d\'elle-même',await p.evaluate(s=>!MZ.S.hordes[s],r4.src))}
+    /* (19 nov., testeur) l'arrivée est traitée par un setInterval d'une seconde ; sous swiftshader, une image peut prendre plus d'une seconde
+       et l'ancienne attente fixe de 2 s échouait parfois sur une machine chargée. Ce n'est pas le jeu : on attend jusqu'à 20 s. */
+    if(r4.h){await p.evaluate(s=>{MZ.S.nc=MZ.S.hordes[s].arrive},r4.src);
+      const resolue=await p.waitForFunction(s=>!MZ.S.hordes[s],r4.src,{timeout:20000,polling:250}).then(()=>true,()=>false);
+      ok('à l\'arrivée, la horde est résolue d\'elle-même',resolue,resolue?undefined:JSON.stringify(await p.evaluate(s=>({h:MZ.S.hordes[s],nc:MZ.S.nc,mode:MZ.mode}),r4.src)))}
     /* 8. au palier 7 paisible, pas de horde */
     const r5=await p.evaluate(()=>{const z=MZ.ZN.find(Z=>(Z.mod||Z.id)!=='RES'&&MZ.poleEnvahisseur(Z.id)!==2&&!MZ.S.hordes[Z.id]);const n=-7*MZ.poleEnvahisseur(z.id);MZ.S.lv[z.id]=n;
       for(let i=0;i<HORDE_MUR+1;i++)hordesCycle();return!!MZ.S.hordes[z.id]});
