@@ -40,7 +40,7 @@ const protege=id=>(typeof borne==='function'&&borne(id))||(typeof verrouillee===
 const protection=id=>{if(typeof defenseMonde!=='function')return 0;try{const d=defenseMonde(id);return d&&+d.bonus||0}catch(_){return 0}};
 /* 19 nov. (provisoire) : le verrou de Citadelle protège des prises, pas des contestations (il donne alors −20 %) ; seules les zones au cœur et bornées sont intouchables */
 const protegeConteste=id=>(typeof borne==='function'&&borne(id))||(typeof auCoeur==='function'&&!!auCoeur(id));
-const chanceRival=id=>Math.max(.1,RIV_CHANCE-RIV_PROT*protection(id));
+const chanceRival=id=>Math.max(.1,RIV_CHANCE-RIV_PROT*protection(id)-(typeof piegesDonjon==='function'?DJ_RIVAL*piegesDonjon(id):0));   /* Donjon aménagé : −10 points par piège actif (donjons.js) */
 /* texte de la fiche de zone (bandeau d'exploration) */
 const maitreRival=id=>{const r=maisonDe(id);return r?`<b style="color:${r.col}">${r.bl} ${r.nom}</b> · gardiens renforcés`:''};
 
