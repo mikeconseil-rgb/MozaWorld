@@ -303,7 +303,8 @@ function texteRiche(t){t=String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
 /* ---------- Scène complète d'une zone : ciel du pôle, biome, monument de la culture, élément du pôle ---------- */
 const HEURES=['#f2a0b0','#3a3f8a','#c8ccd6','#ffe9a0','#e0884a','#7ac0b0','#b07ad0'];
-function scene(P,uid,k,cc){const r=rng((k||P.id)+'|'+P.pole);if(cc&&k)P.teinte=mix(P.acc,HEURES[hsh(k)%HEURES.length],.38);[m,l,d]=P.m,a=P.acc,bk=bkey(P.biome),B=BIO[bk]||BIO.collines,neg=P.pole==='neg';
+function scene(P,uid,k,cc,nu){   /* nu : sans décor, pour poser le sujet sur un décor peint (img/cartes/fonds) */
+  const r=rng((k||P.id)+'|'+P.pole);if(cc&&k)P.teinte=mix(P.acc,HEURES[hsh(k)%HEURES.length],.38);[m,l,d]=P.m,a=P.acc,bk=bkey(P.biome),B=BIO[bk]||BIO.collines,neg=P.pole==='neg';
   const c={loin:mix(a,d,.45),mi:mix(m,a,.4),pres:mix(d,a,.22),acc:mix(a,'#ffffff',.45),eau:mix(m,a,.35),emb:mix(d,a,.2),embL:mix(a,'#ffffff',.35),mid:mix(d,'#000000',.4),feu:mix(a,'#fff3c0',.5),fx:mix(a,'#ffffff',.15)};
   const sj=cc?sujetDe(k,cc):null,cote=r()<.5?-1:1;
   const x=sj?80-cote*(26+r()*14):58+r()*44,mon=(MON_C[ckeyL(P.cult)]||MON_C.girih)(c);
@@ -315,8 +316,10 @@ function scene(P,uid,k,cc){const r=rng((k||P.id)+'|'+P.pole);if(cc&&k)P.teinte=m
   const frise=P.ult?`<rect x="2" y="2" width="156" height="96" fill="none" stroke="${l}" stroke-width="3" stroke-dasharray="6 3 2 3"/><rect width="160" height="100" fill="url(#mz-girih)" opacity=".9"/>`:'';
   const halo=P.L>=4?`<ellipse cx="${f1(x)}" cy="56" rx="38" ry="30" fill="${P.L>=6?'#ffffff':a}" opacity="${P.L>=6?.45:.35}" filter="url(#mz-flou)"/>`:'';
   const pw=P.mod==='RES'?'':P.pole==='neg'?P.pm:P.pole==='pos'?P.pp:'';
+  const sujetG=()=>(sj?`<ellipse cx="${f1(80+cote*6)}" cy="58" rx="40" ry="34" fill="${cs.g}" opacity=".45" filter="url(#mz-flou)"/><g transform="translate(${f1(80+cote*(6+r()*8))} ${f1(97+r()*2)}) scale(${f1((P.ult?1.6:1.5)*(r()<.5?-1:1)*(.94+r()*.12))} ${f1((P.ult?1.6:1.5)*(.94+r()*.1))})" stroke="${cs.l}" stroke-width="1.3" stroke-linejoin="round" paint-order="stroke"><ellipse cx="0" cy="1" rx="22" ry="3.5" fill="#000" opacity=".35" stroke="none"/>${(SJ[sj]||SJ.spirale)(cs,r)}</g>`:'');
+  if(nu)return rayons+halo+effetPole(pw,c,r,P.L)+sujetG()+(cc?effetsCarte(cc,k,cs):'')+frise;
   return ciel(P,r,uid)+rayons+B.loin(r,c)+halo+`<g transform="translate(${f1(x)} ${f1(90-82*sc)}) scale(${sc})" stroke="${mix(d,'#000000',.5)}" stroke-width="1.1" stroke-linejoin="round" paint-order="stroke" opacity="${sj?.5:1}">${mon}</g>`+B.pres(r,c)+effetPole(pw,c,r,P.L)+
-    (sj?`<ellipse cx="${f1(80+cote*6)}" cy="58" rx="40" ry="34" fill="${cs.g}" opacity=".45" filter="url(#mz-flou)"/><g transform="translate(${f1(80+cote*(6+r()*8))} ${f1(97+r()*2)}) scale(${f1((P.ult?1.6:1.5)*(r()<.5?-1:1)*(.94+r()*.12))} ${f1((P.ult?1.6:1.5)*(.94+r()*.1))})" stroke="${cs.l}" stroke-width="1.3" stroke-linejoin="round" paint-order="stroke"><ellipse cx="0" cy="1" rx="22" ry="3.5" fill="#000" opacity=".35" stroke="none"/>${(SJ[sj]||SJ.spirale)(cs,r)}</g>`:'')+
+    sujetG()+
     (cc?effetsCarte(cc,k,cs):'')+tex+frise}
 
 /* ---------- Illustration d'une carte de secret : dessin au trait sur papier kraft, objet trouvé au centre ---------- */
@@ -339,11 +342,11 @@ const accent=P=>{const A=ZACC[P.id],m=(VMANA[P.mana]||VMANA.Pierre);if(A)return 
   return P.pole==='neg'?mix(m[1],'#8a7ad0',.45):mix(m[1],'#e0703a',.45)};
 /* ---------- Images IA (18 nov.) : peinture par carte dans img/cartes/, listée par cartes-images.js ; le dessin vectoriel reste en secours ---------- */
 const slugI=t=>sansAcc(t).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
-function fichierImage(k,c,P){const I=window.CARTES_IMG;if(!I||!I.size)return'';let f='';
+function fichierImage(k,c,P){const I=window.CARTES_IMG||new Set();let f='';
   if(c.secret)f='S-'+slugI(c.secret);
   else if(k.includes('#'))f=k.replace('#','_').replace('-','m').replace('+','p');
   else if(P&&P.L>=1)f=P.id+'_'+(P.pole==='neg'?'m':'p')+Math.min(7,P.L);   /* carte de base : image de son palier actuel */
-  return f&&I.has(f)?'img/cartes/'+f+'.webp':''}
+  const F=window.CARTES_FOND;return f&&I.has(f)?'img/cartes/'+f+'.webp':f&&F&&F.has(f)?'img/cartes/fonds/'+f+'.webp':''}
 const peint=(src,fond,fx)=>`<span class="kpeint">${fond.replace('<svg ','<svg class="kfond" ')}<img class="kimg" src="${src}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.add('ko')">${fx?`<svg class="kfx" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${fx}</svg>`:''}</span>`;
 window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
   if(c.secret||c.zs&&!c.z){const P=c.zs?infoZone(c.zs):null,sv=`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${sceneSecret(c,P,uid)}</svg>`,im=fichierImage(k,c,null);return im?peint(im,sv,''):sv}
@@ -353,6 +356,7 @@ window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
   P.m=VMANA[P.mana]||VMANA.Pierre;P.acc=accent(P);P.ult=!!c.ultime||(P.L>=7&&!!c.pose);
   const sv=`<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice">${scene(P,uid,k,c)}</svg>`,im=fichierImage(k,c,P);if(!im)return sv;
   const a=P.acc,d=P.m[2],fx=effetsCarte(c,k,{f:mix(d,'#000000',.35),l:mix(a,'#ffffff',.55),g:mix(a,'#fff3c0',.35)});
+  if(im.indexOf('/fonds/')>0)return peint(im,sv,scene(P,uid+'n',k,c,1)).replace('class="kpeint"','class="kpeint decor"');
   return peint(im,sv,fx)};
 
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
@@ -390,6 +394,7 @@ const css=document.createElement('style');css.textContent=`
 .kpeint>*{position:absolute;inset:0;width:100%;height:100%;display:block}
 .kpeint .kfond{visibility:hidden}.kpeint.ko .kfond{visibility:visible}.kpeint.ko .kimg{display:none}
 .kpeint .kimg{object-fit:cover}.kpeint .kfx{opacity:.4;mix-blend-mode:screen}
+.kpeint.decor .kfx{opacity:1;mix-blend-mode:normal;filter:drop-shadow(0 2px 3px rgba(0,0,0,.7))}.kpeint.decor .kimg{filter:brightness(.82) saturate(1.1)}.kpeint.ko .kfx{display:none}
 .kpeint::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 calc(var(--u)*1.2) rgba(0,0,0,.55);background:linear-gradient(180deg,transparent 70%,rgba(8,7,10,.45))}
 .cc.kcarte.p-neg .kimg{filter:saturate(.9) contrast(1.06)}.cc.kcarte.p-pos .kimg{filter:saturate(1.08)}
 .cc.kcarte.secret .kimg{filter:sepia(.25)}
