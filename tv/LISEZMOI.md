@@ -4,6 +4,15 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Boucle graphique 2, amélioration 1 : une grammaire de pôle par type de zone (19 novembre 2026)
+
+- Sol (`src/sol.js`) : l'octet A de la carte du sol porte un code de grammaire (Citadelle, Donjon, Ressource, Antre, Assemblée, Marché). Fini le même tampon partout :
+  - **−7** : glace noire en plaques hexagonales, givre dans les joints (Citadelle) ; failles de braise de Voronoï (Donjon) ; flaques noires qui reflètent le ciel (Ressource) ; mycélium phosphorescent ramifié (Antre) ; dalles soulevées et fendues en damier (Assemblée) ; traînées de sel et de suie (Marché).
+  - **+7** : Girih or à 10 branches (Citadelle) ; zellige khatam cobalt et blanc (Donjon) ; terrasses concentriques de jade (Ressource) ; mosaïque d'hexagones turquoise et nacre (Antre) ; rosace à 12 branches lapis et argent (Assemblée) ; losanges blanc et bleu glacier (Marché).
+  - Couleurs saturées, mêlées à la teinte du mana ; la force suit le palier ; en qualité Fluide, le repli à une seule lecture de bruit garde la couleur et l'ordre de l'étoile de chaque grammaire.
+- Décors de pôle (`src/poles-decor.js`) : un jeu d'objets par type (même nombre d'objets par pôle) et un repère + différent par type : tour Girih, arche en fer à cheval, terrasses à degrés, aiguilles de cristal, coupole, kiosque.
+- Mesures contre la base (même code sans ces changements) : triangles et appels de dessin à moins de 1,5 % (bruit de mesure).
+
 ## Version 2.11 : livres des zones (19 novembre)
 
 Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'histoire de la zone ».
