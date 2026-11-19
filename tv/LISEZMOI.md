@@ -4,6 +4,14 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.10 : boucle graphique 1 (19 novembre)
+
+Première boucle de l'équipe graphique (critique, direction artistique, rendu et performance, producteur, trois artisans, testeur-juge). Les trois améliorations ont été acceptées par le testeur ; détails dans les sections « Boucle 1 » plus bas, captures avant, après et intégrées dans `boucles/boucle-1/` du dossier du projet.
+- Étalonnage signature par zone et par pôle (`src/styles.js`) : fini le noir bouché à −7 et le blanc brûlé à +7, chaque zone a ses teintes.
+- Sol vivant (`src/sol.js`) : grain par biome, failles lumineuses vers −7, motif Girih doré vers +7.
+- Interface : un seul titre de zone, barre du haut en îlots (avec domaines, hordes et rivaux), texte des cartes de combat lisible.
+- Mesures intégrées contre la 2.9 : triangles +0 à +9 %, appels de dessin +2 à +7 %.
+
 ## Gameplay du monde : test d'ensemble (19 nov.)
 
 Domaines, hordes et rivaux joués ensemble : `node tv/tools/test-monde.js [dossier]` lance une longue partie simulée (40 cycles, prises, hordes, rivaux, combats d'avant-garde et de champion, mort du héros, rechargement de la sauvegarde), vérifie la cohérence de l'état et les menus, et prend trois captures (bandeau, Pierre d'une zone menacée, écran Rivaux). Réglages du 19 nov. (provisoires) : une horde ne vise que des zones plus faibles de 2 ou 3 paliers ; une zone à vous tombée à 0 reste à vous ; la même Citadelle ne compte qu'une fois dans la défense contre une horde ; les rivaux agissent une fois sur 6 cycles, pas avant le 10e ; une contestation tombe si la zone n'est plus à vous. Quand la barre d'état est trop pleine, elle passe sur deux lignes au lieu d'être coupée.
