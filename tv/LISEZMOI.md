@@ -103,6 +103,19 @@ Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au ba
 
 APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
 
+## Boucle 1 · 2 (web) : le sol vivant (19 novembre 2026)
+
+Constat : de près, le sol des zones était un aplat uni (une couleur par sommet tous les 4,2 m). Nouveau fichier `src/sol.js` (assemblé juste après `poles-decor.js`), qui enchaîne un second `onBeforeCompile` sur le matériau du terrain, sans toucher à `core.js` ni à `zonesplus.js`.
+
+- **Carte des zones** : une DataTexture GW×GH (un texel par sommet du terrain) donne au fragment le motif du biome, le niveau ((lv+7)/14) et le mana du pôle. Remplie au chargement, réécrite pour la seule zone qui mue (on enveloppe `rebuild`). Un fondu près des frontières évite toute marche entre zones.
+- **Grain** : taches de ~8 m et grain de ~0,7 m (±8 % de luminosité), fondus avec la distance (pas de moiré). Le bruit vient d'une petite texture de bruit **générée par le code** (aucune image).
+- **Motif par biome** : rides de sable (Désert, Récif, fond des Canyons), givre et paillettes qui scintillent avec le regard (Forêt boréale côté Donjon, Fjord, Cavernes, Berestograd), touffes sombres (Steppe, Lande, Delta, autres forêts boréales, Lucioles), dalles en quinconce (Cité en ruines), strates sur les pentes (Canyon, Falaise), oasis = sable ou touffes selon la couleur du sol ; ailleurs, roche selon la pente. Deux zones de même couleur se distinguent ainsi par leur motif.
+- **Pôle −** : failles en réseau de Voronoï, plus nombreuses et plus larges à chaque palier (un quart du réseau au palier 1, tout au palier 7), le fond luit dans la couleur du pôle négatif du mana : braise (Feu), glace noire (Glace), vase luisante (Eau), sève aigre (Sève), sang de la roche (Pierre), orage violet (Vent).
+- **Pôle +** : incrustation Girih or pâle, médaillons à étoile à 10 branches en quinconce : palier 1 l'étoile seule et un quart des médaillons, 3 le décagone, 4 la faïence turquoise, 5 l'étoile intérieure et la rosace, 6 les rayons et le treillis qui relient les médaillons, 7 tous posés.
+- **Givrecloche et Chinampas** gardent leur style de rendu : le motif y est coupé tant que « Styles par zone » est actif (le grain reste).
+- **Qualité « Fluide »** : ni Voronoï ni Girih complet ; un repli bon marché garde les pôles lisibles (failles tirées d'une seule lecture de bruit, médaillon réduit à l'étoile et son décagone). Le shader se recompile seul quand la qualité entre ou sort de « Fluide ».
+- Mesure (rendu logiciel, même vue, avec et sans `sol.js`) : 0 triangle et 0 appel de dessin en plus ; le temps d'une image ne bouge pas de façon mesurable. Les chiffres de `boucle.js` varient de quelques % d'une passe à l'autre (cadrage de la caméra), avec ou sans le sol.
+
 ## Version 2.8 (web) : décors par pôle partout, exploration épurée, monde animé (18 novembre)
 
 Choix de l'utilisateur après l'essai de la 2.6 (« C'est fluide », puis « Tout oui » sur les idées 1, 2 et 3 de la suite des graphismes).
