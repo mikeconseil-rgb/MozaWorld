@@ -45,4 +45,4 @@ function ouvrirDuel(){const d=DUEL,vt=d.vote,ch=CB.foes.find(m=>m.chef)||CB.foes
   if(vt.v>0){const n=3*vt.v;for(const m of CB.foes){const x=Math.min(m.pv-1,Math.ceil(n/CB.foes.length));m.pv-=x}}
   else if(vt.v<0){ch.pv+=3*-vt.v;ch.max=Math.max(ch.max,ch.pv)}
   return`Duel d'arguments pour le palier ${sgn(d.target)}. Vote des voisines : ${vt.v>=0?'+':''}${vt.v} voix${vt.pour.length?' (pour : '+vt.pour.join(', ')+')':''}${vt.contre.length?' (contre : '+vt.contre.join(', ')+')':''}. Paquet politique : ${CB.pile.length} cartes.`}
-function finDuel(ok){const d=DUEL;DUEL=null;E={Z:d.Z,target:d.target,eff:d.eff};endEpreuve(ok)}
+function finDuel(ok){const d=DUEL;DUEL=null;E={Z:d.Z,target:d.target,eff:d.eff};endEpreuve(ok);if(ok&&typeof loiDuelGagne==='function')loiDuelGagne(d.Z)}   /* lois.js : loi en vigueur renforcée */
