@@ -38,9 +38,11 @@ function paverPlateau(Z){const C=CB;if(C.kind==='duel')return;C.cases={};
   types.forEach((t,i)=>{const [v,r]=libres[i];C.cases[caseCle('a',v,r)]=t});
   const tz=plType(Z);if(PL_T[tz])melange([0,1,2]).slice(0,2).forEach(v=>{C.cases[caseCle('e',v,0)]=tz})}
 /* ennemis : répartis sur les trois voies (deux créatures : deux voies sur trois, au hasard) ; le chef reste derrière et vise une voie annoncée */
-function rangerEnnemis(foes){if(CB&&CB.kind==='duel')return;const l=foes.filter(m=>!m.chef),vs=melange([0,1,2]);l.forEach((m,i)=>{m.voie=vs[i%3]})}
+function rangerEnnemis(foes){if(CB&&CB.kind==='duel')return;/* passe 3 : le plateau défend mieux, le chef a 30 % de PV en plus */for(const m of foes)if(m.chef&&!m.plx){m.plx=1;m.pv=m.max=Math.round(m.max*(CB&&CB.kind==='eveil'?1.5:1.3))}const l=foes.filter(m=>!m.chef),vs=melange([0,1,2]);l.forEach((m,i)=>{m.voie=vs[i%3]})}
 /* effets de début de tour des cases (vous, au début de votre tour ; l'ennemi, au début du sien) */
 function effetsCases(cote){if(!plActif())return;const l=cote==='a'?surTerrain():vivants(CB.foes).filter(m=>!m.chef);
+  /* soutien (passe 3) : une unité à l'arrière couvre l'avant de sa voie, +2 de garde à chaque tour */
+  if(cote==='a')for(const u of l)if((u.rang||0)===1){const av=occupant(u.voie,0);if(av){av.g+=2;pop(av,'+2 soutien','g')}}
   for(const u of l){const t=terrainDe(u);if(t==='CIT'){u.g+=3;pop(u,'+3 bastion','g')}else if(t==='ANT'&&u.pv<u.max){const a=Math.min(2,u.max-u.pv);u.pv+=a;pop(u,'+'+a+' tanière','soin')}}}
 /* Piège : premier coup porté chaque tour dans une voie qui a un pentagone (de son côté), 3 dégâts à l'attaquant */
 function piegeVoie(cote,v,auteur){if(!plActif()||!auteur||auteur.pv<=0)return;const gardien=(cote==='a'?surTerrain():vivants(CB.foes)).find(u=>u.voie===v&&terrainDe(u)==='DON');if(!gardien)return;
@@ -53,11 +55,17 @@ function cibleBete(b){const v=vivants(CB.foes);if(!v.length)return null;
   /* voie vide : la bête va frapper le chef, ou une voie voisine, à moitié de sa force */
   b.demi=true;return v.find(m=>m.chef)||v.filter(m=>Math.abs(m.voie-b.voie)===1)[0]||v[0]}
 /* frappe d'une bête : pleine à l'avant, moitié à l'arrière */
-const forceBete=b=>{const a=b.atk+(aPassif('meute')?1:0)+bonusSource(b);return(b.rang||0)||b.bouge===CB.tour||b.demi?Math.ceil(a/2):a};
+const forceBete=b=>{const a=b.atk+(aPassif('meute')?1:0)+bonusSource(b);return(b.rang||0)||b.bouge===CB.tour||voieVide(b)?Math.ceil(a/2):a};
+/* voie vide : aucun ennemi dans la voie de la bête ni sur une Tribune voisine (calculé au moment voulu, sans rien écrire) */
+const voieVide=b=>{if(!CB)return false;const v=vivants(CB.foes);return!v.some(m=>!m.chef&&(m.voie===b.voie||(terrainDe(m)==='MAR'&&Math.abs(m.voie-b.voie)===1)))};
 /* menace sur chaque voie : ce que les ennemis ont annoncé (sert au placement automatique et à l'affichage) */
-function menaces(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes)){const I=m.int;if(!I||'afbc'.indexOf(I.a)<0)continue;t[voieDe(m)]+=I.a==='c'?2*m.atk:I.v}return t}
+function menaces(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes)){const I=m.int;if(!I)continue;if(I.a==='t'){for(let v=0;v<3;v++)t[v]+=I.v;continue}if('afb'.indexOf(I.a)<0)continue;t[voieDe(m)]+=I.v}return t}
+/* élans : la frappe forte arrivera au tour suivant (affichée à part) */
+function elans(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes))if(m.int&&m.int.a==='c')t[voieDe(m)]+=2*m.atk;return t}
 /* case proposée pour une nouvelle unité : l'avant de la voie la plus menacée qui n'a personne devant, sinon l'arrière ; une bête fragile va derrière */
-function caseAuto(u){const th=menaces();let best=null,bs=-1e9;
+function caseAuto(u){const th=menaces(),el=elans();for(let v=0;v<3;v++)th[v]+=Math.round(el[v]/2);
+  /* un bloqueur ne va pas d'office face à un bélier (double contre lui) */
+  if(u.mur)for(const m of vivants(CB.foes))if(m.int&&m.int.a==='b')th[voieDe(m)]+=m.int.v*2;let best=null,bs=-1e9;
   for(let v=0;v<3;v++)for(let r=0;r<2;r++){if(occupant(v,r))continue;let s=r===0?th[v]*(u.mur?2:1)+(u.mur?4:2):1+(occupant(v,0)?2:0);
     if(r===0&&!u.mur&&u.pv<th[v])s-=th[v];const t=caseType('a',v,r);if(t==='CIT'&&r===0)s+=2;if(t==='RES'&&!u.mur)s+=2;if(t==='ANT')s+=1;if(t==='MAR'){const vois=(th[v-1]||0)+(th[v+1]||0);s+=u.pv>vois?1:-vois}
     if(s>bs){bs=s;best=[v,r]}}
@@ -118,19 +126,22 @@ const plCss=document.createElement('style');plCss.textContent=`
 .u.chef .por{width:calc(var(--u)*9)!important;height:calc(var(--u)*9)!important}
 .u.chef .int .voie,.u .int .voie{color:var(--laiton2)}
 .u.arriere .por{opacity:.85;transform:scale(.92)}
-.plmenace{position:absolute;left:100%;top:38%;width:calc(var(--u)*6);margin-left:calc(var(--u)*.2);white-space:normal;line-height:1.15;font-size:calc(var(--u)*.85);font-weight:700;color:#ff9a8a;text-shadow:0 1px 4px #000;z-index:3}
+.plmenace{position:absolute;left:-50%;right:-50%;top:-.2em;text-align:center;white-space:nowrap;line-height:1.15;font-size:calc(var(--u)*.85);font-weight:700;color:#ff9a8a;text-shadow:0 1px 4px #000;z-index:3}
 .u.manvise .plaque{border-color:#fff3c8;box-shadow:0 0 0 3px rgba(232,199,127,.5)}
-#cb-main .cc.man{border-color:rgba(143,192,111,.6)}
+#cb-foes .u.mort{opacity:0!important;pointer-events:none}
+#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(100% + var(--u)*.4);transform:scale(.78);transform-origin:bottom right}
+#cb-main .cc.kcarte{min-width:calc(var(--u)*7)!important}
+#cb-main .cc.man.f{transform:scale(.88)}body.manette #cb-main .cc.man::before{content:"Y"}
 `;document.head.appendChild(plCss);
 
 /* ---------- Passe 2 (19 nov., d'après les notes des testeurs) ---------- */
 /* Unités de départ : la Sentinelle de votre Citadelle (bloqueur qui riposte peu) et les unités des passifs se placent au début du tour 1,
    pour que le plateau existe dès le premier combat, sans carte commune */
 function uniteDeDepart(){if(!plActif())return;const cits=zonesA('CIT');
-  if(cits.length){const L=Math.max(...cits.map(Z=>Lz(Z.id))),n=6+2*L;invoquer({nom:'Sentinelle',pv:n,max:n,atk:1+Math.floor(L/2),g:0,bete:1,mur:1,sentinelle:1})}
+  if(cits.length){const L=Math.max(...cits.map(Z=>Lz(Z.id))),n=6+L;invoquer({nom:'Sentinelle',pv:n,max:n,atk:1+Math.floor(L/2),g:0,bete:1,mur:1,sentinelle:1})}
   CB.aPlacer=surTerrain().slice()}
 /* l'arrière avance quand l'avant de sa voie est vide (au début de votre tour) */
-function avancerArriere(){if(!plActif())return;for(let v=0;v<3;v++){const ar=occupant(v,1);if(ar&&!occupant(v,0)){ar.rang=0;pop(ar,'avance','g');journal(`${ar.nom} avance à l'avant de la voie ${PL_NOMV[v]}.`)}}}
+function avancerArriere(){if(!plActif())return;for(let v=0;v<3;v++){const ar=occupant(v,1);if(ar&&!occupant(v,0)&&['CIT','DON','ANT'].indexOf(terrainDe(ar))<0){ar.rang=0;pop(ar,'avance','g');journal(`${ar.nom} avance à l'avant de la voie ${PL_NOMV[v]}.`)}}}
 /* Manœuvre : une fois par tour, déplacer une de vos unités (échange compris) ; elle frappe à moitié ce tour-là */
 const manoeuvrePossible=()=>plActif()&&!CB.busy&&CB.manT!==CB.tour&&surTerrain().length>0;
 function manoeuvreHTML(){if(!plActif())return'';const ok=manoeuvrePossible();
@@ -144,5 +155,5 @@ function manInput(a,rep){const C=CB,l=surTerrain();if(!l.length){C.man=null;dess
 const manVise=u=>!!(CB&&CB.man&&surTerrain()[CB.man.i%Math.max(1,surTerrain().length)]===u);
 /* menace par voie, affichée sur la case d'avant de chaque voie */
 function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
-  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}b.textContent=th[v]?'⚔ '+th[v]+' → '+(tenantVoie(v)?tenantVoie(v).nom:tribuneVoisine(v)?tribuneVoisine(v).nom:gardeU()?'Garde':'héros'):''}
+  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v];b.textContent=(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]:gardeU()?'Garde':'héros'):'')+(el?(th[v]?' · ':'')+'élan '+el+' au prochain tour':'')}
   for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u))}
