@@ -1,0 +1,92 @@
+{
+ "conteur": "B",
+ "livres": {
+  "ANT": {
+   "titre": "Registre du pilotis rouge",
+   "auteur": "Eutropios Kéramos, commis du péage, qui a tenu ce registre jusqu'à la rupture et l'a laissé au comptoir, faute de chiffres à y inscrire.",
+   "pages": [
+    {
+     "t": "Le contrat au minium",
+     "txt": "En l'an 41 de l'Exarchat, l'exarque Kallinikos descendit le chenal de nuit et y perdit deux barques sur les racines. Le lendemain, il traita avec la reine Vespérine : sa ruche éclairerait les eaux, et l'Exarchat nourrirait ses larves, qui ne mangent que la chair du murex. On peignit l'accord au minium sur le pilotis du péage, à hauteur d'yeux. Le marché était bon pour les deux parties, et je le tiens encore pour le meilleur jamais signé dans cette mangrove."
+    },
+    {
+     "t": "Douze mille coquilles",
+     "txt": "À mon entrée en charge, douze mille coquilles descendaient chaque lune. Zoé Kalliganis en pêchait plus que quiconque, à marée basse, dans la vase jusqu'aux cuisses. La glande allait aux cuves, la chair aux nasses suspendues sous la ruche, et la pourpre habillait trois côtes. Au troisième étage du comptoir, on marchandait en quatre langues. Je note aussi le passif : des casseurs aux doigts fendus par le maillet, et une teinture si chère que nos propres teinturières n'en portaient jamais."
+    },
+    {
+     "t": "La chair aux saleurs",
+     "txt": "L'hiver de l'an 212, le sel monta si haut que les saleurs de poisson offrirent pour la chair le double du prix de la pourpre. L'exarque Anthémios signa sans consulter le pilotis. La première lune, il remplit ses coffres ; à la deuxième, les nasses restèrent vides ; à la troisième, la reine ferma sa lumière. On scella les cuves officielles à la cire. Les teinturiers passèrent sous des bâches goudronnées, à la lanterne sourde, et la toise de pourpre se vendit trois fois son prix à des passeurs qui ne montaient jamais à bord."
+    },
+    {
+     "t": "Deux façons de rouvrir",
+     "txt": "Depuis, deux comptes se disputent mon registre. Rouvrir le contrat coûte cher : les larves réclameront des nasses toujours plus lourdes, et les saleurs attaqueront chaque convoi de chair. Garder la nuit coûte autrement : les larves affamées colonisent les cuves clandestines, mangent la teinture, et chaque ballot volé luit dans la vase comme un aveu. Zoé a gardé ses nasses, au cas où. Mon registre s'arrête ici, faute de chiffres honnêtes. Un dernier conseil de commis à qui reprendra le comptoir : pesez la chair avant de compter l'or."
+    }
+   ],
+   "fin": {
+    "m5": "Les pages blanches ont été arrachées pour envelopper des ballots. Sur la dernière, un passeur a griffé au charbon, presque illisible dans le noir : « Anthémios tient la reine à la chaîne. On paie en sel, on rame à l'oreille. Lire ce livre exige une lumière, et la lumière vous fait tuer. »",
+    "m2": "Une page collée de lie pourpre. Écriture rapide : « Les cuves officielles toujours sous cire. Le commis seul au péage, payé en sel de saunier sous le manteau. Un éclat bref, un long : passe. Les larves adultes ne s'allument plus qu'une seconde, et ça suffit pour se faire voir. »",
+    "z": "Une page propre, d'une écriture appliquée : « Panier de murex au prix de la craie. Cuves de brique ouvertes, peu nombreuses. La reine ne brille pas, elle ne s'éteint pas non plus. Zoé passe chaque matin devant le pilotis et relit le contrat sans rien dire. »",
+    "p2": "Écrit à l'encre garance, par Zoé Kalliganis elle-même : « Six nasses livrées sous la ruche cette nuit. Les grappes se rallument. Deux saleurs ont crevé une barque au chenal nord ; on a perdu la chair et un casseur. Je continue à livrer. Le contrat tient tant qu'on le nourrit. »",
+    "p5": "Une page de vélin, en quatre langues de comptoir, signée du greffier de la Reine de l'Aube : « Des lieues de toiles aux séchoirs, de racine en racine. Nasses doublées ce mois, encore doublées le prochain. Les pêcheurs de murex doivent à la reine plus de coquilles que la vase n'en porte. L'aube ne s'éteint plus ; les dettes non plus. »"
+   }
+  },
+  "ASS150": {
+   "titre": "Les deux cordons de Pama",
+   "auteur": "Sisa Yupanqui, noueuse du cordon de l'Assemblée, qui a déposé ce livre au conseil pour qu'on relise les deux comptes avant chaque vote.",
+   "pages": [
+    {
+     "t": "Des terrasses au fleuve",
+     "txt": "Les premières familles de Pama vivaient sur les terrasses, au-dessus des nuages, où le gel de la nuit sèche les tubercules en pierres légères qui durent un hiver entier. Elles descendirent au delta l'année de la Grande Sécheresse, avec leurs lamas, parce que le fleuve, lui, ne manquait jamais d'eau. Elles bâtirent les premières digues de jonc et d'argile, et un conseil pour décider qui les entretiendrait. Ce conseil devint l'Assemblée, et sa première loi fut une corvée."
+    },
+    {
+     "t": "Quarante nœuds rouges",
+     "txt": "J'ai appris à nouer chez ma mère, qui nouait chez la sienne. Le cordon de l'Assemblée compte en nœuds rouges les quarante greniers montés à dos de lama depuis les terrasses. Un nœud par grenier plein, vérifié du pouce à chaque lune. Ce cordon a nourri la vallée pendant soixante crues. Je l'écris sans honte : c'était le plus beau livre de comptes du fleuve. Mais un cordon ne compte que ce qu'on lui donne à compter, et personne ne nouait les digues."
+    },
+    {
+     "t": "Le cordon des bateliers",
+     "txt": "Sous les quais, les bateliers de jonc tenaient leur propre cordon, noué en cachette. Il comptait les corvées payées et jamais faites, les digues déclarées réparées et laissées fissurées, les sacs de sel passés en fraude à chaque crue pendant que le douanier regardait l'autre rive. Les deux cordons étaient vrais. Celui de l'Assemblée disait ce que nous possédions ; celui des bateliers disait ce que nous devions au fleuve. Pendant des années, chacun a lu seulement le sien."
+    },
+    {
+     "t": "Le vote avant midi",
+     "txt": "Ce matin, Huaman Quispe, délégué des pêcheurs, a déroulé les deux cordons sur la table du conseil. Le fleuve lèche le sixième trait de la borne. Voter la corvée des digues, c'est remplir les greniers pour toute la vallée, rivaux compris, et porter la vase soi-même pendant des lunes. Voter la crue, c'est noyer les champs des rivaux et les siens avec, puis troquer à la perche sur une friche de vase. J'ai noué deux nœuds vides au bout de mon cordon, un pour chaque vote. Le conseil serrera celui qu'il choisira, et c'est lui qui paiera."
+    }
+   ],
+   "fin": {
+    "m5": "La vase a envahi le lutrin et figé les pages en carton gris. Sur la dernière, gravé à la pointe de perche dans la croûte sèche : « Plus d'Assemblée, plus de cordon. Un sac de sel vaut ce qu'on en tire de barque à barque. Les rivaux sont noyés. Nous aussi, jusqu'aux genoux. »",
+    "m2": "Un cordon de jonc est glissé entre les pages, noué serré. À côté, d'un délégué inconnu : « Ouverture votée. Les champs du rival boivent, les nôtres aussi. Le sel passe mieux qu'avant, et personne ne compte plus les corvées. On s'enrichit de ce qui coule. »",
+    "z": "Une page en blanc, sauf une ligne au milieu, de la main même de Sisa : « Le fleuve est au sixième trait. Huaman tient les deux cordons et n'en lâche aucun. Le conseil attend. Les greniers aussi. »",
+    "p2": "Écrit par un délégué de l'amont, d'une écriture terreuse : « Corvée votée. Trois villages portent la vase en paniers depuis l'aube ; la digue a gagné une paume. Les greniers se remplissent, et le cordon des bateliers raccourcit, nœud après nœud défait. Mes épaules en saignent, mes enfants mangent. »",
+    "p5": "Une page tissée plutôt qu'écrite : chaque village de la vallée y a noué un fil. Au centre, brodé : « Loi du Partage : les greniers ouverts à tous, les rivaux d'hier à table. » Dans la marge, une note sèche : « Les terrasses n'ont plus de bras pour semer. Le fleuve, lui, attend toujours sa crue. »"
+   }
+  },
+  "ASS155": {
+   "titre": "Grès et sel de Raak",
+   "auteur": "Gebre Wolde, graveur de l'Assemblée, qui a taillé les tarifs dans le grès pendant trente ans et laissé ce livre au bas de la spirale.",
+   "pages": [
+    {
+     "t": "La source et la spirale",
+     "txt": "Avant qu'il y ait une Assemblée, il y avait la source de Raak, ses palmiers, et des caravanes qui se battaient pour boire. Les premiers anciens creusèrent dans le grès rouge, en contrebas, une salle qui descend en spirale, assez profonde pour que la chaleur n'y entre pas et que la colère s'y refroidisse. Ils y fixèrent le premier tarif : une jarre d'eau contre une barre de sel. Je l'ai regravé moi-même, quand les lettres de mon maître s'étaient usées."
+    },
+    {
+     "t": "La monnaie de la plaine",
+     "txt": "Le sel vient de la plaine blanche, à six jours d'ici. On le taille à la hache en barres égales, on le charge sur des chameaux, et chaque barre vaut ce qu'elle a coûté de soif. Pendant des générations, le marché de Raak a tenu sur cet échange. Le grès gardait la règle, le sel la faisait circuler, et l'oasis prélevait sa part au passage. Je le dis en graveur : ce partage de travail entre la pierre et le sel était un chef-d'œuvre, même s'il favorisait ceux qui tenaient le ciseau."
+    },
+    {
+     "t": "La proposition du désert",
+     "txt": "Cette saison, un clan du désert est venu au banc des anciens avec une idée simple et dangereuse : écrire la loi non plus sur le grès, mais sur les barres de sel elles-mêmes. Une loi qui circule avec la monnaie, qu'on lit, qu'on revend, qu'on renégocie à chaque vente. Mais le sel fond à la première pluie, et la loi avec. Les anciens ont ri, puis se sont tus. Tsehay Abera, convoyeuse de quarante chameaux, a vendu ses barres au double la veille du vote. Elle savait déjà quelque chose."
+    },
+    {
+     "t": "Le ciseau et la lentille",
+     "txt": "Je grave depuis l'enfance, et je sais ce que vaut une loi qui ne bouge plus. Elle protège le faible du caprice du fort, mais elle finit par fermer la source derrière une meule, et l'on vend un chameau pour une jarre. Je sais aussi ce que vaut une loi de sel : tout se voit, tout se négocie, mais la lumière qui traverse les barres aveugle, et la pluie efface les promesses. Le vote est demain. Je laisse mon ciseau sur ce lutrin, pointe vers le haut."
+    }
+   ],
+   "fin": {
+    "m5": "La page est en grès mince, gravée au ciseau de Gebre ou de son élève : « Code définitif. La meule ne roule qu'au coucher, l'ancien prix vaut pour toujours. Qui frappe le mur paie dix fois. » Sous la gravure, une barre de sel desséchée, posée en paiement pour avoir le droit de lire.",
+    "m2": "Écrit d'une main d'ancien, lente et sûre : « Le tarif est gravé, l'ardoise brûlée. On ne parle au banc qu'après avoir posé sa barre sur la pierre. Les caravanes paient et grognent, mais elles paient. Le désert, lui, attend la pluie. »",
+    "z": "Une barre de sel est glissée dans le livre comme marque-page, intacte. La dernière ligne, de Gebre lui-même : « Vote demain. J'ai taillé une lentille dans ma dernière barre, au cas où. Le ciseau reste sur le lutrin. Le premier des deux qu'on viendra prendre aura voté. »",
+    "p2": "Griffé sur une barre de sel collée à la page : « Proposition adoptée à l'essai. Contrats gravés sur sel, valables jusqu'à la pluie. Le cours de l'eau change chaque matin, et les petits convoyeurs y gagnent. Deux contrats ont fondu cette nuit, avec l'argent dedans. »",
+    "p5": "La page a brûlé en son centre, percée net par un rayon passé à travers une lentille de sel. Autour du trou, d'une écriture de chamelière : « Plus une loi gravée ne tient. On voit tout, on vend tout, on ne garde rien. Gebre est parti vers le désert ; il avait mal aux yeux. »"
+   }
+  }
+ }
+}

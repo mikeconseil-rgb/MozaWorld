@@ -4,6 +4,15 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.11 : livres des zones (19 novembre)
+
+Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'histoire de la zone ».
+
+- Chaque Antre, Assemblée, Donjon et Citadelle a **un livre ouvert sur un lutrin** (12 livres). Il est écrit par un personnage de la zone (greffier, relieur, pilote, chanoine…), dans la voix du conteur de la zone, et relu par le critique.
+- En passant près du lutrin, le cartouche montre le titre et l'auteur ; **A** ouvre le livre. Quatre pages racontent l'histoire de la zone ; la **dernière page**, d'une autre plume, change selon le niveau (cinq bandes, comme les inscriptions). ◀ ▶ ou A pour tourner, B pour refermer.
+- Une rune bleue flotte au-dessus d'un livre dont la dernière page n'a pas encore été lue à ce niveau.
+- Données : `design/inscriptions/livres_*.json`, assemblées avec les inscriptions par `python3 design/inscriptions/assembler.py`.
+
 ## Version 2.10 : boucle graphique 1 (19 novembre)
 
 Première boucle de l'équipe graphique (critique, direction artistique, rendu et performance, producteur, trois artisans, testeur-juge). Les trois améliorations ont été acceptées par le testeur ; détails dans les sections « Boucle 1 » plus bas, captures avant, après et intégrées dans `boucles/boucle-1/` du dossier du projet.
