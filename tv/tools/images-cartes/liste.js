@@ -37,7 +37,7 @@ const slug=s=>sans(s).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40
       ton=(neg?`Mood of ${z.pm}: cold, ominous, shadowy, moonlit`:`Mood of ${z.pp}: warm, radiant, glowing, solemn`)+
         (n>=7?', mythic climax, monumental and awe-inspiring':n>=5?', powerful and intense':n<=2?', intimate and grounded':'')+'.';}
     const txt=t=>String(t).replace(/[«»"“”]/g,'').trim();
-    const prompt=`${style}. Subject: ${txt(c.nom)}. ${txt(c.amb)} Setting: ${biome}${cult?', with '+cult+' motifs in costume, props and distant buildings':''}.${ton?' '+ton:''} Color palette: ${c.secret?'sepia, kraft brown and faded ink':MANA[z.mana]||MANA.Pierre}. Pure full-bleed image only, with no writing of any kind, no captions, no lettering on scrolls or signs, no decorative frame.`;
+    const prompt=`${style}. Subject: ${txt(c.nom)}. ${txt(c.amb)} Setting: ${biome}${cult?', with '+cult+' motifs in costume, props and distant buildings':''}.${ton?' '+ton:''} Color palette: ${c.secret?'sepia, kraft brown and faded ink':MANA[z.mana]||MANA.Pierre}. Pure full-bleed wordless image, nothing written anywhere, no decorative frame.`;
     liste.push({k:c.k,fichier,nom:c.nom,zone:z.nom,prompt})}
   fs.writeFileSync(path.join(__dirname,'cartes.json'),JSON.stringify(liste,null,1));
   console.log(liste.length+' cartes à illustrer → tv/tools/images-cartes/cartes.json')})();

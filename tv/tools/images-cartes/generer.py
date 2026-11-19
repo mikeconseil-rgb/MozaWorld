@@ -31,6 +31,9 @@ def main():
     toutes = len(cartes)
     if o.seul: cartes = [c for c in cartes if c['k'] in o.seul.split(',') or c['fichier'] in o.seul.split(',')]
     a_faire = [c for c in cartes if o.refaire or not (DOSSIER / (c['fichier'] + '.webp')).exists()]
+    # ordre : d'abord les cartes vues en premier (paliers 1 à 3 de toutes les zones), secrets après le palier 3
+    rang = lambda c: int(c['k'][-1]) if '#' in c['k'] else 3.5
+    a_faire.sort(key=rang)
     print(f"{len(a_faire)} images à faire, {o.max} au plus cette fois")
     jeton = os.environ.get('HF_TOKEN') or None
     try: client = Client(ESPACES[0], token=jeton, verbose=False)        # gradio_client récent
