@@ -9523,8 +9523,9 @@ let CB=null;
 const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function startCombat(Z,kind){
   const duel=kind==='duel'&&typeof DUEL!=='undefined'&&DUEL;
-  const foes=duel?conseil(Z,DUEL.eff):kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
+  const foes=duel?conseil(Z,DUEL.eff):kind==='rival'&&typeof championRival==='function'?championRival(Z):kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
     :Array.from({length:Lz(Z.id)>=3?3:2},()=>monstre(Z,Math.floor(Math.random()*2)));
+  if(kind==='eveil'&&typeof renfortRival==='function')renfortRival(Z,foes);
   const sr=!duel&&srActif(),mx=duel?24+2*zonesA('MAR').length:sr?10+2*zonesA('CIT').length:pvMax(),hero={nom:duel?'Votre crédit':'Le héros',pv:mx,max:mx,g:0,hero:1};
   if(!duel&&S.fatigue){hero.pv=Math.max(1,hero.pv-S.fatigue);S.fatigue=0}  /* 18 nov. : prix en PV d'un choix moral, payé au prochain combat */
   CB={sr,Z,kind,foes,hero,allies:[hero],pile:melange(duel?paquetPolitique():S.deck.filter(k=>typeof eveillee!=='function'||eveillee(k))),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
@@ -9621,6 +9622,7 @@ const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
 function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
   if(C.kind==='duel'&&typeof finDuel==='function'){finDuel(ok);return}
+  if(C.kind==='rival'&&typeof finRival==='function'){finRival(ok,C);return}
   let gain='';if(ok){const t=ZMANA[Z.id],n=(C.kind==='eveil'?2:1)+(C.kind==='renc'&&typeof bonusChant==='function'?bonusChant():0);gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
   const retour=`${gain} Réserve : ${resTexte()}.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
@@ -9850,6 +9852,144 @@ function choisirBorne(){const mes=ZN.filter(Z=>S.own[Z.id]);
 /* La récompense affichée d'une Assemblée est sa loi du monde (elle n'agit pas en combat) */
 function recoAssemblees(){for(const id in ASSEMBLEES){const A=ASSEMBLEES[id],Z=ZB[id];if(!Z)continue;
   RECO[id]=`Loi du monde (au palier 1 ou plus) : ${Z.info.pm} ou ${Z.info.pp} selon le pôle. ${A.loi(-1)===A.loi(1)?A.loi(1):A.loi(-1)+' ; '+A.loi(1)}.`}}
+/* MozaWorld : les rivaux (18-19 nov., règles de l'utilisateur ; REGLES.md section 8).
+   L'adversaire principal reste le monde sauvage ; les quatre maisons rivales sont secondaires, lentes et rares.
+   - Au fil des cycles (economie.js, CYCLE), une maison agit en moyenne une fois tous les RIV_TOUS cycles :
+     soit elle prend une zone sauvage hors du territoire de départ (la zone devient « à elle », l'empreinte s'efface),
+     soit elle annonce qu'elle viendra faire l'épreuve d'une de vos zones dans RIV_DELAI cycles pour la baisser d'un palier.
+   - Défense : aller à la Pierre de la zone avant l'échéance et battre le champion de la maison (combat, sorte « rival »).
+     Sinon, résolution automatique : la maison réussit avec une chance qui baisse si la zone est protégée (defenseMonde).
+   - Une zone bornée (Pierre de bornage de Raak), verrouillée (Domaines) ou au repos ne peut pas être visée.
+   - Reprendre une zone de rival : la réactiver comme une zone sauvage, gardiens renforcés.
+   - Empreinte (complément) : une ancienne zone à vous, redevenue sauvage, se reprend aussi en réussissant un seul palier.
+   État : S.riv = {z:{id:maison}, c:{r,id,du,de}|null, nc, vu:{maison:nb d'actions}}. */
+const RIV_TOUS=3;      /* une maison agit en moyenne une fois tous les 3 cycles (provisoire) */
+const RIV_DELAI=2;     /* une contestation est annoncée 2 cycles avant l'épreuve (provisoire) */
+const RIV_GRACE=3;     /* aucune maison n'agit pendant les 3 premiers cycles d'une partie (provisoire) */
+const RIV_CHANCE=.55;  /* chance de réussite d'une maison si vous ne défendez pas (provisoire) */
+const RIV_PROT=.1;     /* chaque point de protection (defenseMonde(id).bonus) retire 10 % (provisoire) */
+const RIV_MAX=()=>1+Math.floor(ZN.length/20);   /* zones au plus par maison : 2 sur la carte de 21 zones (provisoire) */
+/* Quatre maisons, chacune avec le tempérament d'un des quatre conteurs du projet. p = part des contestations parmi ses actions. */
+const RIVAUX=[
+  {k:'gri',nom:'Maison Grisaille',bl:'♜',col:'#b0614d',pref:'CIT',p:.6,conteur:'A',
+   tmp:'Ses chroniqueurs notent chaque chute avec gourmandise : elle vient presser les Citadelles qui chancellent, pour avoir une ruine de plus à raconter.'},
+  {k:'cpv',nom:'Maison Comptevent',bl:'☼',col:'#d6a93e',pref:'RES',p:.2,conteur:'B',
+   tmp:'Ses caravanes cherchent toujours une terre de plus : elle prend les Ressources qu\'on néglige, en jurant qu\'elles rapporteront à tout le monde.'},
+  {k:'sbc',nom:'Maison Sombreclef',bl:'☾',col:'#8a6ac4',pref:'DON',p:.5,conteur:'C',
+   tmp:'Elle ne frappe jamais en face : ses mages se glissent dans les Donjons et sapent vos zones par la bande, un sortilège à la fois.'},
+  {k:'omb',nom:'Maison d\'Ombrelieue',bl:'⊚',col:'#3f9a94',pref:'ANT',p:.35,conteur:'D',
+   tmp:'Elle écoute ce qui gronde sous la mosaïque : ses fidèles prennent les Antres, où les bêtes rêvent de choses plus anciennes qu\'elles.'}];
+const RIVK=Object.fromEntries(RIVAUX.map(r=>[r.k,r]));
+const dela=r=>'de la '+r.nom.replace(/^Maison/,'maison');   /* « de la maison Grisaille », « de la maison d'Ombrelieue » */
+
+function riv(){if(!S.riv||typeof S.riv!=='object')S.riv={z:{},c:null,nc:S.nc||0,vu:{}};const R=S.riv;
+  if(!R.z||typeof R.z!=='object')R.z={};if(R.c===undefined)R.c=null;if(typeof R.nc!=='number')R.nc=S.nc||0;if(!R.vu)R.vu={};
+  for(const id in R.z)if(!ZB[id]||S.own[id]||!RIVK[R.z[id]])delete R.z[id];   /* zone reprise par le joueur : elle n'est plus à la maison */
+  return R}
+const maisonDe=id=>{const k=S.riv&&S.riv.z&&S.riv.z[id];return k&&!S.own[id]?RIVK[k]:null};
+const zonesMaison=k=>ZN.filter(Z=>S.riv&&S.riv.z[Z.id]===k&&!S.own[Z.id]);
+const typeZ=Z=>Z.mod||Z.id;
+const protege=id=>(typeof borne==='function'&&borne(id))||(typeof verrouillee==='function'&&!!verrouillee(id));
+const protection=id=>{if(typeof defenseMonde!=='function')return 0;try{const d=defenseMonde(id);return d&&+d.bonus||0}catch(_){return 0}};
+const chanceRival=id=>Math.max(.1,RIV_CHANCE-RIV_PROT*protection(id));
+/* texte de la fiche de zone (bandeau d'exploration) */
+const maitreRival=id=>{const r=maisonDe(id);return r?`<b style="color:${r.col}">${r.bl} ${r.nom}</b> · gardiens renforcés`:''};
+
+/* ---------- cibles ---------- */
+const procheDe=(k,id)=>(typeof VOISINES!=='undefined'&&VOISINES[id]||[]).some(v=>S.riv.z[v]===k);
+function choisir(l,r){if(!l.length)return null;   /* préférence : type aimé, puis voisine d'une zone de la maison */
+  const sc=Z=>(typeZ(Z)===r.pref?2:0)+(procheDe(r.k,Z.id)?1:0)+Math.random()*1.5;return l.slice().sort((a,b)=>sc(b)-sc(a))[0]}
+function ciblesPrise(){const R=riv();return ZN.filter(Z=>!S.own[Z.id]&&!(typeof ESTDEP!=='undefined'&&ESTDEP.has(Z.id))&&!R.z[Z.id]&&!(R.c&&R.c.id===Z.id)&&!protege(Z.id))}
+function ciblesConteste(){const R=riv();if(R.c)return[];return ZN.filter(Z=>S.own[Z.id]&&S.act[Z.id]&&(S.lv[Z.id]||0)!==0&&!protege(Z.id)&&restLeft(Z)<=0)}
+
+/* ---------- une maison agit ---------- */
+function rivalAgit(force,sorte){const R=riv();
+  const ordre=RIVAUX.slice().sort(()=>Math.random()-.5);
+  for(const r of ordre){const plein=zonesMaison(r.k).length>=RIV_MAX();
+    let veut=sorte||(Math.random()<r.p?'conteste':'prise');
+    const cp=plein?[]:ciblesPrise(),cc=ciblesConteste();
+    if(veut==='prise'&&!cp.length&&!sorte)veut='conteste';else if(veut==='conteste'&&!cc.length&&!sorte)veut='prise';
+    if(veut==='prise'&&cp.length)return prendre(r,choisir(cp,r));
+    if(veut==='conteste'&&cc.length)return contester(r,choisir(cc,r));
+    if(!force)return null}
+  return null}
+function prendre(r,Z){const R=riv(),id=Z.id,avait=!!S.emp[id];
+  R.z[id]=r.k;S.emp[id]=false;S.act[id]=false;R.vu[r.k]=(R.vu[r.k]||0)+1;   /* prise par quelqu'un d'autre : l'empreinte s'efface (REGLES section 8) */
+  save();etatHud();if(typeof hudKey!=='undefined')hudKey='';
+  if(started)toast(`${r.bl} ${r.nom}`,`prend ${Z.info.nom}`,avait?'Votre empreinte sur cette zone s\'efface. Vous pourrez la reprendre en battant ses gardiens, plus coriaces.':'Vous pourrez la reprendre en battant ses gardiens à la Pierre d\'éveil ; ils seront plus coriaces.');
+  return{sorte:'prise',r:r.k,id}}
+function contester(r,Z){const R=riv();R.c={r:r.k,id:Z.id,de:R.nc,du:R.nc+RIV_DELAI};R.vu[r.k]=(R.vu[r.k]||0)+1;save();
+  if(started)toast(`${r.bl} ${r.nom} conteste ${Z.info.nom}`,`dans ${RIV_DELAI} cycles`,`Allez à sa Pierre d'éveil avant l'échéance et battez le champion de la maison, sinon la zone risque de perdre un palier.`);
+  return{sorte:'conteste',r:r.k,id:Z.id}}
+
+/* ---------- échéance d'une contestation ---------- */
+function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const r=RIVK[c.r],Z=ZB[c.id];let res;
+  if(!Z||!S.own[c.id]||!S.act[c.id]){res={fin:'sans objet'}}
+  else if(protege(c.id)){res={fin:'protégée'};toast(`${r.bl} ${r.nom}`,`renonce à ${Z.info.nom}`,typeof borne==='function'&&borne(c.id)?'La Pierre de bornage de Raak tient : la zone ne recule pas.':'La zone est verrouillée : la maison repart les mains vides.')}
+  else{const ch=chanceRival(c.id),ok=gagne===undefined?Math.random()<ch:!!gagne,lv=S.lv[c.id]||0;
+    if(ok&&lv!==0){const n=lv-Math.sign(lv);S.lv[c.id]=n;Z.lvT=n;S.rest[c.id]=now()+(typeof reposZone==='function'?reposZone(c.id):REPOS);
+      if(typeof etatRoutes==='function')etatRoutes();
+      toast(`${r.bl} ${r.nom} réussit l'épreuve`,`${Z.info.nom} recule au palier ${sgn(n)||'0'}`,`La zone reste à vous, mais elle se repose ${fmt(typeof reposZone==='function'?reposZone(c.id):REPOS)} avant de pouvoir évoluer.`);res={fin:'baisse',lv:n}}
+    else{toast(`${r.bl} ${r.nom} échoue`,`${Z.info.nom} tient bon`,`Votre zone garde son palier (la maison avait ${Math.round(ch*100)} chances sur 100).`);res={fin:'tient'}}}
+  save();etatHud();if(typeof hudKey!=='undefined')hudKey='';return res}
+
+/* ---------- un cycle de plus ---------- */
+function tourRivaux(){const R=riv();
+  if(R.c&&R.nc>=R.c.du)rivalArrive();
+  if(R.nc>=RIV_GRACE&&Math.random()<1/RIV_TOUS)rivalAgit(false)}
+setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre')return;const R=riv();
+  if(S.nc<R.nc)R.nc=S.nc;   /* nouvelle partie : le compteur des cycles repart de zéro */
+  while(R.nc<S.nc){R.nc++;tourRivaux()}},1000);
+
+/* ---------- combats : gardiens renforcés et champion ---------- */
+/* zone d'une maison : gardiens un peu plus forts (PV ×1,2, attaque +1) (provisoire) */
+function renfortRival(Z,foes){const r=maisonDe(Z.id);if(!r)return;for(const m of foes){m.pv=m.max=Math.round(m.pv*1.2);m.atk+=1;m.nom+=' ('+r.nom.replace('Maison ','')+')'}}
+function championRival(Z){const R=riv(),r=R.c&&RIVK[R.c.r]||RIVAUX[0],ch=monstre(Z,2),aide=monstre(Z,0);
+  ch.nom='Champion '+dela(r);return[ch,aide]}
+function defendre(Z){startCombat(Z,'rival');const R=riv(),r=R.c&&RIVK[R.c.r];if(r&&$('cb-sur'))$('cb-sur').textContent=`Défense · ${r.bl} ${r.nom} conteste la zone`}
+function finRival(ok,C){const Z=C.Z,R=riv(),r=R.c&&RIVK[R.c.r];
+  if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
+    ui('menu',{sur:'Défense perdue',t:'Le champion tient la Pierre',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). La contestation continue : vous pouvez revenir avant l'échéance, sinon la maison tentera l'épreuve seule.</p>`,
+      back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
+  if(R.c&&R.c.id===Z.id)R.c=null;const t=ZMANA[Z.id]||'Vent';gagner(t,2);S.hurt=Math.max(0,S.hurt-1);save();etatHud();sfx('hit');
+  ui('menu',{sur:'Défense réussie',t:Z.info.nom,corps:`<p>Le champion ${r?dela(r)+' ':''}tombe devant la Pierre. La maison renonce : la zone garde son palier. Les vaincus lâchent 2 ${t}.</p>`,
+    back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}
+
+/* ---------- Pierre d'éveil : options ---------- */
+function optionsRivaux(Z){const R=riv(),o=[],r=maisonDe(Z.id);
+  if(R.c&&R.c.id===Z.id&&S.own[Z.id]){const m=RIVK[R.c.r],n=Math.max(0,R.c.du-R.nc);
+    o.unshift({l:`Défendre la zone : battre le champion ${dela(m)}`,ic:m.bl,cls:'m',d:`échéance dans ${n} cycle${n>1?'s':''} · sans défense, la maison réussit ${Math.round(chanceRival(Z.id)*100)} fois sur 100`,go:()=>defendre(Z)})}
+  if(r)o.push({l:`Zone de ${r.nom}`,ic:r.bl,off:true,d:'reprenez-la en activant la zone : ses gardiens sont renforcés'});
+  /* empreinte : une ancienne zone à vous se reprend aussi en réussissant un seul palier, épreuve plus facile d'un cran */
+  if(!S.act[Z.id]&&!S.own[Z.id]&&S.emp[Z.id]&&!r){const lv=S.lv[Z.id]||0,res=typeZ(Z)==='RES',cap=res?3:7;
+    const t=res?(lv<3?lv+1:lv-1):Math.abs(lv)<cap?lv+(lv<0?-1:1):lv-Math.sign(lv);
+    o.splice(0,0,{l:`Reprendre par l'empreinte : palier ${sgn(t)||'0'}`,ic:'⟲',cls:t<0?'m':'p',d:'réussir l\'épreuve du palier suffit à reprendre la zone, sans combat d\'activation',go:()=>startEpreuve(Z,t)})}
+  return o}
+
+/* ---------- minicarte, bandeau ---------- */
+function dessinerRivaux(mc,s,ox,oz){if(!S.riv)return;const R=S.riv,pl=.5+.5*Math.sin(performance.now()/180);
+  for(const Z of ZN){const r=maisonDe(Z.id),ct=R.c&&R.c.id===Z.id;if(!r&&!ct)continue;
+    mc.beginPath();Z.poly.forEach((p,i)=>{const x=(p[0]+ox)*s,y=(p[1]+oz)*s;i?mc.lineTo(x,y):mc.moveTo(x,y)});mc.closePath();
+    if(r){mc.globalAlpha=.45;mc.fillStyle=r.col;mc.fill();mc.globalAlpha=1;mc.lineWidth=2.5;mc.strokeStyle=r.col;mc.stroke();
+      const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 14px sans-serif';mc.textAlign='center';mc.textBaseline='middle';mc.fillStyle='#fff';mc.fillText(r.bl,cx,cy-9)}
+    if(ct){const m=RIVK[R.c.r];mc.lineWidth=2+2*pl;mc.strokeStyle=m?m.col:'#ff7a6a';mc.setLineDash([5,4]);mc.stroke();mc.setLineDash([])}}}
+function ligneRivaux(){if(!S.riv)return'';const R=S.riv;
+  const m=RIVAUX.map(r=>`<span class="d" title="${r.nom}"><span style="color:${r.col}">${r.bl}</span>${zonesMaison(r.k).length}</span>`).join('');
+  const c=R.c&&ZB[R.c.id]?`<span class="titre" style="color:#ff9a8a">${RIVK[R.c.r].bl} ${ZB[R.c.id].info.nom.split(',')[0]} · ${Math.max(0,R.c.du-R.nc)} cycle(s)</span>`:'';
+  return`<div class="ligne"><span class="titre">Rivaux</span>${m}${c}</div>`}
+
+/* ---------- écran « Rivaux » (menu Pause) ---------- */
+function menaceDe(r){const R=riv();if(R.c&&R.c.r===r.k&&ZB[R.c.id]){const n=Math.max(0,R.c.du-R.nc);return`conteste ${ZB[R.c.id].info.nom} : épreuve dans ${n} cycle${n>1?'s':''}`}return'aucune menace annoncée'}
+function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv();
+  ui('menu',{sur:'Pause · les maisons rivales',t:'Rivaux',f:typeof f==='number'?f:0,
+    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une prend une zone sauvage, ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour la baisser d'un palier. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, ou une zone au repos, ne peut pas être visée.</p>`,
+    back:openMenu,opts:[...RIVAUX.map((r,i)=>{const z=zonesMaison(r.k);
+      return{l:`${r.nom} · ${z.length} zone${z.length>1?'s':''}`,ic:`<span style="color:${r.col}">${r.bl}</span>`,d:menaceDe(r),go:()=>openMaison(r,i)}}),{l:'Retour',ic:'◆',go:()=>openMenu()}]})}
+function openMaison(r,i){const z=zonesMaison(r.k),R=riv(),cz=R.c&&R.c.r===r.k?ZB[R.c.id]:null;
+  ui('menu',{sur:'Rivaux · tempérament du conteur '+r.conteur,t:r.bl+' '+r.nom,
+    corps:`<p>${r.tmp}</p><p class="petit">Zones : ${z.length?z.map(Z=>Z.info.nom).join(', '):'aucune pour l\'instant'} · type préféré : ${({CIT:'Citadelles',DON:'Donjons',RES:'Ressources',ANT:'Antres',MAR:'Assemblées'})[r.pref]} · prochaine menace : ${menaceDe(r)}.</p>`,
+    back:()=>openRivaux(i),opts:[...(cz?[{l:'Aller défendre '+cz.info.nom,ic:'⚔',cls:'m',go:()=>{tp(cz.id);toMonde()}}]:[]),
+      ...z.map(Z=>({l:'Aller à '+Z.info.nom,ic:'✧',d:'palier '+(sgn(S.lv[Z.id])||'0'),go:()=>{tp(Z.id);toMonde()}})),{l:'Retour',ic:'◆',go:()=>openRivaux(i)}]})}
 /* MozaWorld TV : habillage du combat (17 novembre).
    Retour de l'utilisateur : « c'est vraiment moche, il faut un minimum d'art dans les cartes ; un type commun au début c'est ok ».
    Ici, seulement de l'image : une illustration par sorte de carte, un portrait par créature, un décor par zone.
@@ -11061,7 +11201,7 @@ function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;
     while(pile.length){const z=pile.pop();n++;for(const v of VOISINES[z]||[])if(S.own[v]&&!vu.has(v)){vu.add(v);pile.push(v)}}bloc=Math.max(bloc,n)}
   const niv=ZN.reduce((a,Z)=>a+(S.own[Z.id]?Math.abs(S.lv[Z.id]||0):0),0);
   const terr=`<span class="d" title="Zones à vous"><span>⚑</span>${mes.length}<small>/${ZN.length}</small></span>${typeof ZONES_DEP!=='undefined'?`<span class="d" title="Territoire de départ pris (les zones autour ne cèdent qu'après)"><span>⌂</span>${departPris()}<small>/${ZONES_DEP.length} départ</small></span>`:''}<span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}<small> d'un tenant</small></span><span class="d" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}<small> niv.</small></span>`;
-  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne prod">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}</div><div class="ligne"><span class="titre">Territoire</span>${terr}</div>${royaume()}`}
+  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne prod">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}</div><div class="ligne"><span class="titre">Territoire</span>${terr}</div>${royaume()}${typeof ligneRivaux==='function'?ligneRivaux():''}`}
 /* 17 nov. (« affichons ces chiffres dans la barre d'état ») : la boucle de jeu en chiffres — cartes de zone éveillées dans le paquet,
    bêtes, bonus greffés, routes — et le danger estimé de la zone où l'on se trouve. */
 function puissancePaquet(){return(S.deck||[]).filter(k=>k.indexOf('#')>0&&(typeof eveillee!=='function'||eveillee(k))||CK[k]&&CK[k].z&&k.indexOf('#')<0).length}
@@ -11721,7 +11861,7 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
+    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
     donnerDepart();CULL.dirty=true;terrainAll();save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
@@ -11743,6 +11883,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Musique',ic:'♪',d:(soundOn?'activée':'coupée')+(typeof musiqueTitre==='function'&&curZ?' · '+musiqueTitre(curZ):''),go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%QUALS.length;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize();openMenu()}},
+    ...(typeof openRivaux==='function'?[{l:'Rivaux',ic:'♜',d:'les quatre maisons et leurs menaces',go:()=>openRivaux()}]:[]),
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
@@ -11778,6 +11919,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(ct.pw)o.push({l:`Contre-pouvoir de ${ct.Z.info.nom}`,ic:'⚔',off:true,d:`vous possédez la zone qui la contre : épreuve −${ct.pw}`});
   if(typeof optionsRoutes==='function')o.push(...optionsRoutes(Z));
   if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
+  if(typeof optionsRivaux==='function')o.unshift(...optionsRivaux(Z));
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
     corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
@@ -11813,7 +11955,7 @@ function startEpreuve(Z,target){const pw=contrePar(Z).pw;
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){const de=S.lv[Z.id]||0,carte=typeof sceneDonneCarte!=='function'||sceneDonneCarte(Z,de,target);if(typeof tenirParole==='function')tenirParole(Z);S.lv[Z.id]=target;Z._sansCarte=!carte;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(carte&&S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
+  if(ok){const de=S.lv[Z.id]||0,carte=typeof sceneDonneCarte!=='function'||sceneDonneCarte(Z,de,target);if(typeof tenirParole==='function')tenirParole(Z);S.lv[Z.id]=target;Z._sansCarte=!carte;S.own[Z.id]=true;S.act[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(carte&&S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
@@ -11960,7 +12102,7 @@ function camMue(dt){const Z=mue.Z,a=Z.alt,ang=a.yaw+PI+mue.t*.32,R=38+mue.t*2.5,
 const pips=$('h-pips');for(let i=-7;i<=7;i++){const s=document.createElement('span');s.className='pip'+(i===0?' z':'');pips.appendChild(s)}
 function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+S.own[Z.id]+S.emp[Z.id];if(key===hudKey)return;hudKey=key;if(typeof bandeau==='function')bandeau();const I=Z.info;
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
-  $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
+  $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':typeof maitreRival==='function'&&maitreRival(Z.id)?maitreRival(Z.id):S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
 function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length;if(typeof bandeau==='function')bandeau()}
 let invKey='';
@@ -11990,6 +12132,7 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
     const g=dispo?6+2*pulse:S.own[Z.id]?5:3.5;mc.fillStyle=r?'#7d7466':dispo?`rgba(255,217,138,${.6+.4*pulse})`:'rgba(201,164,92,.7)';mc.beginPath();mc.moveTo(x,y-g);mc.lineTo(x+g*.7,y);mc.lineTo(x,y+g);mc.lineTo(x-g*.7,y);mc.fill();
     if(dispo){mc.strokeStyle=`rgba(255,217,138,${.5*pulse})`;mc.lineWidth=1.5;mc.beginPath();mc.arc(x,y,g+4,0,TAU);mc.stroke()}}
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
+  if(typeof dessinerRivaux==='function')dessinerRivaux(mc,s,ox,oz);
   const CL=typeof clarte==='function'?clarte():null;
   if(CL)for(const Z of ZN)if(CL[Z.id]!==undefined&&!S.own[Z.id]){const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 13px sans-serif';mc.textAlign='center';mc.fillStyle='#bfe3ff';mc.fillText(sgn(S.lv[Z.id])||'0',cx,cy-10)}
   for(const q of secrets){if(q.found||!q.cond(q.Z.lv)&&!(CL&&CL[q.Z.id]!==undefined))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
@@ -12074,6 +12217,7 @@ addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);
 window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};
+Object.assign(window.MZ,{rival:s=>typeof rivalAgit==='function'?rivalAgit(true,s):null,rivalArrive:g=>typeof rivalArrive==='function'?rivalArrive(g):null});
 /* MozaWorld 2.8 : exploration épurée (18 novembre, idée 9 de l'évaluation graphique, choisie par l'utilisateur).
    Par défaut, l'écran laisse la place au paysage : la fiche de la zone en haut à gauche n'apparaît que quelques secondes
    en entrant dans une zone, l'aide des commandes s'efface après la première minute, la minicarte rapetisse et s'estompe.

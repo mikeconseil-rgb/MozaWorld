@@ -4,6 +4,11 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+
+## Gameplay du monde : les rivaux (18-19 nov.)
+
+Quatre maisons rivales (`src/rivaux.js`), secondaires face au monde sauvage : Grisaille ♜, Comptevent ☼, Sombreclef ☾, Ombrelieue ⊚, chacune avec sa couleur, son blason et son type de zone préféré. Une fois tous les 3 cycles en moyenne, l'une prend une zone sauvage hors du départ (sa couleur sur la minicarte, son nom dans la fiche de zone, une ligne « Rivaux » dans le bandeau) ou annonce qu'elle conteste une de vos zones dans 2 cycles. Pour défendre : aller à la Pierre de la zone et battre le champion ; sinon la zone risque de perdre un palier. Zones bornées, verrouillées ou au repos : intouchables. Une zone de rival se reprend en l'activant (gardiens renforcés). Une ancienne zone à vous (empreinte) se reprend aussi en réussissant un seul palier. Écran « Rivaux » au menu Pause. Tests : `MZ.rival()` (ou `MZ.rival('prise')`, `MZ.rival('conteste')`), `MZ.rivalArrive()` ; script `node tools/test-rivaux.js`.
+
 ## Historique : édition salon (Sony Bravia / Google TV), 15 novembre
 
 Version légère de la démo « grandes zones », pensée pour une télé vue du canapé et pilotée à la télécommande.

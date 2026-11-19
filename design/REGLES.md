@@ -9,7 +9,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Monde ouvert découpé en zones selon une mosaïque Girih qui pave tout le plan, sans trou. Le monde est tiré au hasard.
 - La version jouée est une page web (dossier `tv/`), dans Edge sur Xbox Series S, à la manette, ou au clavier sur PC. C'est le jeu pour l'instant ; Unreal Engine 5 sur PC (RTX 2070) reste la dernière étape, sans date.
 - Jeu solo d'abord. Vue à la troisième personne. Français seule langue. Budget : gratuit seulement ; tout achat se demande au cas par cas.
-- L'adversaire principal est le monde sauvage. Les rivaux joués par l'ordinateur sont secondaires **(pas encore dans le jeu)**.
+- L'adversaire principal est le monde sauvage. Les rivaux joués par l'ordinateur sont secondaires (18-19 nov., dans le jeu : quatre maisons, voir section 8).
 
 ## 2. Les cinq types de tuile
 
@@ -79,6 +79,13 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 
 - Une défaite coûte une blessure de campagne ; à la troisième, le héros meurt.
 - À la mort, le héros perd tout. L'héritier reçoit de nouveau le territoire de départ au niveau 1, pôles retirés au hasard, avec ses 6 cartes de palier 1. Ses autres zones gardent leur niveau mais redeviennent sauvages. Son empreinte rend leur reprise plus facile, tant que personne d'autre ne les a prises. La mort nourrit le monde sauvage.
+- **Rivaux** (18-19 nov., dans le jeu) : quatre maisons rivales, secondaires et lentes, chacune avec le tempérament d'un conteur : Grisaille (A, aime les chutes, vise les Citadelles), Comptevent (B, explorateur-marchand, prend les Ressources), Sombreclef (C, sournoise, donjons et magie, vise les Donjons), Ombrelieue (D, mouvance lovecraftienne, prend les Antres). Écran « Rivaux » au menu Pause.
+  - À chaque cycle, une maison agit avec une chance sur 3 **(provisoire)**, pas avant le 3e cycle **(provisoire)** : soit elle prend une zone sauvage hors du territoire de départ (2 zones au plus par maison sur la carte de 21 zones, 1 + zones/20 en général **(provisoire)**), soit elle annonce qu'elle fera l'épreuve d'une de vos zones dans 2 cycles **(provisoire)** pour la baisser d'un palier. Une seule contestation à la fois.
+  - Défense : aller à la Pierre de la zone avant l'échéance et battre le champion de la maison. Sans défense, la maison réussit 55 fois sur 100 **(provisoire)**, 10 de moins par point de protection de la zone **(provisoire ; vient du module Domaines)**, 10 au moins. Réussite : la zone reste à vous mais perd un palier et se repose.
+  - Ne peuvent pas être visées : une zone bornée (Pierre de bornage de Raak), une zone verrouillée (Domaines), une zone au repos.
+  - Une zone de rival se reprend comme une zone sauvage, en battant ses gardiens, un peu plus forts (PV ×1,2, attaque +1) **(provisoire)**.
+  - Après la mort, les rivaux restent ; une zone prise par un rival perd votre empreinte.
+- **Empreinte** (18-19 nov., dans le jeu) : sur une ancienne zone à vous redevenue sauvage, les gardiens sont affaiblis (PV ×0,7), l'épreuve est plus facile d'un cran, la zone n'est pas scellée, et réussir l'épreuve d'un seul palier suffit à la reprendre, sans combat d'activation **(provisoire)**. L'empreinte s'efface quand un rival prend la zone.
 - Les zones à ±7 lèvent des hordes qui envahissent les zones plus faibles ; souvent un seul des deux pôles envahit, et l'autre donne un pouvoir plus fort. Citadelles, remparts et Donjons aménagés défendent **(dans le jeu : seulement les assauts contre le Donjon aménagé)**.
 
 ## 9. Le beau et les juges
