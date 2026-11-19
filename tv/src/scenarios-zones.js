@@ -1,4 +1,4 @@
-/* MozaWorld 2.11 : scénarios de choix moraux, lot du 19 nov. (Berestograd, l'Oasis de Maulu, le Fjord de Rames).
+/* MozaWorld 2.12 : scénarios de choix moraux, lot du 19 nov. (Berestograd, l'Oasis de Maulu, le Fjord de Rames).
    Même modèle que la Taïga de Kobor (src/scenarios.js) : une scène par palier, deux réponses (s'enfoncer / se raviser),
    paliers 3 et 6 sans choix, prix au choix, traces gardées par le monde. Chaque scène porte le nom de la carte qu'elle donne.
    prix.mt = [type de mana, n]. */

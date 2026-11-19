@@ -1,0 +1,63 @@
+{
+ "conteur": "D",
+ "livres": {
+  "DON024": {
+   "titre": "Le livre de bord de la barque",
+   "auteur": "Nebmaât, pilote de la barque aux douze rames, qui l'a laissé sur le lutrin du ponton le soir où il n'a plus su combien de mains tenaient les rames.",
+   "pages": [
+    {
+     "t": "La vallée descendue sous l'eau",
+     "txt": "Avant le fjord, il y avait une vallée, et dans la vallée une nécropole. Les embaumeurs y couchaient leurs morts debout, bandés serré, les yeux peints ouverts, et rangeaient les viscères dans des jarres scellées au bord de la rivière. Quand la mer est entrée, l'an premier du compte, personne n'a déplacé les morts. On a jugé qu'ils seraient mieux sous l'eau que dans nos mémoires. L'hiver suivant, l'eau a gelé par le fond, et nous les avons vus, à travers la glace bleue, nous regarder monter."
+    },
+    {
+     "t": "L'heure fixe",
+     "txt": "La pilote Satkheper a compris la première qu'ils ne dormaient que si l'on passait au-dessus d'eux. Elle a fixé la règle : douze rames, douze rameurs, cent quarante coups jusqu'au glacier, à la même heure chaque nuit. Elle a peint les yeux sur le mur du glacier pour qu'ils aient un point où regarder. Pendant soixante hivers, le compte est resté juste. Le prix était simple : douze vies attachées à une barque, et aucun rameur n'a jamais revu le village de jour."
+    },
+    {
+     "t": "Le cent quarante et unième",
+     "txt": "Je tiens la barre depuis trois hivers. Le soir du dix-septième jour de la crue morte, j'ai compté cent quarante et un coups, et le dernier ne venait pas de nous. Depuis, les rameurs font tous le même rêve, racontent les mêmes mots au matin, dans le même ordre. Hapou crache de l'eau bleue au réveil, toujours à la même seconde. Les jarres au bord de l'eau se sont descellées une à une, et le sceau de cire était à l'intérieur, comme si on l'avait aspiré."
+    },
+    {
+     "t": "Rames rentrées ou main froide",
+     "txt": "L'équipage s'est divisé. Méryt veut rentrer les rames et laisser geler le fjord jusqu'en haut : plus de barque, plus de rêve, et tant pis si les morts s'éveillent, nous les verrons venir. Ânkhou veut accepter la main froide qui tire avec nous ; elle dit qu'on rame mieux en dormant, et ses doigts sont déjà bleus. Je n'ai pas tranché. Ce soir, j'ai lâché la barre pour écrire ces lignes, et la barque a gardé son cap sans moi. Je ne sais pas qui la tenait."
+    }
+   ],
+   "fin": {
+    "m5": "Écrit au charbon sur la page de garde, d'une écriture qui tremble de froid : Méryt a gagné. Les rames sont rentrées, le fjord est une seule pierre bleue jusqu'au ciel. En bas, ils ne dorment plus et nous voyons leurs bouches ouvertes. Nous respirons mal, mais nous sommes réveillés, et seuls.",
+    "m2": "Une note serrée dans la marge : on rame encore, mais en retard sur l'heure, et la glace touche les pales. Trois rameurs crachent bleu. On a cessé de recompter le coup de trop pour ne pas avoir à l'entendre. Nebmaât n'est pas revenu.",
+    "z": "Sous la dernière page, au stylet, sans signature : le compte varie d'une nuit à l'autre, cent quarante, cent quarante et un. Personne n'a choisi. La barque passe à l'heure, les jarres restent où elles sont, et chacun évite de regarder ses mains en ramant.",
+    "p2": "Tracé d'un doigt mouillé, encore humide : la main d'en dessous tire avec nous, et nous arrivons au glacier sans fatigue. Ânkhou dit que c'est un cadeau. Hier, j'ai dormi trois coups sans lâcher la rame, et c'est le rêve qui a tenu la cadence.",
+    "p5": "La page est collée par une bandelette tiède. On y lit, d'une graphie très soignée qui n'est celle de personne : nous sommes vingt-quatre sur la barque, et personne n'est éveillé. Nous ne rentrerons pas. Il reste de la place sur le banc, et vos yeux sont déjà peints."
+   }
+  },
+  "ASS012": {
+   "titre": "Annales du conseil de Balpak",
+   "auteur": "Aj Tz'ib Chan, scribe du conseil, qui a posé ce livre au pied de la grande pointe pour que la porteuse d'eau puisse le corriger.",
+   "pages": [
+    {
+     "t": "La caverne du premier conseil",
+     "txt": "Les fondateurs sont descendus dans la grande caverne de Balpak pendant une sécheresse qui avait vidé les villes du haut. Ils y ont trouvé un puits, des cristaux en forêt au plafond, et des bancs déjà là, que mes annales disent taillés par eux. Ils ont siégé pour partager l'eau, puis pour juger, puis pour tout. Le conseil a pris le nom de la caverne, et la caverne a pris l'habitude d'écouter. Ce fut la première génération, et le cristal n'a pas bougé."
+    },
+    {
+     "t": "Les deux scrutins",
+     "txt": "À la quatrième génération, le conseiller Kan Ek' a fait voter en brûlant de la résine sur les pointes : la fumée descendait au lieu de monter, et chaque loi brûlée tenait sans retour. La porteuse d'eau de ce temps, Ix Sak Nikte', a fait voter en versant l'eau du puits : la pointe la buvait, et la loi poussait au lieu de tenir. Depuis, les deux usages alternent. Les annales notent que chaque scrutin a coûté quelque chose, un bulletin perdu dans le feu ou une plaie qui a refleuri chez l'ennemi autant que chez nous."
+    },
+    {
+     "t": "Ce que je n'ai pas écrit",
+     "txt": "Je recopie ici une phrase que mes prédécesseurs ont toujours rayée : à la fin de chaque séance, les pointes les plus proches sont tournées vers les sièges, et plus près d'un ongle. La porteuse d'eau de ma génération, Ix Chak Ha', soutient que les bancs ont poussé et que nous siégeons plus haut qu'il y a dix-neuf générations. J'ai mesuré. Elle a raison d'une paume. Je ne l'ai pas inscrit, parce qu'un scribe qui doute du sol ne sait plus où poser son encre."
+    },
+    {
+     "t": "La dix-neuvième génération",
+     "txt": "Nous sommes la dix-neuvième. Le conseil hésite entre deux lois finales. Brûler jusqu'au bout, boucher tous les pores du cristal, arrêter la croissance et rester assis à jamais dans une loi tiède. Ou verser toute l'eau du puits et laisser la calcite fleurir partout, sur nos bancs, dans nos plaies, sous nos ongles, sans choisir pour qui. Je laisse ce livre ouvert à la page blanche. Que la séance suivante écrive ce qu'elle aura voté, et ce que cela lui aura pris."
+    }
+   ],
+   "fin": {
+    "m5": "La page est grise de cendre, l'encre cuite dans le papier : la séance est close. Personne ne s'est levé depuis. Les pointes ne bougent plus, le puits est comblé, et nous gardons nos sièges. Je suis assis en écrivant ceci et je le resterai. C'est une loi.",
+    "m2": "D'une écriture sèche, celle du scribe : on vote au feu, et la toux ne quitte plus la caverne. Les bancs ont cessé de pousser. Le témoignage d'Ix Chak Ha' a noirci sur le mur ; je ne l'ai pas recopié. Une pointe a reculé d'un ongle, puis s'est figée.",
+    "z": "Deux lignes, de deux mains qui se répondent. Le scribe : résine ce soir. La porteuse d'eau : eau demain. Entre elles, quelqu'un a mesuré la distance à la pointe la plus proche, et a laissé le chiffre en blanc.",
+    "p2": "Écrit à l'eau mêlée d'ocre, les lettres un peu gonflées : on verse au puits à chaque séance, et la caverne suinte doucement. Les plaies guérissent, les nôtres et les autres. J'ai trouvé ce matin une corolle blanche sous mon ongle. Elle ne fait pas mal.",
+    "p5": "La page a fleuri : des pétales de calcite rose ont poussé entre les lignes et les ont avalées. Au bas, en relief, une phrase que ni le scribe ni la porteuse n'ont écrite : nous sommes d'accord. Les sièges se sont levés sans nous, et ils siègent."
+   }
+  }
+ }
+}

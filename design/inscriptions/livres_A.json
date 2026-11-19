@@ -1,0 +1,92 @@
+{
+ "conteur": "A",
+ "livres": {
+  "CIT": {
+   "titre": "Ce que la boue savait",
+   "auteur": "Ievstafi, scribe de la cour, qui recopia la généalogie neuve ; vieilli, il prit la paillasse d'Ouliana dans la tour de la porte et y tint ce livre.",
+   "pages": [
+    {
+     "t": "Une ville qui écrivait tout",
+     "txt": "Berestograd fut bâtie en rondins de mélèze par des gens qui écrivaient tout, sur l'écorce de bouleau, au stylet d'os. On y notait les dettes, les promesses de mariage, les injures au voisin et le prix du sel. L'écorce lue, on la jetait dans la boue de la cour, qui la gardait par couches, comme un registre que personne ne consultait. Sous le vieux kniaz, cette boue était l'archive la plus honnête du pays, parce que personne ne l'avait payée."
+    },
+    {
+     "t": "Le printemps du gué",
+     "txt": "Le vieux kniaz laissa deux fils. Au printemps suivant, l'aîné se noya au gué, devant trois gardes qui avaient reçu l'ordre de regarder ailleurs, et Iaropolk, le cadet, monta au trône par l'eau. Restait une difficulté de chancellerie : la ville avait écrit le nom de l'aîné sur une bonne centaine d'écorces, dans des contrats, des serments, des chansons. Je n'écris pas ce nom ici. On me l'a payé, et je suis un scribe qui tient ses engagements."
+    },
+    {
+     "t": "La racleuse et le vernis",
+     "txt": "On choisit Ouliana parce qu'elle ne savait pas lire, et on la paya en seigle. Elle grattait les écorces tirées de la boue jusqu'au blanc de l'aubier ; j'écrivais dessus la lignée neuve, à la page, payé en peaux de petit-gris. Les Sèvelins des bois sacrés refusèrent leur ambre ; on saigna leurs troncs pour vernir les icônes, qu'on repeignait au visage du kniaz. J'ai signé chaque page d'une écriture plus belle que la vérité."
+    },
+    {
+     "t": "L'écorce pliée",
+     "txt": "Ouliana mourut l'hiver où le kniaz fit raboter son propre visage, pour ressembler enfin à ses icônes. Sous sa paillasse, on trouva une seule écorce intacte, pliée en huit. Personne ne la déplia : ceux qui savaient lire avaient peur, et ceux qui ne savaient pas n'en voyaient pas l'usage. Depuis, la ville hésite. L'oubli coûte les noms de tous, la mémoire coûte toutes les dettes à la fois. Moi, je dors dessus, comme elle."
+    }
+   ],
+   "fin": {
+    "m5": "Les pages de ce livre ont été raclées, sauf celle-ci, qu'on a oubliée. Le gardien de la tour ignore qui l'a posée sur le lutrin et pourquoi il la garde. À Berestograd, personne ne doit plus rien à personne ; personne ne répond plus à son nom non plus.",
+    "m2": "Visé par la chancellerie : livre retenu pour l'instruction des apprentis scribes, après retrait de la deuxième page. Le relieur a été payé en petit-gris. L'écorce pliée a été versée aux archives, rubrique « divers ».",
+    "z": "Note du portier : le livre est toujours là, l'écorce aussi, toujours pliée. Des gens montent le lire, restent longtemps devant la deuxième page, puis redescendent sans rien dire. Le péage de la tour a doublé ; la curiosité aussi se taxe.",
+    "p2": "L'écorce pliée a été mise sous ambre, ouverte à moitié. Depuis, des créanciers arrivent de loin, leur contrat cousu dans la doublure. Trois débiteurs ont quitté la ville de nuit. Les archivistes demandent un deuxième lutrin.",
+    "p5": "Pièce versée au Tribunal des Bouleaux. Le juge a lu les quatre pages à voix haute, puis a fait appeler Ievstafi, scribe, mort depuis vingt ans. Il a répondu. Les audiences durent tout l'été, et personne n'a fait les foins."
+   }
+  },
+  "DON045": {
+   "titre": "Les feuillets que j'ai reliés",
+   "auteur": "Fedot, relieur du voïévode, payé pour arracher six feuillets du registre ; il les recopia ici au propre et ne repartit jamais du hameau.",
+   "pages": [
+    {
+     "t": "La promesse de l'An 14",
+     "txt": "Kobor est un hameau de trappeurs posé dans la taïga, avec des niches, des lampes et une loge creusée sous les mélèzes qu'on appelle le Coffre. L'An 14 de la Régence, le voïévode Mstisla promit au trésor quatre cents zibelines par hiver. Le trésor nota le chiffre sans lever les yeux. La forêt, elle, n'avait rien promis. L'An 15, on livra trois cent quatre-vingt-dix peaux, honnêtes, et Mstisla fut réprimandé pour les dix autres."
+    },
+    {
+     "t": "La suie des lampes",
+     "txt": "L'An 16, le compte tomba juste, et d'un noir parfaitement égal. On avait raclé les lampes du hameau pour en tirer la suie, et passé les chiens à la teinture ; un chien de traîneau, sous la suie, vaut une zibeline au registre tant qu'il ne pleut pas. On veilla ensuite dans le noir. C'est cette année-là que le voïévode me fit appeler. Il voulait un registre propre, sans années qui fâchent, et il payait en peaux."
+    },
+    {
+     "t": "Les années que j'ai ôtées",
+     "txt": "J'ai arraché les feuillets des Ans 17 à 22 et recousu le dos si bien qu'on ne voit pas la couture. L'An 17, les niches se vidèrent. L'An 20, la suie manqua, et les trappeurs enfilèrent eux-mêmes les peaux pour marcher à quatre pattes devant le commis du trésor. Gavrila, le mari d'Oustina, était du nombre. On l'a compté comme une bête de premier choix. Il n'est pas revenu de la tournée."
+    },
+    {
+     "t": "Le pouce de Zakhar",
+     "txt": "L'An 23, l'inspecteur Zakhar descendit au Coffre et y compta quatre mille peaux. Il en frotta une au pouce mouillé ; elle déteignit. On scella la loge avec lui dedans, et le registre de l'An 23 tomba juste ; je l'ai relié aussi. Depuis, le hameau vit de la différence entre ce qui est écrit et ce qui est vrai. Le mensonge le nourrit, la vérité le videra. Les six feuillets sont ici, recopiés de ma main. Qu'on me pende pour les avoir ôtés ou pour les avoir rendus, la corde sera la même, et c'est moi qui l'aurai tressée."
+    }
+   ],
+   "fin": {
+    "m5": "Tampon de la voïévodie, à l'encre noire : « Ouvrage apocryphe. Les faits rapportés n'ont jamais eu lieu. » Les pages ont été passées à la suie, une par une, si proprement qu'on ne lit plus rien. Le livre pèse le poids exact prévu par le registre.",
+    "m2": "Le livre a servi à envelopper des peaux pour la livraison de l'hiver. Deux pages manquent ; la troisième sent le chien mouillé. Quelqu'un l'a remis sur le lutrin sans le lire, pour que le compte des objets du hameau tombe juste.",
+    "z": "Oustina vient lire la troisième page chaque matin, au même endroit, puis repart sans toucher au reste. Elle connaît la ligne par cœur. Le relieur l'avait soulignée d'un fil de tendon, et c'est sur ce fil qu'elle pose le doigt, jamais sur le nom de Gavrila.",
+    "p2": "Le dégel est entré par le toit de l'abri. La suie des reliures a coulé sur les pages, et sous le noir sont apparus les chiffres que Fedot avait grattés. Mstisla a fait garder le lutrin. Le garde, lui, lit tous les soirs.",
+    "p5": "Annexé au procès-verbal du trésor : compte refait, peau par peau. Kobor doit sept hivers de tribut qu'elle ne paiera jamais. Le hameau a été déclaré vide, le Coffre ouvert, Zakhar enterré avec les honneurs. Il ne reste personne pour le pleurer, sauf Oustina."
+   }
+  },
+  "ASS006": {
+   "titre": "Minutes du banc de Cezo",
+   "auteur": "Bortolo Vianel, greffier du banc, qui fournissait les fèves et savait lesquelles étaient creuses ; il laissa ce cahier sous le banc avant de partir.",
+   "pages": [
+    {
+     "t": "Le vent pour juge",
+     "txt": "Les bergers de Cezo n'avaient ni doge ni tribunal, seulement un banc de granit au milieu de la lande. Quand deux familles se disputaient une pâture, chacun lançait en l'air ses fèves de bruyère, et l'on ne comptait que celles qui retombaient dans le cercle. Sur le dossier, on avait gravé : ICI LE VENT VOTE, NUL NE L'ACHÈTE. Le système avait un défaut évident, que personne n'avait jugé utile de graver : le vent n'est pas toujours d'accord avec ceux qui ont faim."
+    },
+    {
+     "t": "Une fève creusée",
+     "txt": "Le premier hiver de mon greffe, un conseiller évida une fève au poinçon, pour rire, et la remplit du plomb des sceaux fondus de l'ancien conseil. Elle retomba dans le cercle. Il recommença, cette fois sans rire. La Maison des Sauniers, qui tenait les marais salants au bas de la lande, apprit la chose avant le printemps et proposa de fournir le plomb. Je tenais le compte. Le prix était de deux livres de sel par fève, et je n'inscrivais jamais de nom."
+    },
+    {
+     "t": "La seconde ligne",
+     "txt": "Le plomb ne suffisant pas les jours de grand vent, on dressa derrière le banc des paravents de toile goudronnée, plantés dans la pierre. Le vent tombait, les fèves aussi, exactement où on les attendait. Un matin, une main plus fine que la première grava sous la devise : BANC CÉDÉ À LA MAISON DES SAUNIERS, AVEC LE VENT. Elle avait au moins le mérite de l'exactitude. Je l'ai recopiée au cahier, à sa date, sans commentaire."
+    },
+    {
+     "t": "Trois feux sans orage",
+     "txt": "La bruyère derrière le banc brûla trois fois, chaque fois par un ciel sans orage. À chaque incendie, une rangée de bornes du commun disparut, et le cadastre neuf fut signé au banc, par les mêmes mains. Le conseiller au plomb mourut en toussant ; d'autres prirent sa toux avec sa place. Les bergers parlent maintenant d'arracher les paravents. Ils oublient qu'un vent pur ne doit rien à personne, pas même à eux."
+    }
+   ],
+   "fin": {
+    "m5": "Acquis par la Maison des Sauniers, avec le banc, la lande et le vent. Les minutes ont été mises au propre par nos soins et ne comportent plus d'erreur. Prix de consultation affiché au paravent. Toute toux pendant la lecture sera facturée.",
+    "m2": "Le cahier a été retrouvé sous le banc, gonflé de pluie, une liasse de reçus en sel glissée entre les pages trois et quatre. Les sauniers en offrent un bon prix. Le conseil délibère encore sur le montant, derrière le paravent.",
+    "z": "Le cahier n'a pas bougé de sous le banc. Les bergers le sortent les jours de séance, le lisent à voix haute pour décider s'il faut peser les fèves, puis le remettent en place. On n'a encore rien pesé.",
+    "p2": "Les bergers ont arraché les paravents et ouvert ce cahier au banc, pour qu'on y lise les noms. Le greffier n'en avait mis aucun. Ils pèsent désormais chaque fève, et la séance dure trois fois plus longtemps qu'avant.",
+    "p5": "Écrit par un berger tiré au sort : le vent a voté de rendre les bassins des sauniers à la pâture. La Maison est partie, et le sel avec elle. Cet hiver, nous n'avons rien pu saler. La viande a pourri juste, et sans tricherie."
+   }
+  }
+ }
+}
