@@ -270,6 +270,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
 /* 2.1 : longues listes (Voyager, Grimoire) : les choix défilent, le texte au-dessus reste */
 #menu .boite{display:flex;flex-direction:column;max-height:84vh}#menu-choix{position:relative}#menu-corps{flex:0 1 auto;overflow:hidden;min-height:0}#menu .choix{flex:0 1 auto;overflow-y:auto;min-height:calc(var(--u)*8);padding:4px 6px}
 .cartes.grim{grid-template-columns:repeat(2,calc(var(--u)*12));justify-content:center;max-height:none}
+#voyage{position:fixed;inset:0;z-index:9999;background:#07080c;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s}#voyage.on{opacity:1}#voyage div{text-align:center;color:#e8dcc0;font-size:2.2vw;letter-spacing:.08em}#voyage b{display:block;font-size:3vw;margin-bottom:.6em;color:#f0c870}#voyage span{opacity:.8}
 </style>
 
 <canvas id="vue" tabindex="0"></canvas>
@@ -314,6 +315,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
 
 <div class="hud toast" id="toast"><div class="t1" id="t1"></div><div class="t2" id="t2"></div><div class="t3" id="t3"></div></div>
 
+<div id="voyage" hidden><div><b>Voyage</b><span>La mosaïque se recompose autour de vous…</span></div></div>
 <div class="ecran" id="seuil">
   <div class="boite">
     <div class="sur">MozaWorld · <span id="seuil-ver"></span></div>
@@ -345,6 +347,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
 /* MozaWorld TV 2.0 : carte agrandie (17 nov.). Tuiles Girih exactes posées autour des cinq zones d'origine
    (girih_exact.py, graine 12, cadre 4,8 × 4), une sous-zone de la liste des 986 par tuile. Généré par carte/emettre.py. */
 const CARTE_PLUS=[{"id": "DON045", "sz": "DON-045", "mod": "DON", "type": "Donjon", "biome": "Forêt boréale", "mana": "Glace", "culture": "Slave", "pm": "Mensonge", "pp": "Vérité", "nom": "La Taïga de Kobor", "poly": [[307.768, 100.0], [307.768, -100.0], [497.98, -161.803], [615.537, 0.0], [497.98, 161.803]]}, {"id": "DON024", "sz": "DON-024", "mod": "DON", "type": "Donjon", "biome": "Fjord", "mana": "Glace", "culture": "Égyptienne", "pm": "Cauchemar", "pp": "Rêve", "nom": "Le Fjord de Rames", "poly": [[307.768, -423.607], [117.557, -485.41], [117.557, -685.41], [307.768, -747.214], [425.325, -585.41]]}, {"id": "ASS152", "sz": "ASS-152", "mod": "MAR", "type": "Assemblée", "biome": "Canyon", "mana": "Feu", "culture": "Nordique", "pm": "Silence", "pp": "Chant", "nom": "Le Canyon de Fjorhel", "poly": [[497.98, -361.803], [307.768, -423.607], [425.325, -585.41], [615.537, -523.607]]}, {"id": "RES227", "sz": "RES-227", "mod": "RES", "type": "Ressource", "biome": "Désert de sable", "mana": "Feu", "culture": "Zouloue", "pm": "", "pp": "", "nom": "Les Dunes de Balo", "poly": [[117.557, -685.41], [117.557, -485.41], [-72.654, -547.214], [-190.211, -709.017], [-190.211, -909.017], [0.0, -847.214]]}, {"id": "ASS155", "sz": "ASS-155", "mod": "MAR", "type": "Assemblée", "biome": "Oasis", "mana": "Sève", "culture": "Éthiopienne", "pm": "Pierre", "pp": "Cristal", "nom": "L'Oasis de Raak", "poly": [[307.768, -747.214], [117.557, -685.41], [0.0, -847.214], [190.211, -909.017]]}, {"id": "RES079", "sz": "RES-079", "mod": "RES", "type": "Ressource", "biome": "Cité en ruines", "mana": "Pierre", "culture": "Aztèque", "pm": "", "pp": "", "nom": "Les Ruines de Teoco", "poly": [[-190.211, -709.017], [-72.654, -547.214], [-262.866, -485.41], [-453.077, -547.214], [-570.634, -709.017], [-380.423, -770.82]]}, {"id": "ANT120", "sz": "ANT-120", "mod": "ANT", "type": "Antre", "biome": "Oasis", "mana": "Sève", "culture": "Zouloue", "pm": "Glace", "pp": "Feu", "nom": "L'Oasis de Maulu", "poly": [[-453.077, -547.214], [-262.866, -485.41], [-380.423, -323.607], [-497.98, -485.41], [-688.191, -547.214], [-570.634, -709.017]]}, {"id": "RES374", "sz": "RES-374", "mod": "RES", "type": "Ressource", "biome": "Forêt boréale", "mana": "Glace", "culture": "Maya", "pm": "", "pp": "", "nom": "La Taïga de Chika", "poly": [[-425.325, -261.803], [-307.768, -100.0], [-497.98, -38.197], [-688.191, -100.0], [-805.748, -261.803], [-615.537, -323.607]]}, {"id": "RES122", "sz": "RES-122", "mod": "RES", "type": "Ressource", "biome": "Récif", "mana": "Eau", "culture": "Vénitienne", "pm": "", "pp": "", "nom": "Le Récif de Cezo", "poly": [[-497.98, -38.197], [-307.768, -100.0], [-307.768, 100.0], [-425.325, 261.803], [-615.537, 323.607], [-615.537, 123.607]]}, {"id": "ASS012", "sz": "ASS-012", "mod": "MAR", "type": "Assemblée", "biome": "Cavernes cristallines", "mana": "Pierre", "culture": "Maya", "pm": "Cendre", "pp": "Floraison", "nom": "Les Cavernes de cristal de Balpak", "poly": [[-425.325, 261.803], [-307.768, 100.0], [-190.211, 261.803], [-307.768, 423.607]]}, {"id": "ASS006", "sz": "ASS-006", "mod": "MAR", "type": "Assemblée", "biome": "Lande", "mana": "Vent", "culture": "Vénitienne", "pm": "Corruption", "pp": "Pureté", "nom": "La Lande de Cezo", "poly": [[-190.211, 261.803], [-0.0, 323.607], [-117.557, 485.41], [-307.768, 423.607]]}, {"id": "RES021", "sz": "RES-021", "mod": "RES", "type": "Ressource", "biome": "Oasis", "mana": "Sève", "culture": "Éthiopienne", "pm": "", "pp": "", "nom": "L'Oasis de Sumak", "poly": [[-688.191, -100.0], [-497.98, -38.197], [-615.537, 123.607], [-805.748, 185.41], [-995.959, 123.607], [-878.402, -38.197]]}, {"id": "RES212", "sz": "RES-212", "mod": "RES", "type": "Ressource", "biome": "Steppe", "mana": "Vent", "culture": "Slave", "pm": "", "pp": "", "nom": "La Steppe de Gramir", "poly": [[497.98, -161.803], [497.98, -361.803], [615.537, -523.607], [805.748, -585.41], [805.748, -385.41], [688.191, -223.607]]}, {"id": "RES345", "sz": "RES-345", "mod": "RES", "type": "Ressource", "biome": "Canyon", "mana": "Feu", "culture": "Zouloue", "pm": "", "pp": "", "nom": "Le Canyon de Zima", "poly": [[-0.0, 323.607], [190.211, 261.803], [190.211, 461.803], [72.654, 623.607], [-117.557, 685.41], [-117.557, 485.41]]}, {"id": "ASS150", "sz": "ASS-150", "mod": "MAR", "type": "Assemblée", "biome": "Delta fluvial", "mana": "Eau", "culture": "Inca", "pm": "Ruine", "pp": "Abondance", "nom": "Le Delta de Pama", "poly": [[190.211, -909.017], [0.0, -847.214], [0.0, -1047.214], [190.211, -1109.017]]}, {"id": "RES136", "sz": "RES-136", "mod": "RES", "type": "Ressource", "biome": "Falaise côtière", "mana": "Vent", "culture": "Khmère", "pm": "", "pp": "", "nom": "Les Falaises de Srekor", "poly": [[0.0, -1047.214], [0.0, -847.214], [-190.211, -909.017], [-307.768, -1070.82], [-307.768, -1270.82], [-117.557, -1209.017]]}];
+const FICHES={};
 'use strict';
 /* MozaWorld, démo « Cinq Tuiles ». Noyau : mosaïque, terrain, ciel, météo, rendu, physique du héros. */
 const PI=Math.PI,TAU=PI*2,D2R=PI/180,SC=4,L=100*SC; /* SC : agrandissement des tuiles (arête 100 m → 400 m ; 2.4 : +50 % à la demande du 17 nov. ; 2.6 : +33 % à la demande du 18 nov., « zones plus grandes ») */
@@ -389,7 +392,20 @@ const RES=zone('RES',walk(VX[2],VX[1],[144,72,144,144]));
 const MAR=zone('MAR',walk(VX[3],VX[2],[72,108]),P=>Math.atan2(P[3][1]-P[1][1],P[3][0]-P[1][0]));
 const DON=zone('DON',walk(VX[4],VX[3],[108,108,108]));
 /* 2.0 : la carte s'agrandit, tuiles Girih exactes autour des cinq zones (carte.js, zonesplus.js) */
-for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const Z=zone(d.id,d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]));Z.mod=d.mod;Z.d=d;Z.plus=true}
+/* 2.15 (zones en série, 19 nov.) : le monde entier est connu (ZW, toutes les tuiles), mais seule une RÉGION autour du héros est construite (ZN).
+   Une région = les tuiles dont le centre est à moins de REG_R du centre de région. Quand le héros entre dans une tuile à plus de REG_IN
+   de ce centre, on enregistre et on recharge la page centrée sur cette tuile (voyage, voir main.js). Les cinq zones d'origine restent
+   toujours dans ZN (beaucoup de code les nomme), mais hors de la grille de terrain quand la région est loin. */
+const REG_R=1750,REG_IN=1000;
+const REGION=(()=>{let c=[0,0];try{const j=JSON.parse(localStorage.getItem('mz-region')||'null');if(j&&isFinite(j[0])&&isFinite(j[1]))c=[+j[0],+j[1]]}catch(_){}return{c}})();
+const dReg=c=>Math.hypot(c[0]-REGION.c[0],c[1]-REGION.c[1]);
+for(const Z of ZN)Z.reg=dReg(Z.c)<REG_R+400;
+const ZW=ZN.slice();
+for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const poly=d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]);
+  const c=[0,0];for(const p of poly){c[0]+=p[0]/poly.length;c[1]+=p[1]/poly.length}
+  if(dReg(c)<REG_R){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
+  else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
+const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
@@ -453,12 +469,14 @@ function stairs(Z,x0,z0,y0,x1,z1,y1,w,geoList,hex){const n=Math.max(1,Math.ceil(
 const secrets=[];
 const secGeo=new THREE.OctahedronGeometry(.55),secMat=new THREE.MeshBasicMaterial({color:new THREE.Color(3.2,2.3,.9)});
 function secret(Z,pos,titre,texte,cond){const m=new THREE.Mesh(secGeo,secMat);scene.add(m);
-  const s={Z,pos:typeof pos==='function'?pos:()=>pos,titre,texte,cond:cond||(()=>true),m,found:false};secrets.push(s);return s}
+  const s={Z,pos:typeof pos==='function'?pos:()=>pos,titre,texte,cond:cond||(()=>true),m,found:false};
+  /* 2.15 : clé stable du secret (régions) : « S<n> » pour les zones d'origine (toujours chargées), « S:<zone>:<n> » pour les autres */
+  s.k=Z&&Z.plus?'S:'+Z.id+':'+secrets.filter(q=>q.Z===Z).length:'S'+secrets.length;secrets.push(s);return s}
 const secHalo=points(32,7,{opacity:.8});
 
 /* ---------- Terrain ---------- */
 const CELL=4.2; /* 2.6 : 4,2 m avec les zones agrandies, pour garder à peu près le même nombre de sommets */ /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
-for(const Z of ZN)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
+for(const Z of ZN)if(Z.reg)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
 X0-=64;X1+=64;Z0-=64;Z1+=64;
 const GW=Math.ceil((X1-X0)/CELL)+1,GH=Math.ceil((Z1-Z0)/CELL)+1,GN=GW*GH;
 const tP=new Float32Array(GN*3),tN=new Float32Array(GN*3),tC=new Float32Array(GN*3),tG=new Float32Array(GN),
@@ -1222,6 +1240,12 @@ for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B=BIO[d.biome]||BIO['Steppe'],[neg
     pal:[`${d.biome} méconnaissable : sol noirci, crevasses, ciel bas. Le pôle ${pm} a tout pris.`,`${d.biome} qui se fend : la couleur s'en va, les premières failles s'ouvrent.`,
       `${d.biome} à l'équilibre, telle que la mosaïque l'a tirée au sort. Mana ${d.mana}.`,`${d.biome} qui s'élève : gradins, veines de lumière, végétation plus haute.`,
       `${d.biome} transfigurée par ${pp} : terrasses lumineuses et ciel clair, méconnaissable.`]};
+  /* 2.15 : fiche écrite par le conteur de la zone (zones en série) : nom, récit, ce qu'on voit à chaque bande de niveau */
+  const F=typeof FICHES!=='undefined'&&FICHES[Z.id];
+  if(F){const CT={A:'Conteur A, le Chroniqueur amer',B:'Conteur B, l\'Explorateur marchand',C:'Conteur C, le Sournois',D:'Conteur D, le Lovecraftien'};
+    Z.info.nom=F.nom;if(F.recit)Z.info.recit=F.recit;Z.info.conteur=CT[F.conteur]||'';
+    if(Array.isArray(F.pal)&&F.pal.length>=5)Z.info.pal=F.pal.slice(0,5);else if(Array.isArray(F.pal)&&F.pal.length>=2)Z.info.pal=[F.pal[0],F.pal[0],F.pal[0],F.pal[1],F.pal[1]]}
+  if(d.pret===false)Z.info.sur+=' · pas encore écrite';
   const sky=(c,k)=>pole5(c,hexMix(c,neg,k),hexMix(c,pos,k));
   Z.atm=atmo({top:sky(B.top,.6),hor:sky(B.hor,.6),sun:pole5(B.sun,hexMix(B.sun,neg,.5),pos),hs:pole5(B.top,neg,pos),hg:pole5(B.g,neg,B.g2),
     clc:sky(B.hor,.5),wc:pole5(B.wc,'#5a5050',pos),
@@ -1254,10 +1278,13 @@ for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B=BIO[d.biome]||BIO['Steppe'],[neg
         (o,i,c)=>{mix3(c,b,fente,an*.7);if(ap>0)mix3(c,c,veine,ap*.45);if(it.k==='cristal'){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}};
 })();
 
+/* 2.15 : les tuiles hors de la région chargée ont une fiche légère (nom, pôles) pour que leurs cartes restent lisibles dans le paquet */
+for(const Z of (typeof ZW!=='undefined'?ZW:[]))if(Z.logique){const d=Z.d,F=typeof FICHES!=='undefined'&&FICHES[Z.id];Z.info={nom:F?F.nom:d.nom,sur:`${d.type} · ${d.biome}`,pm:d.pm||'Pénurie',pp:d.pp||'Abondance',pal:['','','','','']}}
 /* ---------- Tables de jeu des nouvelles tuiles (appelé à la fin de main.js, quand toutes les tables existent) ---------- */
 function plusTables(){
   const PFX={CIT:'Rempart',DON:'Sceau',RES:'Gerbe',ANT:'Appel',MAR:'Lot'};
-  for(const Z of ZN){if(!Z.plus)continue;const id=Z.id,m=Z.mod,d=Z.d,I=Z.info;
+  const W=typeof ZW!=='undefined'?ZW:ZN;
+  for(const Z of W){if(!Z.plus)continue;const id=Z.id,m=Z.mod,d=Z.d,I=Z.info;
     const court=d.nom.replace(/^(La |Le |Les |L')/,''),deN=d.nom.replace(/^Les /,'des ').replace(/^Le /,'du ').replace(/^La /,'de la ').replace(/^L'/,"de l'");
     const jeu=m==='RES'?'MAR':m;   /* la Récolte se joue dans les îles de Tezcamixtli : ailleurs, une Ressource passe le Chantier */
     const tj=m==='RES'&&typeof CHANTIER!=='undefined'?CHANTIER:TYPE[jeu];TYPE[id]={ep:tj.ep,kind:TYPE[m].kind,txt:tj.txt};GAMES[id]=GAMES[jeu];
@@ -1271,8 +1298,8 @@ function plusTables(){
       :m==='ANT'?{z:id,nom,cout:2,txt:k=>{const b=betePlus(id,k);return`Une bête rejoint le combat : ${b.pv} PV, frappe ${b.atk} à chaque tour.`},jeu:k=>invoquer(betePlus(id,k))}
       :{z:id,nom,cout:0,txt:k=>`Piochez ${2*contreX(k)} cartes${L()>=5?', boost rare : +1 de capacité ce tour':''}.`,jeu:k=>{pioche(2*contreX(k));if(L()>=5){CB.mana++;CB.capT++}}}}
   /* contre-pouvoir : la tuile la plus proche du type que contre la sienne */
-  for(const Z of ZN){if(!Z.plus)continue;const cible=CONTRE[Z.mod];let b=null,bd=1e9;
-    for(const Q of ZN){if(Q===Z||(Q.mod||Q.id)!==cible)continue;const dd=Math.hypot(Q.c[0]-Z.c[0],Q.c[1]-Z.c[1]);if(dd<bd){bd=dd;b=Q}}
+  for(const Z of W){if(!Z.plus)continue;const cible=CONTRE[Z.mod];let b=null,bd=1e9;
+    for(const Q of W){if(Q===Z||(Q.mod||Q.id)!==cible)continue;const dd=Math.hypot(Q.c[0]-Z.c[0],Q.c[1]-Z.c[1]);if(dd<bd){bd=dd;b=Q}}
     CONTRE[Z.id]=b?b.id:cible}
   cartesPoles()}
 const betePlus=(id,k)=>{const L=Lz(id),x=contreX(k);return{nom:poleN(id,'Luciole de nuit','Lancière de l\'aurore'),pv:(7+3*L)*x,max:(7+3*L)*x,atk:(3+L)*x,g:0,bete:1}};
@@ -1956,23 +1983,26 @@ function carteCK(id,choix,niv){const L=()=>Math.max(1,niv());const cur=()=>choix
       const ctx={L:L(),x:contreX(k)*(dbl?2:1),dbl,t,z:id,k};execOps(cur().ops,ctx);if(typeof atoutsApres==='function')atoutsApres(id,k,t,ctx,avant);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
 function installerCartes22(){
   /* anciennes parties : les cartes communes sortent du paquet (18 nov. : plus de communes) et les Ressources ne donnent plus de carte (17 nov.) */
-  if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>COMMUNES.indexOf(k)<0&&(k in CK?(CK[k].z||CK[k].secret):true)).filter(k=>{const id=k.split('#')[0],Z=typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'})}
+  if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>COMMUNES.indexOf(k)<0&&(k in CK?(CK[k].z||CK[k].secret):true)).filter(k=>{const id=k.split('#')[0],Z=typeof ZWB!=='undefined'?ZWB[id]:typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'})}
   if(typeof ART!=='undefined'){ART.pieu=ART.pieu||Object.assign({},ART.garde,{sorte:'Bloqueur'});ART.caillou=ART.caillou||Object.assign({},ART.coup);ART.torche=ART.torche||Object.assign({},ART.coup,{fond:['#2e1408','#c8541c'],sorte:'Brûlure'})}
   if(typeof CARTES22==='undefined')return;
   /* « chaque palier donne une carte » : P.m1…P.m6 et P.p1…P.p6 si les conteurs les ont écrites, sinon la carte du pôle (P.m, P.p) qui grandit avec L */
   const parPalier=(P,s,n)=>n>=7&&P[s+'7']?Object.assign({p7:1},P[s+'7']):(P[s+n]||P[s]);
-  for(const id in CARTES22.zones){const P=CARTES22.zones[id];if(!ZB[id])continue;
+  for(const id in CARTES22.zones){const P=CARTES22.zones[id];if(!ZB[id]&&!(typeof ZWB!=='undefined'&&ZWB[id]))continue;
     const choix=()=>{const lv=S.lv[id]||0;return parPalier(P,lv<0?'m':'p',Math.max(1,Math.min(7,Math.abs(lv))))};
     CK[id]=carteCK(id,choix,()=>Lz(id));CK[id].poles=[P.m||P.m1,P.p||P.p1];
     for(const s of['m','p'])for(let n=1;n<=7;n++){const c=parPalier(P,s,n);if(c)CK[id+'#'+(s==='m'?'-':'+')+n]=carteCK(id,()=>c,()=>n)}}
   /* 17 nov. (revue de cohérence) : plus de Gerbes ; les Ressources ne donnent pas de carte. Leurs textes restent chez les conteurs, matière à de futurs atouts. */
   /* secrets : une carte utilitaire par secret, clé « S<numéro> », payée en gris */
-  secrets.forEach((q,i)=>{const d=CARTES22.secrets[q.titre];if(!d)return;const k='S'+i;
-    CK[k]={nom:()=>d.nom,cout:d.cout,cible:d.cible?1:0,secret:q.titre,zs:q.Z.id,ultime:false,pose:null,reveille:null,amb:()=>d.ambiance||'',txt:()=>texteCarte(d.effet,1,1),
+  S.secT=S.secT||{};const sec=secrets.map(q=>({titre:q.titre,k:q.k,zs:q.Z.id}));
+  /* 2.15 : les cartes de secrets trouvés dans une autre région restent jouables (titre gardé dans la sauvegarde) */
+  for(const k of S.deck||[])if(/^S/.test(k)&&S.secT[k]&&!sec.some(x=>x.k===k))sec.push({titre:S.secT[k],k,zs:k.split(':')[1]||''});
+  sec.forEach(q=>{const d=CARTES22.secrets[q.titre];if(!d)return;const k=q.k;
+    CK[k]={nom:()=>d.nom,cout:d.cout,cible:d.cible?1:0,secret:q.titre,zs:q.zs,ultime:false,pose:null,reveille:null,amb:()=>d.ambiance||'',txt:()=>texteCarte(d.effet,1,1),
       ops:()=>d.ops||[],jeu:(kk,t)=>{const ctx={L:1,x:1,t,k:kk,demi:true};execOps(d.ops,ctx);if(ctx.exil){const j=CB.defausse.lastIndexOf(kk);if(j>=0)CB.defausse.splice(j,1)}}};
     if(typeof ART!=='undefined')ART[k]=ART.souffle||ART.coup})}
 /* un secret trouvé ajoute sa carte au paquet de combat */
-function carteDeSecret(q){const i=secrets.indexOf(q),k='S'+i;if(!CK[k])return'';if(S.deck.indexOf(k)<0&&S.deck.length<PAQUET_MAX)S.deck.push(k);return CK[k].nom()}
+function carteDeSecret(q){const k=q.k;if(!CK[k])return'';S.secT=S.secT||{};S.secT[k]=q.titre;if(S.deck.indexOf(k)<0&&S.deck.length<PAQUET_MAX)S.deck.push(k);return CK[k].nom()}
 /* une carte de palier n'est éveillée que si sa zone est sur ce pôle, à ce palier ou au-delà ; sinon elle dort hors du paquet de combat */
 function eveillee(k){const i=k.indexOf('#');if(i<0)return true;const id=k.slice(0,i),s=k[i+1],n=+k.slice(i+2),lv=S.lv[id]||0;
   return s==='r'?Math.abs(lv)>=n:(s==='-'?lv<=-n:lv>=n)}
@@ -9526,8 +9556,10 @@ const ATOUTS={
 const estRES=Z=>(Z.mod||Z.id)==='RES';
 /* voisines : deux tuiles qui partagent un côté (deux sommets communs) */
 const VOISINES={};
-(()=>{const pr=p=>Math.round(p[0])+','+Math.round(p[1]);const S1={};for(const Z of ZN)S1[Z.id]=new Set(Z.poly.map(pr));
-  for(const A of ZN){VOISINES[A.id]=[];for(const B of ZN){if(A===B)continue;let n=0;for(const p of B.poly)if(S1[A.id].has(pr(p)))n++;if(n>=2)VOISINES[A.id].push(B.id)}}})();
+/* 2.15 : calculées sur le monde entier (ZW), par sommets partagés, pour que le territoire et les domaines ne dépendent pas de la région chargée */
+(()=>{const pr=p=>Math.round(p[0])+','+Math.round(p[1]);const parS={};const W=typeof ZW!=='undefined'?ZW:ZN;
+  for(const Z of W)for(const p of Z.poly)(parS[pr(p)]=parS[pr(p)]||[]).push(Z.id);
+  for(const A of W){const n={};for(const p of A.poly)for(const b of parS[pr(p)])if(b!==A.id)n[b]=(n[b]||0)+1;VOISINES[A.id]=Object.keys(n).filter(b=>n[b]>=2)}})();
 const estCIT=Z=>!!Z&&(Z.mod||Z.id)==='CIT',estDON=Z=>!!Z&&(Z.mod||Z.id)==='DON';
 const tient=id=>!!(S.own[id]&&S.act[id]);
 /* rempart (17 nov.) : route ouverte par une Citadelle tenue et éveillée (palier 1 ou plus) vers une Citadelle ou un Donjon tenu et voisin */
@@ -10890,7 +10922,7 @@ function bandeauTess(){initCommerce();return`<span class="d" title="Tesselles, l
    les plus proches d'abord. Le Comptoir ne vend pas les secrets encore cachés : on ne saute pas l'exploration (testeur, 19 nov., provisoire). */
 function cartesEnVente(Z){if(typeof secrets==='undefined'||typeof CK==='undefined')return[];
   const d=typeof aPortee==='function'?aPortee(Z.id,30):{};
-  return secrets.map((q,i)=>({q,k:'S'+i})).filter(x=>x.q.found&&CK[x.k]&&S.deck.indexOf(x.k)<0)
+  return secrets.map(q=>({q,k:q.k})).filter(x=>x.q.found&&CK[x.k]&&S.deck.indexOf(x.k)<0)
     .sort((a,b)=>(d[a.q.Z.id]??99)-(d[b.q.Z.id]??99)).slice(0,3)}
 /* pourquoi aucune carte n'est en vente */
 const pasDeCarte=()=>typeof secrets!=='undefined'&&secrets.some(q=>q.found)?'les cartes des secrets trouvés sont toutes dans votre paquet'
@@ -13613,11 +13645,11 @@ const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},dec
 const DIST_DEP={},PAQUET_ROYAUME=15;
 const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR'];for(const id of org){d[id]=0;file.push(id)}
   const ordre=[];while(file.length){const z=file.shift();for(const v of (typeof VOISINES!=='undefined'?VOISINES[z]:[])||[])if(d[v]===undefined){d[v]=d[z]+1;file.push(v);ordre.push(v)}}
-  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={};for(const id of org){const t=ZB[id].mod||id;n[t]=(n[t]||0)+1}
-  const dep=org.slice();for(const id of ordre){const t=ZB[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
+  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={},W=typeof ZWB!=='undefined'?ZWB:ZB;for(const id of org){const t=W[id].mod||id;n[t]=(n[t]||0)+1}
+  const dep=org.slice();for(const id of ordre){const t=W[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
 const ESTDEP=new Set(ZONES_DEP);
-const BORD_DEP=new Set(ZN.filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES!=='undefined'?VOISINES[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
-function nivDep(graine){const o={};for(const Z of ZN){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;
+const BORD_DEP=new Set((typeof ZW!=='undefined'?ZW:ZN).filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES!=='undefined'?VOISINES[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
+function nivDep(graine){const o={};for(const Z of (typeof ZW!=='undefined'?ZW:ZN)){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;
   o[Z.id]=ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?6*sg:(2+Math.floor(h2*6))*sg}return o}
 let NIV_DEP=nivDep(0);
 const departPris=()=>ZONES_DEP.filter(id=>S.own[id]).length;
@@ -13640,14 +13672,17 @@ function donnerDepart(){for(const id of ZONES_DEP){const Z=ZB[id],lv=(Z.mod||id)
 if(!Array.isArray(S.deck)||!S.deck.length)S.deck=paquetDe(IDS);
 if(S.renc===undefined)S.renc=1;
 initEco();
-function save(){S.found=secrets.map((s,i)=>s.found?i:-1).filter(i=>i>=0);try{localStorage.setItem('mz-tv-1',JSON.stringify(S))}catch(_){}}
+function save(){const ici=new Set(secrets.map(q=>q.k));S.found=(S.found||[]).filter(k=>typeof k==='string'&&!ici.has(k)).concat(secrets.filter(q=>q.found).map(q=>q.k));try{localStorage.setItem('mz-tv-1',JSON.stringify(S))}catch(_){}}
 const now=()=>Date.now()/1000;
 const restLeft=Z=>Math.max(0,(S.rest[Z.id]||0)-now());
 
 for(const Z of ZN){Z.lv=Z.lvT=S.lv[Z.id]||0;Z.build()}
 if(typeof lieuxSecrets==='function')lieuxSecrets();   /* 2.6 : secrets des lieux, après tous les autres (numéros des sauvegardes inchangés) */
 buildTerrain();buildBorders();for(const Z of ZN)Z.update(Z.lv);
-for(const i of S.found||[])if(secrets[i])secrets[i].found=true;
+/* 2.15 : S.found garde des clés stables ; une ancienne sauvegarde (numéros) est traduite avec l'ordre d'avant (région d'origine) */
+if((S.found||[]).some(x=>typeof x==='number')){const tr=x=>typeof x==='number'?(secrets[x]&&secrets[x].k):x;S.found=(S.found||[]).map(tr).filter(Boolean);
+  if(Array.isArray(S.deck))S.deck=S.deck.map(k=>/^S\d+$/.test(k)&&secrets[+k.slice(1)]?secrets[+k.slice(1)].k:k)}
+{const f=new Set(S.found||[]);for(const q of secrets)if(f.has(q.k))q.found=true}
 $('h-sect').textContent=secrets.length;
 
 /* ---------- Épreuves et cartes : une épreuve par type de zone, une carte par pôle ---------- */
@@ -13793,9 +13828,16 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
   o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
   ui('seuil',{opts:o})}
-function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
+/* 2.15 : régions. Voyager = enregistrer, recentrer la région sur une tuile, recharger la page ; « apres » dit quoi faire au réveil. */
+const regionOrigine=()=>dReg([0,0])<1;
+function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw];if(apres!=='neuf')save();
+  try{localStorage.setItem('mz-region',JSON.stringify([Math.round(c[0]),Math.round(c[1])]));localStorage.setItem('mz-apres',apres||'jeu')}catch(_){}
+  const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}setTimeout(()=>location.reload(),60)}
+function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');return}
+  if(neuf){for(const id in S.lv)if(!ZB[id])delete S.lv[id];for(const k of['own','emp','rest','act'])for(const id in S[k]||{})if(!ZB[id])delete S[k][id]}
+  if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
+    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;S.found=[];S.secT={};
     donnerDepart();CULL.dirty=true;terrainAll();save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
@@ -13835,7 +13877,7 @@ function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',c
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 
 /* ---------- Éveil d'une zone ---------- */
-function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ct=contrePar(Z),emp=S.emp[Z.id];
+function openEveil(Z,f){if(Z.d&&Z.d.pret===false){toast(Z.info.nom,'Zone pas encore écrite','Les conteurs n\'ont pas encore écrit son histoire : sa Pierre dort. Elle s\'éveillera dans une prochaine version.');return}mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ct=contrePar(Z),emp=S.emp[Z.id];
   const diff=t=>{const b=Math.abs(t)-(emp?1:0)-ct.pw;return'Épreuve '+['très facile','facile','facile','moyenne','dure','dure','très dure','redoutable'][clamp(b,0,7)]};
   const o=[],res=(Z.mod||Z.id)==='RES',cap=res?3:7;
   if(!S.act[Z.id]&&verrouLoin(Z)){o.push({l:'Zone scellée : elle ne cède pas encore',ic:'⛓',off:true,d:`départ pris ${departPris()}/${ZONES_DEP.length} · paquet ${S.deck.length}/${PAQUET_ROYAUME}`})}
@@ -13898,11 +13940,11 @@ function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('j
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
       opts:[{l:'Réessayer',ic:'▲',go:()=>openEveil(Z)},{l:'Repartir explorer',ic:'◆',go:toMonde}]});mode='menu'}}
-function mort(){for(const Z of ZN){if(S.own[Z.id]){S.own[Z.id]=false;S.emp[Z.id]=true}S.act[Z.id]=false}
+function mort(){for(const id of Object.keys(S.own)){if(S.own[id]){S.own[id]=false;S.emp[id]=true}S.act[id]=false}
   donnerDepart();CULL.dirty=true;terrainAll();   /* 18 nov. : l'héritier repart comme une nouvelle partie, territoire de départ au niveau 1, pôles retirés au hasard */
   S.cards=[];S.hurt=0;S.lives=(S.lives||1)+1;save();etatHud();hudKey='';
   ui('menu',{sur:'Mort du héros',t:'La mosaïque vous oublie',corps:`<p>Troisième blessure. Vous perdez vos cartes et vos zones : elles gardent leur niveau mais redeviennent sauvages. L'héritier reçoit à nouveau le territoire de départ, au niveau 1, et ses cartes de palier 1.</p><p class="petit">Votre empreinte reste : reprendre une ancienne zone à vous sera plus facile. Un héritier se lève à Berestograd.</p>`,
-    opts:[{l:'Se relever',ic:'✦',go:()=>{tp('CIT');toMonde()}}]});mode='menu'}
+    opts:[{l:'Se relever',ic:'✦',go:()=>{if(!regionOrigine()){S.pos=null;save();voyagerRegion([0,0],'jeu');return}tp('CIT');toMonde()}}]});mode='menu'}
 function pauseEpreuve(){const keep=E;mode='menu';ui('menu',{sur:'Épreuve en pause',t:'Abandonner ?',corps:'<p class="petit">Abandonner ne blesse pas, la zone ne change pas.</p>',
   back:()=>{closeUI();mode='epreuve'},opts:[{l:'Continuer l\'épreuve',ic:'▲',go:()=>{closeUI();mode='epreuve'}},{l:'Abandonner',ic:'◆',go:()=>{if(E&&E.fin)E.fin();E=null;$('jeu').hidden=true;toMonde()}}]});$('jeu').hidden=!keep.monde?false:false}
 
@@ -14139,12 +14181,13 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(mode==='mue'&&mue){stepMue(dt);if(mue)camMue(dt);else camFollow(dt)}
   else{if(mode==='epreuve'&&E){E.t+=dt;E.step(dt,T);if(E&&!E.monde)E.draw(T)}else if(mode==='monde')move(dt);else if(!started){P.yaw+=dt*.05;P.y=stand(P.x,P.z,1e3).g}else move(0);
     if(!(mode==='epreuve'&&E&&!E.monde))camFollow(dt)}
-  const Z=zoneAt(P.x,P.z);if(Z&&Z!==curZ){curZ=Z;hudKey='';if(mode==='monde'&&started)toast(TYPE[Z.id].kind+' · niveau '+(sgn(S.lv[Z.id])||'0'),Z.info.nom,palTxt(Z,S.lv[Z.id]))}hud();invite();
+  const Z=zoneAt(P.x,P.z);if(Z&&Z!==curZ&&mode==='monde'&&started&&Z.plus&&dReg(Z.c)>REG_IN){curZ=Z;voyagerRegion(Z.c,'jeu')}
+  else if(Z&&Z!==curZ){curZ=Z;hudKey='';if(mode==='monde'&&started)toast(TYPE[Z.id].kind+' · niveau '+(sgn(S.lv[Z.id])||'0'),Z.info.nom,palTxt(Z,S.lv[Z.id]))}hud();invite();
   stepAtmo(mode==='mue'&&mue?mue.Z:curZ,dt,T,P.x,P.y,P.z);hero.userData.pl.intensity=curZ===ANT?.12:.55;
   if(AX&&curZ===DON&&DON.lv<=-4&&P.walked-stepAcc>2.4){stepAcc=P.walked;perc(AX.currentTime,'t',1.2)}
   let hi=0;for(const q of secrets){const ok=!q.found&&q.cond(q.Z.lv);q.m.visible=ok;if(!ok)continue;const p=q.pos();q.m.position.set(p[0],p[1]+Math.sin(T*2+p[0])*.18,p[2]);q.m.rotation.y=T*1.3;
     secHalo.P[hi*3]=p[0];secHalo.P[hi*3+1]=p[1];secHalo.P[hi*3+2]=p[2];const b=.5+.2*Math.sin(T*3);secHalo.C[hi*3]=2.2*b;secHalo.C[hi*3+1]=1.5*b;secHalo.C[hi*3+2]=.5*b;hi++;
-    if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const k='S'+secrets.indexOf(q),av=S.deck.indexOf(k)>=0,cn=typeof carteDeSecret==='function'?carteDeSecret(q):'',ap=S.deck.indexOf(k)>=0;toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(!cn?'':!av&&ap?` Carte utilitaire gagnée : « ${cn} ».`:av?` Sa carte « ${cn} » est déjà dans votre paquet.`:` Votre paquet est plein : la carte « ${cn} » attend au Comptoir des Citadelles.`))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
+    if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const k=q.k,av=S.deck.indexOf(k)>=0,cn=typeof carteDeSecret==='function'?carteDeSecret(q):'',ap=S.deck.indexOf(k)>=0;toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(!cn?'':!av&&ap?` Carte utilitaire gagnée : « ${cn} ».`:av?` Sa carte « ${cn} » est déjà dans votre paquet.`:` Votre paquet est plein : la carte « ${cn} » attend au Comptoir des Citadelles.`))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
   for(let i=hi;i<32;i++)secHalo.P[i*3+1]=-999;secHalo.up();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('vu')}
   if(typeof majPoussiere==='function')majPoussiere(dt,T);
@@ -14156,6 +14199,9 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);
+/* 2.15 : au réveil d'un voyage entre régions, on reprend directement la partie (ou on en commence une neuve) */
+(()=>{let a=null;try{a=localStorage.getItem('mz-apres');localStorage.removeItem('mz-apres')}catch(_){}
+  if(a==='neuf')startGame(true);else if(a==='jeu'&&hasSave)startGame(false)})();
 window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};
 Object.assign(window.MZ,{rival:s=>typeof rivalAgit==='function'?rivalAgit(true,s):null,rivalArrive:g=>typeof rivalArrive==='function'?rivalArrive(g):null});
 if(typeof domaines==='function')Object.assign(window.MZ,{domaines,verrouillee,defenseMonde,statutZone,prendre:domPrendre,cycle:()=>cycle()});

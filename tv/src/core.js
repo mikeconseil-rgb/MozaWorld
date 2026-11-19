@@ -42,7 +42,20 @@ const RES=zone('RES',walk(VX[2],VX[1],[144,72,144,144]));
 const MAR=zone('MAR',walk(VX[3],VX[2],[72,108]),P=>Math.atan2(P[3][1]-P[1][1],P[3][0]-P[1][0]));
 const DON=zone('DON',walk(VX[4],VX[3],[108,108,108]));
 /* 2.0 : la carte s'agrandit, tuiles Girih exactes autour des cinq zones (carte.js, zonesplus.js) */
-for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const Z=zone(d.id,d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]));Z.mod=d.mod;Z.d=d;Z.plus=true}
+/* 2.15 (zones en série, 19 nov.) : le monde entier est connu (ZW, toutes les tuiles), mais seule une RÉGION autour du héros est construite (ZN).
+   Une région = les tuiles dont le centre est à moins de REG_R du centre de région. Quand le héros entre dans une tuile à plus de REG_IN
+   de ce centre, on enregistre et on recharge la page centrée sur cette tuile (voyage, voir main.js). Les cinq zones d'origine restent
+   toujours dans ZN (beaucoup de code les nomme), mais hors de la grille de terrain quand la région est loin. */
+const REG_R=1750,REG_IN=1000;
+const REGION=(()=>{let c=[0,0];try{const j=JSON.parse(localStorage.getItem('mz-region')||'null');if(j&&isFinite(j[0])&&isFinite(j[1]))c=[+j[0],+j[1]]}catch(_){}return{c}})();
+const dReg=c=>Math.hypot(c[0]-REGION.c[0],c[1]-REGION.c[1]);
+for(const Z of ZN)Z.reg=dReg(Z.c)<REG_R+400;
+const ZW=ZN.slice();
+for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const poly=d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]);
+  const c=[0,0];for(const p of poly){c[0]+=p[0]/poly.length;c[1]+=p[1]/poly.length}
+  if(dReg(c)<REG_R){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
+  else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
+const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
@@ -106,12 +119,14 @@ function stairs(Z,x0,z0,y0,x1,z1,y1,w,geoList,hex){const n=Math.max(1,Math.ceil(
 const secrets=[];
 const secGeo=new THREE.OctahedronGeometry(.55),secMat=new THREE.MeshBasicMaterial({color:new THREE.Color(3.2,2.3,.9)});
 function secret(Z,pos,titre,texte,cond){const m=new THREE.Mesh(secGeo,secMat);scene.add(m);
-  const s={Z,pos:typeof pos==='function'?pos:()=>pos,titre,texte,cond:cond||(()=>true),m,found:false};secrets.push(s);return s}
+  const s={Z,pos:typeof pos==='function'?pos:()=>pos,titre,texte,cond:cond||(()=>true),m,found:false};
+  /* 2.15 : clé stable du secret (régions) : « S<n> » pour les zones d'origine (toujours chargées), « S:<zone>:<n> » pour les autres */
+  s.k=Z&&Z.plus?'S:'+Z.id+':'+secrets.filter(q=>q.Z===Z).length:'S'+secrets.length;secrets.push(s);return s}
 const secHalo=points(32,7,{opacity:.8});
 
 /* ---------- Terrain ---------- */
 const CELL=4.2; /* 2.6 : 4,2 m avec les zones agrandies, pour garder à peu près le même nombre de sommets */ /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
-for(const Z of ZN)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
+for(const Z of ZN)if(Z.reg)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
 X0-=64;X1+=64;Z0-=64;Z1+=64;
 const GW=Math.ceil((X1-X0)/CELL)+1,GH=Math.ceil((Z1-Z0)/CELL)+1,GN=GW*GH;
 const tP=new Float32Array(GN*3),tN=new Float32Array(GN*3),tC=new Float32Array(GN*3),tG=new Float32Array(GN),

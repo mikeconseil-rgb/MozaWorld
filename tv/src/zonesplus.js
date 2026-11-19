@@ -55,6 +55,12 @@ for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B=BIO[d.biome]||BIO['Steppe'],[neg
     pal:[`${d.biome} méconnaissable : sol noirci, crevasses, ciel bas. Le pôle ${pm} a tout pris.`,`${d.biome} qui se fend : la couleur s'en va, les premières failles s'ouvrent.`,
       `${d.biome} à l'équilibre, telle que la mosaïque l'a tirée au sort. Mana ${d.mana}.`,`${d.biome} qui s'élève : gradins, veines de lumière, végétation plus haute.`,
       `${d.biome} transfigurée par ${pp} : terrasses lumineuses et ciel clair, méconnaissable.`]};
+  /* 2.15 : fiche écrite par le conteur de la zone (zones en série) : nom, récit, ce qu'on voit à chaque bande de niveau */
+  const F=typeof FICHES!=='undefined'&&FICHES[Z.id];
+  if(F){const CT={A:'Conteur A, le Chroniqueur amer',B:'Conteur B, l\'Explorateur marchand',C:'Conteur C, le Sournois',D:'Conteur D, le Lovecraftien'};
+    Z.info.nom=F.nom;if(F.recit)Z.info.recit=F.recit;Z.info.conteur=CT[F.conteur]||'';
+    if(Array.isArray(F.pal)&&F.pal.length>=5)Z.info.pal=F.pal.slice(0,5);else if(Array.isArray(F.pal)&&F.pal.length>=2)Z.info.pal=[F.pal[0],F.pal[0],F.pal[0],F.pal[1],F.pal[1]]}
+  if(d.pret===false)Z.info.sur+=' · pas encore écrite';
   const sky=(c,k)=>pole5(c,hexMix(c,neg,k),hexMix(c,pos,k));
   Z.atm=atmo({top:sky(B.top,.6),hor:sky(B.hor,.6),sun:pole5(B.sun,hexMix(B.sun,neg,.5),pos),hs:pole5(B.top,neg,pos),hg:pole5(B.g,neg,B.g2),
     clc:sky(B.hor,.5),wc:pole5(B.wc,'#5a5050',pos),
@@ -87,10 +93,13 @@ for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B=BIO[d.biome]||BIO['Steppe'],[neg
         (o,i,c)=>{mix3(c,b,fente,an*.7);if(ap>0)mix3(c,c,veine,ap*.45);if(it.k==='cristal'){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}};
 })();
 
+/* 2.15 : les tuiles hors de la région chargée ont une fiche légère (nom, pôles) pour que leurs cartes restent lisibles dans le paquet */
+for(const Z of (typeof ZW!=='undefined'?ZW:[]))if(Z.logique){const d=Z.d,F=typeof FICHES!=='undefined'&&FICHES[Z.id];Z.info={nom:F?F.nom:d.nom,sur:`${d.type} · ${d.biome}`,pm:d.pm||'Pénurie',pp:d.pp||'Abondance',pal:['','','','','']}}
 /* ---------- Tables de jeu des nouvelles tuiles (appelé à la fin de main.js, quand toutes les tables existent) ---------- */
 function plusTables(){
   const PFX={CIT:'Rempart',DON:'Sceau',RES:'Gerbe',ANT:'Appel',MAR:'Lot'};
-  for(const Z of ZN){if(!Z.plus)continue;const id=Z.id,m=Z.mod,d=Z.d,I=Z.info;
+  const W=typeof ZW!=='undefined'?ZW:ZN;
+  for(const Z of W){if(!Z.plus)continue;const id=Z.id,m=Z.mod,d=Z.d,I=Z.info;
     const court=d.nom.replace(/^(La |Le |Les |L')/,''),deN=d.nom.replace(/^Les /,'des ').replace(/^Le /,'du ').replace(/^La /,'de la ').replace(/^L'/,"de l'");
     const jeu=m==='RES'?'MAR':m;   /* la Récolte se joue dans les îles de Tezcamixtli : ailleurs, une Ressource passe le Chantier */
     const tj=m==='RES'&&typeof CHANTIER!=='undefined'?CHANTIER:TYPE[jeu];TYPE[id]={ep:tj.ep,kind:TYPE[m].kind,txt:tj.txt};GAMES[id]=GAMES[jeu];
@@ -104,8 +113,8 @@ function plusTables(){
       :m==='ANT'?{z:id,nom,cout:2,txt:k=>{const b=betePlus(id,k);return`Une bête rejoint le combat : ${b.pv} PV, frappe ${b.atk} à chaque tour.`},jeu:k=>invoquer(betePlus(id,k))}
       :{z:id,nom,cout:0,txt:k=>`Piochez ${2*contreX(k)} cartes${L()>=5?', boost rare : +1 de capacité ce tour':''}.`,jeu:k=>{pioche(2*contreX(k));if(L()>=5){CB.mana++;CB.capT++}}}}
   /* contre-pouvoir : la tuile la plus proche du type que contre la sienne */
-  for(const Z of ZN){if(!Z.plus)continue;const cible=CONTRE[Z.mod];let b=null,bd=1e9;
-    for(const Q of ZN){if(Q===Z||(Q.mod||Q.id)!==cible)continue;const dd=Math.hypot(Q.c[0]-Z.c[0],Q.c[1]-Z.c[1]);if(dd<bd){bd=dd;b=Q}}
+  for(const Z of W){if(!Z.plus)continue;const cible=CONTRE[Z.mod];let b=null,bd=1e9;
+    for(const Q of W){if(Q===Z||(Q.mod||Q.id)!==cible)continue;const dd=Math.hypot(Q.c[0]-Z.c[0],Q.c[1]-Z.c[1]);if(dd<bd){bd=dd;b=Q}}
     CONTRE[Z.id]=b?b.id:cible}
   cartesPoles()}
 const betePlus=(id,k)=>{const L=Lz(id),x=contreX(k);return{nom:poleN(id,'Luciole de nuit','Lancière de l\'aurore'),pv:(7+3*L)*x,max:(7+3*L)*x,atk:(3+L)*x,g:0,bete:1}};

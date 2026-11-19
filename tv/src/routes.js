@@ -26,8 +26,10 @@ const ATOUTS={
 const estRES=Z=>(Z.mod||Z.id)==='RES';
 /* voisines : deux tuiles qui partagent un côté (deux sommets communs) */
 const VOISINES={};
-(()=>{const pr=p=>Math.round(p[0])+','+Math.round(p[1]);const S1={};for(const Z of ZN)S1[Z.id]=new Set(Z.poly.map(pr));
-  for(const A of ZN){VOISINES[A.id]=[];for(const B of ZN){if(A===B)continue;let n=0;for(const p of B.poly)if(S1[A.id].has(pr(p)))n++;if(n>=2)VOISINES[A.id].push(B.id)}}})();
+/* 2.15 : calculées sur le monde entier (ZW), par sommets partagés, pour que le territoire et les domaines ne dépendent pas de la région chargée */
+(()=>{const pr=p=>Math.round(p[0])+','+Math.round(p[1]);const parS={};const W=typeof ZW!=='undefined'?ZW:ZN;
+  for(const Z of W)for(const p of Z.poly)(parS[pr(p)]=parS[pr(p)]||[]).push(Z.id);
+  for(const A of W){const n={};for(const p of A.poly)for(const b of parS[pr(p)])if(b!==A.id)n[b]=(n[b]||0)+1;VOISINES[A.id]=Object.keys(n).filter(b=>n[b]>=2)}})();
 const estCIT=Z=>!!Z&&(Z.mod||Z.id)==='CIT',estDON=Z=>!!Z&&(Z.mod||Z.id)==='DON';
 const tient=id=>!!(S.own[id]&&S.act[id]);
 /* rempart (17 nov.) : route ouverte par une Citadelle tenue et éveillée (palier 1 ou plus) vers une Citadelle ou un Donjon tenu et voisin */

@@ -78,23 +78,26 @@ function carteCK(id,choix,niv){const L=()=>Math.max(1,niv());const cur=()=>choix
       const ctx={L:L(),x:contreX(k)*(dbl?2:1),dbl,t,z:id,k};execOps(cur().ops,ctx);if(typeof atoutsApres==='function')atoutsApres(id,k,t,ctx,avant);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
 function installerCartes22(){
   /* anciennes parties : les cartes communes sortent du paquet (18 nov. : plus de communes) et les Ressources ne donnent plus de carte (17 nov.) */
-  if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>COMMUNES.indexOf(k)<0&&(k in CK?(CK[k].z||CK[k].secret):true)).filter(k=>{const id=k.split('#')[0],Z=typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'})}
+  if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>COMMUNES.indexOf(k)<0&&(k in CK?(CK[k].z||CK[k].secret):true)).filter(k=>{const id=k.split('#')[0],Z=typeof ZWB!=='undefined'?ZWB[id]:typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'})}
   if(typeof ART!=='undefined'){ART.pieu=ART.pieu||Object.assign({},ART.garde,{sorte:'Bloqueur'});ART.caillou=ART.caillou||Object.assign({},ART.coup);ART.torche=ART.torche||Object.assign({},ART.coup,{fond:['#2e1408','#c8541c'],sorte:'Brûlure'})}
   if(typeof CARTES22==='undefined')return;
   /* « chaque palier donne une carte » : P.m1…P.m6 et P.p1…P.p6 si les conteurs les ont écrites, sinon la carte du pôle (P.m, P.p) qui grandit avec L */
   const parPalier=(P,s,n)=>n>=7&&P[s+'7']?Object.assign({p7:1},P[s+'7']):(P[s+n]||P[s]);
-  for(const id in CARTES22.zones){const P=CARTES22.zones[id];if(!ZB[id])continue;
+  for(const id in CARTES22.zones){const P=CARTES22.zones[id];if(!ZB[id]&&!(typeof ZWB!=='undefined'&&ZWB[id]))continue;
     const choix=()=>{const lv=S.lv[id]||0;return parPalier(P,lv<0?'m':'p',Math.max(1,Math.min(7,Math.abs(lv))))};
     CK[id]=carteCK(id,choix,()=>Lz(id));CK[id].poles=[P.m||P.m1,P.p||P.p1];
     for(const s of['m','p'])for(let n=1;n<=7;n++){const c=parPalier(P,s,n);if(c)CK[id+'#'+(s==='m'?'-':'+')+n]=carteCK(id,()=>c,()=>n)}}
   /* 17 nov. (revue de cohérence) : plus de Gerbes ; les Ressources ne donnent pas de carte. Leurs textes restent chez les conteurs, matière à de futurs atouts. */
   /* secrets : une carte utilitaire par secret, clé « S<numéro> », payée en gris */
-  secrets.forEach((q,i)=>{const d=CARTES22.secrets[q.titre];if(!d)return;const k='S'+i;
-    CK[k]={nom:()=>d.nom,cout:d.cout,cible:d.cible?1:0,secret:q.titre,zs:q.Z.id,ultime:false,pose:null,reveille:null,amb:()=>d.ambiance||'',txt:()=>texteCarte(d.effet,1,1),
+  S.secT=S.secT||{};const sec=secrets.map(q=>({titre:q.titre,k:q.k,zs:q.Z.id}));
+  /* 2.15 : les cartes de secrets trouvés dans une autre région restent jouables (titre gardé dans la sauvegarde) */
+  for(const k of S.deck||[])if(/^S/.test(k)&&S.secT[k]&&!sec.some(x=>x.k===k))sec.push({titre:S.secT[k],k,zs:k.split(':')[1]||''});
+  sec.forEach(q=>{const d=CARTES22.secrets[q.titre];if(!d)return;const k=q.k;
+    CK[k]={nom:()=>d.nom,cout:d.cout,cible:d.cible?1:0,secret:q.titre,zs:q.zs,ultime:false,pose:null,reveille:null,amb:()=>d.ambiance||'',txt:()=>texteCarte(d.effet,1,1),
       ops:()=>d.ops||[],jeu:(kk,t)=>{const ctx={L:1,x:1,t,k:kk,demi:true};execOps(d.ops,ctx);if(ctx.exil){const j=CB.defausse.lastIndexOf(kk);if(j>=0)CB.defausse.splice(j,1)}}};
     if(typeof ART!=='undefined')ART[k]=ART.souffle||ART.coup})}
 /* un secret trouvé ajoute sa carte au paquet de combat */
-function carteDeSecret(q){const i=secrets.indexOf(q),k='S'+i;if(!CK[k])return'';if(S.deck.indexOf(k)<0&&S.deck.length<PAQUET_MAX)S.deck.push(k);return CK[k].nom()}
+function carteDeSecret(q){const k=q.k;if(!CK[k])return'';S.secT=S.secT||{};S.secT[k]=q.titre;if(S.deck.indexOf(k)<0&&S.deck.length<PAQUET_MAX)S.deck.push(k);return CK[k].nom()}
 /* une carte de palier n'est éveillée que si sa zone est sur ce pôle, à ce palier ou au-delà ; sinon elle dort hors du paquet de combat */
 function eveillee(k){const i=k.indexOf('#');if(i<0)return true;const id=k.slice(0,i),s=k[i+1],n=+k.slice(i+2),lv=S.lv[id]||0;
   return s==='r'?Math.abs(lv)>=n:(s==='-'?lv<=-n:lv>=n)}

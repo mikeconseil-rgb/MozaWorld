@@ -50,7 +50,7 @@ function bandeauTess(){initCommerce();return`<span class="d" title="Tesselles, l
    les plus proches d'abord. Le Comptoir ne vend pas les secrets encore cachés : on ne saute pas l'exploration (testeur, 19 nov., provisoire). */
 function cartesEnVente(Z){if(typeof secrets==='undefined'||typeof CK==='undefined')return[];
   const d=typeof aPortee==='function'?aPortee(Z.id,30):{};
-  return secrets.map((q,i)=>({q,k:'S'+i})).filter(x=>x.q.found&&CK[x.k]&&S.deck.indexOf(x.k)<0)
+  return secrets.map(q=>({q,k:q.k})).filter(x=>x.q.found&&CK[x.k]&&S.deck.indexOf(x.k)<0)
     .sort((a,b)=>(d[a.q.Z.id]??99)-(d[b.q.Z.id]??99)).slice(0,3)}
 /* pourquoi aucune carte n'est en vente */
 const pasDeCarte=()=>typeof secrets!=='undefined'&&secrets.some(q=>q.found)?'les cartes des secrets trouvés sont toutes dans votre paquet'
