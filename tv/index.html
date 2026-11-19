@@ -10031,7 +10031,7 @@ function carteHTML(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k
   const gris=typeof enGris==='function'&&enGris(k);
   return`<div class="cc kcarte ${z?'z':'base'}${gris?' gris':''}" style="--kb:${bord};--kcA:${rgba(bord,.28)};--kcB:${rgba(bord,.8)}"><div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${c.txt(k)}</div>${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`}
 /* Images IA des cartes présentes dans img/cartes/ (généré par tools/images-cartes/generer.py, ne pas modifier à la main). */
-window.CARTES_IMG=new Set(["ANT120_p5", "ASS006_p2", "CIT_m3", "DON045_p7", "DON_m7"]);
+window.CARTES_IMG=new Set(["ANT120_p5", "ANT_m1", "ANT_p1", "ASS006_m1", "ASS006_p1", "ASS006_p2", "CIT_m1", "CIT_m3", "CIT_p1", "DON045_m1", "DON045_p1", "DON045_p7", "DON_m7"]);
 /* MozaWorld TV : visuel des cartes 2.2 (17 nov., demande de l'utilisateur : « c'est bien mais il faut plus de personnalisation »).
    Chaque carte de zone se compose à partir de ses données, sans aucune image à télécharger :
    - la ZONE donne la scène (biome, emblème du type, graine propre à la tuile) et le bandeau de sa culture ;
