@@ -1,106 +1,189 @@
-{"conteur":"C","zones":{
-"DON":[
-{"support":"mur","titre":"La morale sous la margelle","textes":{
-"m5":"Sous la margelle, la morale a disparu sous une laque d'empreintes vermillon superposées. On n'en lit plus que : « Un ordre s'applique ». La fin a été couverte de sceaux, un par inspecteur, et le dernier tampon est encore humide.",
-"m2":"Sous un auvent de laque rouge écaillée, la morale est tamponnée en marge : « Un ordre s'applique d'abord à la main qui le grave. » Un greffier a ajouté à l'encre vermillon, en tout petit : « sauf dérogation du greffe ».",
-"z":"Gravée dans le basalte brun, sous la margelle : « Un ordre s'applique d'abord à la main qui le grave. » Des pouces anonymes ont usé le mot « d'abord » jusqu'à le rendre lisse, comme si l'on espérait qu'il y ait un ensuite.",
-"p2":"La margelle est fendue et la lave suinte dans la fissure. On lit encore : « Un ordre s'applique d'abord à la main qui le grave. » Dessous, gratté au clou par un forçat : « Alors ne grave rien. »",
-"p5":"De la margelle ne reste qu'un bloc tiède qui dérive sur une coulée. Les évadés y ont gravé au couteau : « Nulle main ne grave ici. » Une fissure céladon traverse la phrase : c'est par là que jaillira la prochaine fontaine."}},
-{"support":"stele","titre":"Le premier Édit","textes":{
-"m5":"Une tablette de basalte couverte d'Édits empilés : « Nul ne courra. Nul ne marchera vite. Nul ne marchera. » Chaque ligne est d'une main plus récente. Le chariot-tambour s'arrête devant elle et attend votre premier pas pour le compter.",
-"m2":"Clouée au palier, la tablette : « Nul ne courra. Qui court sera tamponné, qui est tamponné sera vu. » Le vermillon de la marge est frais, et les dalles devant sont toutes usées au même pas, ni plus long ni plus court.",
-"z":"Une tablette tombée parmi les Tesselés en tas : « Nul ne courra. » Un domino d'os s'est relevé tout seul juste devant, comme pour vous obliger à ralentir. Il retombe dès que vous l'enjambez.",
-"p2":"La tablette est retournée face contre terre sur une dalle soulevée. Au dos, que personne n'avait jamais lu : « Nul ne courra, car la lave court pour lui. » La rigole voisine prend de la vitesse.",
-"p5":"La tablette sert de luge sur une coulée tiède. Un évadé a raturé l'Édit et gravé à sa place : « Cours. » Plus bas, d'une autre main, plus pressée : « Pas vers le céladon. »"}},
-{"support":"borne","titre":"Deux verts","textes":{
-"m5":"Une borne de jade au bord de la mosaïque : « Le permis et l'interdit ont la même couleur. Le permis luit un peu plus. » Elle ne dit pas lequel des deux elle est. Autour d'elle, des empreintes de pieds s'arrêtent net.",
-"m2":"Une borne à l'entrée de l'étage : « Céladon : pose le pied. Jade : présente ta main au greffe. » Les deux mots sont gravés dans des verts si proches qu'il faut les toucher pour les lire, et toucher compte comme un pas.",
-"z":"Une borne de tuf à demi fondue : « Deux verts. L'un te porte, l'autre te juge. » La suite a coulé avec la pierre. Un soufrier y a posé son panier de fleurs de soufre, comme s'il savait lequel.",
-"p2":"La borne penche et la lave a rempli les joints des dalles. On lit : « Deux verts. L'un te portait. » Le temps du verbe a été changé à la pointe, très récemment, par quelqu'un qui n'a pas pris la peine de finir.",
-"p5":"Une veine céladon fend la borne de part en part et luit. Reste lisible : « Le vert ne protège plus : il annonce. » La pierre est tiède, puis chaude. Vous feriez mieux d'avoir fini de lire."}},
-{"support":"panneau","titre":"Le neuvième à l'envers","textes":{
-"m5":"Un panneau de laque où le neuvième Édit est enfin imprimé, cent fois : « Le porteur du sceau commande le puits. Le puits garde celui qui le commande. » Sous la dernière empreinte, un nom que personne n'a vu remonter.",
-"m2":"Panneau de laque écaillée, une empreinte vermillon à moitié : « Le porteur du sceau commande le... » Le reste a été arraché proprement. Un greffier a noté dessous : « Pour la suite, imprimer au fond. Donc descendre. »",
-"z":"Un panneau de bois laqué, gravé à l'envers comme tous les sceaux, illisible tel quel. Un forçat a gratté dessous : « Lis-le dans la lave figée, elle reflète. » La lave figée ne reflète rien. Il le savait très bien.",
-"p2":"Le panneau, à demi brûlé, montre l'Édit gravé à l'envers et une note d'évadé : « On l'a imprimé sur nos mains pour rire. Depuis, nos mains n'obéissent plus tout à fait. » Les lettres tremblent comme ceux qui les ont écrites.",
-"p5":"Le panneau calciné flotte, accroché à une cangue ouverte. Des débris de sceau y sont collés en osselets : « ... garde celui qui... » Un enfant d'évadé a ajouté : « Personne ne commande. Alors il garde qui ? »"}}
-],
-"MAR":[
-{"support":"panneau","titre":"Règlement de séance","textes":{
-"m5":"Le panneau de séance est enfermé dans une housse tricotée de brume. Une seule ligne ressort, brodée au fil : « Le vote est secret. Le résultat aussi. » On devine sous la laine douze autres articles que personne n'a lus, et qui s'appliquent quand même.",
-"m2":"Ardoise de séance mouillée de neige, craie à demi coulée : « Art. 1 : chacun vote. Art. 2 : ... » La suite n'est qu'une poussière blanche. Tout en bas, net, jamais effacé : « Art. 13 : la Maison prend sa part. »",
-"z":"Sous les gargouilles, le règlement de l'Assemblée à la craie : douze articles justes et un treizième, « La Maison prend le treizième vote. » Il n'est pas juste. Il est seulement vrai, et les chanoines ne mentent jamais.",
-"p2":"Les articles sont redessinés en grandes lettres : « Toute motion est lue en clair. Tout bulletin est compté devant tous. La Maison prend le treizième. » Un délégué a souligné trois fois « le treizième », sans rien y changer.",
-"p5":"Le règlement couvre la façade de la nef, blanc de craie sur glace sablée : « Rien n'est caché. » Dessous, plus petit, dans le seul carré de feutre vert du mur : « C'est ainsi que la Maison gagne sans tricher. »"}},
-{"support":"borne","titre":"Les fanions de la piste","textes":{
-"m5":"Une borne de glace dépolie, givrée jusqu'au sommet, entre deux fanions presque du même vert. Gravé : « Suis le vert. » Le givre a mangé la fin de la phrase, celle qui précisait lequel.",
-"m2":"Borne à fanions : « Vert de feutre : l'hémicycle. Vert de mousse : la crevasse. » Un bonimenteur vendait à côté une grille pour distinguer les deux. On a retrouvé la grille au fond, avec lui.",
-"z":"Une borne de bois sombre au bord du glacier : « Vers l'Assemblée. Tenez la corde. » Il n'y a pas de corde. Un Fil-de-Brume, au bord de la crevasse, propose poliment de se tendre pour vous.",
-"p2":"La borne dégagée, numérotée à la craie : « Marche 12 : avancez. Marche 13 : propriété de la Maison. » Une pièce est collée par le gel sur la treizième marche. Personne n'ose la ramasser.",
-"p5":"La borne n'est plus qu'une ligne de craie vivante qui suit vos pas et écrit à mesure : « Vous êtes ici. Vous avez voté ainsi. Vous devez ceci. » Elle ne se trompe jamais, et c'est bien le problème."}},
-{"support":"mur","titre":"Le mur des bulletins","textes":{
-"m5":"Dans la paroi de glace dépolie, des bulletins pliés en quatre, scellés par centaines. Un seul affleure, lisible à l'envers : « Je vote contre la brume. » Celui qui l'a glissé là n'a jamais été compté, ni revu.",
-"m2":"Mur de glace à demi scellé, bulletins pris dans l'épaisseur. Gratté à l'ongle à hauteur d'homme : « Le mien est le quatrième en partant du bas. » Il y a des milliers de quatrièmes en partant du bas.",
-"z":"Le mur des votes, glace bleue sous un arc-boutant. Les bulletins dépassent à moitié : « oui », « non », « rendez la cloche à l'abbesse ». L'orgue du parvis saute une mesure quand on passe devant le dernier.",
-"p2":"Le mur a fondu sur le devant et les bulletins sont épinglés à découvert, chacun signé : « Je vote non. Un pèlerin-joueur, et son sceau. » À côté, à la craie, le compte exact, la part de la Maison déjà retirée.",
-"p5":"Plus de mur : une rangée de bulletins affichés sous le ciel bleu dur, tous lisibles. Le treizième est blanc, sans un mot, et c'est lui qui a fait passer la loi. L'orgue s'est tu pendant qu'on l'affichait."}},
-{"support":"stele","titre":"L'énigme de l'orgue","textes":{
-"m5":"Une stèle sous un givre opaque, près de l'orgue noyé dans la brume. Tracé au doigt dans le givre : « Compte les mesures. Celle qui manque est la tienne. » Le bourdon des crevasses couvre l'air ; plus personne ne compte juste.",
-"m2":"Stèle au pied de l'orgue : « Un trou par note, un carton par loi. Quand l'air saute, la loi est vide. » Une main a ajouté au charbon : « Ou bien c'est toi qui as cligné. »",
-"z":"Stèle près de l'orgue de barbarie : « J'ai douze airs et un silence. Le silence décide. Qui suis-je ? » Les chanoines connaissent la réponse. Ils ne mentent jamais : ils se contentent de se taire.",
-"p2":"La stèle dégagée porte la réponse en craie fraîche : « Le treizième carton : aucun trou, aucune note, aucune loi. » En dessous, d'une autre craie : « Comptez-les. Vos rivaux comptent aussi. »",
-"p5":"Stèle blanche où est scellé un carton perforé géant, chaque trou numéroté ; le dernier carton est lisse. Gravé : « Pendant celui-ci, frappe. » Le Chapitre a signé : c'est donc vrai, pas forcément pour vous."}}
-],
-"ASS152":[
-{"support":"stele","titre":"La pierre-de-parole","textes":{
-"m5":"La pierre-de-parole est froide et noire, ses runes comblées de cendre. Une seule ligne, gravée en creux profond : « Ce qui n'a pas été dit est loi. » Rien n'a été dit ici depuis longtemps. Tout est donc loi.",
-"m2":"Pierre-de-parole tiède, runes noircies de suie : « Monte, énonce, et la paroi juge. » Une rune plus récente a été martelée par-dessus : « Ou tais-toi, et le tison juge. » Elle est mieux taillée que l'originale.",
-"z":"Pierre rouge et chaude des braseros, gravée de runes : « Monte. Énonce ta loi. La paroi répond trois fois ; si la troisième voix revient plus forte que la tienne, ta loi est juste. » Au pied, un tison posé, pas encore éteint.",
-"p2":"Les runes ont été recreusées et passées à l'ocre : « Énonce ta loi. » Sur la troisième marche, quelqu'un a ajouté : « Chante-la plutôt. La paroi préfère le chant, et elle le rend avec intérêts. »",
-"p5":"La pierre brûle presque sous la main, couverte de runes qui changent à chaque écho : « Ta loi. Ta loi. TA LOI. » La troisième ligne est gravée plus profond que les deux autres, et ce n'est pas vous qui l'avez gravée."}},
-{"support":"borne","titre":"Trois souffles","textes":{
-"m5":"Borne de basalte : trois encoches taillées puis remplies de plomb. Gravé : « Un tison dure trois souffles. » Dessous, une quatrième encoche toute neuve : quelqu'un a retenu son souffle plus longtemps que la loi. Il le retient encore.",
-"m2":"« Un tison dure trois souffles. Comptez-les. » Deux encoches sont noircies sur la borne, la troisième est à vif. Autour, les anciens respirent très lentement en vous regardant.",
-"z":"Une borne au pied de la pierre-de-parole : « Un tison dure trois souffles. Comptez-les. » La phrase ne dit pas de qui sont les souffles. C'est tout le piège, et les anciens le savent depuis toujours.",
-"p2":"Trois encoches sur la borne et, gravé au burin à côté : « Trois souffles suffisent pour un vers. » Le tison posé au pied n'a jamais été allumé : ici, les gens chantent avant qu'il ait le temps.",
-"p5":"La chaleur d'un brasero a tordu la borne, et ses encoches sont devenues des notes : « Un souffle, une voix. Trois souffles, trois voix. La quatrième n'est pas à toi. » On l'entend parfois chanter seule."}},
-{"support":"mur","titre":"La paroi des voix","textes":{
-"m5":"Sur la paroi, des noms gravés à hauteur de bouche, puis martelés un à un. Un seul reste : « Ici, quelqu'un a parlé. » Autour, la roche est vitrifiée, comme si le mot avait brûlé en sortant.",
-"m2":"Gravé dans la paroi rouge, en runes serrées : « J'ai voulu contredire. La loi était déjà passée. » Pas d'auteur. Les anciens disent que c'est la règle, et qu'elle vaut aussi pour les épitaphes.",
-"z":"La paroi garde des runes de toutes tailles, chacune une loi votée à l'écho. L'une, minuscule : « Nul ne parlera plus fort que la paroi. » Elle a été proposée à voix basse. Elle est passée.",
-"p2":"Les runes de la paroi se répètent trois fois, chaque copie plus grande : « Nous revenons. Nous revenons. NOUS REVENONS. » Des marches ont été taillées dessous dans la roche, pour descendre.",
-"p5":"La paroi est nue : les runes sont parties. Reste une ligne à la craie rouge, laissée par un Écho-Chanteur qui marche maintenant parmi vous : « Merci pour la voix. Nous la gardons. » Il ne dit pas jusqu'à quand."}},
-{"support":"panneau","titre":"Le brasero couvert","textes":{
-"m5":"Un couvercle de fer rivé sur un brasero éteint. Gravé : « Ne pas découvrir. » Dessous, plus petit : « Ne pas lire ceci à voix haute. » Vous l'avez lu dans votre tête. Quelque part dans la faille, on vous a entendu.",
-"m2":"Panneau de fer cloué sur le brasero couvert : « La chaleur reste, la flamme se tait. Qui souffle dessus prend la parole. » La suie autour du panneau dessine deux mains qui ont essayé.",
-"z":"Un panneau de fer près du brasero de l'assemblée : « Pour parler, prenez la braise. Pour vous taire, posez-la. » Rien n'est prévu pour ceux qui ne font ni l'un ni l'autre. Ils brûlent, simplement.",
-"p2":"Le panneau est chaud, le brasero rallumé. Gravé de frais : « Chantez fort : la paroi renvoie la chaleur avec la voix. » Plus bas, en petit : « Chanter contre le brasero brûle la gorge. » Personne ne lit le bas.",
-"p5":"Le panneau a fondu en une langue de fer tendue vers le ciel ; les runes coulées se lisent encore : « Ce qu'on confie à la paroi, elle le rend trois fois. » La chaleur aussi. Partout, des gorges rouges, et des sourires."}}
-],
-"ANT120":[
-{"support":"mur","titre":"Le linteau de l'enclos","textes":{
-"m5":"Le linteau est pris dans un bloc de glace bleue où la morale se lit en miroir : « On n'invite pas le gel et la braise à la même auge. » Le mot « braise » a été gratté de l'intérieur de la glace. On se demande avec quoi.",
-"m2":"Givre sur le linteau, la morale à demi blanchie : « On n'invite pas le gel... à la même auge. » Un berger a ajouté au charbon, sur la pierre encore libre : « Personne n'a dit qu'on invitait. »",
-"z":"Sur le linteau de pierres sèches, en signes taillés : « On n'invite pas le gel et la braise à la même auge. » Côté aube la pierre est givrée, côté midi elle est tiède. La morale est pile au milieu, et elle se fendille.",
-"p2":"Le linteau chauffe et la morale noircit : « On n'invite pas le gel et la braise à la même auge. » Le mot « gel » s'écaille au soleil. Bientôt il ne restera qu'un conseil adressé à la braise seule.",
-"p5":"Le linteau rougeoie et s'est affaissé. Il n'en reste que : « ... la braise à la même auge. » Les chacals passent dessous sans baisser la tête, et la pierre leur roussit le dos au passage."}},
-{"support":"borne","titre":"Le compte des bêtes","textes":{
-"m5":"Borne gelée devant l'auge, trois encoches, toutes prises : « Trois boivent. Trois tiennent. Le reste attend dehors. » Dehors, des formes de givre attendent depuis des nuits. Certaines ont des mains.",
-"m2":"Borne sertie de dalles bleues : « Trois bêtes à l'auge, pas une de plus. » Un berger a gravé une quatrième encoche, puis l'a effacée aussitôt. Le trait effacé est le plus profond des quatre.",
-"z":"Borne de pierre sèche, trois encoches : « La source abreuve trois bêtes. La quatrième boit à ta place. » Personne ne sait si le berger compte parmi les bêtes. La source, elle, a déjà fait son compte.",
-"p2":"Borne chaude, encoches noircies : « La source abreuve trois bêtes. » Un quatrième trait a été ajouté au charbon, puis un cinquième. À côté, un berger a écrit, pressé : « Bois avant midi. »",
-"p5":"La borne fume, couverte de traits jusqu'au sommet : dix, douze, toute la meute. En haut, plus ancien que le reste : « La quatrième boit à ta place. » L'auge est vide. Vous avez soif. Comptez."}},
-{"support":"panneau","titre":"Les deux portes","textes":{
-"m5":"Panneau cerclé de givre sur la porte de l'aube : « Entrée : ouverte. » Le mot pend à un clou qui pivote ; il est tourné côté « fermée » depuis le dernier bœuf, et le clou a gelé dans cette position.",
-"m2":"Sur le panneau de la porte de l'aube : « Bêtes de la nuit, par ici. Bêtes du soleil, par là. Jamais ensemble. » La flèche « par là » a été tournée vers le mur, et la porte de midi est bouchée de glace.",
-"z":"Un panneau entre les deux portes : « Aube : bêtes de la nuit. Midi : bêtes du soleil. Jamais ensemble. » Une troisième flèche, plus petite, sans légende, pointe vers la source elle-même.",
-"p2":"Le panneau de midi a bruni : « Bêtes du soleil, entrez vite. » Le mot « vite » est souligné deux fois. Celui de l'aube gît dans la poussière, tourné face contre le sol.",
-"p5":"Le panneau de midi a brûlé ; seule tient la flèche, rougeoyante : « Par ici. » Elle pointe droit sur l'eau qui bout. La meute l'a suivie. La flèche n'a pas menti : elle n'a juste pas dit pour quoi faire."}},
-{"support":"stele","titre":"La pierre du berger","textes":{
-"m5":"Une stèle à demi enfouie sous les dalles bleues, gravée à la hâte : « J'ai fait entrer le troupeau. J'ai fermé l'aube derrière lui. » La suite est dans la glace, avec la main qui l'écrivait.",
-"m2":"Une pierre de berger, givrée : « Je suis resté dehors pour que mes trois bêtes boivent. » Devant, une calebasse vide gelée sur la pierre. Les bêtes, elles, sont toujours à l'auge, et elles vont bien.",
-"z":"Une stèle gravée de bœufs en file : « J'ai compté trois. La quatrième a bu ma part. Je n'ai pas vu son pelage. » Le trait du berger est plus gras que ceux des bêtes, comme ajouté après coup.",
-"p2":"Stèle tiède, gravure noircie : « J'ai compté trois bêtes de midi. Elles mordaient trop vite pour être comptées deux fois. » Une morsure de chacal a emporté le coin de la pierre, et le mot « trois ».",
-"p5":"Stèle fendue par l'eau qui bout, gravures rougies : « Ici, un berger a donné sa part à la source. » Le dessin montre la meute entière plongeant derrière lui. Personne n'a gravé s'il l'avait choisi."}}
-]
-}}
+{
+ "conteur": "C",
+ "zones": {
+  "DON": [
+   {
+    "support": "mur",
+    "titre": "La morale sous la margelle",
+    "textes": {
+     "m5": "Sous la margelle, la morale a disparu sous une laque d'empreintes vermillon superposées. On n'en lit plus que : « Un ordre s'applique ». La fin a été couverte de sceaux, un par inspecteur, et le dernier tampon est encore humide.",
+     "m2": "Sous un auvent de laque rouge écaillée, la morale est tamponnée en marge : « Un ordre s'applique d'abord à la main qui le grave. » Un greffier a ajouté à l'encre vermillon, en tout petit : « sauf dérogation du greffe ».",
+     "z": "Gravée dans le basalte brun, sous la margelle : « Un ordre s'applique d'abord à la main qui le grave. » Des pouces anonymes ont usé le mot « d'abord » jusqu'à le rendre lisse, comme si l'on espérait qu'il y ait un ensuite.",
+     "p2": "La margelle est fendue et la lave suinte dans la fissure. On lit encore : « Un ordre s'applique d'abord à la main qui le grave. » Dessous, gratté au clou par un forçat : « Alors ne grave rien. »",
+     "p5": "De la margelle ne reste qu'un bloc tiède qui dérive sur une coulée. Les évadés y ont gravé au couteau : « Nulle main ne grave ici. » Une fissure céladon traverse la phrase : c'est par là que jaillira la prochaine fontaine."
+    }
+   },
+   {
+    "support": "stele",
+    "titre": "Le premier Édit",
+    "textes": {
+     "m5": "Une tablette de basalte couverte d'Édits empilés : « Nul ne courra. Nul ne marchera vite. Nul ne marchera. » Chaque ligne est d'une main plus récente. Le chariot-tambour s'arrête devant elle et attend votre premier pas pour le compter.",
+     "m2": "Clouée au palier, la tablette : « Nul ne courra. Qui court sera tamponné, qui est tamponné sera vu. » Le vermillon de la marge est frais, et les dalles devant sont toutes usées au même pas, ni plus long ni plus court.",
+     "z": "Une tablette tombée parmi les Tesselés en tas : « Nul ne courra. » Un domino d'os s'est relevé tout seul juste devant, comme pour vous obliger à ralentir. Il retombe dès que vous l'enjambez.",
+     "p2": "La tablette est retournée face contre terre sur une dalle soulevée. Au dos, que personne n'avait jamais lu : « Nul ne courra, car la lave court pour lui. » La rigole voisine prend de la vitesse.",
+     "p5": "La tablette sert de luge sur une coulée tiède. Un évadé a raturé l'Édit et gravé à sa place : « Cours. » Plus bas, d'une autre main, plus pressée : « Pas vers le céladon. »"
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "Deux verts",
+    "textes": {
+     "m5": "Une borne de jade au bord de la mosaïque : « Le permis et l'interdit ont la même couleur. Le permis luit un peu plus. » Elle ne dit pas lequel des deux elle est. Autour d'elle, des empreintes de pieds s'arrêtent net.",
+     "m2": "Une borne à l'entrée de l'étage : « Céladon : pose le pied. Jade : présente ta main au greffe. » Les deux mots sont gravés dans des verts si proches qu'il faut les toucher pour les lire, et toucher compte comme un pas.",
+     "z": "Une borne de tuf à demi fondue : « Deux verts. L'un te porte, l'autre te juge. » La suite a coulé avec la pierre. Un soufrier y a posé son panier de fleurs de soufre, comme s'il savait lequel.",
+     "p2": "La borne penche et la lave a rempli les joints des dalles. On lit : « Deux verts. L'un te portait. » Le temps du verbe a été changé à la pointe, très récemment, par quelqu'un qui n'a pas pris la peine de finir.",
+     "p5": "Une veine céladon fend la borne de part en part et luit. Reste lisible : « Le vert ne protège plus : il annonce. » La pierre est tiède, puis chaude. Vous feriez mieux d'avoir fini de lire."
+    }
+   },
+   {
+    "support": "panneau",
+    "titre": "Le neuvième à l'envers",
+    "textes": {
+     "m5": "Un panneau de laque où le neuvième Édit est enfin imprimé, cent fois : « Le porteur du sceau commande le puits. Le puits garde celui qui le commande. » Sous la dernière empreinte, un nom que personne n'a vu remonter.",
+     "m2": "Panneau de laque écaillée, une empreinte vermillon à moitié : « Le porteur du sceau commande le... » Le reste a été arraché proprement. Un greffier a noté dessous : « Pour la suite, imprimer au fond. Donc descendre. »",
+     "z": "Un panneau de bois laqué, gravé à l'envers comme tous les sceaux, illisible tel quel. Un forçat a gratté dessous : « Lis-le dans la lave figée, elle reflète. » La lave figée ne reflète rien. Il le savait très bien.",
+     "p2": "Le panneau, à demi brûlé, montre l'Édit gravé à l'envers et une note d'évadé : « On l'a imprimé sur nos mains pour rire. Depuis, nos mains n'obéissent plus tout à fait. » Les lettres tremblent comme ceux qui les ont écrites.",
+     "p5": "Le panneau calciné flotte, accroché à une cangue ouverte. Des débris de sceau y sont collés en osselets : « ... garde celui qui... » Un enfant d'évadé a ajouté : « Personne ne commande. Alors il garde qui ? »"
+    }
+   }
+  ],
+  "MAR": [
+   {
+    "support": "panneau",
+    "titre": "Règlement de séance",
+    "textes": {
+     "m5": "Le panneau de séance est enfermé dans une housse tricotée de brume. Une ligne ressort, brodée au fil : « Le vote est secret. Le résultat aussi. » Sous la laine, douze articles que personne n'a lus, et qui s'appliquent.",
+     "m2": "Ardoise de séance mouillée de neige, craie à demi coulée : « Art. 1 : chacun vote. Art. 2 : ... » La suite n'est qu'une poussière blanche. Tout en bas, net, jamais effacé : « Art. 13 : la Maison prend sa part. »",
+     "z": "Sous les gargouilles, le règlement de l'Assemblée à la craie : douze articles justes et un treizième, « La Maison prend le treizième vote. » Il n'est pas juste. Il est seulement vrai, et les chanoines ne mentent jamais.",
+     "p2": "Les articles sont redessinés en grandes lettres : « Toute motion est lue en clair. Tout bulletin est compté devant tous. La Maison prend le treizième. » Un délégué a souligné trois fois « le treizième », sans rien y changer.",
+     "p5": "Le règlement couvre la façade de la nef, blanc de craie sur glace sablée : « Rien n'est caché. » Dessous, plus petit, dans le seul carré de feutre vert du mur : « C'est ainsi que la Maison gagne sans tricher. »"
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "Les fanions de la piste",
+    "textes": {
+     "m5": "Une borne de glace dépolie, noyée de brume jusqu'au sommet. Gravé : « Tenez la corde. » Une corde part de la borne dans le blanc, tendue et tiède. Personne ne se souvient de l'avoir posée.",
+     "m2": "Borne à demi dégagée : « Vers l'Assemblée, suivez les fanions. » Un bonimenteur vendait à côté des fanions de rechange, moins chers. On a retrouvé son stock au fond de la crevasse, et lui avec.",
+     "z": "Une borne de bois sombre au bord du glacier : « Vers l'Assemblée. Tenez la corde. » Il n'y a pas de corde. Un Fil-de-Brume, au bord de la crevasse, propose poliment de se tendre pour vous.",
+     "p2": "La borne dégagée, numérotée à la craie : « Marche 12 : avancez. Marche 13 : propriété de la Maison. » Une pièce est collée par le gel sur la treizième marche. Personne n'ose la ramasser.",
+     "p5": "La borne n'est plus qu'une ligne de craie vivante qui suit vos pas et écrit à mesure : « Vous êtes ici. Vous avez voté ainsi. Vous devez ceci. » Elle ne se trompe jamais, et c'est bien le problème."
+    }
+   },
+   {
+    "support": "mur",
+    "titre": "Le mur des bulletins",
+    "textes": {
+     "m5": "Dans la paroi de glace dépolie, des bulletins pliés en quatre, scellés par centaines. Un seul affleure, lisible à l'envers : « Je vote contre la brume. » Celui qui l'a glissé là n'a jamais été compté, ni revu.",
+     "m2": "Mur de glace à demi scellé, bulletins pris dans l'épaisseur. Gratté à l'ongle à hauteur d'homme : « Le mien est le quatrième en partant du bas. » Il y a des milliers de quatrièmes en partant du bas.",
+     "z": "Le mur des votes, glace bleue sous un arc-boutant. Les bulletins dépassent à moitié : « oui », « non », « rendez la cloche à l'abbesse ». L'orgue du parvis saute une mesure quand on passe devant le dernier.",
+     "p2": "Le mur a fondu sur le devant et les bulletins sont épinglés à découvert, chacun signé : « Je vote non. Un pèlerin-joueur, et son sceau. » À côté, à la craie, le compte exact, la part de la Maison déjà retirée.",
+     "p5": "Plus de mur : une rangée de bulletins affichés sous le ciel bleu dur, tous lisibles. Le treizième est blanc, sans un mot, et c'est lui qui a fait passer la loi. L'orgue s'est tu pendant qu'on l'affichait."
+    }
+   },
+   {
+    "support": "stele",
+    "titre": "L'énigme de l'orgue",
+    "textes": {
+     "m5": "Une stèle sous un givre opaque, près de l'orgue noyé dans la brume. Tracé au doigt dans le givre : « Compte les mesures. Celle qui manque est la tienne. » Le bourdon des crevasses couvre l'air ; plus personne ne compte juste.",
+     "m2": "Stèle au pied de l'orgue : « Un trou par note, un carton par loi. Quand l'air saute, la loi est vide. » Le givre a pris dans les lettres du mot « vide », et seulement là.",
+     "z": "Stèle près de l'orgue de barbarie : « J'ai douze airs et un silence. Le silence décide. Qui suis-je ? » Les chanoines connaissent la réponse. Ils la gardent pour la prochaine séance.",
+     "p2": "La stèle dégagée porte la réponse en craie fraîche : « Le treizième carton : aucun trou, aucune note, aucune loi. » En dessous, d'une autre craie : « Comptez-les. Vos rivaux comptent aussi. »",
+     "p5": "Stèle blanche où est scellé un carton perforé géant, chaque trou numéroté ; le dernier carton est lisse. Gravé : « Pendant celui-ci, frappe. » Le Chapitre a signé : c'est donc vrai, pas forcément pour vous."
+    }
+   }
+  ],
+  "ASS152": [
+   {
+    "support": "stele",
+    "titre": "La pierre-de-parole",
+    "textes": {
+     "m5": "La pierre-de-parole est froide et noire, ses runes comblées de cendre. Une seule ligne, gravée en creux profond : « Ce qui n'a pas été dit est loi. » Rien n'a été dit ici depuis longtemps. Tout est donc loi.",
+     "m2": "Pierre-de-parole tiède, runes noircies de suie : « Monte, énonce, et la paroi juge. » Une rune plus récente a été martelée par-dessus : « Ou tais-toi, et le tison juge. » Elle est mieux taillée que l'originale.",
+     "z": "Pierre rouge et chaude des braseros, gravée de runes : « Monte. Énonce ta loi. La paroi répond trois fois ; si la troisième voix revient plus forte que la tienne, ta loi est juste. » Au pied, un tison posé, pas encore éteint.",
+     "p2": "Les runes ont été recreusées et passées à l'ocre : « Énonce ta loi. » Sur la troisième marche, quelqu'un a ajouté : « Chante-la plutôt. La paroi préfère le chant, et elle le rend avec intérêts. »",
+     "p5": "La pierre brûle presque sous la main, couverte de runes qui changent à chaque écho : « Ta loi. Ta loi. TA LOI. » La troisième ligne est gravée plus profond que les deux autres, et ce n'est pas vous qui l'avez gravée."
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "Trois souffles",
+    "textes": {
+     "m5": "Borne de basalte : trois encoches taillées puis remplies de plomb. Gravé : « Un tison dure trois souffles. » Dessous, une quatrième encoche toute neuve : quelqu'un a retenu son souffle plus longtemps que la loi. Il le retient encore.",
+     "m2": "« Un tison dure trois souffles. Comptez-les. » Deux encoches sont noircies sur la borne, la troisième est à vif. Autour, les anciens respirent très lentement en vous regardant.",
+     "z": "Une borne au pied de la pierre-de-parole : « Un tison dure trois souffles. Comptez-les. » La phrase ne dit pas de qui sont les souffles. C'est tout le piège, et les anciens le savent depuis toujours.",
+     "p2": "Trois encoches sur la borne et, gravé au burin à côté : « Trois souffles suffisent pour un vers. » Le tison posé au pied n'a jamais été allumé : ici, les gens chantent avant qu'il ait le temps.",
+     "p5": "La chaleur d'un brasero a tordu la borne, et ses encoches sont devenues des notes : « Un souffle, une voix. Au-delà du troisième, tu chantes avec le souffle d'un autre. » La borne reprend parfois le refrain, seule."
+    }
+   },
+   {
+    "support": "mur",
+    "titre": "La paroi des voix",
+    "textes": {
+     "m5": "Sur la paroi, des noms gravés à hauteur de bouche, puis martelés un à un. Un seul reste : « Ici, quelqu'un a parlé. » Autour, la roche est vitrifiée, comme si le mot avait brûlé en sortant.",
+     "m2": "Gravé dans la paroi rouge, en runes serrées : « J'ai voulu contredire. La loi était déjà passée. » Pas d'auteur. Les anciens disent que c'est la règle, et qu'elle vaut aussi pour les épitaphes.",
+     "z": "La paroi garde des runes de toutes tailles, chacune une loi votée à l'écho. L'une, minuscule : « Nul ne parlera plus fort que la paroi. » Elle a été proposée à voix basse. Elle est passée.",
+     "p2": "Les runes de la paroi débordent sur les marches, et chaque loi porte trois signatures : la vôtre, et deux autres qui lui ressemblent un peu trop. Des marches neuves descendent dans la roche.",
+     "p5": "La paroi est nue : les runes sont parties. Reste une ligne à la craie rouge, laissée par un Écho-Chanteur qui marche maintenant parmi vous : « Merci pour la voix. Nous la gardons. » Il ne dit pas jusqu'à quand."
+    }
+   },
+   {
+    "support": "panneau",
+    "titre": "Le brasero couvert",
+    "textes": {
+     "m5": "Un couvercle de fer rivé sur un brasero éteint. Gravé : « Ne pas découvrir. » Dessous, plus petit : « Ne pas lire ceci à voix haute. » Vous l'avez lu dans votre tête. Quelque part dans la faille, on vous a entendu.",
+     "m2": "Panneau de fer cloué sur le brasero couvert : « La chaleur reste, la flamme se tait. Qui souffle dessus prend la parole. » La suie autour du panneau dessine deux mains qui ont essayé.",
+     "z": "Un panneau de fer près du brasero de l'assemblée : « Pour parler, prenez la braise. Pour vous taire, posez-la. » Rien n'est prévu pour ceux qui ne font ni l'un ni l'autre. Ils brûlent, simplement.",
+     "p2": "Le panneau est chaud, le brasero rallumé. Gravé de frais : « Chantez fort : la paroi renvoie la chaleur avec la voix. » Plus bas, en petit : « Chanter contre le brasero brûle la gorge. » Personne ne lit le bas.",
+     "p5": "Le panneau a fondu en une langue de fer tendue vers le ciel ; les runes coulées se lisent encore : « Ce qu'on confie à la paroi, elle le rend trois fois. » La chaleur aussi. Partout, des gorges rouges, et des sourires."
+    }
+   }
+  ],
+  "ANT120": [
+   {
+    "support": "mur",
+    "titre": "Le linteau de l'enclos",
+    "textes": {
+     "m5": "Le linteau est pris dans un bloc de glace bleue où la morale se lit en miroir : « On n'invite pas le gel et la braise à la même auge. » Le mot « braise » a été gratté de l'intérieur de la glace. On se demande avec quoi.",
+     "m2": "Givre sur le linteau, la morale à demi blanchie : « On n'invite pas le gel... à la même auge. » Un berger a ajouté au charbon, sur la pierre encore libre : « Personne n'a dit qu'on invitait. »",
+     "z": "Sur le linteau de pierres sèches, en signes taillés : « On n'invite pas le gel et la braise à la même auge. » Côté aube la pierre est givrée, côté midi elle est tiède. La morale est pile au milieu, et elle se fendille.",
+     "p2": "Le linteau chauffe et la morale noircit : « On n'invite pas le gel et la braise à la même auge. » Le mot « gel » s'écaille au soleil. Bientôt il ne restera qu'un conseil adressé à la braise seule.",
+     "p5": "Le linteau rougeoie et s'est affaissé. Il n'en reste que : « ... la braise à la même auge. » Les chacals passent dessous sans baisser la tête, et la pierre leur roussit le dos au passage."
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "Le compte des bêtes",
+    "textes": {
+     "m5": "Borne gelée devant l'auge, trois encoches, toutes prises : « Trois boivent. Trois tiennent. Le reste attend dehors. » Dehors, des formes de givre attendent depuis des nuits. Certaines ont des mains.",
+     "m2": "Borne sertie de dalles bleues : « Trois bêtes à l'auge, pas une de plus. » Un berger a gravé une quatrième encoche, puis l'a effacée aussitôt. Le trait effacé est le plus profond des quatre.",
+     "z": "Borne de pierre sèche, trois encoches : « La source abreuve trois bêtes. La quatrième boit à ta place. » Personne ne sait si le berger compte parmi les bêtes. La source, elle, a déjà fait son compte.",
+     "p2": "Borne chaude, encoches noircies : « La source abreuve trois bêtes. » Un quatrième trait a été ajouté au charbon, puis un cinquième. À côté, un berger a écrit, pressé : « Bois avant midi. »",
+     "p5": "La borne fume, couverte de traits jusqu'au sommet : dix, douze, toute la meute. En haut, plus ancien que le reste : « La quatrième boit à ta place. » L'auge est vide. Vous avez soif. Comptez."
+    }
+   },
+   {
+    "support": "panneau",
+    "titre": "Les deux portes",
+    "textes": {
+     "m5": "Panneau cerclé de givre sur la porte de l'aube : « Entrée : ouverte. » Le mot pend à un clou qui pivote ; il est tourné côté « fermée » depuis le dernier bœuf, et le clou a gelé dans cette position.",
+     "m2": "Sur le panneau de la porte de l'aube : « Bêtes de la nuit, par ici. Bêtes du soleil, par là. Jamais ensemble. » La flèche « par là » a été tournée vers le mur, et la porte de midi est bouchée de glace.",
+     "z": "Un panneau entre les deux portes : « Aube : bêtes de la nuit. Midi : bêtes du soleil. Jamais ensemble. » Une troisième flèche, plus petite, sans légende, pointe vers la source elle-même.",
+     "p2": "Le panneau de midi a bruni : « Bêtes du soleil, entrez vite. » Le mot « vite » est souligné deux fois. Celui de l'aube gît dans la poussière, tourné face contre le sol.",
+     "p5": "Le panneau de midi a brûlé ; seule tient la flèche, rougeoyante : « Par ici. » Elle pointe droit sur l'eau qui bout. La meute l'a suivie. La flèche n'a pas menti : elle a seulement omis de dire pour quoi faire."
+    }
+   },
+   {
+    "support": "stele",
+    "titre": "La pierre du berger",
+    "textes": {
+     "m5": "Une stèle à demi enfouie sous les dalles bleues, gravée à la hâte : « J'ai fait entrer le troupeau. J'ai fermé l'aube derrière lui. » La suite est dans la glace, avec la main qui l'écrivait.",
+     "m2": "Une pierre de berger, givrée : « Je suis resté dehors pour que mes trois bêtes boivent. » Devant, une calebasse vide gelée sur la pierre. Les bêtes, elles, sont toujours à l'auge, et elles vont bien.",
+     "z": "Une stèle gravée de bœufs en file : « J'ai compté trois. La quatrième a bu ma part. Je n'ai pas vu son pelage. » Le trait du berger est plus gras que ceux des bêtes, comme ajouté après coup.",
+     "p2": "Stèle tiède, gravure noircie : « J'ai compté trois bêtes de midi. Elles mordaient trop vite pour être comptées deux fois. » Une morsure de chacal a emporté le coin de la pierre, et le mot « trois ».",
+     "p5": "Stèle fendue par l'eau qui bout, gravures rougies : « Ici, un berger a donné sa part à la source. » Le dessin montre la meute entière plongeant derrière lui. Personne n'a gravé s'il l'avait choisi."
+    }
+   }
+  ]
+ }
+}
