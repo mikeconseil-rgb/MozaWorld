@@ -223,6 +223,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%QUALS.length;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize();openMenu()}},
     ...(typeof openRivaux==='function'?[{l:'Rivaux',ic:'♜',d:'les quatre maisons et leurs menaces',go:()=>openRivaux()}]:[]),
+    ...(typeof openLois==='function'?[{l:'Lois du monde',ic:'⚖',d:resumeLois(),go:()=>openLois()}]:[]),
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
@@ -571,3 +572,4 @@ if(typeof amenagerTest==='function')Object.assign(window.MZ,{amenager:amenagerTe
 if(typeof tessellesTest==='function')Object.assign(window.MZ,{tesselles:tessellesTest,comptoir:id=>openComptoir(ZB[id||'CIT']),commerceCycle});
 if(typeof tourTest==='function')Object.assign(window.MZ,{tour:tourTest,tourTombe:id=>tomberTour(id,'Test.'),defenseTours,preavisTours});
 if(typeof caravanesTest==='function')Object.assign(window.MZ,{caravanes:caravanesTest,piller:pillerTest,escorter:escorterCaravane,caravanesCycle});
+if(typeof loisEtat==='function')Object.assign(window.MZ,{lois:loisEtat,loiForcer,loiRenforcer,loisCycle,loisTest:LOIS_TEST});
