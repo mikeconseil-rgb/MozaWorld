@@ -69,7 +69,8 @@ function ciblesConteste(){const R=riv();if(R.c)return[];return ZN.filter(Z=>S.ow
 /* ---------- une maison agit ---------- */
 function rivalAgit(force,sorte){const R=riv();
   const ordre=RIVAUX.slice().sort(()=>Math.random()-.5);
-  for(const r of ordre){const plein=!!R.t[r.k]||zonesMaison(r.k).length>=RIV_MAX();   /* une seule tentative par maison ; la tentative compte dans le plafond */
+  for(const r of ordre){if(typeof pacteAgit==='function'){const x=pacteAgit(r);if(x!==undefined){if(x)return x;if(!force)return null;continue}}   /* pacte.js : la maison du pacte agit à sa façon */
+    const plein=!!R.t[r.k]||zonesMaison(r.k).length>=RIV_MAX();   /* une seule tentative par maison ; la tentative compte dans le plafond */
     let veut=sorte||(Math.random()<r.p?'conteste':'prise');
     const cp=plein?[]:ciblesPrise(),cc=ciblesConteste();
     if(veut==='prise'&&!cp.length&&!sorte)veut='conteste';else if(veut==='conteste'&&!cc.length&&!sorte)veut='prise';
@@ -182,12 +183,13 @@ function ligneRivaux(){if(!S.riv)return'';const R=S.riv;
   const c=R.c&&ZB[R.c.id]?`<span class="d" title="${RIVK[R.c.r].nom} conteste ${ZB[R.c.id].info.nom}" style="color:#ff9a8a"><span style="color:${RIVK[R.c.r].col}">${RIVK[R.c.r].bl}</span>${court(R.c.id).split(' ').pop()}<small> ${(n=>n+' cycle'+(n>1?'s':''))(Math.max(0,R.c.du-R.nc))}</small></span>`:'';
   const t=Object.keys(R.t||{}).filter(k=>tentativeSur(R.t[k].id)===k).map(k=>{const r=RIVK[k],id=R.t[k].id;
     return`<span class="d" title="${LaM(r)} tente l'épreuve ${de_(ZB[id].info.nom)}" style="color:${r.col}">${r.bl}?${court(id).split(' ').pop()}<small> ${cyclesTxt(resteTente(k))}</small></span>`}).join('');
-  return`<div class="ligne"><span class="titre">Rivaux</span>${m}${t}${c}</div>`}
+  return`<div class="ligne"><span class="titre">Rivaux</span>${m}${t}${c}${typeof lignePacte==='function'?lignePacte():''}</div>`}
 
 /* ---------- écran « Rivaux » (menu Pause) ---------- */
 function menaceDe(r){const R=riv(),l=[];const tk=R.t[r.k]&&tentativeSur(R.t[r.k].id)===r.k;
   if(tk)l.push(`tente l'épreuve ${de_(ZB[R.t[r.k].id].info.nom)} dans ${cyclesTxt(resteTente(r.k))}`);
   if(R.c&&R.c.r===r.k&&ZB[R.c.id])l.push(`conteste ${ZB[R.c.id].info.nom} : épreuve dans ${cyclesTxt(Math.max(0,R.c.du-R.nc))}`);
+  if(typeof pacteTexte==='function'){const p=pacteTexte(r);if(p)l.unshift(p)}   /* pacte.js */
   return l.length?l.join(' ; '):'aucune menace annoncée'}
 function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv();
   ui('menu',{sur:'Pause · les maisons rivales',t:'Rivaux',f:typeof f==='number'?f:0,
@@ -196,6 +198,6 @@ function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv
       return{l:`${r.nom} · ${z.length} zone${z.length>1?'s':''}`,ic:`<span style="color:${r.col}">${r.bl}</span>`,d:menaceDe(r),go:()=>openMaison(r,i)}}),{l:'Retour',ic:'◆',go:()=>openMenu()}]})}
 function openMaison(r,i){const z=zonesMaison(r.k),R=riv(),cz=R.c&&R.c.r===r.k?ZB[R.c.id]:null,tz=R.t[r.k]&&tentativeSur(R.t[r.k].id)===r.k?ZB[R.t[r.k].id]:null;
   ui('menu',{sur:'Rivaux · tempérament du conteur '+r.conteur,t:r.bl+' '+r.nom,
-    corps:`<p>${r.tmp}</p><p class="petit">Zones : ${z.length?z.map(Z=>Z.info.nom).join(', '):'aucune pour l\'instant'} · type préféré : ${({CIT:'Citadelles',DON:'Donjons',RES:'Ressources',ANT:'Antres',MAR:'Assemblées'})[r.pref]} · prochaine menace : ${menaceDe(r)}.</p>`,
-    back:()=>openRivaux(i),opts:[...(tz?[{l:'Aller défier ses gens à '+tz.info.nom,ic:'⚔',cls:'m',d:`épreuve dans ${cyclesTxt(resteTente(r.k))}`,go:()=>{tp(tz.id);toMonde()}}]:[]),...(cz?[{l:'Aller défendre '+cz.info.nom,ic:'⚔',cls:'m',go:()=>{tp(cz.id);toMonde()}}]:[]),
+    corps:`<p>${r.tmp}</p><p class="petit">Zones : ${z.length?z.map(Z=>Z.info.nom).join(', '):'aucune pour l\'instant'} · type préféré : ${({CIT:'Citadelles',DON:'Donjons',RES:'Ressources',ANT:'Antres',MAR:'Assemblées'})[r.pref]} · prochaine menace : ${menaceDe(r)}.</p>${typeof fichePacte==='function'?fichePacte(r):''}`,
+    back:()=>openRivaux(i),opts:[...(typeof optionsPacte==='function'?optionsPacte(r,i):[]),...(tz?[{l:'Aller défier ses gens à '+tz.info.nom,ic:'⚔',cls:'m',d:`épreuve dans ${cyclesTxt(resteTente(r.k))}`,go:()=>{tp(tz.id);toMonde()}}]:[]),...(cz?[{l:'Aller défendre '+cz.info.nom,ic:'⚔',cls:'m',go:()=>{tp(cz.id);toMonde()}}]:[]),
       ...z.map(Z=>({l:'Aller à '+Z.info.nom,ic:'✧',d:'palier '+(sgn(S.lv[Z.id])||'0'),go:()=>{tp(Z.id);toMonde()}})),{l:'Retour',ic:'◆',go:()=>openRivaux(i)}]})}

@@ -567,4 +567,5 @@ if(typeof domaines==='function')Object.assign(window.MZ,{domaines,verrouillee,de
 if(typeof hordeTest==='function')Object.assign(window.MZ,{horde:hordeTest,hordeArrive,poleEnvahisseur,hordeDefense:defenseHorde});
 if(typeof amenagerTest==='function')Object.assign(window.MZ,{amenager:amenagerTest,piegesDonjon,reparerPieges,piegesHorde,donjonsTenus});
 if(typeof tessellesTest==='function')Object.assign(window.MZ,{tesselles:tessellesTest,comptoir:id=>openComptoir(ZB[id||'CIT']),commerceCycle});
+if(typeof pacteTest==='function')Object.assign(window.MZ,{pacte:pacteTest,rompre:()=>romprePacte('menu'),pacteAgit:pacteAgitTest,pacteResout:resoudreContesteMaison});
 if(typeof tourTest==='function')Object.assign(window.MZ,{tour:tourTest,tourTombe:id=>tomberTour(id,'Test.'),defenseTours,preavisTours});
