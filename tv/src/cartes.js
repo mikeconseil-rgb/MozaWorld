@@ -40,7 +40,7 @@ function execOp(o,c){const L=c.L,x=c.x,n=v=>Math.max(0,Math.round(val(v,L)*x)),o
     case'si':if(condition(o[1],c))execOps(o[2],c);break;
     case'prixPV':perdPV(Math.round(val(o[1],L)));break;
     case'prixDefausse':for(let i=0;i<val(o[1],L)&&CB.main.length;i++){CB.defPrix=(CB.defPrix||0)+1;const j=Math.floor(Math.random()*CB.main.length);CB.defausse.push(CB.main.splice(j,1)[0])}break;
-    case'prixBete':{const b=CB.allies.filter(u=>u.bete&&u.pv>0).sort((p,q)=>p.pv-q.pv)[0];if(b)frappe(b,Math.round(val(o[1],L)),CB.hero);break}
+    case'prixBete':{const b=CB.allies.filter(u=>u.bete&&u.pv>0&&!(CB.cases&&u.mur)).sort((p,q)=>p.pv-q.pv)[0];if(b)frappe(b,Math.round(val(o[1],L)),CB.hero);break}
     case'ennemiGarde':tous().forEach(m=>{m.g+=Math.round(val(o[1],L));pop(m,'+garde','g')});break;
     case'ennemiSoin':tous().forEach(m=>soigner(m,Math.round(val(o[1],L))));break;
   }}

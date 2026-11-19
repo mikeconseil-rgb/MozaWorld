@@ -69,7 +69,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 
 - Six types de mana, un par famille de biomes : Feu, Glace, Eau, Sève, Pierre, Vent. Une réserve par type.
 - Une Ressource donne 1 mana de son type au niveau 1, 2 au niveau 2, 2 et un atout au niveau 3 (on choisit un atout parmi trois ; ce choix tient lieu de pôle).
-- En combat, la capacité de dépense vaut le numéro du tour (1, 2, 3…), tous types confondus. Les boosts sont très rares. Le mana gris est infini, avec 25 % d'effet en moins : une carte de zone sans assez de son mana se joue en gris. Il n'y a plus de cartes communes à payer avec n'importe quel mana (18 nov.).
+- En combat, la capacité de dépense vaut le numéro du tour (1, 2, 3…), tous types confondus. Elle vaut au moins la moitié du numéro du tour, et avant le tour 4 les blessures n'en retirent qu'1 au plus (19 nov., **provisoire**). Les boosts sont très rares. Le mana gris est infini, avec 25 % d'effet en moins : une carte de zone sans assez de son mana se joue en gris. Il n'y a plus de cartes communes à payer avec n'importe quel mana (18 nov.).
 - Une route relie une Ressource de niveau 2 à une tuile voisine ; au niveau 3, elle greffe l'atout sur les cartes de cette tuile. Une tuile reçoit au plus autant de routes qu'elle a de côtés. Route coupée, atout perdu. Une horde fait baisser une Ressource d'un niveau et coupe ses routes (18-19 nov., dans le jeu).
 - Sur une route, pas de rencontre, sauf dans une Citadelle ou près d'un rempart adverse actif.
 - Le mana paie aussi les pièges du Donjon possédé. Le rythme d'entretien des pièges n'est pas tranché (trois rythmes à comparer dans le menu) ; le rythme choisi vaut pour tous vos Donjons.
@@ -88,8 +88,8 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 
 ## 7. Le combat
 
-- Tour par tour, sur place, sur le Nœud : deux voies et un centre à tenir.
-- La garde du héros est une unité, la Garde, qui s'effrite à chaque tour. Bêtes et bloqueurs tiennent le terrain (3 places). Les ennemis annoncent leur intention : attaque, vol par-dessus, bélier, élan puis frappe qui piétine, soin.
+- Tour par tour, sur place, sur **le Plateau** (19 nov., **provisoire**) : une petite mosaïque de trois voies ; de votre côté, une case avant et une case arrière par voie ; le décagone du centre reste à tenir. Règles complètes : `design/plateau/PLATEAU.md`. En bref : vous placez chaque créature à la manette ; une Manœuvre par tour (Y) déplace une unité ; un coup ennemi suit sa voie (avant, arrière, Garde, héros) ; l'arrière soutient l'avant (+2 de garde) et avance quand l'avant tombe ; vos zones pavent des cases à effet (Bastion, Piège, Tanière, Source, Tribune) ; votre Citadelle envoie une Sentinelle au début du combat ; la menace s'affiche sur chaque voie.
+- La garde du héros est une unité, la Garde, qui s'effrite à chaque tour ; sur le Plateau, elle se tient devant le héros, derrière les voies. Bêtes et bloqueurs tiennent le terrain (4 places sur le Plateau). Les ennemis annoncent leur intention : attaque, vol par-dessus, bélier, élan puis frappe qui piétine, soin.
 - Passifs du royaume : chaque Citadelle donne de l'endurance et lève la Garde ; chaque Donjon donne de la résistance et un piège ; chaque Antre donne un passif propre à son pôle.
 - Rempart : une **route** qui relie deux Citadelles, ou une Citadelle et un Donjon, toutes possédées. Elle s'ouvre au menu « Remparts » de la Pierre d'éveil d'une Citadelle au palier 1 ou plus. Le rempart pose un bloqueur de 10 PV au début des combats de son domaine, 2 au plus ; il tombe si l'une des deux zones est perdue.
 - Blessures **(provisoire)** : prototype façon Shadowrun (moniteur de 10 cases, niveaux L, M, S, D), à jouer deux ou trois soirs avant de garder un seul système. D'ici là, les cartes restent en chiffres.
@@ -154,4 +154,4 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 | Résonance | Marque posée par une carte du palier 7, qu'une autre réveille pour un combo |
 | Empreinte | Avantage de l'ancien maître pour reprendre ses zones après sa mort |
 | Tesselle | La monnaie des Citadelles |
-| Le Nœud | Le champ de bataille : deux voies et un centre |
+| Le Plateau | Le champ de bataille en mosaïque : trois voies, avant et arrière, un centre (19 nov. ; remplace le Nœud à deux voies) |
