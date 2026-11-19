@@ -27,7 +27,7 @@ const three=fs.readFileSync(path.join(racine,'android','assets','three.min.js'))
   await p.screenshot({path:path.join(out,'combat.png')});await p.keyboard.press('Escape');await p.waitForTimeout(300);
   await p.evaluate(()=>{if(MZ.CB&&typeof fuir==='function')fuir()}).catch(()=>{});
   /* planches −7 | 0 | +7 sans interface */
-  await p.addStyleTag({content:'body *{visibility:hidden!important}canvas{visibility:visible!important}'});
+  await p.addStyleTag({content:'body *{visibility:hidden!important}canvas{visibility:visible!important}#mini{visibility:hidden!important}'});
   for(const id of zones){const ims=[];
     for(const lv of [-7,0,7]){await p.evaluate(([id,lv])=>{MZ.set(id,lv);MZ.tp(id);const Z=MZ.ZN.find(z=>z.id===id);const y=Math.atan2(Z.c[0]-MZ.P.x,Z.c[1]-MZ.P.z);MZ.P.yaw=y;MZ.P.face=y},[id,lv]);
       await p.waitForTimeout(3000);ims.push((await p.screenshot()).toString('base64'))}
