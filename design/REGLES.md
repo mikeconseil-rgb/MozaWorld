@@ -85,6 +85,13 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
     - la réparation des pièges d'un Donjon tenu, 5 tesselles **(provisoire)** : pièges réveillés et usure effacée (Donjon d'origine ; les autres Donjons quand le module Donjons aménagés est là) ;
     - deux cycles de retard pour une horde en marche, 8 tesselles, une fois par horde **(provisoire)** ;
     - 1 mana du type de la Citadelle pour 4 tesselles (gardé par l'utilisateur le 19 nov. ; taux volontairement défavorable).
+- **Caravanes** (18-19 nov., dans le jeu ; idée choisie le 19 nov. : « Caravanes sur les routes : elles rapportent des tesselles et peuvent être pillées ») :
+  - Trajet : une Ressource à vous et activée, au niveau 2 ou plus, dont une route ouverte mène à une zone à vous ; de là, des zones à vous voisines de proche en proche jusqu'à une Citadelle à vous **(provisoire)**. Une route vers la Citadelle elle-même suffit. On garde le trajet le plus court.
+  - Gain : chaque caravane en route rapporte 1 tesselle par cycle, 2 si la Ressource est au niveau 3 **(provisoire)**.
+  - Pillage : une horde en marche dont la cible est sur le trajet (30 % par cycle), ou une zone d'une maison rivale voisine du trajet (15 % par cycle), peut piller la caravane **(provisoire)** ; une tour de guet qui couvre la zone menacée divise ce risque par deux **(provisoire)**. Pillée, la caravane perd la cargaison du cycle et s'arrête 2 cycles **(provisoire)** ; un message l'annonce.
+  - Escorte : à la Pierre d'éveil de la Ressource ou de la zone du pillage, « Escorter la caravane » ouvre un combat court contre deux pillards (créatures de la zone, PV −40 %) **(provisoire)**. Victoire : la caravane repart tout de suite et rend sa cargaison. Défaite : une blessure, la caravane reste arrêtée.
+  - Une route coupée (Ressource sous le niveau 2, horde) ou une zone du trajet perdue arrête la caravane ; elle repart quand un trajet existe de nouveau. À la mort, les caravanes disparaissent avec les zones.
+  - Visible : un point qui avance sur le trajet dans la minicarte (rouge et ✕ si elle est pillée), une ligne à la Pierre d'éveil de la Ressource (« Caravane vers … · +n par cycle », ou « arrêtée »), « ⛟ » dans le bandeau, et un petit chariot qui va et vient entre les Pierres.
 
 ## 7. Le combat
 
@@ -155,4 +162,5 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 | Résonance | Marque posée par une carte du palier 7, qu'une autre réveille pour un combo |
 | Empreinte | Avantage de l'ancien maître pour reprendre ses zones après sa mort |
 | Tesselle | La monnaie des Citadelles |
+| Caravane | Convoi qui porte des tesselles d'une Ressource à une Citadelle, par une route et vos zones |
 | Le Plateau | Le champ de bataille en mosaïque : trois voies, avant et arrière, un centre (19 nov. ; remplace le Nœud à deux voies) |

@@ -4,6 +4,10 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Gameplay du monde : les caravanes (19 nov., `src/caravanes.js`)
+
+Une Ressource à vous au niveau 2 ou plus, dont une route mène à la Citadelle, ou à une zone à vous reliée à la Citadelle par vos zones, envoie une caravane : +1 tesselle par cycle, +2 au niveau 3. Une horde en marche vers une zone du trajet (30 % par cycle) ou une maison rivale voisine du trajet (15 %) peut la piller ; une tour de guet sur la zone menacée divise le risque par deux. Pillée, elle perd la cargaison du cycle et s'arrête 2 cycles ; à la Pierre d'éveil de la Ressource ou de la zone du pillage, « Escorter la caravane » ouvre un combat court contre deux pillards, et la victoire la remet en route avec sa cargaison. Une route coupée l'arrête. Visible : point qui avance sur la minicarte, ligne à la Pierre de la Ressource, « ⛟ » dans le bandeau, petit chariot 3D (72 triangles) entre les Pierres. Chiffres provisoires. Tests : `MZ.caravanes()` (état), `MZ.piller(id)`, `MZ.escorter(id)` ; script `node tv/tools/test-caravanes.js`.
+
 ## Version 2.14 : choix moraux de trois nouvelles zones (19 novembre)
 
 - Trois zones de plus ont leur scénario en 15 scènes (`src/scenarios-zones.js`), sur le modèle de la Taïga de Kobor : **Berestograd** (Oubli / Mémoire : l'écorce pliée en huit d'Ouliana, le frère noyé du kniaz), **l'Oasis de Maulu** (Glace / Feu : une source pour un seul troupeau, la quatrième bête boit à votre place), **le Fjord de Rames** (Cauchemar / Rêve : le cent quarante et unième coup de rame, les embaumés sous la glace).
