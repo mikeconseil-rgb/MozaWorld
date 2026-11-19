@@ -17,25 +17,40 @@ Demande de l'utilisateur : « des livres laissés dans les zones, racontant l'hi
 
 Fichiers : `src/fluidite.js` (ombres, coupe, flocons) et `src/styles.js` (FXAA). Aucune règle du jeu ne change, aucune lumière ajoutée.
 - **Anticrénelage FXAA en Belle et Splendide** : depuis que la passe finale lit la profondeur, l'ancienne cible MSAA ×4 n'était plus utilisée. Une passe FXAA 3.11 « console » la remplace : 5 lectures de luminance et 2 lectures le long du bord. Le grain est posé ensuite, donc il reste net. L'effet est atténué sur les écoles d'encre (Givrecloche, Chinampas). Rien ne change en Fluide ni en Équilibrée.
-- **Ombres limitées à leur boîte** : la passe d'ombre ne dessine plus que ce qui touche la boîte de 240 m (marge de 30 m) et les carreaux de terrain à moins de 130 m du héros. Le plan lointain de la caméra d'ombre passe de 520 à 300. La boîte est calée sur la grille des texels autour du héros, ce qui supprime le scintillement des bords d'ombre.
-- **La qualité coupe vraiment les ombres** : en Fluide, il n'y a plus de passe d'ombre (avant, la carte 2048 restait active). En Équilibrée, la carte fait 1024.
-- **Coupe selon le brouillard** : la distance de coupe vaut 2,3/densité + 40 m, bornée entre 180 et 620 m. Elle part de la densité visée, ou de la densité lissée si celle-ci est plus claire. Un petit objet ordinaire, à plus de 80 m, qui fait moins d'un pixel une fois noyé dans la brume, n'est plus envoyé pendant le rendu. Son état « visible » est remis à l'identique juste après.
+- **Ombres limitées à leur boîte** : la passe d'ombre ne dessine plus que ce qui touche la boîte de 240 m (marge de 30 m). Pour les carreaux de terrain, seuls tombent ceux qui sont hors de la boîte, ou à plus de 200 m du héros du côté opposé au soleil (leur ombre ne peut tomber que plus loin encore). Le plan lointain de la caméra d'ombre suit l'élévation du soleil : 260 + 120/tan(élévation) + 60 m, borné entre 300 et 520. Ainsi, tout ce qui reçoit une ombre dans la boîte reste entre near et far, même quand le soleil est rasant. La boîte est calée sur la grille des texels autour du héros, ce qui supprime le scintillement des bords d'ombre.
+- **La qualité choisie coupe vraiment les ombres** : choisir Fluide au menu supprime la passe d'ombre (avant, la carte 2048 restait active après un changement). En Équilibrée, la carte fait 1024. La baisse **automatique** de qualité, quand l'image ralentit, ne touche pas aux ombres.
+- **Coupe selon le brouillard** : la distance de coupe vaut 2,3/densité + 40 m, bornée entre 180 et 620 m. Elle part de la densité visée, ou de la densité lissée si celle-ci est plus claire. Un petit objet ordinaire, à plus de 80 m de la caméra, qui fait moins d'un pixel une fois noyé dans la brume, n'est pas envoyé à la vue de la caméra. Il garde son ombre, et son état « visible » est remis à l'identique avant la passe d'ombre.
 - **Flocons** : taille limitée à 18 px, fondu entre 1,5 et 5 m devant la caméra.
 
-Mesures (banc logiciel, Belle figée, hasard fixé, par image, ombre comprise) : triangles / appels de dessin, avant → après :
+### Reprise 2.3b : ombres perdues près du héros (refus du testeur)
 
-| Zone | Avant | Après | Écart |
+Constat du testeur : quand deux bancs tournent en même temps, les ombres du héros, de la coquille d'ANT120, du pilier de RES374 et de la pierre d'ASS152 manquent environ une fois sur deux. Ce n'était jamais le cas avec 3972fd9.
+- **Cause** : sous charge, la baisse automatique de qualité de `main.js` (sous 27 images/s, Belle → Équilibrée → Fluide) passait par l'enveloppe de `resize`, qui coupait alors les ombres. Ce que l'on voyait dépendait donc du rythme des images. Les planches de `boucles/boucle-2/apres-3` le montrent : ASS152 et RES374 n'y ont plus aucune ombre, et l'image y est moins définie.
+- **Correction** : seul le choix du joueur, au menu ou au démarrage, allume ou coupe les ombres. La baisse automatique ne change plus que la définition, comme avant.
+- **Points vérifiés et durcis en même temps** :
+  - (i) la passe d'ombre teste les carreaux de terrain contre la boîte ; il n'y a plus de rayon fixe de 130 m, qui oubliait les collines placées face au soleil bas ;
+  - (ii) le calage sur les texels ne fait que décaler ensemble la cible et le soleil, d'un demi-texel au plus, après `stepAtmo`, qui les replace à chaque image quel que soit dt, et donc aussi après `MZ.tp` et `MZ.set` ;
+  - (iii) le far suit l'élévation du soleil (voir plus haut) ;
+  - (iv) les « miettes » sont jugées dans `scene.onBeforeRender`, donc sur les matrices de l'image en cours, avec la position, l'échelle, la géométrie et le matériau lus à l'instant. Elles sont rendues visibles avant la passe d'ombre. Leur liste est refaite à chaque mue, ou quand la scène gagne ou perd un enfant, mais plus jamais au compte des images.
+- **Vérifié** : trois passages de `tools/boucle.js`, à chaque fois deux en parallèle (charge proche de 9 sur 4 cœurs). Au centre de chaque planche à 0, les ombres du héros, du pilier, de la coquille et de l'obélisque sont présentes à chaque fois. Hors du banc, sur la même page, une baisse automatique simulée vers Fluide garde les ombres, alors que Fluide choisi au menu les coupe.
+- **Gardé tel quel** : le FXAA, le plafonnement des flocons et la coupe selon le brouillard. Des recadrages à pleine résolution, avant et après FXAA, des arêtes de sapins à CIT +7 et DON045 sont dans `boucles/boucle-2/fxaa-3b/`.
+
+Mesures après la reprise (banc logiciel, Belle figée, hasard fixé, images pas à pas de 50 ms, par image, ombre comprise), triangles / appels de dessin. « Avant » correspond à 3972fd9, mesuré dans les mêmes conditions :
+
+| Zone | Avant (3972fd9) | Après (2.3b) | Écart |
 |---|---|---|---|
-| CIT | 528 041 / 396 | 394 089 / 222 | −25 % / −44 % |
-| DON | 452 346 / 301 | 346 123 / 174 | −23 % / −42 % |
-| RES | 684 685 / 322 | 591 210 / 194 | −14 % / −40 % |
-| ANT | 547 923 / 246 | 482 876 / 209 | −12 % / −15 % |
-| MAR | 517 055 / 362 | 429 576 / 278 | −17 % / −23 % |
-| DON045 | 334 688 / 202 | 276 921 / 161 | −17 % / −20 % |
-| ASS152 | 255 062 / 236 | 179 723 / 139 | −30 % / −41 % |
-| ANT120 | 317 089 / 228 | 309 394 / 140 | −2 % / −39 % |
+| CIT | 521 004 / 413 | 410 405 / 213 | −21 % / −48 % |
+| DON | 398 982 / 277 | 302 959 / 202 | −24 % / −27 % |
+| RES | 678 765 / 373 | 612 427 / 258 | −10 % / −31 % |
+| ANT | 567 156 / 286 | 469 999 / 227 | −17 % / −21 % |
+| MAR | 563 434 / 346 | 420 240 / 252 | −25 % / −27 % |
+| DON045 | 264 863 / 181 | 230 451 / 173 | −13 % / −4 % |
+| ASS152 | 237 169 / 205 | 221 559 / 187 | −7 % / −9 % |
+| ANT120 | 247 492 / 211 | 218 178 / 196 | −12 % / −7 % |
 
-En Fluide, à CIT : 519 632 / 387 → 214 552 / 119, car il n'y a plus de passe d'ombre. Avec `tools/boucle.js` (mesures.json, deux images, qualité automatique), comparé à `boucles/boucle-2/avant` : CIT 1 056 346 / 832 → 645 308 / 394 (−39 % / −53 %) ; RES227 765 664 / 638 → 645 268 / 353 (−16 % / −45 %) ; ASS152 505 702 / 328 → 420 252 / 291 (−17 % / −11 %).
+En Fluide, à CIT : 299 075 / 295 → 285 539 / 135. Aucune zone ne monte. Les gains de triangles sont un peu plus faibles qu'en 2.3 (CIT −25 %), parce que le far et les carreaux de terrain gardent désormais tout ce qui peut porter une ombre dans la boîte.
+
+Avec `tools/boucle.js` (mesures.json, deux images, qualité automatique), six passages sous charge comparés à `boucles/boucle-2/avant` : CIT 1 056 346 / 832 → 687 196 à 820 954 / 417 à 472 (−22 à −35 % / −43 à −50 %) ; RES227 765 664 / 638 → 691 881 à 733 316 / 375 à 428 (−4 à −10 % / −33 à −41 %) ; ASS152 505 702 / 328 → 428 930 à 463 580 / 285 à 298 (−8 à −15 % / −9 à −13 %). Aucune erreur JavaScript.
 
 ## Version 2.10 : boucle graphique 1 (19 novembre)
 

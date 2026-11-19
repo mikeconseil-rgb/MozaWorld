@@ -40,39 +40,64 @@ function terrainCarreaux(){const g=terrain.geometry,A=g.attributes,src=g.index.a
 /* ---------- Boucle 2 (19 nov. 2026) : budget repris (ombres limitées à leur boîte, coupe selon le brouillard) ----------
    Mesuré au banc (Belle, rendu logiciel) : à Berestograd, la passe d'ombre envoyait ~229 000 triangles et ~100 appels
    par image, alors que la boîte d'ombre ne fait que 240 m de côté autour du héros. Ici :
-   (a) la passe d'ombre ne voit plus que ce qui touche sa boîte (marge 30 m) et les carreaux de terrain proches du héros ;
+   (a) la passe d'ombre ne voit plus que ce qui touche sa boîte (marge 30 m), terrain compris ;
        la boîte est calée sur la grille de ses texels (les bords d'ombre ne scintillent plus quand on marche) ;
-   (b) changer de qualité allume ou coupe vraiment les ombres (en Fluide, aucune passe d'ombre) ;
+   (b) choisir une qualité au menu allume ou coupe vraiment les ombres (en Fluide, aucune passe d'ombre) ;
    (c) la distance de coupe suit le brouillard : ce qui y est noyé à plus de 99 % n'est plus envoyé ;
    (d) les flocons tout près de la caméra ne font plus de gros disques flous.
    Aucune lumière ajoutée ni retirée (sinon tous les matériaux se recompileraient). */
 const OMB={fr:new THREE.Frustum(),pm:new THREE.Matrix4(),sp:new THREE.Sphere(),cach:[],
   x:new THREE.Vector3(),y:new THREE.Vector3(),z:new THREE.Vector3(),up:new THREE.Vector3(0,1,0),d:new THREE.Vector3()};
-const OMB_MARGE=30,OMB_SOL=130,OMB_BOITE=240;
-sun.shadow.camera.far=300;sun.shadow.camera.updateProjectionMatrix(); /* le soleil est à 260 m de sa cible : 300 suffit, et la profondeur gagne en précision */
-/* (a) passe d'ombre : le temps de l'appel, on masque ce qui est hors de la boîte, puis on rend l'état exact */
+const OMB_MARGE=30,OMB_BOITE=240,OMB_AVAL=200;
+/* Boucle 2, reprise du 19 nov. 2026 (refus du testeur : ombres perdues près du héros, une fois sur deux sous charge).
+   Cause principale : la baisse AUTOMATIQUE de qualité (main.js, quand l'image tombe sous 27 images/s, ce qui arrive vite
+   sur une machine chargée) passait par notre enveloppe de resize et coupait les ombres en arrivant à « Fluide ».
+   Les ombres dépendaient donc du rythme des images. Désormais :
+   - seul le choix du joueur (menu Qualité, ou réglage gardé au démarrage) allume ou coupe les ombres ; la baisse
+     automatique ne touche que la définition de l'image, comme avant cette boucle ;
+   - la passe d'ombre ne masque que des objets réellement hors de sa boîte ; pour les carreaux de terrain, plus de rayon
+     fixe de 130 m (qui oubliait les collines placées face au soleil bas) : seuls tombent ceux qui sont hors de la boîte,
+     ou à plus de 200 m du côté opposé au soleil ;
+   - les « miettes » ne valent que pour la caméra : elles sont rendues visibles avant la passe d'ombre, et leur tri se
+     fait sur les matrices de l'image en cours (plus de positions ni d'échelles d'il y a 90 images) ;
+   - la profondeur de la boîte (far) suit l'élévation du soleil : tout ce qui reçoit une ombre dans la boîte est entre
+     near et far, même soleil rasant. */
+/* (iii) far : la cible est à 260 m du soleil. Un sol à d mètres derrière le héros (vu du soleil) reste dans la boîte tant que
+   d·sin(él) ≤ 120 m ; il est alors à 260 + 120/tan(él) m du soleil, plus 60 m de relief. Entre 300 et 520 (valeur d'origine). */
+function farOmbre(sinEl){const s=clamp(sinEl,.05,1);return clamp(260+120*Math.sqrt(1-s*s)/s+60,300,520)}
+/* (a) passe d'ombre : le temps de l'appel, on masque ce qui est hors de la boîte (+30 m), puis on rend l'état exact */
 {const SM=renderer.shadowMap,_ombre=SM.render;
  SM.render=function(lights,sc,cam){
-  if(!sun.castShadow||sc!==scene||!lights||!lights.length)return _ombre.call(SM,lights,sc,cam);
+  if(sc!==scene||!SM.enabled||!sun.castShadow||!lights||!lights.length)return _ombre.call(SM,lights,sc,cam);
+  rendreMiettes();   /* les miettes ne servent qu'à la caméra (la liste de la passe principale est déjà faite) */
   const S=sun.shadow,C=S.camera;S.updateMatrices(sun);
   OMB.pm.multiplyMatrices(C.projectionMatrix,C.matrixWorldInverse);OMB.fr.setFromProjectionMatrix(OMB.pm);
-  for(const p of OMB.fr.planes)p.constant+=OMB_MARGE;   /* plans tournés vers l'intérieur : la boîte grandit de 30 m de chaque côté */
-  const hs=TCH*CELL/2,K=OMB.cach;K.length=0;
+  for(const p of OMB.fr.planes)p.constant+=OMB_MARGE;   /* plans normalisés, tournés vers l'intérieur : 30 m de plus de chaque côté */
+  /* Carreaux de terrain : même test, plus un seul raccourci sûr. Un carreau à plus de 200 m du héros (au-delà du coin de la
+     boîte, 170 m, plus la marge) et du côté opposé au soleil ne peut jeter son ombre que plus loin encore : jamais près du héros. */
+  const K=OMB.cach,hs=TCH*CELL/2,d=OMB.d.subVectors(sun.position,sun.target.position).normalize(),sx=d.x,sz=d.z;K.length=0;
   for(const e of CULL.list){const o=e.o;if(!o.visible||e.r<0)continue;let dehors;
-    if(e.fixe){const dx=Math.max(0,Math.abs(e.c.x-P.x)-hs),dz=Math.max(0,Math.abs(e.c.z-P.z)-hs);dehors=Math.hypot(dx,dz)>OMB_SOL} /* carreau de terrain */
-    else{OMB.sp.center.copy(e.c);OMB.sp.radius=e.r;dehors=!OMB.fr.intersectsSphere(OMB.sp)}
+    if(e.fixe){const ex=e.c.x-P.x,ez=e.c.z-P.z;dehors=ex*sx+ez*sz<0&&Math.hypot(Math.max(0,Math.abs(ex)-hs),Math.max(0,Math.abs(ez)-hs))>OMB_AVAL}
+    if(!dehors){OMB.sp.center.copy(e.c);OMB.sp.radius=e.r;dehors=!OMB.fr.intersectsSphere(OMB.sp)}
     if(dehors){o.visible=false;K.push(o)}}
   try{_ombre.call(SM,lights,sc,cam)}finally{for(let i=0;i<K.length;i++)K[i].visible=true;K.length=0}}}
-/* Calage sur la grille des texels, dans le plan de la lumière. stepAtmo vient de placer la cible sur le héros (P, pas la caméra) ;
-   on arrondit sa position au texel près (pas = 240 m / taille de la carte) et le soleil suit du même décalage. */
-function calerOmbre(){if(!sun.castShadow)return;const T=sun.target.position,d=OMB.d.subVectors(sun.position,T);
-  if(d.lengthSq()<1e-6)return;OMB.z.copy(d).normalize();OMB.x.crossVectors(OMB.up,OMB.z);
+/* (ii) Calage sur la grille des texels, dans le plan de la lumière. stepAtmo vient de replacer la cible sur le héros (P, pas la
+   caméra) et le soleil à 260 m d'elle, à chaque image, quel que soit dt (et donc aussi juste après MZ.tp ou MZ.set) ;
+   on arrondit la cible au texel près (pas = 240 m / taille de la carte) et le soleil suit du même décalage : la direction et la
+   distance soleil-cible ne changent pas, le héros reste au centre de la boîte à un demi-texel près. */
+function calerOmbre(){if(!sun.castShadow)return;const T=sun.target.position,d=OMB.d.subVectors(sun.position,T),L=d.length();
+  if(L<1e-3)return;OMB.z.copy(d).divideScalar(L);OMB.x.crossVectors(OMB.up,OMB.z);
   if(OMB.x.lengthSq()<1e-8)OMB.x.set(1,0,0);else OMB.x.normalize();OMB.y.crossVectors(OMB.z,OMB.x);
   const pas=OMB_BOITE/sun.shadow.mapSize.x,u=OMB.x.dot(T),v=OMB.y.dot(T);
-  T.addScaledVector(OMB.x,Math.round(u/pas)*pas-u).addScaledVector(OMB.y,Math.round(v/pas)*pas-v);sun.position.copy(T).add(d)}
-/* (b) qualité : en Fluide, plus de passe d'ombre du tout ; ailleurs, la carte d'ombre prend la taille du réglage */
+  T.addScaledVector(OMB.x,Math.round(u/pas)*pas-u).addScaledVector(OMB.y,Math.round(v/pas)*pas-v);sun.position.copy(T).add(d);
+  const C=sun.shadow.camera,f=farOmbre(OMB.z.y);if(Math.abs(C.far-f)>2){C.far=f;C.updateProjectionMatrix()}}
+sun.shadow.camera.far=farOmbre(Math.sin(30*D2R));sun.shadow.camera.updateProjectionMatrix();
+/* (b) qualité : choisir « Fluide » au menu coupe vraiment la passe d'ombre ; ailleurs la carte prend la taille du réglage.
+   La baisse automatique (main.js : autoQ, juste après la remise à zéro de fpsT et fpsN) ne touche pas aux ombres :
+   ce que l'on voit ne doit pas dépendre du rythme des images. */
+function baisseAuto(){try{return autoQ&&frame>0&&fpsT===0&&fpsN===0}catch(_){return false}}
 const _resizeOmb=resize;
-resize=function(){_resizeOmb();const sh=QUAL().sh;renderer.shadowMap.enabled=sun.castShadow=sh>0;
+resize=function(){_resizeOmb();if(baisseAuto())return;const sh=QUAL().sh;renderer.shadowMap.enabled=sun.castShadow=sh>0;
   if(sh>0&&sun.shadow.mapSize.x!==sh){if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}sun.shadow.mapSize.set(sh,sh)}};
 /* (c) coupe selon le brouillard. FogExp2 : à 2,3/densité, il reste 0,5 % de l'objet ; +40 m de marge, entre 180 et 620 m.
    Densité visée (AT.fog) ; si le brouillard lissé est encore plus clair (on entre dans une zone plus brumeuse), on garde
@@ -81,27 +106,32 @@ function densiteVisee(){const fh=AT.fh,y=camera.position.y,h=fh>.5?(y<-1.5?.1:le
   return Math.min(AT.fog||0,A.fog||0)*h}
 const _cullOmb=cullScene;
 cullScene=function(){const d=densiteVisee();CULL.far=d>0?clamp(2.3/d+40,180,620):620;calerOmbre();
-  if(CULL.dirty||++MIET.n>=90)prepMiettes();_cullOmb()};
+  if(CULL.dirty||MIET.nb!==scene.children.length)prepMiettes();_cullOmb();MIET.arme=true};
 /* (c bis) Les miettes. Au banc, à Berestograd, ~160 petits objets ordinaires (pièces des pierres d'éveil et des décors des
    autres zones, à plus de 300 m) coûtaient chacun un appel de dessin pour moins d'un pixel une fois passés dans la brume.
-   Pendant le rendu seulement, on masque un objet dont la taille à l'écran × ce qui reste après le brouillard est sous
+   Pour la seule vue de la caméra, on masque un objet dont la taille à l'écran × ce qui reste après le brouillard est sous
    1 pixel (0,75 pixel pour ce qui ignore le brouillard : lanternes, halos). Jamais à moins de 80 m de la caméra.
-   L'état « visible » du jeu est rendu à l'identique juste après l'image : la logique du jeu ne voit rien. */
-const MIET={l:[],cach:[],n:0,v:new THREE.Vector3(),t:new THREE.Vector2()};
-function prepMiettes(){MIET.n=0;const L=MIET.l;L.length=0;const dans=new Set();for(const e of CULL.list)dans.add(e.o);
-  scene.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||!o.frustumCulled||dans.has(o)||o===sky)return;const g=o.geometry;if(!g)return;
-    if(!g.boundingSphere)g.computeBoundingSphere();if(!g.boundingSphere||!(g.boundingSphere.radius>0))return;
-    const ms=Array.isArray(o.material)?o.material:[o.material];
-    L.push({o,b:g.boundingSphere,s:o.matrixWorld.getMaxScaleOnAxis(),fog:ms.some(m=>m&&m.fog&&!m.isShaderMaterial)})})}
+   Le tri se fait dans scene.onBeforeRender, c'est-à-dire APRÈS la mise à jour des matrices de l'image en cours : positions,
+   échelles, géométrie et brouillard sont lus à l'instant (un objet déplacé par MZ.tp, regonflé par MZ.set ou tout neuf est
+   jugé tel qu'il est). La liste ne fait que nommer les candidats ; elle est refaite à chaque mue (CULL.dirty) ou quand la
+   scène gagne ou perd un enfant, jamais au compte des images. L'état « visible » du jeu est rendu à l'identique avant la
+   passe d'ombre et après l'image : la logique du jeu ne voit rien. */
+const MIET={l:[],cach:[],nb:-1,arme:false,v:new THREE.Vector3(),t:new THREE.Vector2()};
+function prepMiettes(){MIET.nb=scene.children.length;const L=MIET.l;L.length=0;const dans=new Set();for(const e of CULL.list)dans.add(e.o);
+  scene.traverse(o=>{if(o.isMesh&&!o.isInstancedMesh&&o.frustumCulled&&!dans.has(o)&&o!==sky&&o.geometry)L.push(o)})}
 function masquerMiettes(){const K=MIET.cach;K.length=0;if(!MIET.l.length)return;
   const cp=camera.position,kpx=renderer.getDrawingBufferSize(MIET.t).y/Math.tan(camera.fov*D2R/2),fd=scene.fog?scene.fog.density:0;
-  for(const e of MIET.l){const o=e.o;if(!o.visible)continue;MIET.v.copy(e.b.center).applyMatrix4(o.matrixWorld);
-    const r=e.b.radius*e.s,d=cp.distanceTo(MIET.v)-r;if(d<80)continue;
-    let px=r/d*kpx;if(e.fog){const x=d*fd;px*=Math.exp(-x*x)}
-    if(px<(e.fog?1:.75)){o.visible=false;K.push(o)}}}
+  for(const o of MIET.l){if(!o.visible)continue;const g=o.geometry;if(!g)continue;if(!g.boundingSphere)g.computeBoundingSphere();
+    const b=g.boundingSphere;if(!b||!(b.radius>0))continue;MIET.v.copy(b.center).applyMatrix4(o.matrixWorld);
+    const r=b.radius*o.matrixWorld.getMaxScaleOnAxis(),d=cp.distanceTo(MIET.v)-r;if(d<80)continue;
+    const m=o.material,fog=Array.isArray(m)?m.some(q=>q&&q.fog&&!q.isShaderMaterial):!!(m&&m.fog&&!m.isShaderMaterial);
+    let px=r/d*kpx;if(fog){const x=d*fd;px*=Math.exp(-x*x)}
+    if(px<(fog?1:.75)){o.visible=false;K.push(o)}}}
 function rendreMiettes(){const K=MIET.cach;for(let i=0;i<K.length;i++)K[i].visible=true;K.length=0}
+{const _obr=scene.onBeforeRender;
+ scene.onBeforeRender=function(r,s,c,rt){if(_obr)_obr.call(this,r,s,c,rt);if(MIET.arme&&c===camera){MIET.arme=false;masquerMiettes()}}}
 const _drawMiet=draw;
-draw=function(t){masquerMiettes();try{_drawMiet(t)}finally{rendreMiettes()}};
+draw=function(t){try{_drawMiet(t)}finally{MIET.arme=false;rendreMiettes()}};
 /* (d) flocons : taille plafonnée à 18 px, fondu entre 1,5 et 5 m devant la caméra (plus de gros disques flous) */
 if(typeof weather!=='undefined'&&weather&&weather.material){const wm=weather.material,_obc=wm.onBeforeCompile;
   wm.onBeforeCompile=function(s,r){if(_obc)_obc.call(this,s,r);
