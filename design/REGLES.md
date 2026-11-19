@@ -110,6 +110,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Chaque zone doit avoir un style propre ; un style de rendu différent par tuile, surtout pour les 45 Citadelles.
 - Les deux pôles changent les **décors eux-mêmes**, pas seulement la teinte : chaque palier vers ±7 ajoute des objets propres au pôle (nouvelles tuiles depuis la 2.6, zones d'origine depuis la 2.8, sauf les Ressources qui n'ont pas de pôle).
 - Zones : arête de 400 m depuis la 2.6 (300 m avant). Chaque nouvelle tuile a trois lieux à découvrir (camp, cercle de pierres, belvédère), chacun avec un secret.
+- **Inscriptions (19 nov., 2.9)** : chaque zone qui n'est pas une Ressource a quatre objets écrits (stèle, panneau, mur gravé, borne), écrits par le conteur de la zone. Leur texte change en cinq bandes de niveau (−7..−5, −4..−2, −1..+1, +2..+4, +5..+7) et l'objet suit le pôle. On lit en passant à côté, sans bouton ; une rune bleue signale un texte pas encore lu à ce niveau. Les Ressources n'en ont pas (design simple). Textes : `design/inscriptions/`, relus par le critique.
 - Le combat est animé (carte qui vole, élan, impact), sans que les animations changent les règles.
 - Le monde est animé : vent dans la végétation, braises vers −7 et lucioles vers +7, créatures qui errent (décoratives) (2.8).
 - Exploration épurée par défaut : fiche de zone quelques secondes à l'entrée, aide qui s'efface, minicarte réduite ; RB ou Tab affiche l'interface complète (2.8).

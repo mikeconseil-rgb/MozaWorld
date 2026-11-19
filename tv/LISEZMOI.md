@@ -23,6 +23,15 @@ Un peu de Go, un peu de Carcassonne. Un **domaine** est un groupe d'au moins 2 t
 
 Quatre maisons rivales (`src/rivaux.js`), secondaires face au monde sauvage : Grisaille ♜, Comptevent ☼, Sombreclef ☾, Ombrelieue ⊚, chacune avec sa couleur, son blason et son type de zone préféré. Une fois tous les 6 cycles en moyenne, pas avant le 10e cycle, l'une prend une zone sauvage hors du départ (sa couleur sur la minicarte, son nom dans la fiche de zone, une ligne « Rivaux » dans le bandeau) ou annonce qu'elle conteste une de vos zones dans 2 cycles. Pour défendre : aller à la Pierre de la zone et battre le champion ; sinon la zone risque de perdre un palier. Zones bornées, verrouillées ou au repos : intouchables. Une zone de rival se reprend en l'activant (gardiens renforcés). Une ancienne zone à vous (empreinte) se reprend aussi en réussissant un seul palier. Écran « Rivaux » au menu Pause. Tests : `MZ.rival()` (ou `MZ.rival('prise')`, `MZ.rival('conteste')`), `MZ.rivalArrive()` ; script `node tools/test-rivaux.js`.
 
+## Version 2.9 : inscriptions des zones (19 novembre)
+
+Demande de l'utilisateur : enrichir chaque zone qui n'est pas une Ressource avec des textes et des inscriptions.
+
+- Les 12 Antres, Assemblées, Donjons et Citadelles du jeu ont chacun **quatre objets écrits** : stèle, panneau, mur gravé ou borne (48 objets, 240 textes). Chaque texte est écrit par le conteur de la zone (A, B, C ou D) et relu par le critique (84/100, 16 corrections appliquées).
+- Le texte **change avec le niveau**, en cinq bandes : −7..−5, −4..−2, −1..+1, +2..+4, +5..+7. L'objet suit aussi le pôle : vers −7 il s'enfonce, penche et se ternit ; vers +7 il se dresse et prend la lumière du pôle.
+- **Lire** : il suffit de passer à côté (moins de 11 m). Un cartouche sombre s'ouvre en bas de l'écran, sans bouton et sans arrêter le jeu. Une **rune bleue** flotte au-dessus d'un texte pas encore lu à ce niveau ; quand une zone a changé de bande, le cartouche le dit.
+- Fichiers : `src/inscriptions.js` (objets, lecture), `src/inscriptions-donnees.js` (généré par `python3 design/inscriptions/assembler.py` depuis `design/inscriptions/conteur_*.json`). Pour une nouvelle zone, ajouter ses 4 inscriptions dans le fichier de son conteur, relancer l'assembleur puis `sh tv/build.sh`.
+
 ## Historique : édition salon (Sony Bravia / Google TV), 15 novembre
 
 Version légère de la démo « grandes zones », pensée pour une télé vue du canapé et pilotée à la télécommande.

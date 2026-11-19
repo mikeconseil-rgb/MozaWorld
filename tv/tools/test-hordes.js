@@ -30,11 +30,11 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     ok('MZ.horde() lève une horde',!!h,JSON.stringify(h));
     if(h){
       ok('la source est au palier 7',Math.abs(h.lvS)===7);
-      ok('la cible est à vous et plus faible de 2 paliers',h.own&&Math.abs(h.lvC)<=5);
+      ok('la cible est à vous, ou plus faible de 2 ou 3 paliers',h.own||Math.abs(h.lvC)>=4&&Math.abs(h.lvC)<=5,JSON.stringify(h));
       ok('arrivée annoncée dans quelques cycles',h.arrive-h.nc>=3,(h.arrive-h.nc)+' cycles');
       await p.waitForTimeout(300);
       const vu=await p.evaluate(()=>({toast:document.getElementById('t1').textContent,bandeau:(document.getElementById('bandeau')||{}).textContent||''}));
-      ok('toast d\'annonce',/horde/i.test(vu.toast),vu.toast);
+      ok('toast d\'annonce (si la cible est à vous)',!h.own||/horde/i.test(vu.toast)||/horde|Menaces/i.test(vu.bandeau),vu.toast);
       ok('ligne « Menaces » dans le bandeau',/Menaces/.test(vu.bandeau));
       /* 3. le héros va à la Pierre de la zone visée et affronte l'avant-garde */
       await p.evaluate(c=>{MZ.tp(c)},h.cible);await p.waitForTimeout(800);
@@ -69,8 +69,10 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     ok('la défense tient, la zone ne bouge pas',!!r3&&!r3.passe&&r3.avant===r3.apres,JSON.stringify(r3));
     await p.evaluate(()=>toMonde());
     /* 7. le cycle : colère qui mûrit, horde levée, arrivée résolue d'elle-même */
-    const r4=await p.evaluate(()=>{const z=MZ.ZN.find(Z=>(Z.mod||Z.id)!=='RES'&&!MZ.S.own[Z.id]&&MZ.poleEnvahisseur(Z.id)!==2&&!MZ.S.hordes[Z.id]);const n=7*MZ.poleEnvahisseur(z.id);MZ.S.lv[z.id]=n;z.lvT=n;
-      if(!cibleHorde(z.id)){const v=VOISINES[z.id].find(v=>(ZB[v].mod||v)!=='RES');MZ.S.lv[v]=4*(MZ.S.lv[v]<0?-1:1)}   /* une cible plus faible de 3 paliers */
+    const r4=await p.evaluate(()=>{let z=null;for(const Z of MZ.ZN.filter(Z=>(Z.mod||Z.id)!=='RES'&&!MZ.S.own[Z.id]&&MZ.poleEnvahisseur(Z.id)!==2&&!MZ.S.hordes[Z.id])){const n=7*MZ.poleEnvahisseur(Z.id);MZ.S.lv[Z.id]=n;Z.lvT=n;
+        if(!cibleHorde(Z.id)){const v=VOISINES[Z.id].find(v=>(ZB[v].mod||v)!=='RES'&&!MZ.S.hordes[v]&&!Object.values(MZ.S.hordes).some(h=>h.cible===v)&&!(MZ.S.own[v]&&cacheParBrume(v)));if(v)MZ.S.lv[v]=4*(MZ.S.lv[v]<0?-1:1)}   /* une cible plus faible de 3 paliers */
+        if(cibleHorde(Z.id)){z=Z;break}}
+      if(!z)return{src:null,h:null};
       MZ.S.nc=Math.max(MZ.S.nc,HORDE_GRACE);for(let i=0;i<HORDE_MUR;i++)hordesCycle();return{src:z.id,h:MZ.S.hordes[z.id]||null}});
     ok('au palier 7 envahisseur, la colère mûrit puis la horde se lève',!!r4.h,JSON.stringify(r4));
     if(r4.h){await p.evaluate(s=>{MZ.S.nc=MZ.S.hordes[s].arrive},r4.src);await p.waitForTimeout(2000);

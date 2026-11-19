@@ -1,0 +1,97 @@
+{
+ "conteur": "D",
+ "zones": {
+  "DON024": [
+   {
+    "support": "stele",
+    "titre": "Le relevé du pilote",
+    "textes": {
+     "m5": "La stèle est prise dans une colonne de glace montée du fond. On lit à travers, inversé : « Rames rentrées. Plus de compte. Ils ouvrent la bouche, et c'est nous qui manquons d'air. » Le givre a gravé le dernier mot par-dessous.",
+     "m2": "Les hiéroglyphes du compte ruissellent de givre bleu : « Cent quarante coups, cent quarante et un, cent quarante-deux. Nous ne ramons plus, nous suivons. » Quelqu'un a gratté le dernier chiffre jusqu'au sang.",
+     "z": "Une stèle de calcaire au bord du ponton, gravée de barques et de chiffres. « Douze rames, douze rameurs, cent quarante coups jusqu'au glacier. Hier, cent quarante et un. Le coup de plus ne venait pas de nous. » Le reste est effacé.",
+     "p2": "La stèle porte un ajout tracé d'une main humide. « Les rameurs racontent le même rêve, avec les mêmes mots. Une main froide tire avec nous, juste un peu plus fort. Le compte reste juste. » La gravure est fraîche, sans trace d'outil.",
+     "p5": "La stèle est couverte de barques gravées à treize rameurs, puis quatorze, puis plus. « Nous dormons bien. Nous ramons en dormant. Ne nous comptez plus, le rêve compte pour nous. » Les doigts qui ont gravé ceci étaient bleus."
+    }
+   },
+   {
+    "support": "panneau",
+    "titre": "Décret de l'heure fixe",
+    "textes": {
+     "m5": "Le panneau du débarcadère est gelé jusqu'à la dernière ligne : « Il est interdit de ramer. Éveillés, ils ne nous prendront plus en dormant. » Sous la glace, une rangée de visages bandés regarde vers le haut.",
+     "m2": "Le décret a été repeint par une main pressée. « Ramer à heure fixe. Ne jamais manquer l'heure. Qui crache de l'eau bleue au réveil ramera quand même. » Les clous du panneau sont couverts de givre de l'intérieur.",
+     "z": "Sur le panneau de bois du débarcadère, un décret à l'ocre rouge : « Par ordre du pilote : on rame au-dessus d'eux à heure fixe, pour qu'ils dorment. Douze rameurs, ni plus ni moins. » Une barque peinte sert de signature.",
+     "p2": "Le décret a été corrigé. « Douze rameurs, ni plus ni moins » est barré ; dessous : « Accepter l'aide qui vient d'en dessous. Ne pas regarder les mains. » Les lettres neuves sont tracées avec une bandelette mouillée.",
+     "p5": "Le panneau est enroulé de bandelettes qui l'amarrent à la rive comme une barque. « Dormez sur la barque. Il n'y a plus d'heure fixe. Les rameurs sont assez nombreux. » La peau sous les bandelettes est rose et tiède."
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "Borne des jarres",
+    "textes": {
+     "m5": "La borne est fendue, et les jarres à viscères alentour sont vides, leurs sceaux de cire tombés au-dedans. Il ne reste qu'un mot lisible : « Rendus. » La glace autour de la borne a la forme de mains qui remontent.",
+     "m2": "Le sceau d'argile de la borne est fissuré. « Les jarres sont scellées. Ne les ouvrez pas. Si l'une est déjà ouverte, ne regardez pas ce qui manque. » Une jarre voisine est descellée, et le sceau de cire est à l'intérieur.",
+     "z": "Une borne de granit au milieu des jarres alignées au bord de l'eau. « Ici reposent leurs viscères, scellés pour qu'ils restent en bas. Passant, ne déplace rien : ils comptent ce qui est à eux. » Le givre recouvre la base.",
+     "p2": "La borne est lisse, comme lavée. « Les jarres sont scellées et le resteront tant qu'ils rêvent bien. Ils ne réclament rien. Ils rament. » Chaque jarre porte, peinte de frais, une petite rame.",
+     "p5": "Les jarres sont rangées en barque autour de la borne, douze de chaque côté. « Ils n'ont plus besoin de ce qui est dedans. Vous non plus, peut-être. Venez dormir. » La gravure ressemble à la vôtre, en plus soigné."
+    }
+   },
+   {
+    "support": "mur",
+    "titre": "Épitaphe des yeux peints",
+    "textes": {
+     "m5": "Le mur du glacier est éventré : derrière, la glace bleue monte d'une main par nuit vers la surface. Les yeux peints ont été arrachés de la paroi. Gravé à leur place : « Nous ne dormons plus. Vous si. » Le froid sort du mur.",
+     "m2": "L'épitaphe a été repeinte pendant la nuit. « Ils ont les yeux ouverts pour ne pas se perdre dans leur sommeil. » Les yeux peints au-dessus suivent le passant, et la peinture est fraîche ce matin.",
+     "z": "Sur le mur de glace qui ferme le fjord, une rangée d'yeux peints et une épitaphe en hiéroglyphes : « Ils ont les yeux ouverts pour ne pas se perdre dans leur sommeil. Ramez, et ils resteront où ils sont. »",
+     "p2": "Sous l'épitaphe, les yeux peints se sont tournés tous du même côté, avant le bruit. On a ajouté : « Ils rêvent qu'ils rament. Leurs rêves sont doux. Les nôtres le deviennent. » La glace du mur est fendue, et chaude.",
+     "p5": "Le mur s'est ouvert comme une écluse ; des bras bandés en sortent et rament dans le vide, au rythme des barques. L'épitaphe a été réécrite : « Ils ont les yeux ouverts. Fermez les vôtres. Il reste de la place. »"
+    }
+   }
+  ],
+  "ASS012": [
+   {
+    "support": "stele",
+    "titre": "Stèle des générations",
+    "textes": {
+     "m5": "La stèle est un bloc de cendre vitrifiée, tiède au toucher. Les glyphes des générations s'arrêtent à la dix-neuvième, puis une seule ligne : « Ceci est la dernière loi, et elle restera. » Rien ne pousse plus autour.",
+     "m2": "Les glyphes en cartouches de la stèle sont noircis de résine. « Dix-neuf générations sur les bancs taillés. Les cristaux n'ont jamais bougé. Toute loi brûlée est définitive. » Les pores du cristal sont bouchés d'une suie grise.",
+     "z": "Une stèle de cristal laiteux gravée de glyphes en cartouches. « Dix-neuf générations ont siégé ici. Chacune s'est assise un peu plus haut. » Le dernier cartouche est tourné vers les bancs, et plus près d'un ongle.",
+     "p2": "De la calcite rose a poussé entre les cartouches, comme une gencive autour des dents. « Dix-neuf générations. La vingtième s'assoit déjà. » Les glyphes sont un peu plus hauts qu'hier, et la stèle suinte.",
+     "p5": "La stèle a fleuri en calcite opaque, rose et blanc de sève, qui a avalé les glyphes. Un seul cartouche reste lisible, au sommet : « Il n'y a plus de générations, il y a le conseil. » Les pétales suivent le sens des veines."
+    }
+   },
+   {
+    "support": "panneau",
+    "titre": "Ordre de la séance",
+    "textes": {
+     "m5": "Le panneau de pierre est couvert d'une croûte de cendre durcie, où la loi s'est fixée seule : « Restez assis. La séance est close. Vous avez voté. » Les bancs face au panneau sont occupés par des formes grises qui ne se lèvent pas.",
+     "m2": "L'ordre de séance a été regravé en lettres sèches. « Le vote se fait par la résine brûlée sur les pointes. Chaque bulletin brûle avec les autres. On compte les bulletins noircis. » Le total inscrit dépasse le nombre de sièges.",
+     "z": "Un panneau taillé à l'entrée de l'assemblée de Balpak : « À la fin de chaque séance, vérifiez la distance entre la pointe la plus proche et votre siège. » Deux mains différentes ont ajouté dessous « résine » et « eau ».",
+     "p2": "L'ordre de séance a été lavé et réécrit. « Le vote se fait en versant l'eau du puits sur les pointes. La loi fleurit pour tous, sans choisir. » Un pétale de calcite a poussé sur le mot « tous ».",
+     "p5": "Le panneau est enfoui sous des corolles blanches. On devine : « Le conseil siège en permanence. Les sièges se lèvent seuls. Ne vous asseyez pas, vous seriez retenus. » Un banc a poussé jusqu'au panneau et s'y appuie."
+    }
+   },
+   {
+    "support": "borne",
+    "titre": "Borne du puits",
+    "textes": {
+     "m5": "Le puits est comblé de cendre jusqu'à la margelle, et la borne est soudée à la pierre. « Ici était l'eau. Le conseil l'a déclarée inutile. » L'air est sec à tousser, et la caverne ne suinte plus nulle part.",
+     "m2": "La borne du puits est grise de suie. « Ne versez plus d'eau sur les pointes : la fumée descend, et c'est bien ainsi. » Quelqu'un a gratté la cendre sur un mot, et dessous la pierre est encore humide.",
+     "z": "Une borne trapue près de la margelle du puits, glyphe d'eau et glyphe de feu côte à côte. « Eau puisée pour la séance, et pour elle seule. » On y a laissé une cruche, et une pincée de résine.",
+     "p2": "La borne transpire. « Versez l'eau du puits sur la pointe : elle ne coule pas, elle est bue. Puis lavez-vous les mains. » Sous les ongles de qui s'y appuie, de petites corolles blanches ont poussé.",
+     "p5": "La margelle a fleuri en dents de calcite rose qui se referment sur le seau. La borne est noyée de sève : « La floraison ne demande pas qui saigne. Elle ne demande pas qui boit. » L'eau monte sans qu'on puise."
+    }
+   },
+   {
+    "support": "mur",
+    "titre": "Les deux témoignages",
+    "textes": {
+     "m5": "Le mur ne porte plus qu'un seul témoignage, celui du scribe, figé dans une coulée de cendre : « Les bancs sont taillés. Rien ne pousse. » La place de l'autre texte est lisse et tiède. Personne ne se souvient de la porteuse d'eau.",
+     "m2": "Le témoignage de la porteuse d'eau est noirci de résine, presque illisible. Celui du scribe est net : « Les cristaux n'ont jamais bougé. » Une marque fraîche montre qu'une pointe a reculé d'un ongle, puis s'est figée.",
+     "z": "Sur le mur, deux colonnes de glyphes. Le scribe : « On vote en brûlant la résine. » La porteuse d'eau : « Les bancs ont poussé. » En bas, commun aux deux : « Les pointes sont plus près d'un ongle à chaque séance. »",
+     "p2": "La colonne du scribe disparaît sous la calcite rose. Celle de la porteuse d'eau est intacte : « Les bancs ont poussé, et nous avec. » Une ligne a été rajoutée : « Hier, un siège s'est levé avant la séance. »",
+     "p5": "Le mur entier a fleuri, et les deux colonnes ne font plus qu'un texte, écrit en pétales : « Nous sommes d'accord. » Deux silhouettes de calcite se tiennent devant, la main dans la paroi, et la paroi les nourrit."
+    }
+   }
+  ]
+ }
+}
