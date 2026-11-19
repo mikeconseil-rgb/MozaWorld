@@ -9,6 +9,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Lot graphique 2.6 et zones +33 % | 18 nov. | Fluidité validée sur la Xbox (18 nov.) ; reste son avis sur le rendu |
 | Blessures façon Shadowrun | 17 nov. | Deux ou trois soirs de jeu, puis un seul système |
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
+| Gameplay du monde, lot 1 : hordes (5 cycles de colère, 3 de marche, cibles 2 à 3 paliers plus faibles), domaines dès 2 tuiles et leurs bonus, défense +2/+1/+2, rivaux (1 chance sur 6 par cycle, préavis 2 cycles, verrou contestable), reprise par l'empreinte en un palier | 19 nov. | Les jouer ; réglages proposés par l'équipe, pas encore tranchés par l'utilisateur |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |

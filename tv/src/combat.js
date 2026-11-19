@@ -99,8 +99,9 @@ let CB=null;
 const melange=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function startCombat(Z,kind){
   const duel=kind==='duel'&&typeof DUEL!=='undefined'&&DUEL;
-  const foes=duel?conseil(Z,DUEL.eff):kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
+  const foes=duel?conseil(Z,DUEL.eff):kind==='rival'&&typeof championRival==='function'?championRival(Z):kind==='eveil'?[monstre(Z,2,S.emp[Z.id]),monstre(Z,Math.random()<.5?0:1,S.emp[Z.id])]
     :Array.from({length:Lz(Z.id)>=3?3:2},()=>monstre(Z,Math.floor(Math.random()*2)));
+  if(kind==='eveil'&&typeof renfortRival==='function')renfortRival(Z,foes);
   const sr=!duel&&srActif(),mx=duel?24+2*zonesA('MAR').length:sr?10+2*zonesA('CIT').length:pvMax(),hero={nom:duel?'Votre crédit':'Le héros',pv:mx,max:mx,g:0,hero:1};
   if(!duel&&S.fatigue){hero.pv=Math.max(1,hero.pv-S.fatigue);S.fatigue=0}  /* 18 nov. : prix en PV d'un choix moral, payé au prochain combat */
   CB={sr,Z,kind,foes,hero,allies:[hero],pile:melange(duel?paquetPolitique():S.deck.filter(k=>typeof eveillee!=='function'||eveillee(k))),defausse:[],main:[],mana:0,f:0,sel:null,ti:0,busy:true,q:[],tour:0};
@@ -197,6 +198,8 @@ const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};
 function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
   if(C.kind==='duel'&&typeof finDuel==='function'){finDuel(ok);return}
+  if(C.kind==='rival'&&typeof finRival==='function'){finRival(ok,C);return}
+  if(C.kind==='horde'&&typeof finHorde==='function'){finHorde(ok,C);return}
   let gain='';if(ok){const t=ZMANA[Z.id],n=(C.kind==='eveil'?2:1)+(C.kind==='renc'&&typeof bonusChant==='function'?bonusChant():0);gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
   const retour=`${gain} Réserve : ${resTexte()}.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();

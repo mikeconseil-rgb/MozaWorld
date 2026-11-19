@@ -1,0 +1,176 @@
+/* Test du monde : domaines, hordes et rivaux ENSEMBLE, sur une longue partie simulée.
+   Nouvelle partie, de nombreux cycles (MZ.cycle), prises de zones, hordes et rivaux déclenchés et résolus, combats d'avant-garde
+   et de champion, mort du héros, rechargement de la page avec la sauvegarde. À chaque étape : aucune erreur JavaScript,
+   état S cohérent, menus qui s'ouvrent. Vérifie aussi les réglages du 19 nov. (cibles des hordes à 2 ou 3 paliers, zone à vous
+   gardée à 0, Citadelle comptée une fois, rythme des rivaux) et prend des captures du monde avec le bandeau.
+   Usage : sh tv/build.sh && node tv/tools/test-monde.js [dossier des captures]   (depuis la racine du dépôt ; Playwright et Chromium installés) */
+const path=require('path'),fs=require('fs');
+const {chromium}=require('playwright');
+const racine=path.resolve(__dirname,'..'),page0='file://'+path.join(racine,'index.html');
+const three=fs.readFileSync(path.join(racine,'android','assets','three.min.js'));
+const dossier=process.argv[2]||path.join(require('os').tmpdir(),'mz-test-monde');fs.mkdirSync(dossier,{recursive:true});
+const etapes=[];let echec=null;
+const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!==undefined?' : '+detail:''));if(!cond&&!echec)echec=nom};
+const info=(nom,detail)=>etapes.push('INFO  '+nom+(detail!==undefined?' : '+detail:''));
+/* cohérence de l'état, évaluée dans la page */
+const COHERENT=()=>{const S=MZ.S,p=[];
+  for(const Z of MZ.ZN){const id=Z.id,lv=S.lv[id],res=(Z.mod||id)==='RES';
+    if(typeof lv!=='number'||!Number.isInteger(lv))p.push(id+' niveau '+lv);
+    else if(res?(lv<0||lv>3):(lv<-7||lv>7))p.push(id+' niveau hors bornes '+lv);
+    if(S.own[id]&&S.riv&&S.riv.z&&S.riv.z[id])p.push(id+' à vous et à '+S.riv.z[id]);
+    if(S.act[id]&&!S.own[id])p.push(id+' activée sans être à vous')}
+  for(const t in S.res)if(typeof S.res[t]!=='number'||!isFinite(S.res[t])||S.res[t]<0)p.push('mana '+t+' = '+S.res[t]);
+  for(const k of['nc','tc','hurt'])if(typeof S[k]!=='number'||!isFinite(S[k]))p.push(k+' = '+S[k]);
+  for(const s in S.hordes||{}){const h=S.hordes[s];if(!ZB[s]||!ZB[h.cible]||!isFinite(h.arrive)||!isFinite(h.force))p.push('horde '+s+' '+JSON.stringify(h))}
+  if(S.riv&&S.riv.c){const c=S.riv.c;if(!ZB[c.id]||!isFinite(c.du))p.push('contestation '+JSON.stringify(c))}
+  if(S.hurt<0||S.hurt>2)p.push('blessures '+S.hurt);
+  return p};
+(async()=>{
+  const nav=await chromium.launch({args:['--no-sandbox','--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const ctx=await nav.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1});
+  const p=await ctx.newPage();
+  const erreurs=[];p.on('pageerror',e=>erreurs.push(String(e.message||e)));
+  await p.route('**/three.min.js',r=>r.fulfill({body:three,contentType:'application/javascript'}));
+  await p.route(/^https?:\/\/(?!.*three\.min\.js)/,r=>r.abort());
+  await p.goto(page0);
+  const pret=await p.waitForFunction(()=>window.MZ&&['start','cycle','horde','hordeArrive','rival','rivalArrive','prendre','domaines'].every(k=>typeof window.MZ[k]==='function'),null,{timeout:30000}).then(()=>true,()=>false);
+  ok('la page démarre, les accélérateurs MZ existent',pret);
+  if(!pret){await nav.close();console.log(etapes.join('\n'));process.exit(1)}
+  const coherent=async nom=>{const pb=await p.evaluate(COHERENT);ok('état cohérent · '+nom,pb.length===0,pb.slice(0,4).join(' | ')||undefined);
+    const e=erreurs.length;ok('aucune erreur JS · '+nom,e===0,e?erreurs.slice(0,2).join(' | '):undefined)};
+  const monde=()=>p.evaluate(()=>{if(MZ.mode!=='monde'&&!MZ.CB&&!MZ.E)toMonde()});
+
+  /* 1. nouvelle partie */
+  await p.evaluate(()=>MZ.start());await p.waitForTimeout(1500);await monde();
+  const dep=await p.evaluate(()=>({n:ZONES_DEP.length,own:ZONES_DEP.filter(id=>MZ.S.own[id]).length,verr:ZONES_DEP.filter(id=>verrouillee(id)).length,cont:ciblesConteste().map(Z=>Z.id)}));
+  ok('nouvelle partie : le territoire de départ est à vous',dep.own===dep.n,dep.own+'/'+dep.n);
+  info('verrous au départ',`${dep.verr} zones de départ sur ${dep.n} sont verrouillées ou au cœur ; contestables : ${dep.cont.join(', ')||'aucune'}`);
+  await coherent('départ');
+
+  /* 2. réglages des rivaux : rien avant le cycle 10, une chance sur 6 */
+  const rg=await p.evaluate(()=>({tous:RIV_TOUS,grace:RIV_GRACE}));
+  ok('rivaux : une chance sur 6 par cycle, rien avant le cycle 10',rg.tous===6&&rg.grace===10,JSON.stringify(rg));
+
+  /* 3. longue partie : 40 cycles, avec prises, hordes et rivaux */
+  let vus={hordes:0,arrivees:0,contest:0,prises:0,menus:0};
+  for(let i=1;i<=40;i++){
+    const r=await p.evaluate(i=>{const S=MZ.S,o={};MZ.cycle();
+      if(i%7===0){const Z=MZ.ZN.find(Z=>!S.own[Z.id]&&!(S.riv&&S.riv.z[Z.id]));if(Z){MZ.prendre(Z.id);o.prise=Z.id}}
+      if(i%9===0){const h=MZ.horde();o.horde=h&&h.src}
+      if(i%11===0){const h=Object.keys(S.hordes)[0];if(h){MZ.hordeArrive(h);o.arrivee=h}}
+      if(i%5===0){const x=MZ.rival();o.rival=x&&x.sorte}
+      if(i%13===0&&S.riv&&S.riv.c){MZ.rivalArrive();o.rarr=1}
+      return o},i);
+    if(r.horde)vus.hordes++;if(r.arrivee)vus.arrivees++;if(r.rival==='conteste')vus.contest++;if(r.rival==='prise')vus.prises++;
+    await p.waitForTimeout(1050);
+    if(await p.evaluate(()=>MZ.mode==='menu')){vus.menus++;await monde()}
+    if(i%10===0)await coherent('cycle '+i)}
+  info('partie simulée',JSON.stringify(vus));
+
+  /* 4. hordes : cibles à 2 ou 3 paliers exactement */
+  const cib=await p.evaluate(()=>{const S=MZ.S,out=[];for(const Z of MZ.ZN){if(!sourceHorde(Z.id))continue;const c=cibleHorde(Z.id);if(c)out.push([Z.id,S.lv[Z.id],c,S.lv[c]])}
+    /* cas construit : une source à 7, des voisines à 5, 4 et 3 */
+    const src=MZ.ZN.find(Z=>(Z.mod||Z.id)!=='RES'&&!S.hordes[Z.id]&&(VOISINES[Z.id]||[]).filter(v=>(ZB[v].mod||v)!=='RES').length>=2);
+    if(!src)return{out};const pe=poleEnvahisseur(src.id),s=pe===2?1:pe;S.lv[src.id]=7*s;const v=(VOISINES[src.id]).filter(v=>(ZB[v].mod||v)!=='RES'&&!S.hordes[v]);
+    const sv={};for(const x of Object.keys(aPortee(src.id,2)))if(x!==src.id){sv[x]=S.lv[x];S.lv[x]=0}   /* à 0 : jamais visées */
+    v.forEach((x,i)=>S.lv[x]=s*[1,6,2][i%3]);const sans=cibleHorde(src.id);   /* 1 et 2 : trop faibles ; 6 : pas assez */
+    S.lv[v[0]]=s*4;const avec=cibleHorde(src.id);
+    for(const x in sv)S.lv[x]=sv[x];return{out,sans,avec,v0:v[0],src:src.id}});
+  ok('une horde ne vise que des zones plus faibles de 2 ou 3 paliers',cib.out.every(([s,l,c,lc])=>{const d=Math.abs(l)-Math.abs(lc);return d>=2&&d<=3}),JSON.stringify(cib.out));
+  ok('une zone 5 paliers plus faible n\'est pas visée, une zone 3 paliers plus faible l\'est',cib.sans===null&&cib.avec===cib.v0,JSON.stringify({sans:cib.sans,avec:cib.avec,attendu:cib.v0}));
+
+  /* 5. une horde contre une zone à vous à ±1 : elle tombe à 0 et reste à vous */
+  const zero=await p.evaluate(()=>{const S=MZ.S,id=MZ.ZN.find(Z=>S.own[Z.id]&&(Z.mod||Z.id)!=='RES'&&Math.abs(S.lv[Z.id])===1&&S.borne!==Z.id).id;const l=defaite(id);
+    return{id,lv:S.lv[id],own:S.own[id],act:S.act[id],l}});
+  ok('une zone à vous tombée à 0 par une horde reste à vous',zero.lv===0&&zero.own&&zero.act,JSON.stringify(zero));
+
+  /* 6. défense : la Citadelle ne compte qu'une fois (pas de +3 et de +2 pour la même) */
+  const dfn=await p.evaluate(()=>{const S=MZ.S,id=(VOISINES.CIT||[]).find(v=>S.own[v]);S.own.CIT=S.act.CIT=true;const D=defenseHorde(id),dm=defenseMonde(id);
+    const pd=(D.parts.find(x=>x[0]==='pouvoirs du domaine')||[0,0])[1];
+    return{id,parts:D.parts.map(x=>x[0]+' +'+x[1]),dm:dm.raisons,total:D.total,cit:D.parts.filter(x=>/Citadelle/.test(x[0])).length,pd,attendu:dm.bonus-(dm.verrou||0)}});
+  ok('défense contre une horde : la Citadelle ne compte qu\'une fois (+3, pas +3 et +2)',dfn.cit===1&&dfn.pd===dfn.attendu,JSON.stringify(dfn));
+
+  /* 7. une zone peut-elle être visée par une horde ET contestée ? Les deux options sont à la Pierre */
+  const dbl=await p.evaluate(()=>{const S=MZ.S;S.rest={};S.riv.c=null;
+    const id=MZ.ZN.map(Z=>Z.id).find(id=>S.own[id]&&S.act[id]&&S.lv[id]!==0&&(ZB[id].mod||id)!=='RES'&&!protege(id))||MZ.ZN.map(Z=>Z.id).find(id=>S.own[id]&&S.act[id]&&S.lv[id]!==0&&!protege(id));
+    if(!id)return{id:null};
+    const src=MZ.ZN.map(Z=>Z.id).find(s=>s!==id&&(ZB[s].mod||s)!=='RES'&&!S.hordes[s]&&!S.own[s]);
+    const h=MZ.horde(src,id);S.riv.c={r:'sbc',id,de:S.riv.nc,du:S.riv.nc+2};
+    openEveil(ZB[id]);const t=[...document.querySelectorAll('#menu-choix *')].map(e=>e.textContent).join(' | ');
+    const deux=[...document.getElementById('menu-choix').children].slice(0,2).map(e=>e.textContent).join(' | ');
+    return{id,h:!!h,def:/Défendre la zone/.test(t),av:/Affronter l'avant-garde/.test(t),src,enTete:/Défendre la zone/.test(deux)&&/Affronter l'avant-garde/.test(deux)}});
+  info('zone à la fois visée par une horde et contestée',JSON.stringify(dbl));
+  ok('Pierre d\'une zone contestée : option « Défendre la zone »',dbl.def);
+  ok('Pierre d\'une zone visée par une horde : option « Affronter l\'avant-garde »',dbl.av);
+  ok('les deux défenses sont en tête du menu de la Pierre (manette)',dbl.enTete);
+  await p.screenshot({path:path.join(dossier,'monde-pierre-menaces.png')});
+  await monde();
+
+  /* 8. combats : avant-garde de la horde, champion du rival */
+  const cb1=await p.evaluate(async src=>{combatHorde(src);await new Promise(r=>setTimeout(r,700));const k=MZ.CB&&MZ.CB.kind,n=MZ.CB&&MZ.CB.foes.length;finCombat(true);
+    return{k,n,brisee:!MZ.S.hordes[src]}},dbl.src);
+  ok('combat contre l\'avant-garde, victoire : horde brisée',cb1.k==='horde'&&cb1.n===2&&cb1.brisee,JSON.stringify(cb1));
+  await monde();
+  const cb2=await p.evaluate(async id=>{defendre(ZB[id]);await new Promise(r=>setTimeout(r,700));const k=MZ.CB&&MZ.CB.kind,chef=MZ.CB&&MZ.CB.foes[0].nom;finCombat(true);
+    return{k,chef,c:MZ.S.riv.c}},dbl.id);
+  ok('combat contre le champion, victoire : contestation levée',cb2.k==='rival'&&/Champion/.test(cb2.chef)&&cb2.c===null,JSON.stringify(cb2));
+  await monde();await coherent('combats');
+
+  /* 9. une zone de rival à ±7 lève une horde, contre vos zones d'abord */
+  const rh=await p.evaluate(()=>{const S=MZ.S;let id=Object.keys(S.riv.z).find(id=>(ZB[id].mod||id)!=='RES');
+    if(!id){const Z=MZ.ZN.find(Z=>(Z.mod||Z.id)!=='RES'&&!S.own[Z.id]&&!ESTDEP.has(Z.id)&&!S.riv.z[Z.id]);if(Z){prendre(RIVAUX[0],Z);id=Z.id}}if(!id)return{id:null};
+    const pe=poleEnvahisseur(id),s=pe===2?1:pe;S.lv[id]=7*s;delete S.hordes[id];
+    if(!cibleHorde(id)){const v=(VOISINES[id]||[]).find(v=>(ZB[v].mod||v)!=='RES'&&!Object.values(S.hordes).some(h=>h.cible===v));if(v)S.lv[v]=4*(S.lv[v]<0?-1:1)}   /* une voisine à portée de horde */
+    const h=leverHorde(id);
+    return{id,maison:S.riv.z[id],cible:h&&h.cible,cibleAVous:h?!!S.own[h.cible]:null}});
+  ok('une zone de rival à ±7 lève une horde',!!rh.id&&!!rh.cible,JSON.stringify(rh));
+  await coherent('horde d\'une zone de rival');
+
+  /* 10. bandeau : lignes Domaines, Menaces, Rivaux ; le cadre d'état ne déborde pas */
+  await p.evaluate(()=>{const S=MZ.S;if(!Object.keys(S.hordes).length)MZ.horde();if(!S.riv.c)MZ.rival('conteste');if(!Object.keys(S.riv.z).length)MZ.rival('prise');hudKey='';etatHud();toMonde()});
+  await p.waitForTimeout(1500);
+  const bd=await p.evaluate(()=>{const b=document.getElementById('bandeau'),box=document.querySelector('.hud.etat'),r=box.getBoundingClientRect();
+    return{t:b.textContent,lignes:[...b.querySelectorAll('.ligne .titre')].map(e=>e.textContent),r:{top:r.top,bottom:r.bottom,left:r.left,right:r.right},h:innerHeight,w:innerWidth}});
+  ok('bandeau : lignes Domaines, Menaces et Rivaux',['Domaines','Menaces','Rivaux'].every(t=>bd.lignes.indexOf(t)>=0),bd.lignes.join(', '));
+  ok('le cadre d\'état tient dans l\'écran (1280×720)',bd.r.top>=0&&bd.r.left>=0&&bd.r.bottom<=bd.h&&bd.r.right<=bd.w,JSON.stringify(bd.r));
+  await p.screenshot({path:path.join(dossier,'monde-bandeau.png')});
+
+  /* 11. menu Pause, écran Rivaux */
+  const pz=await p.evaluate(()=>{openMenu();const a=/Rivaux/.test(document.getElementById('menu-choix').textContent);openRivaux();
+    const t=document.getElementById('menu-choix').textContent;return{a,n:RIVAUX.filter(r=>t.indexOf(r.nom)>=0).length}});
+  ok('menu Pause → écran Rivaux, quatre maisons',pz.a&&pz.n===4,JSON.stringify(pz));
+  await p.screenshot({path:path.join(dossier,'monde-rivaux.png')});
+  await monde();
+
+  /* 12. mort du héros avec des menaces en cours */
+  const mt=await p.evaluate(()=>{const S=MZ.S;const id=MZ.ZN.map(Z=>Z.id).find(id=>S.own[id]&&!ESTDEP.has(id)&&S.lv[id]!==0);
+    if(id)S.riv.c={r:'gri',id,de:S.riv.nc,du:S.riv.nc+2};const hAvant=Object.keys(S.hordes).length;
+    mort();riv();return{cHorsDepart:id||null,c:S.riv.c,hAvant,hApres:Object.keys(S.hordes).length,own:ZONES_DEP.filter(z=>S.own[z]).length,autres:MZ.ZN.filter(Z=>!ESTDEP.has(Z.id)&&S.own[Z.id]).length,hurt:S.hurt}});
+  ok('mort : l\'héritier reprend le départ, rien d\'autre',mt.own===12&&mt.autres===0&&mt.hurt===0,JSON.stringify(mt));
+  ok('mort : la contestation d\'une zone perdue tombe',!mt.cHorsDepart||mt.c===null,JSON.stringify(mt.c));
+  info('mort : hordes en cours',`${mt.hAvant} avant, ${mt.hApres} après (elles marchent toujours)`);
+  await p.evaluate(()=>toMonde());await coherent('après la mort');
+  for(let i=0;i<5;i++){await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1050);await monde()}
+  await coherent('cinq cycles après la mort');
+
+  /* 13. rechargement avec la sauvegarde */
+  const avant=await p.evaluate(()=>{save();return JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c})});
+  await p.reload();await p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function',null,{timeout:30000});
+  await p.evaluate(()=>startGame(false));await p.waitForTimeout(2500);
+  const apres=await p.evaluate(()=>JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c}));
+  ok('rechargement : la partie reprend à l\'identique',avant===apres,avant===apres?undefined:avant.slice(0,200)+' ≠ '+apres.slice(0,200));
+  for(let i=0;i<5;i++){await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1050);await monde()}
+  await coherent('après rechargement et cinq cycles');
+
+  /* 14. textes visibles : pas de « undefined », « NaN », « null » */
+  const txt=await p.evaluate(()=>{const S=MZ.S,o=[];const id=MZ.ZN.find(Z=>S.own[Z.id]).id;openEveil(ZB[id]);o.push(document.getElementById('menu').textContent);
+    openRivaux();o.push(document.getElementById('menu').textContent);RIVAUX.forEach((r,i)=>{openMaison(r,i);o.push(document.getElementById('menu').textContent)});toMonde();
+    o.push(document.getElementById('bandeau').textContent);return o.join('\n')});
+  const mauvais=(txt.match(/undefined|NaN|\bnull\b|\[object/g)||[]);
+  ok('textes visibles sans « undefined », « NaN » ni « null »',mauvais.length===0,mauvais.join(', ')||undefined);
+
+  await nav.close();
+  console.log(etapes.join('\n'));console.log('\nCaptures : '+dossier);
+  if(echec){console.error('\nTest du monde : ÉCHEC ('+echec+')');process.exit(1)}
+  console.log('\nTest du monde : tout passe.');
+})().catch(e=>{console.error(etapes.join('\n'));console.error('Test du monde : erreur',e);process.exit(1)});

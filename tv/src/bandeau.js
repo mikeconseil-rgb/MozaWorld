@@ -10,12 +10,15 @@ const BTYPES=[['CIT','⛫','Citadelles'],['DON','⬟','Donjons'],['RES','⬢','R
 .bandeau .d{display:inline-flex;align-items:center;gap:.25em;font-size:calc(var(--u)*1.25);color:var(--ivoire)}
 .bandeau .d span{color:#ffd98a;font-size:1.1em}.bandeau .d small{color:var(--sable);font-size:.75em}
 .bandeau .dg{font-size:calc(var(--u)*1.1);font-weight:600;padding:.05em .5em;border-radius:3px;border:1px solid currentColor}.bandeau .dg.faible{color:#8fc06f}.bandeau .dg.reel{color:#e8c77f}.bandeau .dg.mortel{color:#ff7a6a}
-.bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}`;document.head.appendChild(st)})();
+.bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}
+/* 19 nov. : avec les lignes Menaces et Rivaux, la barre peut dépasser 1280 px ; elle passe alors sur deux lignes au lieu d'être coupée */
+.hud.etat,.hud.etat .bandeau{flex-wrap:wrap!important;row-gap:calc(var(--u)*.3)}`;document.head.appendChild(st)})();
 function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;let b=document.getElementById('bandeau');
   if(!b){b=document.createElement('div');b.id='bandeau';b.className='bandeau';box.prepend(b)}
   const mana=`<span class="m"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');
   const dom=BTYPES.map(([m,ic,nom])=>{const tot=ZN.filter(Z=>(Z.mod||Z.id)===m),own=tot.filter(Z=>S.own[Z.id]).length;
     return`<span class="d" title="${nom}"><span>${ic}</span>${own}<small>/${tot.length}</small></span>`}).join('');
+  const dfe=typeof bandeauDomaines==='function'?(suivreDomaines(),bandeauDomaines()):'';   /* domaines fermés (domaines.js) */
   const prod=typeof prodTexte==='function'&&prodRessource()?`<span class="titre">+ ${prodTexte()} par cycle</span>`:'';
   /* territoire : zones à vous, et le plus grand bloc de zones voisines d'un seul tenant */
   const mes=ZN.filter(Z=>S.own[Z.id]).map(Z=>Z.id),vu=new Set();let bloc=0;
@@ -23,7 +26,7 @@ function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;
     while(pile.length){const z=pile.pop();n++;for(const v of VOISINES[z]||[])if(S.own[v]&&!vu.has(v)){vu.add(v);pile.push(v)}}bloc=Math.max(bloc,n)}
   const niv=ZN.reduce((a,Z)=>a+(S.own[Z.id]?Math.abs(S.lv[Z.id]||0):0),0);
   const terr=`<span class="d" title="Zones à vous"><span>⚑</span>${mes.length}<small>/${ZN.length}</small></span>${typeof ZONES_DEP!=='undefined'?`<span class="d" title="Territoire de départ pris (les zones autour ne cèdent qu'après)"><span>⌂</span>${departPris()}<small>/${ZONES_DEP.length} départ</small></span>`:''}<span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}<small> d'un tenant</small></span><span class="d" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}<small> niv.</small></span>`;
-  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne prod">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}</div><div class="ligne"><span class="titre">Territoire</span>${terr}</div>${royaume()}`}
+  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne prod">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}${dfe}</div><div class="ligne"><span class="titre">Territoire</span>${terr}</div>${royaume()}${(()=>{const m=typeof menacesHordes==='function'?menacesHordes():[];return m.length?`<div class="ligne"><span class="titre">Menaces</span>${m.join('')}</div>`:''})()}${typeof ligneRivaux==='function'?ligneRivaux():''}`}
 /* 17 nov. (« affichons ces chiffres dans la barre d'état ») : la boucle de jeu en chiffres — cartes de zone éveillées dans le paquet,
    bêtes, bonus greffés, routes — et le danger estimé de la zone où l'on se trouve. */
 function puissancePaquet(){return(S.deck||[]).filter(k=>k.indexOf('#')>0&&(typeof eveillee!=='function'||eveillee(k))||CK[k]&&CK[k].z&&k.indexOf('#')<0).length}
