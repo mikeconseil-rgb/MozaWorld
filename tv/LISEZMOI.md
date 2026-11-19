@@ -4,6 +4,12 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.11 : choix moraux de trois nouvelles zones (19 novembre)
+
+- Trois zones de plus ont leur scénario en 15 scènes (`src/scenarios-zones.js`), sur le modèle de la Taïga de Kobor : **Berestograd** (Oubli / Mémoire : l'écorce pliée en huit d'Ouliana, le frère noyé du kniaz), **l'Oasis de Maulu** (Glace / Feu : une source pour un seul troupeau, la quatrième bête boit à votre place), **le Fjord de Rames** (Cauchemar / Rêve : le cent quarante et unième coup de rame, les embaumés sous la glace).
+- Nouveau type de prix : du mana d'un type précis (Sève, Glace).
+- L'épreuve qui suit le choix reste celle de la zone ; l'habillage par la scène viendra avec le soir 2 de Kobor.
+
 ## Version 2.10 : boucle graphique 1 (19 novembre)
 
 Première boucle de l'équipe graphique (critique, direction artistique, rendu et performance, producteur, trois artisans, testeur-juge). Les trois améliorations ont été acceptées par le testeur ; détails dans les sections « Boucle 1 » plus bas, captures avant, après et intégrées dans `boucles/boucle-1/` du dossier du projet.

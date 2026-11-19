@@ -18,6 +18,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Choix moraux | Continuer les scénarios sur d'autres zones sans attendre le verdict sur Kobor (testé ce week-end) : lot 1 = Berestograd, l'Oasis de Maulu, le Fjord de Rames | en vigueur | |
 | Graphismes | Équipe graphique en boucles quotidiennes jusqu'à l'échéance (~28 nov.) : critique, direction artistique, rendu et performance, producteur, artisans, testeur-juge ; ce que le testeur accepte est fusionné sans attendre l'utilisateur | en vigueur | |
 | Inscriptions | « Ajouts de texte et d'inscription pour enrichir chaque zone non ressources » : 4 objets écrits par Antre, Assemblée, Donjon et Citadelle, texte du conteur de la zone qui change en 5 bandes de niveau ; Ressources exclues | en vigueur (2.9) | rien |
 | Échéance | « Il faut tout terminer d'ici 10 jours » ; appliquer chaque lot une fois les tests acceptés par l'équipe | en vigueur | rien |
