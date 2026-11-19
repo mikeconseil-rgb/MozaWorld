@@ -10137,7 +10137,7 @@ function recoAssemblees(){for(const id in ASSEMBLEES){const A=ASSEMBLEES[id],Z=Z
      Le Donjon d'origine (DON) garde ses 4 salles et son tableau S.pieges (sauvegardes inchangées, assaut périodique d'economie.js).
      Les autres ont leurs salles dans S.donjons[id].p : 2 au palier 0 ou 1, 3 au palier 2, 4 au palier 3 et plus (provisoire).
      Une salle au-delà du palier actuel est scellée : son piège reste en place mais ne joue pas.
-   - Catalogue : 1 Donjon tenu, 2 dispositifs ; +1 par Donjon tenu (Herse, Glyphe, puis Lave, Gardien, puis deux pièges
+   - Catalogue : 2 dispositifs par Donjon tenu (provisoire, 19 nov. : était +1) : Herse, Glyphe, puis Lave, Gardien, puis deux pièges
      propres à ce module, payés en Sève et en Pierre).
    - Une horde qui vise un Donjon tenu, ou une zone à vous voisine d'un Donjon tenu, traverse ses salles : chaque piège actif
      ajoute sa force à la défense, la Glyphe double le suivant (mêmes règles que l'assaut du Donjon d'origine).
@@ -10146,7 +10146,7 @@ function recoAssemblees(){for(const id in ASSEMBLEES){const A=ASSEMBLEES[id],Z=Z
    - Une contestation de rival sur un Donjon aménagé : −10 points de chance par piège actif (provisoire, accroche dans rivaux.js).
    Pour les autres modules : piegesDonjon(id) → nombre de pièges actifs d'un Donjon tenu (0 sinon) ;
    reparerPieges(id) → réveille les pièges endormis et rend leurs 3 assauts aux pièges usés (sans mana : le Comptoir paie). */
-const DJ_VOISINES=1;      /* part de la traversée comptée quand la horde vise une voisine du Donjon (1 = tout, provisoire) */
+const DJ_VOISINES=.5,DJ_VOISINES_MAX=4;   /* une voisine du Donjon reçoit la moitié de la traversée, +4 au plus (provisoire, 19 nov. : était toute la traversée) */
 const DJ_RIVAL=.10;       /* chance retirée à une contestation de rival par piège actif (provisoire) */
 const DJ_ORDRE=['herse','glyphe','lave','gardien','ronces','eboulis'];
 /* deux dispositifs propres aux Donjons aménagés, payés avec des types de mana que le paquet n'utilise pas forcément */
@@ -10156,7 +10156,7 @@ Object.assign(PIEGES,{
 
 const estDJ=id=>!!ZB[id]&&estDON(ZB[id]);
 const donjonsTenus=()=>ZN.filter(Z=>estDON(Z)&&tient(Z.id)).map(Z=>Z.id);
-const nbDispositifs=()=>{const n=donjonsTenus().length;return n?Math.min(DJ_ORDRE.length,n+1):0};
+const nbDispositifs=()=>{const n=donjonsTenus().length;return n?Math.min(DJ_ORDRE.length,2*n):0};
 const dispositifs=()=>DJ_ORDRE.slice(0,nbDispositifs());
 
 function initDonjons(){if(typeof S==='undefined')return;
@@ -10195,7 +10195,7 @@ function traversee(id){const T=sallesOuvertes(id),N=nomsSalles(id),l=[],tirs=[];
 const donjonsTouches=id=>donjonsTenus().filter(D=>D===id||(VOISINES[D]||[]).indexOf(id)>=0);
 /* parts de défense pour defenseHorde (hordes.js) : remplace « pièges du Donjon voisin, 2 au plus » */
 function piegesHorde(id){const parts=[];if(!S.own[id])return parts;
-  for(const D of donjonsTouches(id)){const t=traversee(D);if(!t.v)continue;const v=D===id?t.v:Math.floor(t.v*DJ_VOISINES);
+  for(const D of donjonsTouches(id)){const t=traversee(D);if(!t.v)continue;const v=D===id?t.v:Math.min(DJ_VOISINES_MAX,Math.floor(t.v*DJ_VOISINES));
     if(v)parts.push([D===id?`salles piégées (${t.tirs.length})`:`pièges du Donjon voisin ${djCourt(D)} (${t.tirs.length})`,v])}
   return parts}
 function reparerPieges(id){let n=0;for(const x of piegesTab(id))if(x){let r=false;if(x.dort){x.dort=false;r=true}if(S.ent===2&&x.u<3){x.u=3;r=true}if(r)n++}
@@ -10246,12 +10246,12 @@ function openAmenager(id,f){initDonjons();const Z=ZB[id];if(!Z||!tient(id))retur
   const vois=voisinesDefendues(id),cat=dispositifs().map(k=>PIEGES[k].nom).join(', ');
   const assautTxt=id==='DON'?` Le monde sauvage attaque aussi ce Donjon d'origine tous les ${typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES} cycles.`:'';
   ui('menu',{sur:'Donjon à vous · aménager',t:id==='DON'?'Les salles des Neuf Édits':'Les salles '+djDe(djLieu(id)),f,
-    corps:`<p class="petit">Réserve : ${resHTML()}.</p><p class="petit">${n} salle${n>1?'s':''} ouverte${n>1?'s':''} sur 4 (une de plus à chaque palier, jusqu'à 4). Chaque piège a son type de mana, pour la pose comme pour l'entretien. Une horde qui vise ce Donjon${vois.length?' ou une de ses voisines à vous ('+vois.join(', ')+')':' ou une de ses voisines à vous'} traverse ces salles dans l'ordre : aujourd'hui, elles retiennent ${t.v}.${assautTxt}</p><p class="petit">Dispositifs connus (${nt} Donjon${nt>1?'s':''} tenu${nt>1?'s':''}) : ${cat}. Chaque nouveau Donjon tenu en déverrouille un.</p><p class="petit">${ENTRETIEN[S.ent].txt}</p>`,
+    corps:`<p class="petit">Réserve : ${resHTML()}.</p><p class="petit">${n} salle${n>1?'s':''} ouverte${n>1?'s':''} sur 4 (une de plus à chaque palier, jusqu'à 4). Chaque piège a son type de mana, pour la pose comme pour l'entretien. Une horde qui vise ce Donjon${vois.length?' ou une de ses voisines à vous ('+vois.join(', ')+')':' ou une de ses voisines à vous'} traverse ces salles dans l'ordre : aujourd'hui, elles retiennent ${t.v} quand la horde vise ce Donjon, et ${Math.min(DJ_VOISINES_MAX,Math.floor(t.v*DJ_VOISINES))} quand elle vise une voisine (la moitié, ${DJ_VOISINES_MAX} au plus).${assautTxt}</p><p class="petit">Dispositifs connus (${nt} Donjon${nt>1?'s':''} tenu${nt>1?'s':''}) : ${cat}. Chaque Donjon tenu en déverrouille deux.</p><p class="petit">${ENTRETIEN[S.ent].txt}</p>`,
     back:()=>openEveil(Z),opts:o})}
 function changerPiegeDJ(id,i){const T=piegesTab(id,true),cur=T[i],k0=cur?cur.k:null,N=nomsSalles(id),ok=dispositifs();
   ui('menu',{sur:N[i],t:'Choisir un piège',corps:`<p class="petit">Réserve : ${resHTML()}. Retirer un piège ne rend pas le mana.</p>`,back:()=>openAmenager(id,i),
     opts:[...DJ_ORDRE.map((k,j)=>{const P_=PIEGES[k],dv=ok.indexOf(k)>=0;
-      return{l:P_.nom+(k===k0?' (en place)':dv?'':' (verrouillé)'),ic:dv?P_.pose:'⛓',d:dv?`${P_.pose} ${P_.m} · force ${P_.force} · ${P_.txt}`:`se déverrouille au ${j}e Donjon tenu`,off:!dv||k===k0||!peutPayer(P_.m,P_.pose),
+      return{l:P_.nom+(k===k0?' (en place)':dv?'':' (verrouillé)'),ic:dv?P_.pose:'⛓',d:dv?`${P_.pose} ${P_.m} · force ${P_.force} · ${P_.txt}`:`se déverrouille au ${(n=>n>1?n+'e':'premier')(Math.ceil((j+1)/2))} Donjon tenu`,off:!dv||k===k0||!peutPayer(P_.m,P_.pose),
         go:()=>{payer(P_.m,P_.pose);T[i]={k,u:3,dort:false};save();etatHud();sfx('hit');openAmenager(id,i)}}}),
       {l:'Salle vide',ic:'○',off:!cur,go:()=>{T[i]=null;save();openAmenager(id,i)}},{l:'Retour',ic:'◆',go:()=>openAmenager(id,i)}]})}
 
@@ -10262,12 +10262,15 @@ function amenagerTest(id,liste){initDonjons();id=id||donjonsTenus()[0]||'DON';if
   if(!Array.isArray(liste)){if(tient(id)){closeUI();openAmenager(id)}return etatDonjon(id)}
   const T=piegesTab(id,true);for(let i=0;i<4;i++){const k=liste[i];T[i]=k&&PIEGES[k]?{k,u:3,dort:false}:null}
   save();hudKey='';return etatDonjon(id)}
+/* mort du héros : « on perd tout », les pièges de tous les Donjons aussi (testeur, 19 nov., provisoire). Sans cela, l'héritier
+   retrouvait les salles piégées de son Donjon de départ, et celles d'un ancien Donjon au moment de le reprendre. */
+if(typeof mort==='function'){const _djMort=mort;mort=function(){if(typeof S!=='undefined'){S.donjons={};S.pieges=[null,null,null,null]}return _djMort.apply(this,arguments)}}
 /* MozaWorld : le commerce en Citadelle (lot 2, 19 nov. ; décisions de l'utilisateur : « le commerce passe dans les Citadelles »,
    « la monnaie est la tesselle, séparée du mana », idée validée : « les tesselles achètent des cartes de secret, des réparations
    de pièges ou un retard de horde »). REGLES.md, sections 2, 5 et 6.
    - Les tesselles (S.tess) tombent à chaque cycle de chaque Citadelle tenue (1 + |palier|), et en prime quand le héros brise
      une horde ou repousse un rival (gagnerTesselles, appelé par hordes.js et rivaux.js). À la mort, on perd tout.
-   - Le Comptoir, à la Pierre d'éveil de toute Citadelle tenue : une carte utilitaire de secret (une par cycle au plus, pour garder
+   - Le Comptoir, à la Pierre d'éveil de toute Citadelle tenue : une carte utilitaire d'un secret déjà trouvé (une par cycle au plus, pour garder
      la règle « des cartes seulement aux paliers et aux secrets »), la réparation des pièges d'un Donjon tenu, deux cycles de retard
      pour une horde en marche (une fois par horde), et un peu de mana contre des tesselles, à taux défavorable.
    - Aucun achat réel : la tesselle se gagne seulement en jouant.
@@ -10310,18 +10313,24 @@ setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||type
 function bandeauTess(){initCommerce();return`<span class="d" title="Tesselles, la monnaie des Citadelles (+${revenuTess()} par cycle)"><span>◇</span>${S.tess}</span>`}
 
 /* ---------- Ce que vend le Comptoir ---------- */
-/* cartes de secret absentes du paquet : d'abord celles des secrets déjà trouvés (perdues à la mort), puis les plus proches */
+/* cartes de secret absentes du paquet, seulement celles des secrets déjà trouvés (par ce héros ou un héros précédent : perdues à la mort),
+   les plus proches d'abord. Le Comptoir ne vend pas les secrets encore cachés : on ne saute pas l'exploration (testeur, 19 nov., provisoire). */
 function cartesEnVente(Z){if(typeof secrets==='undefined'||typeof CK==='undefined')return[];
   const d=typeof aPortee==='function'?aPortee(Z.id,30):{};
-  return secrets.map((q,i)=>({q,k:'S'+i})).filter(x=>CK[x.k]&&S.deck.indexOf(x.k)<0)
-    .sort((a,b)=>(b.q.found?1:0)-(a.q.found?1:0)||(d[a.q.Z.id]??99)-(d[b.q.Z.id]??99)).slice(0,3)}
+  return secrets.map((q,i)=>({q,k:'S'+i})).filter(x=>x.q.found&&CK[x.k]&&S.deck.indexOf(x.k)<0)
+    .sort((a,b)=>(d[a.q.Z.id]??99)-(d[b.q.Z.id]??99)).slice(0,3)}
+/* pourquoi aucune carte n'est en vente */
+const pasDeCarte=()=>typeof secrets!=='undefined'&&secrets.some(q=>q.found)?'les cartes des secrets trouvés sont toutes dans votre paquet'
+  :'aucun secret trouvé : le Comptoir ne vend que les cartes des secrets déjà découverts, perdues à la mort'
 const carteAchetableCeCycle=()=>S.tessAchat!==S.nc;
 function donjonsAReparer(){
-  if(typeof reparerPieges==='function')return ZN.filter(Z=>estDON(Z)&&tient(Z.id)).map(Z=>({id:Z.id,n:typeof piegesDonjon==='function'?piegesDonjon(Z.id):null,besoin:true}));
+  /* (19 nov., testeur) « besoin » vrai seulement s'il y a un piège endormi ou usé : sinon on payait 5 tesselles pour rien */
+  if(typeof reparerPieges==='function')return ZN.filter(Z=>estDON(Z)&&tient(Z.id)).map(Z=>{const T=typeof piegesTab==='function'?piegesTab(Z.id).filter(Boolean):[];
+    return{id:Z.id,n:T.length,besoin:T.some(x=>x.dort||S.ent===2&&x.u<3)}});
   /* sans le module Donjons : les pièges du Donjon d'origine (economie.js), usés ou endormis */
   if(!tient('DON')||!Array.isArray(S.pieges))return[];const p=S.pieges.filter(Boolean);
   return[{id:'DON',n:p.length,besoin:p.some(x=>x.dort||(x.u!==undefined&&x.u<3))}]}
-function reparer(id){if(typeof reparerPieges==='function')return reparerPieges(id)!==false;
+function reparer(id){if(typeof reparerPieges==='function')return reparerPieges(id)>0;
   if(id!=='DON'||!Array.isArray(S.pieges))return false;for(const x of S.pieges)if(x){x.dort=false;x.u=3}return true}
 const hordesEnMarche=()=>typeof S.hordes==='object'&&S.hordes?Object.values(S.hordes).filter(h=>ZB[h.src]&&ZB[h.cible]).sort((a,b)=>(S.own[b.cible]?1:0)-(S.own[a.cible]?1:0)||a.arrive-b.arrive):[];
 const nomCourt=id=>ZB[id].info.nom.split(',')[0];
@@ -10340,7 +10349,7 @@ function optionsCommerce(Z){if(!Z||!estCIT(Z)||!tient(Z.id))return[];initCommerc
   return[{l:'Comptoir',ic:'◇',cls:'p',d:`${S.tess} tesselle${S.tess>1?'s':''} · cartes de secret, pièges, hordes, mana`,go:()=>openComptoir(Z)}]}
 function openComptoir(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');initCommerce();
   const o=[],prix=TESS_CARTE(S.tessCartes),cartes=cartesEnVente(Z),dj=donjonsAReparer(),hd=hordesEnMarche(),t=(typeof ZMANA!=='undefined'&&ZMANA[Z.id])||'Pierre';
-  o.push({l:'Une carte de secret',ic:'✦',off:!cartes.length,d:!cartes.length?'vous avez déjà toutes les cartes de secret':!carteAchetableCeCycle()?'une seule par cycle : revenez au prochain':`${prix} tesselles · ${cartes.length} en vente`,go:()=>openCartesSecret(Z)});
+  o.push({l:'Une carte de secret',ic:'✦',off:!cartes.length,d:!cartes.length?pasDeCarte():!carteAchetableCeCycle()?'une seule par cycle : revenez au prochain':`${prix} tesselles · ${cartes.length} en vente`,go:()=>openCartesSecret(Z)});
   for(const x of dj)o.push({l:'Réparer les pièges · '+nomCourt(x.id),ic:'⛬',off:!x.besoin||S.tess<TESS_REPARER,d:`${TESS_REPARER} tesselles${x.n!==null&&x.n!==undefined?' · '+x.n+' piège(s)':''}${x.besoin?'':' · rien à réparer'}`,
     go:()=>{if(acheterReparation(x.id)){sfx('hit');toast('Comptoir · '+nomCourt(Z.id),'Pièges réparés · '+nomCourt(x.id),'Les artisans de la Citadelle ont remis les salles en état : pièges réveillés et usure effacée.')}openComptoir(Z,UI.f)}});
   if(!dj.length)o.push({l:'Réparer des pièges',ic:'⛬',off:true,d:'aucun Donjon tenu à aménager'});
@@ -10352,14 +10361,14 @@ function openComptoir(Z,f){mode='menu';document.body.classList.add('jeu-ouvert')
   o.push({l:'Retour à la Pierre',ic:'◆',go:()=>openEveil(Z)});
   const nc=citadellesTenues().length;
   ui('menu',{sur:'Comptoir · '+Z.info.nom,t:'Le Comptoir de la Citadelle',f,
-    corps:`<p>Votre bourse : <b>${S.tess} tesselle${S.tess>1?'s':''}</b>. Vos ${nc} Citadelle${nc>1?'s':''} tenue${nc>1?'s':''} en rapporte${nc>1?'nt':''} ${revenuTess()} par cycle (1 + leur palier chacune) ; briser une horde en rapporte ${TESS_PRIMES.horde}, repousser un rival ${TESS_PRIMES.rival}.</p><p class="petit">La tesselle n'est pas du mana : elle ne sert qu'au commerce. Une carte de secret au plus par cycle, et son prix monte à chaque achat. À la mort, le héros perd toute sa bourse.</p>`,
+    corps:`<p>Votre bourse : <b>${S.tess} tesselle${S.tess>1?'s':''}</b>. ${nc>1?`Vos ${nc} Citadelles tenues en rapportent ${revenuTess()} par cycle (1 + leur palier chacune)`:nc?`Votre Citadelle tenue en rapporte ${revenuTess()} par cycle (1 + son palier)`:'Aucune Citadelle tenue ne vous en rapporte'} ; briser une horde en rapporte ${TESS_PRIMES.horde}, repousser un rival ${TESS_PRIMES.rival}.</p><p class="petit">La tesselle n'est pas du mana : elle ne sert qu'au commerce. Une carte de secret au plus par cycle, et son prix monte à chaque achat. À la mort, le héros perd toute sa bourse.</p>`,
     back:()=>openEveil(Z),opts:o})}
 function openCartesSecret(Z,f){const prix=TESS_CARTE(S.tessCartes),c=cartesEnVente(Z),peut=carteAchetableCeCycle()&&S.deck.length<PAQUET_MAX;
-  const o=c.map(x=>({l:CK[x.k].nom(),ic:prix,off:!peut||S.tess<prix,d:`${x.q.found?'secret trouvé, carte perdue':'secret encore caché'} · ${nomCourt(x.q.Z.id)}`,
+  const o=c.map(x=>({l:CK[x.k].nom(),ic:prix,off:!peut||S.tess<prix,d:`secret déjà trouvé · ${nomCourt(x.q.Z.id)}`,
     go:()=>{if(acheterCarte(Z,x.k)){sfx('hit');toast('Comptoir · carte de secret','« '+CK[x.k].nom()+' » rejoint votre paquet',`Payée ${prix} tesselles. Prochaine carte au prochain cycle, pour ${TESS_CARTE(S.tessCartes)} tesselles.`)}openComptoir(Z)}}));
   o.push({l:'Retour au Comptoir',ic:'◆',go:()=>openComptoir(Z)});
   ui('menu',{sur:'Comptoir · cartes de secret',t:'Cartes utilitaires',f,
-    corps:`<p class="petit">Prix : ${prix} tesselles (bourse : ${S.tess}). ${!carteAchetableCeCycle()?'<b>Vous avez déjà acheté une carte ce cycle.</b> ':''}${S.deck.length>=PAQUET_MAX?'<b>Votre paquet est plein.</b> ':''}Les combats ne donnent jamais de carte ; le Comptoir vend celles des secrets, une par cycle au plus.</p>${typeof carteHTML==='function'?`<div class="cartes">${c.map(x=>carteHTML(x.k)).join('')}</div>`:''}`,
+    corps:`<p class="petit">Prix : ${prix} tesselles (bourse : ${S.tess}). ${!carteAchetableCeCycle()?'<b>Vous avez déjà acheté une carte ce cycle.</b> ':''}${S.deck.length>=PAQUET_MAX?'<b>Votre paquet est plein.</b> ':''}Les combats ne donnent jamais de carte ; le Comptoir vend celles des secrets déjà trouvés (perdues à la mort), une par cycle au plus.</p>${typeof carteHTML==='function'?`<div class="cartes">${c.map(x=>carteHTML(x.k)).join('')}</div>`:''}`,
     back:()=>openComptoir(Z),opts:o})}
 
 /* ---------- Test : MZ.tesselles(n) ---------- */
@@ -10473,6 +10482,8 @@ const HORDE_GRACE=6;      /* aucune horde ni grondement avant ce cycle d'une par
 const HORDE_GRONDE=1/40;  /* chance par cycle qu'une zone sauvage à ±6 de son pôle envahisseur monte à ±7 (provisoire) */
 const HORDE_L7=9;         /* puissance de la carte de palier 7 du pôle qui n'envahit pas (provisoire) */
 const HORDE_BUTIN=3;      /* mana du type de la source quand le héros brise l'avant-garde (provisoire) */
+const HORDE_CROIT=10;      /* la force des hordes monte de 1 tous les HORDE_CROIT cycles de partie (provisoire, 19 nov., critique game design) */
+const HORDE_CIT=2;        /* une Citadelle tenue défend à HORDE_CIT tuiles ou moins (+3) (provisoire, 19 nov. : était 3) */
 
 /* pôle envahisseur : −1, +1, ou 2 (les deux), d'après l'id de la zone */
 function poleEnvahisseur(id){let h=2166136261;for(const c of String(id))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
@@ -10507,13 +10518,13 @@ function cibleHorde(src){const L=Math.abs(S.lv[src]||0),d=aPortee(src,2),prises=
   return c[0]||null}
 function defenseHorde(id){const parts=[],L=Math.abs(S.lv[id]||0);parts.push(['niveau de la zone',L]);
   if(S.own[id]){
-    const d=aPortee(id,3),cit=ZN.find(Z=>estCIT(Z)&&tient(Z.id)&&d[Z.id]!==undefined);
+    const d=aPortee(id,HORDE_CIT),cit=ZN.find(Z=>estCIT(Z)&&tient(Z.id)&&d[Z.id]!==undefined);
     if(cit)parts.push([d[cit.id]?`Citadelle tenue à ${d[cit.id]} tuile${d[cit.id]>1?'s':''} (${court(cit.id)})`:'la Citadelle elle-même',3,1]);
     if(typeof etatRoutes==='function'){etatRoutes();const vois=VOISINES[id]||[];
       const rp=Object.keys(S.routes).some(a=>estCIT(ZB[a])&&S.routes[a].some(b=>a===id||b===id||vois.indexOf(a)>=0||vois.indexOf(b)>=0));
       if(rp)parts.push(['rempart',3])}
     if(typeof piegesDonjon==='function')parts.push(...piegesHorde(id))}   /* donjons.js : la horde traverse les salles de chaque Donjon tenu, cible ou voisin (remplace « 2 au plus ») */
-  /* le verrou de Citadelle (+2) ne s'ajoute pas au +3 de la Citadelle à 3 tuiles : la même Citadelle ne compte qu'une fois, la plus forte (provisoire) */
+  /* le verrou de Citadelle (+2) ne s'ajoute pas au +3 de la Citadelle à 2 tuiles : la même Citadelle ne compte qu'une fois, la plus forte (provisoire) */
   if(typeof defenseMonde==='function'){const dm=defenseMonde(id)||{},b=(+dm.bonus||0)-(parts.some(p=>p[2])&&dm.verrou?Math.min(dm.verrou,3):0);if(b)parts.push(['pouvoirs du domaine',b])}
   if(typeof defenseTours==='function'){const dt=defenseTours(id)||{};if(dt.bonus)parts.push([(dt.raisons||[]).join(', ')||'tour de guet',dt.bonus])}
   return{total:parts.reduce((a,p)=>a+p[1],0),parts}}
@@ -10521,7 +10532,7 @@ function defenseHorde(id){const parts=[],L=Math.abs(S.lv[id]||0);parts.push(['ni
 /* ---------- Lever, annoncer, résoudre ---------- */
 function leverHorde(src,cible,force){initHordes();if(!ZB[src]||S.hordes[src])return null;cible=cible||cibleHorde(src);if(!cible||!ZB[cible]||cible===src)return null;
   const greniers=S.own[cible]&&typeof loi==='function'&&loi('ASS150'),delai=HORDE_DELAI*(greniers?2:1)+(typeof preavisTours==='function'?preavisTours(cible):0);   /* tour de guet : préavis */
-  const h=S.hordes[src]={src,cible,nee:S.nc,arrive:S.nc+delai,force:force||Math.abs(S.lv[src]||0)+Math.floor(Math.random()*4)};
+  const h=S.hordes[src]={src,cible,nee:S.nc,arrive:S.nc+delai,force:force||Math.abs(S.lv[src]||0)+Math.floor((S.nc||0)/HORDE_CROIT)+Math.floor(Math.random()*4)};
   save();hudKey='';etatHud();
   if(started&&(S.own[cible]||S.own[src]))toast('Une horde se lève · '+court(src),'Elle marche sur '+ZB[cible].info.nom,
     `Arrivée dans ${delai} cycles (environ ${fmt(resteHorde(h))})${greniers?', retardée par les Greniers de Pama':''}. Allez à la Pierre d'éveil de la zone visée pour briser son avant-garde.`);
@@ -10551,7 +10562,7 @@ function defaite(id){const Z=ZB[id],l=[],a=S.own[id],lv=S.lv[id]||0;
 function montrerHorde(){if(!hordeRapports.length||mode!=='monde')return;const r=hordeRapports.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
   const Z=ZB[r.cible];
   ui('menu',{sur:'Horde du sauvage · force '+r.force,t:r.ok?Z.info.nom+' tient':Z.info.nom+' est forcée',
-    corps:`<p class="petit">${r.lignes.join('<br>')}</p><p class="petit">Hordes brisées par le héros ${S.hordesBilan.brisees}, repoussées ${S.hordesBilan.repoussees}, passées ${S.hordesBilan.passees}. Une Citadelle tenue à 3 tuiles ou moins, un rempart et les pièges du Donjon aménagé renforcent la défense.</p>`,
+    corps:`<p class="petit">${r.lignes.join('<br>')}</p><p class="petit">Hordes brisées par le héros ${S.hordesBilan.brisees}, repoussées ${S.hordesBilan.repoussees}, passées ${S.hordesBilan.passees}. Une Citadelle tenue à ${HORDE_CIT} tuiles ou moins, un rempart et les pièges du Donjon aménagé renforcent la défense.</p>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde},{l:'Aller '+a_(court(r.cible)),ic:'✧',go:()=>{tp(r.cible);toMonde()}}]})}
 
 /* ---------- Le cycle : colère, grondement, arrivées ---------- */
@@ -10626,7 +10637,8 @@ setTimeout(()=>{try{renforcerPaliers7()}catch(e){}},0);
 
 /* ---------- Tests : MZ.horde(source?, cible?) lève une horde tout de suite, MZ.hordeArrive(source?) la résout ---------- */
 function hordeTest(src,cible){initHordes();
-  if(!src)src=ZN.map(Z=>Z.id).find(id=>sourceHorde(id)&&!S.hordes[id])||ZN.filter(Z=>!estRESh(Z.id)&&!S.own[Z.id]&&!S.hordes[Z.id]).sort((a,b)=>Math.abs(S.lv[b.id]||0)-Math.abs(S.lv[a.id]||0))[0].id;
+  /* (19 nov., testeur) sans zone libre pour lever une horde (toutes déjà en marche), on renvoie null au lieu de planter */
+  if(!src){src=ZN.map(Z=>Z.id).find(id=>sourceHorde(id)&&!S.hordes[id]);if(!src){const Z=ZN.filter(Z=>!estRESh(Z.id)&&!S.own[Z.id]&&!S.hordes[Z.id]).sort((a,b)=>Math.abs(S.lv[b.id]||0)-Math.abs(S.lv[a.id]||0))[0];if(!Z)return null;src=Z.id}}
   if(S.hordes[src])return S.hordes[src];
   if(!estRESh(src)&&!sourceHorde(src)){const p=poleEnvahisseur(src),n=7*(p===2?(Math.sign(S.lv[src]||0)||1):p);S.lv[src]=n;ZB[src].lvT=n}
   if(!cible){cible=cibleHorde(src);if(!cible){const d=aPortee(src,6);cible=Object.keys(d).filter(id=>id!==src&&S.own[id]).sort((a,b)=>d[a]-d[b])[0]||null}}
@@ -13251,7 +13263,7 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(AX&&curZ===DON&&DON.lv<=-4&&P.walked-stepAcc>2.4){stepAcc=P.walked;perc(AX.currentTime,'t',1.2)}
   let hi=0;for(const q of secrets){const ok=!q.found&&q.cond(q.Z.lv);q.m.visible=ok;if(!ok)continue;const p=q.pos();q.m.position.set(p[0],p[1]+Math.sin(T*2+p[0])*.18,p[2]);q.m.rotation.y=T*1.3;
     secHalo.P[hi*3]=p[0];secHalo.P[hi*3+1]=p[1];secHalo.P[hi*3+2]=p[2];const b=.5+.2*Math.sin(T*3);secHalo.C[hi*3]=2.2*b;secHalo.C[hi*3+1]=1.5*b;secHalo.C[hi*3+2]=.5*b;hi++;
-    if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const cn=typeof carteDeSecret==='function'?carteDeSecret(q):'';toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(cn?` Carte utilitaire gagnée : « ${cn} ».`:''))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
+    if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const k='S'+secrets.indexOf(q),av=S.deck.indexOf(k)>=0,cn=typeof carteDeSecret==='function'?carteDeSecret(q):'',ap=S.deck.indexOf(k)>=0;toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(!cn?'':!av&&ap?` Carte utilitaire gagnée : « ${cn} ».`:av?` Sa carte « ${cn} » est déjà dans votre paquet.`:` Votre paquet est plein : la carte « ${cn} » attend au Comptoir des Citadelles.`))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
   for(let i=hi;i<32;i++)secHalo.P[i*3+1]=-999;secHalo.up();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('vu')}
   if(typeof majPoussiere==='function')majPoussiere(dt,T);

@@ -24,12 +24,12 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     const d0=await p.evaluate(()=>({tenus:MZ.donjonsTenus(),cat:MZ.amenager('DON',undefined).catalogue,pieges:Array.isArray(MZ.S.pieges)&&MZ.S.pieges.length}));
     await p.evaluate(()=>toMonde());
     ok('Donjons tenus au départ',d0.tenus.length>=1,d0.tenus.join(', '));
-    ok('catalogue : un dispositif de plus que de Donjons tenus',d0.cat.length===d0.tenus.length+1,d0.cat.join(', '));
+    ok('catalogue : deux dispositifs par Donjon tenu',d0.cat.length===Math.min(6,2*d0.tenus.length),d0.cat.join(', '));
     ok('le Donjon d\'origine garde S.pieges (4 salles)',d0.pieges===4);
     const id=await p.evaluate(()=>MZ.donjonsTenus().find(x=>x!=='DON')||MZ.ZN.find(Z=>(Z.mod||Z.id)==='DON'&&Z.id!=='DON').id);
-    /* 2. un troisième Donjon tenu déverrouille un dispositif de plus */
+    /* 2. chaque Donjon tenu déverrouille deux dispositifs (19 nov., provisoire) */
     const d1=await p.evaluate(()=>{for(const Z of MZ.ZN)if((Z.mod||Z.id)==='DON'&&!MZ.S.own[Z.id])MZ.prendre(Z.id);return{tenus:MZ.donjonsTenus(),cat:MZ.amenager('DON',null).catalogue}});
-    ok('chaque Donjon tenu déverrouille un dispositif',d1.cat.length===Math.min(6,d1.tenus.length+1),d1.tenus.length+' Donjons, '+d1.cat.join(', '));
+    ok('chaque Donjon tenu déverrouille deux dispositifs',d1.cat.length===Math.min(6,2*d1.tenus.length),d1.tenus.length+' Donjons, '+d1.cat.join(', '));
     /* 3. salles selon le palier, nommées d'après la zone */
     const s1=await p.evaluate(i=>{MZ.set(i,1);return MZ.amenager(i,[])},id);
     const s3=await p.evaluate(i=>{MZ.set(i,-3);return MZ.amenager(i,[])},id);
@@ -51,7 +51,7 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
       const v=(VOISINES[i]||[]).find(x=>MZ.S.own[x]);return{e,cible:MZ.hordeDefense(i),vois:v?MZ.hordeDefense(v):null,v}},id);
     ok('traversée : Glyphe 2, Lave ×2 = 10, Herse 3, Gardien 6',def.e.traversee===21&&def.e.actifs===4,JSON.stringify(def.e.pieges));
     ok('horde sur le Donjon : les salles piégées défendent',def.cible.parts.some(x=>/salles piégées/.test(x[0])&&x[1]===21),JSON.stringify(def.cible.parts));
-    ok('horde sur une voisine à vous : les pièges du Donjon voisin défendent',!def.v||def.vois.parts.some(x=>/Donjon voisin/.test(x[0])),def.v+' '+JSON.stringify(def.vois&&def.vois.parts));
+    ok('horde sur une voisine à vous : les pièges du Donjon voisin défendent, moitié de la traversée plafonnée à +4',!def.v||def.vois.parts.some(x=>/Donjon voisin/.test(x[0])&&x[1]===4),def.v+' '+JSON.stringify(def.vois&&def.vois.parts));
     /* 6. rival : moins de chances sur un Donjon aménagé (sans les pouvoirs du domaine, pour mesurer l'écart seul) */
     const riv=await p.evaluate(i=>{const dm=window.defenseMonde;window.defenseMonde=()=>({bonus:0});const a=chanceRival(i);MZ.amenager(i,[]);const b=chanceRival(i);MZ.amenager(i,['glyphe','lave','herse','gardien']);window.defenseMonde=dm;return{avec:a,sans:b}},id);
     ok('contestation de rival : −10 points par piège actif',Math.abs((riv.sans-riv.avec)-Math.min(.4,riv.sans-.1))<1e-9&&riv.avec<riv.sans,JSON.stringify(riv));

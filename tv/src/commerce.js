@@ -3,7 +3,7 @@
    de pièges ou un retard de horde »). REGLES.md, sections 2, 5 et 6.
    - Les tesselles (S.tess) tombent à chaque cycle de chaque Citadelle tenue (1 + |palier|), et en prime quand le héros brise
      une horde ou repousse un rival (gagnerTesselles, appelé par hordes.js et rivaux.js). À la mort, on perd tout.
-   - Le Comptoir, à la Pierre d'éveil de toute Citadelle tenue : une carte utilitaire de secret (une par cycle au plus, pour garder
+   - Le Comptoir, à la Pierre d'éveil de toute Citadelle tenue : une carte utilitaire d'un secret déjà trouvé (une par cycle au plus, pour garder
      la règle « des cartes seulement aux paliers et aux secrets »), la réparation des pièges d'un Donjon tenu, deux cycles de retard
      pour une horde en marche (une fois par horde), et un peu de mana contre des tesselles, à taux défavorable.
    - Aucun achat réel : la tesselle se gagne seulement en jouant.
@@ -46,18 +46,24 @@ setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||type
 function bandeauTess(){initCommerce();return`<span class="d" title="Tesselles, la monnaie des Citadelles (+${revenuTess()} par cycle)"><span>◇</span>${S.tess}</span>`}
 
 /* ---------- Ce que vend le Comptoir ---------- */
-/* cartes de secret absentes du paquet : d'abord celles des secrets déjà trouvés (perdues à la mort), puis les plus proches */
+/* cartes de secret absentes du paquet, seulement celles des secrets déjà trouvés (par ce héros ou un héros précédent : perdues à la mort),
+   les plus proches d'abord. Le Comptoir ne vend pas les secrets encore cachés : on ne saute pas l'exploration (testeur, 19 nov., provisoire). */
 function cartesEnVente(Z){if(typeof secrets==='undefined'||typeof CK==='undefined')return[];
   const d=typeof aPortee==='function'?aPortee(Z.id,30):{};
-  return secrets.map((q,i)=>({q,k:'S'+i})).filter(x=>CK[x.k]&&S.deck.indexOf(x.k)<0)
-    .sort((a,b)=>(b.q.found?1:0)-(a.q.found?1:0)||(d[a.q.Z.id]??99)-(d[b.q.Z.id]??99)).slice(0,3)}
+  return secrets.map((q,i)=>({q,k:'S'+i})).filter(x=>x.q.found&&CK[x.k]&&S.deck.indexOf(x.k)<0)
+    .sort((a,b)=>(d[a.q.Z.id]??99)-(d[b.q.Z.id]??99)).slice(0,3)}
+/* pourquoi aucune carte n'est en vente */
+const pasDeCarte=()=>typeof secrets!=='undefined'&&secrets.some(q=>q.found)?'les cartes des secrets trouvés sont toutes dans votre paquet'
+  :'aucun secret trouvé : le Comptoir ne vend que les cartes des secrets déjà découverts, perdues à la mort'
 const carteAchetableCeCycle=()=>S.tessAchat!==S.nc;
 function donjonsAReparer(){
-  if(typeof reparerPieges==='function')return ZN.filter(Z=>estDON(Z)&&tient(Z.id)).map(Z=>({id:Z.id,n:typeof piegesDonjon==='function'?piegesDonjon(Z.id):null,besoin:true}));
+  /* (19 nov., testeur) « besoin » vrai seulement s'il y a un piège endormi ou usé : sinon on payait 5 tesselles pour rien */
+  if(typeof reparerPieges==='function')return ZN.filter(Z=>estDON(Z)&&tient(Z.id)).map(Z=>{const T=typeof piegesTab==='function'?piegesTab(Z.id).filter(Boolean):[];
+    return{id:Z.id,n:T.length,besoin:T.some(x=>x.dort||S.ent===2&&x.u<3)}});
   /* sans le module Donjons : les pièges du Donjon d'origine (economie.js), usés ou endormis */
   if(!tient('DON')||!Array.isArray(S.pieges))return[];const p=S.pieges.filter(Boolean);
   return[{id:'DON',n:p.length,besoin:p.some(x=>x.dort||(x.u!==undefined&&x.u<3))}]}
-function reparer(id){if(typeof reparerPieges==='function')return reparerPieges(id)!==false;
+function reparer(id){if(typeof reparerPieges==='function')return reparerPieges(id)>0;
   if(id!=='DON'||!Array.isArray(S.pieges))return false;for(const x of S.pieges)if(x){x.dort=false;x.u=3}return true}
 const hordesEnMarche=()=>typeof S.hordes==='object'&&S.hordes?Object.values(S.hordes).filter(h=>ZB[h.src]&&ZB[h.cible]).sort((a,b)=>(S.own[b.cible]?1:0)-(S.own[a.cible]?1:0)||a.arrive-b.arrive):[];
 const nomCourt=id=>ZB[id].info.nom.split(',')[0];
@@ -76,7 +82,7 @@ function optionsCommerce(Z){if(!Z||!estCIT(Z)||!tient(Z.id))return[];initCommerc
   return[{l:'Comptoir',ic:'◇',cls:'p',d:`${S.tess} tesselle${S.tess>1?'s':''} · cartes de secret, pièges, hordes, mana`,go:()=>openComptoir(Z)}]}
 function openComptoir(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');initCommerce();
   const o=[],prix=TESS_CARTE(S.tessCartes),cartes=cartesEnVente(Z),dj=donjonsAReparer(),hd=hordesEnMarche(),t=(typeof ZMANA!=='undefined'&&ZMANA[Z.id])||'Pierre';
-  o.push({l:'Une carte de secret',ic:'✦',off:!cartes.length,d:!cartes.length?'vous avez déjà toutes les cartes de secret':!carteAchetableCeCycle()?'une seule par cycle : revenez au prochain':`${prix} tesselles · ${cartes.length} en vente`,go:()=>openCartesSecret(Z)});
+  o.push({l:'Une carte de secret',ic:'✦',off:!cartes.length,d:!cartes.length?pasDeCarte():!carteAchetableCeCycle()?'une seule par cycle : revenez au prochain':`${prix} tesselles · ${cartes.length} en vente`,go:()=>openCartesSecret(Z)});
   for(const x of dj)o.push({l:'Réparer les pièges · '+nomCourt(x.id),ic:'⛬',off:!x.besoin||S.tess<TESS_REPARER,d:`${TESS_REPARER} tesselles${x.n!==null&&x.n!==undefined?' · '+x.n+' piège(s)':''}${x.besoin?'':' · rien à réparer'}`,
     go:()=>{if(acheterReparation(x.id)){sfx('hit');toast('Comptoir · '+nomCourt(Z.id),'Pièges réparés · '+nomCourt(x.id),'Les artisans de la Citadelle ont remis les salles en état : pièges réveillés et usure effacée.')}openComptoir(Z,UI.f)}});
   if(!dj.length)o.push({l:'Réparer des pièges',ic:'⛬',off:true,d:'aucun Donjon tenu à aménager'});
@@ -88,14 +94,14 @@ function openComptoir(Z,f){mode='menu';document.body.classList.add('jeu-ouvert')
   o.push({l:'Retour à la Pierre',ic:'◆',go:()=>openEveil(Z)});
   const nc=citadellesTenues().length;
   ui('menu',{sur:'Comptoir · '+Z.info.nom,t:'Le Comptoir de la Citadelle',f,
-    corps:`<p>Votre bourse : <b>${S.tess} tesselle${S.tess>1?'s':''}</b>. Vos ${nc} Citadelle${nc>1?'s':''} tenue${nc>1?'s':''} en rapporte${nc>1?'nt':''} ${revenuTess()} par cycle (1 + leur palier chacune) ; briser une horde en rapporte ${TESS_PRIMES.horde}, repousser un rival ${TESS_PRIMES.rival}.</p><p class="petit">La tesselle n'est pas du mana : elle ne sert qu'au commerce. Une carte de secret au plus par cycle, et son prix monte à chaque achat. À la mort, le héros perd toute sa bourse.</p>`,
+    corps:`<p>Votre bourse : <b>${S.tess} tesselle${S.tess>1?'s':''}</b>. ${nc>1?`Vos ${nc} Citadelles tenues en rapportent ${revenuTess()} par cycle (1 + leur palier chacune)`:nc?`Votre Citadelle tenue en rapporte ${revenuTess()} par cycle (1 + son palier)`:'Aucune Citadelle tenue ne vous en rapporte'} ; briser une horde en rapporte ${TESS_PRIMES.horde}, repousser un rival ${TESS_PRIMES.rival}.</p><p class="petit">La tesselle n'est pas du mana : elle ne sert qu'au commerce. Une carte de secret au plus par cycle, et son prix monte à chaque achat. À la mort, le héros perd toute sa bourse.</p>`,
     back:()=>openEveil(Z),opts:o})}
 function openCartesSecret(Z,f){const prix=TESS_CARTE(S.tessCartes),c=cartesEnVente(Z),peut=carteAchetableCeCycle()&&S.deck.length<PAQUET_MAX;
-  const o=c.map(x=>({l:CK[x.k].nom(),ic:prix,off:!peut||S.tess<prix,d:`${x.q.found?'secret trouvé, carte perdue':'secret encore caché'} · ${nomCourt(x.q.Z.id)}`,
+  const o=c.map(x=>({l:CK[x.k].nom(),ic:prix,off:!peut||S.tess<prix,d:`secret déjà trouvé · ${nomCourt(x.q.Z.id)}`,
     go:()=>{if(acheterCarte(Z,x.k)){sfx('hit');toast('Comptoir · carte de secret','« '+CK[x.k].nom()+' » rejoint votre paquet',`Payée ${prix} tesselles. Prochaine carte au prochain cycle, pour ${TESS_CARTE(S.tessCartes)} tesselles.`)}openComptoir(Z)}}));
   o.push({l:'Retour au Comptoir',ic:'◆',go:()=>openComptoir(Z)});
   ui('menu',{sur:'Comptoir · cartes de secret',t:'Cartes utilitaires',f,
-    corps:`<p class="petit">Prix : ${prix} tesselles (bourse : ${S.tess}). ${!carteAchetableCeCycle()?'<b>Vous avez déjà acheté une carte ce cycle.</b> ':''}${S.deck.length>=PAQUET_MAX?'<b>Votre paquet est plein.</b> ':''}Les combats ne donnent jamais de carte ; le Comptoir vend celles des secrets, une par cycle au plus.</p>${typeof carteHTML==='function'?`<div class="cartes">${c.map(x=>carteHTML(x.k)).join('')}</div>`:''}`,
+    corps:`<p class="petit">Prix : ${prix} tesselles (bourse : ${S.tess}). ${!carteAchetableCeCycle()?'<b>Vous avez déjà acheté une carte ce cycle.</b> ':''}${S.deck.length>=PAQUET_MAX?'<b>Votre paquet est plein.</b> ':''}Les combats ne donnent jamais de carte ; le Comptoir vend celles des secrets déjà trouvés (perdues à la mort), une par cycle au plus.</p>${typeof carteHTML==='function'?`<div class="cartes">${c.map(x=>carteHTML(x.k)).join('')}</div>`:''}`,
     back:()=>openComptoir(Z),opts:o})}
 
 /* ---------- Test : MZ.tesselles(n) ---------- */

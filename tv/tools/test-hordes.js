@@ -75,8 +75,11 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
       if(!z)return{src:null,h:null};
       MZ.S.nc=Math.max(MZ.S.nc,HORDE_GRACE);for(let i=0;i<HORDE_MUR;i++)hordesCycle();return{src:z.id,h:MZ.S.hordes[z.id]||null}});
     ok('au palier 7 envahisseur, la colère mûrit puis la horde se lève',!!r4.h,JSON.stringify(r4));
-    if(r4.h){await p.evaluate(s=>{MZ.S.nc=MZ.S.hordes[s].arrive},r4.src);await p.waitForTimeout(2000);
-      ok('à l\'arrivée, la horde est résolue d\'elle-même',await p.evaluate(s=>!MZ.S.hordes[s],r4.src))}
+    /* (19 nov., testeur) l'arrivée est traitée par un setInterval d'une seconde ; sous swiftshader, une image peut prendre plus d'une seconde
+       et l'ancienne attente fixe de 2 s échouait parfois sur une machine chargée. Ce n'est pas le jeu : on attend jusqu'à 20 s. */
+    if(r4.h){await p.evaluate(s=>{MZ.S.nc=MZ.S.hordes[s].arrive},r4.src);
+      const resolue=await p.waitForFunction(s=>!MZ.S.hordes[s],r4.src,{timeout:20000,polling:250}).then(()=>true,()=>false);
+      ok('à l\'arrivée, la horde est résolue d\'elle-même',resolue,resolue?undefined:JSON.stringify(await p.evaluate(s=>({h:MZ.S.hordes[s],nc:MZ.S.nc,mode:MZ.mode}),r4.src)))}
     /* 8. au palier 7 paisible, pas de horde */
     const r5=await p.evaluate(()=>{const z=MZ.ZN.find(Z=>(Z.mod||Z.id)!=='RES'&&MZ.poleEnvahisseur(Z.id)!==2&&!MZ.S.hordes[Z.id]);const n=-7*MZ.poleEnvahisseur(z.id);MZ.S.lv[z.id]=n;
       for(let i=0;i<HORDE_MUR+1;i++)hordesCycle();return!!MZ.S.hordes[z.id]});

@@ -37,7 +37,13 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
     const pierre=await p.evaluate(()=>{openEveil(ZB.CIT);const a=document.getElementById('menu-choix').textContent;openEveil(ZB.DON);const b=document.getElementById('menu-choix').textContent;toMonde();
       return{cit:/Comptoir/.test(a),don:/Comptoir/.test(b)}});
     ok('la Pierre de la Citadelle propose « Comptoir »',pierre.cit&&!pierre.don,JSON.stringify(pierre));
-    /* 5. carte de secret : une par cycle, prix croissant, pas déjà dans le paquet */
+    /* 5. seulement les cartes des secrets déjà trouvés (testeur, 19 nov.) ; sans secret trouvé, l'option est grisée et dit pourquoi.
+       Puis carte de secret : une par cycle, prix croissant, pas déjà dans le paquet */
+    const gr=await p.evaluate(()=>{for(const q of MZ.secrets)q.found=false;const v=cartesEnVente(ZB.CIT).length;MZ.comptoir('CIT');const o=UI.opts.find(o=>/carte de secret/.test(o.l));
+      for(let i=0;i<4&&i<MZ.secrets.length;i++){MZ.secrets[i].found=true;MZ.S.deck=MZ.S.deck.filter(k=>k!=='S'+i)}
+      const w=cartesEnVente(ZB.CIT);toMonde();return{v,off:!!(o&&o.off),d:o&&o.d,trouvees:w.every(x=>x.q.found),n:w.length}});
+    ok('sans secret trouvé, rien en vente : option grisée avec une explication',gr.v===0&&gr.off&&/aucun secret trouvé/.test(gr.d),JSON.stringify(gr));
+    ok('le Comptoir ne vend que des cartes de secrets déjà trouvés',gr.n>0&&gr.trouvees,JSON.stringify(gr));
     const ca=await p.evaluate(()=>{const S=MZ.S;MZ.tesselles(100);const Z=ZB.CIT,t0=S.tess,d0=S.deck.length,v=cartesEnVente(Z);if(!v.length)return{v:0};
       MZ.comptoir('CIT');openCartesSecret(Z);const opts=UI.opts.length;UI.opts[0].go();const k=v[0].k,t1=S.tess,d1=S.deck.length;
       const encore=acheterCarte(Z,cartesEnVente(Z)[0].k);toMonde();return{v:v.length,opts,k,inDeck:S.deck.indexOf(k)>=0,paye:t0-t1,d0,d1,encore,dejaVendue:cartesEnVente(Z).some(x=>x.k===k)}});

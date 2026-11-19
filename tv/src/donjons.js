@@ -6,7 +6,7 @@
      Le Donjon d'origine (DON) garde ses 4 salles et son tableau S.pieges (sauvegardes inchangées, assaut périodique d'economie.js).
      Les autres ont leurs salles dans S.donjons[id].p : 2 au palier 0 ou 1, 3 au palier 2, 4 au palier 3 et plus (provisoire).
      Une salle au-delà du palier actuel est scellée : son piège reste en place mais ne joue pas.
-   - Catalogue : 1 Donjon tenu, 2 dispositifs ; +1 par Donjon tenu (Herse, Glyphe, puis Lave, Gardien, puis deux pièges
+   - Catalogue : 2 dispositifs par Donjon tenu (provisoire, 19 nov. : était +1) : Herse, Glyphe, puis Lave, Gardien, puis deux pièges
      propres à ce module, payés en Sève et en Pierre).
    - Une horde qui vise un Donjon tenu, ou une zone à vous voisine d'un Donjon tenu, traverse ses salles : chaque piège actif
      ajoute sa force à la défense, la Glyphe double le suivant (mêmes règles que l'assaut du Donjon d'origine).
@@ -15,7 +15,7 @@
    - Une contestation de rival sur un Donjon aménagé : −10 points de chance par piège actif (provisoire, accroche dans rivaux.js).
    Pour les autres modules : piegesDonjon(id) → nombre de pièges actifs d'un Donjon tenu (0 sinon) ;
    reparerPieges(id) → réveille les pièges endormis et rend leurs 3 assauts aux pièges usés (sans mana : le Comptoir paie). */
-const DJ_VOISINES=1;      /* part de la traversée comptée quand la horde vise une voisine du Donjon (1 = tout, provisoire) */
+const DJ_VOISINES=.5,DJ_VOISINES_MAX=4;   /* une voisine du Donjon reçoit la moitié de la traversée, +4 au plus (provisoire, 19 nov. : était toute la traversée) */
 const DJ_RIVAL=.10;       /* chance retirée à une contestation de rival par piège actif (provisoire) */
 const DJ_ORDRE=['herse','glyphe','lave','gardien','ronces','eboulis'];
 /* deux dispositifs propres aux Donjons aménagés, payés avec des types de mana que le paquet n'utilise pas forcément */
@@ -25,7 +25,7 @@ Object.assign(PIEGES,{
 
 const estDJ=id=>!!ZB[id]&&estDON(ZB[id]);
 const donjonsTenus=()=>ZN.filter(Z=>estDON(Z)&&tient(Z.id)).map(Z=>Z.id);
-const nbDispositifs=()=>{const n=donjonsTenus().length;return n?Math.min(DJ_ORDRE.length,n+1):0};
+const nbDispositifs=()=>{const n=donjonsTenus().length;return n?Math.min(DJ_ORDRE.length,2*n):0};
 const dispositifs=()=>DJ_ORDRE.slice(0,nbDispositifs());
 
 function initDonjons(){if(typeof S==='undefined')return;
@@ -64,7 +64,7 @@ function traversee(id){const T=sallesOuvertes(id),N=nomsSalles(id),l=[],tirs=[];
 const donjonsTouches=id=>donjonsTenus().filter(D=>D===id||(VOISINES[D]||[]).indexOf(id)>=0);
 /* parts de défense pour defenseHorde (hordes.js) : remplace « pièges du Donjon voisin, 2 au plus » */
 function piegesHorde(id){const parts=[];if(!S.own[id])return parts;
-  for(const D of donjonsTouches(id)){const t=traversee(D);if(!t.v)continue;const v=D===id?t.v:Math.floor(t.v*DJ_VOISINES);
+  for(const D of donjonsTouches(id)){const t=traversee(D);if(!t.v)continue;const v=D===id?t.v:Math.min(DJ_VOISINES_MAX,Math.floor(t.v*DJ_VOISINES));
     if(v)parts.push([D===id?`salles piégées (${t.tirs.length})`:`pièges du Donjon voisin ${djCourt(D)} (${t.tirs.length})`,v])}
   return parts}
 function reparerPieges(id){let n=0;for(const x of piegesTab(id))if(x){let r=false;if(x.dort){x.dort=false;r=true}if(S.ent===2&&x.u<3){x.u=3;r=true}if(r)n++}
@@ -115,12 +115,12 @@ function openAmenager(id,f){initDonjons();const Z=ZB[id];if(!Z||!tient(id))retur
   const vois=voisinesDefendues(id),cat=dispositifs().map(k=>PIEGES[k].nom).join(', ');
   const assautTxt=id==='DON'?` Le monde sauvage attaque aussi ce Donjon d'origine tous les ${typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES} cycles.`:'';
   ui('menu',{sur:'Donjon à vous · aménager',t:id==='DON'?'Les salles des Neuf Édits':'Les salles '+djDe(djLieu(id)),f,
-    corps:`<p class="petit">Réserve : ${resHTML()}.</p><p class="petit">${n} salle${n>1?'s':''} ouverte${n>1?'s':''} sur 4 (une de plus à chaque palier, jusqu'à 4). Chaque piège a son type de mana, pour la pose comme pour l'entretien. Une horde qui vise ce Donjon${vois.length?' ou une de ses voisines à vous ('+vois.join(', ')+')':' ou une de ses voisines à vous'} traverse ces salles dans l'ordre : aujourd'hui, elles retiennent ${t.v}.${assautTxt}</p><p class="petit">Dispositifs connus (${nt} Donjon${nt>1?'s':''} tenu${nt>1?'s':''}) : ${cat}. Chaque nouveau Donjon tenu en déverrouille un.</p><p class="petit">${ENTRETIEN[S.ent].txt}</p>`,
+    corps:`<p class="petit">Réserve : ${resHTML()}.</p><p class="petit">${n} salle${n>1?'s':''} ouverte${n>1?'s':''} sur 4 (une de plus à chaque palier, jusqu'à 4). Chaque piège a son type de mana, pour la pose comme pour l'entretien. Une horde qui vise ce Donjon${vois.length?' ou une de ses voisines à vous ('+vois.join(', ')+')':' ou une de ses voisines à vous'} traverse ces salles dans l'ordre : aujourd'hui, elles retiennent ${t.v} quand la horde vise ce Donjon, et ${Math.min(DJ_VOISINES_MAX,Math.floor(t.v*DJ_VOISINES))} quand elle vise une voisine (la moitié, ${DJ_VOISINES_MAX} au plus).${assautTxt}</p><p class="petit">Dispositifs connus (${nt} Donjon${nt>1?'s':''} tenu${nt>1?'s':''}) : ${cat}. Chaque Donjon tenu en déverrouille deux.</p><p class="petit">${ENTRETIEN[S.ent].txt}</p>`,
     back:()=>openEveil(Z),opts:o})}
 function changerPiegeDJ(id,i){const T=piegesTab(id,true),cur=T[i],k0=cur?cur.k:null,N=nomsSalles(id),ok=dispositifs();
   ui('menu',{sur:N[i],t:'Choisir un piège',corps:`<p class="petit">Réserve : ${resHTML()}. Retirer un piège ne rend pas le mana.</p>`,back:()=>openAmenager(id,i),
     opts:[...DJ_ORDRE.map((k,j)=>{const P_=PIEGES[k],dv=ok.indexOf(k)>=0;
-      return{l:P_.nom+(k===k0?' (en place)':dv?'':' (verrouillé)'),ic:dv?P_.pose:'⛓',d:dv?`${P_.pose} ${P_.m} · force ${P_.force} · ${P_.txt}`:`se déverrouille au ${j}e Donjon tenu`,off:!dv||k===k0||!peutPayer(P_.m,P_.pose),
+      return{l:P_.nom+(k===k0?' (en place)':dv?'':' (verrouillé)'),ic:dv?P_.pose:'⛓',d:dv?`${P_.pose} ${P_.m} · force ${P_.force} · ${P_.txt}`:`se déverrouille au ${(n=>n>1?n+'e':'premier')(Math.ceil((j+1)/2))} Donjon tenu`,off:!dv||k===k0||!peutPayer(P_.m,P_.pose),
         go:()=>{payer(P_.m,P_.pose);T[i]={k,u:3,dort:false};save();etatHud();sfx('hit');openAmenager(id,i)}}}),
       {l:'Salle vide',ic:'○',off:!cur,go:()=>{T[i]=null;save();openAmenager(id,i)}},{l:'Retour',ic:'◆',go:()=>openAmenager(id,i)}]})}
 
@@ -131,3 +131,6 @@ function amenagerTest(id,liste){initDonjons();id=id||donjonsTenus()[0]||'DON';if
   if(!Array.isArray(liste)){if(tient(id)){closeUI();openAmenager(id)}return etatDonjon(id)}
   const T=piegesTab(id,true);for(let i=0;i<4;i++){const k=liste[i];T[i]=k&&PIEGES[k]?{k,u:3,dort:false}:null}
   save();hudKey='';return etatDonjon(id)}
+/* mort du héros : « on perd tout », les pièges de tous les Donjons aussi (testeur, 19 nov., provisoire). Sans cela, l'héritier
+   retrouvait les salles piégées de son Donjon de départ, et celles d'un ancien Donjon au moment de le reprendre. */
+if(typeof mort==='function'){const _djMort=mort;mort=function(){if(typeof S!=='undefined'){S.donjons={};S.pieges=[null,null,null,null]}return _djMort.apply(this,arguments)}}

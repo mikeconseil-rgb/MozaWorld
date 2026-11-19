@@ -549,7 +549,7 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(AX&&curZ===DON&&DON.lv<=-4&&P.walked-stepAcc>2.4){stepAcc=P.walked;perc(AX.currentTime,'t',1.2)}
   let hi=0;for(const q of secrets){const ok=!q.found&&q.cond(q.Z.lv);q.m.visible=ok;if(!ok)continue;const p=q.pos();q.m.position.set(p[0],p[1]+Math.sin(T*2+p[0])*.18,p[2]);q.m.rotation.y=T*1.3;
     secHalo.P[hi*3]=p[0];secHalo.P[hi*3+1]=p[1];secHalo.P[hi*3+2]=p[2];const b=.5+.2*Math.sin(T*3);secHalo.C[hi*3]=2.2*b;secHalo.C[hi*3+1]=1.5*b;secHalo.C[hi*3+2]=.5*b;hi++;
-    if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const cn=typeof carteDeSecret==='function'?carteDeSecret(q):'';toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(cn?` Carte utilitaire gagnée : « ${cn} ».`:''))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
+    if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const k='S'+secrets.indexOf(q),av=S.deck.indexOf(k)>=0,cn=typeof carteDeSecret==='function'?carteDeSecret(q):'',ap=S.deck.indexOf(k)>=0;toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(!cn?'':!av&&ap?` Carte utilitaire gagnée : « ${cn} ».`:av?` Sa carte « ${cn} » est déjà dans votre paquet.`:` Votre paquet est plein : la carte « ${cn} » attend au Comptoir des Citadelles.`))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
   for(let i=hi;i<32;i++)secHalo.P[i*3+1]=-999;secHalo.up();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('vu')}
   if(typeof majPoussiere==='function')majPoussiere(dt,T);
