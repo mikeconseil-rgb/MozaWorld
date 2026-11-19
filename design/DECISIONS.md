@@ -20,7 +20,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
 | Hordes | Une horde ne vise que les zones plus faibles de 2 ou 3 paliers | en vigueur | |
-| Hordes | Une zone à vous qui tombe à 0 sous une horde redevient sauvage (« Non » à « elle reste à vous ») ; elle garde votre empreinte (lecture de Claude, provisoire) | en vigueur | « reste à vous » (essai du 19 nov.) |
+| Hordes | Une zone à vous qui tombe à 0 sous une horde redevient sauvage (« Non » à « elle reste à vous ») ; elle garde votre empreinte (« Bonne idée », 19 nov.) | en vigueur | « reste à vous » (essai du 19 nov.) |
 | Rivaux | Un rival ne prend pas une zone sauvage sans rien faire : il doit réussir une épreuve annoncée et visible | en vigueur | prise sans combat (essai du 19 nov.) |
 | Empreinte | Reprendre une ancienne zone en réussissant un seul palier | en vigueur | |
 | Domaines | Un domaine compte dès 2 tuiles sur la petite carte, 3 sur la grande | en vigueur | |
