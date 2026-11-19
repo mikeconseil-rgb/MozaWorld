@@ -112,6 +112,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Zones : arête de 400 m depuis la 2.6 (300 m avant). Chaque nouvelle tuile a trois lieux à découvrir (camp, cercle de pierres, belvédère), chacun avec un secret.
 - **Inscriptions (19 nov., 2.9)** : chaque zone qui n'est pas une Ressource a quatre objets écrits (stèle, panneau, mur gravé, borne), écrits par le conteur de la zone. Leur texte change en cinq bandes de niveau (−7..−5, −4..−2, −1..+1, +2..+4, +5..+7) et l'objet suit le pôle. On lit en passant à côté, sans bouton ; une rune bleue signale un texte pas encore lu à ce niveau. Les Ressources n'en ont pas (design simple). Textes : `design/inscriptions/`, relus par le critique.
 - Le combat est animé (carte qui vole, élan, impact), sans que les animations changent les règles.
+- Chaque zone a son étalonnage signature, propre à chaque pôle (fin du noir bouché à −7 et du blanc brûlé à +7), et un sol vivant : grain par biome, failles vers −7, motif Girih vers +7 (boucle 1, 19 nov.).
 - Le monde est animé : vent dans la végétation, braises vers −7 et lucioles vers +7, créatures qui errent (décoratives) (2.8).
 - Exploration épurée par défaut : fiche de zone quelques secondes à l'entrée, aide qui s'efface, minicarte réduite ; RB ou Tab affiche l'interface complète (2.8).
 - Le juge visuel des zones (note de 80 % au moins) est **suspendu** tant que le jeu est la version web. Il reprendra sous Unreal. Le critique reste en place pour les textes et les cartes.

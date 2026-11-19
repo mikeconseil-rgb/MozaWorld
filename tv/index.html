@@ -1415,6 +1415,202 @@ for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?
       tasser(it)}};
 })();
 })();
+/* MozaWorld : le sol vivant (19 novembre 2026, boucle 1).
+   Constat : de près, le sol des zones était un aplat uni (une couleur par sommet, un sommet tous les 4,2 m).
+   Ici, sans aucune texture image ni objet en plus (0 triangle, 0 appel de dessin), le fragment du terrain reçoit :
+   (a) un grain procédural en coordonnées monde : taches de couleur (~8 m) et grain fin (~0,7 m), ±8 % de luminosité,
+       fondus avec la distance pour éviter le moiré ;
+   (b) un motif propre au biome : rides de sable, givre pailleté, touffes sombres, dalles, strates ; repli : roche selon la pente ;
+   (c) un motif de pôle gradué : vers −7, des failles en réseau de Voronoï, émissives dans la couleur du pôle négatif du mana
+       (braise, glace noire, vase luisante…), plus larges et plus nombreuses à chaque palier ; vers +7, une incrustation Girih
+       or pâle (médaillons à étoile à 10 branches) dont la couverture grandit palier après palier.
+   La zone de chaque sommet est lue dans une petite carte (DataTexture GW×GH, un texel par sommet du terrain) :
+   R = motif du biome (+128 si la zone a un style de rendu, MAR ou RES), G = (niveau+7)/14, B = mana du pôle.
+   Elle est remplie au chargement puis réécrite pour la seule zone qui mue (on enveloppe rebuild).
+   Qualité « Fluide » (#define SOL_FIN absent) : ni Voronoï ni Girih complet ; à la place, un repli bon marché
+   (failles tirées d'une seule lecture de bruit, médaillon réduit à l'étoile et son décagone), pour que les pôles restent lisibles.
+   Lecture seule de core.js et zonesplus.js : rien n'y est modifié. */
+(function(){
+/* codes de motif : 0 roche (repli, teinte selon la pente), 1 sable, 2 givre, 3 touffes, 4 dalles, 5 strates, 6 oasis (sable ou touffes selon la couleur) */
+const MOTIF_BIO={'Désert de sable':1,'Récif':1,'Oasis':6,'Forêt boréale':2,'Fjord':2,'Cavernes cristallines':2,
+  'Steppe':3,'Lande':3,'Delta fluvial':3,'Cité en ruines':4,'Canyon':5,'Falaise côtière':5};
+/* les cinq zones d'origine : Berestograd (forêt boréale, givre), Puits des Neuf Édits (volcan, roche), Lucioles (mangrove, touffes) ;
+   Givrecloche et Chinampas ont leur propre style de rendu */
+const MOTIF_ORIG={CIT:2,DON:0,ANT:3,MAR:2,RES:3};
+const MANA=['Feu','Glace','Eau','Sève','Pierre','Vent'],MANA_ORIG={CIT:5,DON:0,ANT:2,MAR:1,RES:3};
+/* couleur (linéaire, au-delà de 1 pour le halo) de ce qui luit au fond des failles, selon le pôle négatif du mana */
+const NEG=[[2.6,.85,.16],   /* Feu : braise */
+  [.22,.62,1.9],            /* Glace : glace noire, lueur bleu profond */
+  [.2,1.55,.85],            /* Eau : vase luisante */
+  [1.25,1.45,.12],          /* Sève : sève aigre */
+  [1.9,.24,.16],            /* Pierre : sang de la roche */
+  [1.15,.42,2.1]];          /* Vent : orage violet */
+const STYLEES={MAR:1,RES:1};
+const motifDe=Z=>{if(!Z.plus)return MOTIF_ORIG[Z.id]||0;const d=Z.d,m=MOTIF_BIO[d.biome];
+  /* deux forêts boréales de même couleur : le Donjon garde le givre, les autres (Ressource, Antre…) ont des touffes de lichen */
+  if(d.biome==='Forêt boréale'&&d.type!=='Donjon'&&d.type!=='Citadelle')return 3;return m===undefined?0:m};
+const manaDe=Z=>Z.plus?Math.max(0,MANA.indexOf(Z.d.mana)):(MANA_ORIG[Z.id]||0);
+
+const data=new Uint8Array(GN*4);for(let k=0;k<GN;k++){data[k*4+1]=128;data[k*4+3]=255}
+const tex=new THREE.DataTexture(data,GW,GH,THREE.RGBAFormat,THREE.UnsignedByteType);
+tex.magFilter=tex.minFilter=THREE.NearestFilter;tex.generateMipmaps=false;tex.flipY=false;tex.needsUpdate=true;
+function ecrire(Z){const r=motifDe(Z)+(STYLEES[Z.id]?128:0),g=Math.round(clamp((Z.lv+7)/14,0,1)*255),b=manaDe(Z),V=Z.verts;
+  for(let n=0;n<V.length;n++){const k=V[n]*4;data[k]=r;data[k+1]=g;data[k+2]=b}tex.needsUpdate=true}
+/* rebuild est appelée par son nom (main.js, mue, MZ.set) : la réaffecter suffit à suivre chaque mue */
+const _rebuildSol=rebuild;rebuild=function(Z){_rebuildSol(Z);ecrire(Z)};
+
+/* bruit de valeur précalculé par le code (aucune image) : 256×256 texels, réseau de 64×64 cellules lissées, répété sans couture.
+   Une seule lecture filtrée remplace quatre hachages. */
+const bruitTex=(()=>{const NT=256,NL=64,K=NT/NL,o=new Uint8Array(NT*NT*4);let g=20261119;const al=()=>{g=(g*1664525+1013904223)>>>0;return g/4294967296};
+  for(let ch=0;ch<4;ch++){const L=new Float32Array(NL*NL);for(let i=0;i<L.length;i++)L[i]=al();
+    for(let y=0;y<NT;y++)for(let x=0;x<NT;x++){const fx=x/K,fy=y/K,ix=Math.floor(fx),iy=Math.floor(fy);let u=fx-ix,v=fy-iy;u=u*u*(3-2*u);v=v*v*(3-2*v);
+      const a=L[iy%NL*NL+ix%NL],b=L[iy%NL*NL+(ix+1)%NL],c=L[(iy+1)%NL*NL+ix%NL],d=L[(iy+1)%NL*NL+(ix+1)%NL];
+      o[(y*NT+x)*4+ch]=Math.round(255*lerp(lerp(a,b,u),lerp(c,d,u),v))}}
+  const t=new THREE.DataTexture(o,NT,NT,THREE.RGBAFormat,THREE.UnsignedByteType);t.wrapS=t.wrapT=THREE.RepeatWrapping;
+  t.magFilter=t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;   /* sans mipmaps (moins cher) : le grain fin est déjà fondu par la distance */t.needsUpdate=true;return t})();
+const U={tSol:{value:tex},tSolB:{value:bruitTex},uSolG:{value:new THREE.Vector4(X0,Z0,1/CELL,0)},uSolN:{value:new THREE.Vector2(GW,GH)},
+  uSolSty:{value:1},uSolNeg:{value:NEG.map(c=>new THREE.Vector3(c[0],c[1],c[2]))}};
+const fin=()=>QI>0?1:0;let finCompile=-1;
+
+const VERT_DEC='attribute float solEf;varying vec3 vSolP;varying float vSolNy,vSolEf;\n';
+const FRAG_DEC=`uniform sampler2D tSol,tSolB;uniform vec4 uSolG;uniform vec2 uSolN;uniform float uSolSty;uniform vec3 uSolNeg[6];
+varying vec3 vSolP;varying float vSolNy,vSolEf;
+float sH(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
+vec2 sH2(vec2 p){vec3 q=fract(vec3(p.xyx)*vec3(.1031,.103,.0973));q+=dot(q,q.yzx+33.33);return fract((q.xx+q.yz)*q.zy);}
+/* bruit de valeur : une cellule par mètre de p (la texture en couvre 64) */
+float sN(vec2 p){return texture2D(tSolB,p*.015625).r;}
+float sN2(vec2 p){return texture2D(tSolB,p*.015625).g;}
+/* palier marqué : on reste sur le palier entier et on ne bascule qu'au milieu d'un pas (une mue en cours glisse quand même) */
+float solPal(float a){return floor(a)+smoothstep(.3,.7,fract(a));}
+/* trait de demi-largeur w, filtré sur aa mètres : au loin il s'estompe au lieu de grossir (pas de moiré) */
+float solTrait(float d,float w,float aa){return clamp(.5+(w-d)/aa,0.,1.)*min(1.,2.*w/aa);}
+#ifdef SOL_FIN
+/* distance approchée au bord de la cellule de Voronoï la plus proche : une seule passe 3×3, (F2−F1)/2 */
+float solVor(vec2 x){vec2 n=floor(x),f=fract(x);float d1=8.,d2=8.;
+  for(int j=-1;j<=1;j++)for(int i=-1;i<=1;i++){vec2 g=vec2(float(i),float(j)),r=g+sH2(n+g)*.9+.05-f;float d=dot(r,r);
+    if(d<d1){d2=d1;d1=d;}else if(d<d2)d2=d;}
+  return (sqrt(d2)-sqrt(d1))*.5;}
+#endif
+float solSeg(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.,1.));}
+/* médaillon Girih : étoile à 10 branches entrelacée, couronne et rayons, en coordonnées polaires repliées.
+   k = palier (0 à 7), renvoie la distance (m) au trait le plus proche ; « dans » = intérieur de l'étoile */
+float solGirih(vec2 l,float k,out float dans){float r=length(l),a=atan(l.y,l.x);
+  a=mod(a,.6283185);a=abs(a-.3141593);vec2 q=r*vec2(cos(a),sin(a));
+  vec2 T=vec2(3.,0.),I=1.55*vec2(.9510565,.309017);
+  float d=solSeg(q,T,I);dans=step(0.,(I.x-T.x)*(q.y-T.y)-(I.y-T.y)*(q.x-T.x));            /* palier 1 : l'étoile */
+  if(k>2.5)d=min(min(d,abs(q.x-3.45)),solSeg(q,T,vec2(3.45,.13)));                           /* 3 : le décagone qui la cerne */
+  if(k>4.5)d=min(min(d,solSeg(q,2.15*vec2(.9510565,.309017),vec2(1.1,0.))),abs(q.x-.62));    /* 5 : étoile intérieure entrelacée, rosace */
+  if(k>5.5){d=min(d,q.x>3.45?q.y:1e3);d=min(d,r>3.63?abs(q.x*.309017-q.y*.9510565):1e3);}   /* 6 : rayons et treillis qui relient les médaillons */
+  return d;}
+`;
+/* fragment : après color_fragment (diffuseColor contient déjà la couleur du sommet) */
+const FRAG_COL=`
+vec3 solE=vec3(0.);float solGold=0.;
+{vec2 p=vSolP.xz;float dc=distance(vSolP,cameraPosition);
+ vec2 zuv=(vec2((p.x-uSolG.x)*uSolG.z,(p.y-uSolG.y)*uSolG.z)+.5)/uSolN;vec4 zd=texture2D(tSol,zuv);
+ float code=floor(zd.r*255.+.5),sty=step(127.5,code);code-=128.*sty;
+ float lv=zd.g*14.-7.,mana=floor(zd.b*255.+.5);
+ float ef=smoothstep(.06,.5,vSolEf);                      /* rien au ras des frontières (lecture au plus proche) */
+ float mo=ef*(1.-sty*uSolSty);                            /* motif coupé sur Givrecloche et Chinampas quand leur style est actif */
+ float nPres=1.-smoothstep(18.,45.,dc),nMoy=1.-smoothstep(45.,110.,dc),nLoin=1.-smoothstep(140.,320.,dc);
+ vec3 c=diffuseColor.rgb;
+ /* deux lectures de bruit servent à tout (quatre canaux chacune) : B8 à l'échelle de ~8 m, B07 à ~0,7 m (seulement de près) */
+ vec4 B8=texture2D(tSolB,p*.001953+vec2(.2,.7)),B07=dc<45.?texture2D(tSolB,p*.02234):vec4(.5);
+ /* (a) grain : taches de ~8 m (légère dérive de teinte) et grain de ~0,7 m */
+ float lum=1.+(B8.r-.5)*.1*nLoin+(B07.r-.5)*.07*nPres;
+ c*=lum*mix(vec3(1.),vec3(1.04,1.,.95),(B8.r-.5)*.8*nLoin);
+ float pente=1.-vSolNy;
+ /* (b) motif du biome */
+ if(mo>.001){
+  if(code<.5||code>4.5&&code<5.5){   /* roche selon la pente (et strates pour les canyons et falaises) */
+   float rk=smoothstep(.12,.42,pente)*mo;
+   vec3 roc=dot(c,vec3(.333))*vec3(.92,.86,.8)*1.05;
+   if(code>4.5){float st=sN(vec2(vSolP.y*1.6+B8.g*2.,p.x*.02));roc*=.82+.36*st;c*=1.+(st-.5)*.12*mo*nMoy;rk=max(rk,.25*mo);}
+   c=mix(c,roc,rk);}
+  float w=0.;   /* poids du sable (1) contre les touffes (3) pour l'oasis */
+  if(code>.5&&code<1.5)w=1.;
+  if(code>4.5&&code<5.5)w=1.-smoothstep(.1,.3,pente);
+  if(code>5.5)w=smoothstep(.01,-.03,diffuseColor.g-diffuseColor.r*1.02);
+  if(w>.001&&dc<38.){   /* rides de sable asymétriques, courbées par le bruit lent */
+   float t=dot(p,vec2(.83,.55))+B8.a*5.;float f=fract(t/1.05);
+   float ride=smoothstep(0.,.78,f)*(1.-smoothstep(.78,1.,f));
+   float rf=1.-smoothstep(12.,38.,dc);c*=1.+(ride-.55)*.2*w*rf*mo*(1.-smoothstep(.35,.6,pente));}
+  if(code>1.5&&code<2.5){   /* givre : plaques de gelée blanche et paillettes qui scintillent avec le regard */
+   float fp=smoothstep(.5,.78,B8.g+.32*B07.g)*mo;
+   c=mix(c,c*.45+vec3(.5,.56,.64)*max(.35,dot(c,vec3(.6))),fp*.38*nMoy);
+   if(dc<12.){vec2 ce=floor(p*4.);vec3 vd=(vSolP-cameraPosition)/dc;
+    float tw=sH(ce+floor(vd.xz*30.)*7.13),sp=step(.982,tw)*(1.-smoothstep(.06,.2,length(fract(p*4.)-.5)));
+    solE+=vec3(.9,.97,1.2)*sp*(.3+fp)*mo*(1.-smoothstep(4.,12.,dc));}}
+  float tu=(code>2.5&&code<3.5)?1.:(code>5.5?1.-w:0.);
+  if(tu>.001&&dc<60.){   /* touffes sombres et brins */
+   vec2 g=p/1.25,id=floor(g),f=fract(g)-.5,o=sH2(id)-.5;float rr=.16+.2*sH(id+3.);
+   float dens=smoothstep(.3,.65,B8.b)*.75+.2;
+   vec2 v=f-o*.55;float ri=rr*(.75+.5*B07.b);
+   float tf=(1.-smoothstep(ri*.1,ri,length(v)))*step(1.-dens,sH(id+9.));tf*=tf*(2.-tf);
+   float br=.25;if(dc<45.){vec2 bb=texture2D(tSolB,vec2(p.x*.1094,p.y*.0203)).rg;br=bb.r*bb.g;}
+   c*=1.-(tf*.26*(1.-smoothstep(25.,60.,dc))+(br-.25)*.12*nPres)*tu*mo;c.g*=1.+tf*.05*tu*mo;}
+  if(code>3.5&&code<4.5&&dc<110.){   /* dalles posées en quinconce, jointoyées, tons inégaux, ici et là disparues */
+   vec2 q=p/vec2(1.7,1.15);float row=floor(q.y);q.x+=.5*mod(row,2.);vec2 f=fract(q)-.5,id=floor(q);
+   float e=min((.5-abs(f.x))*1.7,(.5-abs(f.y))*1.15);float keep=smoothstep(.32,.46,B8.a);
+   float jt=1.-smoothstep(.03,.08+dc*.004,e);
+   c*=mix(1.,(.9+.18*sH(id))*(1.-jt*.45*nMoy),keep*mo);}
+ }
+ /* (c) motif de pôle, palier après palier */
+ if(mo>.001){
+  float k=solPal(abs(lv));
+  if(lv<-.25&&nLoin>0.){   /* (c−) failles : réseau de Voronoï, plus large et plus dense à chaque palier */
+   vec3 wv=texture2D(tSolB,p*.001094+vec2(.5,.1)).rgb;   /* dérive du tracé (r, g) et part du réseau ouverte (b), à ~14 m */
+   vec2 w2=p+wv.rg*3.5;
+   #ifdef SOL_FIN
+   float db=solVor(w2/7.5)*7.5+(B07.a-.5)*.1;
+   #else
+   float db=abs(sN2(w2*.2)-.5)*6.5+(B07.a-.5)*.1;   /* repli « Fluide » : une courbe de niveau du bruit, des failles sinueuses pour une lecture */
+   #endif
+   float ouvert=smoothstep(.0,.06,(.12+.13*k)*step(.5,k)-wv.b);   /* part du réseau ouverte : un quart au palier 1, tout au palier 7 */
+   float wc=.02+.035*k,aa=.02+dc*.004;
+   float coeur=solTrait(db,wc,aa)*ouvert,bord=(1.-smoothstep(wc,wc+.12+.1*k+aa,db))*ouvert;
+   c*=1.-bord*(.25+.06*k)*mo;c=mix(c,vec3(.01),coeur*mo);
+   vec3 nc=uSolNeg[0];if(mana>.5)nc=uSolNeg[1];if(mana>1.5)nc=uSolNeg[2];if(mana>2.5)nc=uSolNeg[3];if(mana>3.5)nc=uSolNeg[4];if(mana>4.5)nc=uSolNeg[5];
+   float pul=.55+.45*B8.g;
+   solE+=nc*(coeur*(.2+.1*k)*pul+bord*bord*.012*k)*mo*nLoin;}
+  if(lv>.25&&nLoin>0.){   /* (c+) incrustation Girih : médaillons en quinconce, de plus en plus nombreux et ouvragés */
+   vec2 g=p/vec2(9.,7.8);float row=floor(g.y);g.x+=.5*mod(row,2.);vec2 id=floor(g),l=(fract(g)-.5)*vec2(9.,7.8);
+   float on=step(sH(id+vec2(31.,17.)),.16+.12*k)*step(.5,k);   /* part des médaillons posés : un quart au palier 1, tous au palier 7 */
+   float dans;
+   #ifdef SOL_FIN
+   float d=solGirih(l,k,dans);
+   #else
+   float d=solGirih(l,min(k,3.),dans);   /* repli « Fluide » : l'étoile et son décagone seulement */
+   #endif
+   float wl=.02+.006*k,aa=.02+dc*.0035;
+   float tr=solTrait(d,wl,aa)*on,ombre=solTrait(d,wl+.05,aa)*on;
+   float fond=dans*on*step(3.5,k)*(k>5.5?.32:.18);
+   c*=1.-(ombre-tr)*.3*mo*nMoy;
+   c=mix(c,vec3(.3,.6,.62)*max(.45,dot(c,vec3(.45))*1.2),fond*mo*nMoy);   /* faïence turquoise dans l'étoile, à partir du palier 4 */
+   c=mix(c,vec3(.95,.7,.3),tr*mo);solGold=tr*mo;
+   solE+=vec3(.9,.65,.25)*tr*(.04+.03*k)*mo*nLoin;}
+ }
+ diffuseColor.rgb=c;}
+`;
+const _buildSol=buildTerrain;
+buildTerrain=function(){_buildSol();
+  /* fondu près des frontières : un attribut par sommet, interpolé finement (la carte des zones, elle, est lue au plus proche) */
+  const ef=new Float32Array(GN);for(let k=0;k<GN;k++)ef[k]=tEf[k];
+  terrain.geometry.setAttribute('solEf',new THREE.BufferAttribute(ef,1));
+  for(const Z of ZN)ecrire(Z);
+  const m=terrain.material,prev=m.onBeforeCompile;
+  m.onBeforeCompile=(s,r)=>{prev(s,r);Object.assign(s.uniforms,U);finCompile=fin();
+    s.vertexShader=VERT_DEC+s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvSolP=(modelMatrix*vec4(transformed,1.)).xyz;vSolNy=normal.y;vSolEf=solEf;');
+    s.fragmentShader=(finCompile?'#define SOL_FIN\n':'')+FRAG_DEC+s.fragmentShader
+      .replace('#include <color_fragment>','#include <color_fragment>\n'+FRAG_COL)
+      .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.38,solGold);')
+      .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=solE;')};
+  m.customProgramCacheKey=()=>'sol'+fin();m.needsUpdate=true};
+/* à chaque image : style de zone actif ou non, et recompilation si la qualité passe en Fluide ou en sort */
+const _drawSol=draw;
+draw=function(t){U.uSolSty.value=(typeof STYLE_ON==='undefined'||STYLE_ON)?1:0;
+  if(terrain&&finCompile>=0&&fin()!==finCompile){finCompile=fin();terrain.material.needsUpdate=true}_drawSol(t)};
+})();
 /* MozaWorld 2.6 : des lieux à découvrir dans chaque nouvelle tuile (18 novembre, idée 8 de l'évaluation graphique).
    Constat : entre l'entrée d'une zone et sa Pierre, il n'y avait rien à voir. Avec les zones agrandies (SC 3 → 4 dans core.js),
    ce vide se serait encore plus senti. Chaque nouvelle tuile reçoit donc trois lieux, loin de la Pierre et dans trois directions :
@@ -9329,7 +9525,9 @@ const STY={M:{Z:MAR,w:0},R:{Z:RES,w:0}};
 const closed=P=>P.concat([P[0]]).map(p=>new THREE.Vector2(p[0],p[1]));
 const styU={tD:{value:null},pInv:{value:camera.projectionMatrixInverse},cW:{value:camera.matrixWorld},cP:{value:camera.position},
   pM:{value:closed(MAR.poly)},pR:{value:closed(RES.poly)},lvM:{value:0},lvR:{value:0},cdM:{value:0},cdR:{value:0},
-  skM:{value:0},skR:{value:0},on:{value:1},tt:{value:0},px:{value:new THREE.Vector2(1/800,1/450)}};
+  skM:{value:0},skR:{value:0},on:{value:1},tt:{value:0},px:{value:new THREE.Vector2(1/800,1/450)},
+  /* boucle 1 (19 nov. 2026) : étalonnage signature de la zone où se trouve la caméra (voir SIG plus bas) */
+  sigSh:{value:new THREE.Vector3(.1,.1,.1)},sigMi:{value:new THREE.Vector3(.5,.5,.5)},sigHi:{value:new THREE.Vector3(1,1,1)},sigK:{value:0},sigOn:{value:0}};
 Object.assign(mFinal.uniforms,styU);mFinal.uniforms.expo=mFinal.uniforms.exp; /* « exp » cache la fonction exp() du GLSL */
 const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
   for(int i=0;i<${n};i++){vec2 a=${u}[i],b=${u}[i+1];
@@ -9337,7 +9535,7 @@ const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
     vec2 e=b-a;float t=clamp(dot(p-a,e)/dot(e,e),0.,1.);d=min(d,length(p-a-e*t));}
   float s=smoothstep(0.,3.,d)*.5;return ins?.5+s:.5-s;}`;
 mFinal.defines={STY_DEPTH:STY_DEPTH?1:0};
-mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt;uniform vec3 gt,cP;
+mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
 uniform mat4 pInv,cW;uniform vec2 pM[5],pR[7],px;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 ${polyGL('inM','pM',4)}
@@ -9346,16 +9544,25 @@ vec3 wpos(vec2 uv,float d){vec4 v=pInv*vec4(uv*2.-1.,d*2.-1.,1.);v/=v.w;return (
 float vz(vec2 uv){vec4 v=pInv*vec4(uv*2.-1.,texture2D(tD,uv).r*2.-1.,1.);return -v.z/v.w;}
 float hsh(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
 float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hsh(i),hsh(i+vec2(1,0)),f.x),mix(hsh(i+vec2(0,1)),hsh(i+vec2(1,1)),f.x),f.y);}
-void main(){vec3 b=texture2D(b1,vUv).rgb*.55+texture2D(b2,vUv).rgb*.75;vec3 c=texture2D(t,vUv).rgb+bl*b;
-vec2 q=vUv-.5;c*=expo*(1.-dot(q,q)*.75);c=aces(c);c=pow(c,vec3(1./2.2));
+void main(){
+/* boucle 1 (19 nov. 2026) : progression de l'étalonnage. Fondu sur |lv|/7, plus une petite marche nette aux paliers ±3 et ±6
+   (sigK glisse en ~2 s, la marche se voit donc à chaque passage de palier). sN : vers −7, sP : vers +7. */
+float sA=abs(sigK),sG=clamp(sA*.8+.1*smoothstep(.4,.46,sA)+.1*smoothstep(.83,.89,sA),0.,1.)*sigOn,sN=sigK<0.?sG:0.,sP=sigK>0.?sG:0.;
+vec3 b=texture2D(b1,vUv).rgb*.55+texture2D(b2,vUv).rgb*.75;vec3 c=texture2D(t,vUv).rgb+bl*b*(1.-.4*sP); /* vers +7 le halo s'efface un peu : il noyait le détail des blancs */
+vec2 q=vUv-.5;c*=expo*(1.-dot(q,q)*.75);
+c*=1.-.12*sP;c=c/(1.+.35*sP*c); /* vers +7 : un cran d'exposition en moins et épaule douce sur les hautes lumières, avant l'unique ACES (fin du blanc brûlé) */
+c=aces(c);c=pow(c,vec3(1./2.2));
 float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,gs);c=(c-.5)*gc+.5;c=mix(c,gt*(l*1.25+.08),gk);c=clamp(c,0.,1.);
-float gr=.018;
+float gr=.018,sty=0.;
 if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
 #if STY_DEPTH==1
   d=texture2D(tD,vUv).r;
   if(d<.99999){W=wpos(vUv,d);dist=length(W-cP);wM=inM(W.xz);wR=inR(W.xz);}
 #endif
   vec2 sc=vUv-.5;float vig=dot(sc,sc);
+  /* boucle 1 (19 nov. 2026) : frange blanche de Givrecloche −7. Les tuiles voisines, au loin, gardaient leur brouillard clair
+     et se découpaient en blanc déchiqueté sur le ciel d'encre : depuis la zone, à −7, le lointain passe lui aussi dans la brume de MAR. */
+  float frM=skM*max(-lvM/7.,0.)*smoothstep(60.,200.,dist)*(1.-wM);wM=max(wM,frM); /* seulement hors de la zone : la tour reste lisible */
 #if STY_DEPTH==1
   float z0=vz(vUv),e=0.;if(d<.99999){vec2 o=px;
     e=abs(vz(vUv+vec2(o.x,0.))+vz(vUv-vec2(o.x,0.))+vz(vUv+vec2(0.,o.y))+vz(vUv-vec2(0.,o.y))-4.*z0)/z0;}
@@ -9372,10 +9579,10 @@ if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
     float nz=vn(W.xz*.035+vec2(tt*.05,tt*.02))*.6+vn(W.xz*.11-vec2(tt*.08,0.))*.4;
     float dens=mix(.035,.07,km)*(1.-kp*.5)*(.55+nz*.9);float fd=max(0.,dist-cdM);float hy=exp(-max(0.,W.y-1.)/mix(18.,9.,kp));
     float f=(1.-exp(-fd*dens*hy));f=clamp(f,0.,1.);
-    if(d>=.99999)f=1.;
+    if(d>=.99999)f=1.;f=max(f,frM);
     vec3 n=vec3(mix(g,fogC,f));
     n*=1.-vig*mix(.9,1.5,km);
-    float lum=max(b.r,max(b.g,b.b)),sat=max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b));n=mix(n,c*1.1,smoothstep(.3,.9,lum)*smoothstep(.12,.35,sat)*(1.-f*.6)*.9);
+    float lum=max(b.r,max(b.g,b.b)),sat=max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b));n=mix(n,c*1.1,smoothstep(.3,.9,lum)*smoothstep(.12,.35,sat)*(1.-f*.6)*.9*(1.-max(frM,km*step(.99999,d))));
     c=mix(c,n,wM);gr=mix(gr,.045+.03*km,wM);}
   /* --- Chinampas : manga (cel-shading à trois tons, contours fins, trame seulement dans le noir) --- */
   if(wR>.001){float k=lvR/7.,kp=max(k,0.),km=max(-k,0.);
@@ -9395,7 +9602,24 @@ if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
     float ink=smoothstep(mix(.09,.05,km),mix(.16,.1,km),e)*mix(.25+.75*far,1.,km);
     m=mix(m,vec3(.1,.07,.14),ink*mix(.8,1.,km));}
     c=mix(c,m,wR);gr=mix(gr,.006,wR);}
+  sty=max(wM,wR);
 }
+/* --- boucle 1 (19 nov. 2026) : étalonnage signature de la zone (après l'ACES et les écoles, avant le grain) ---
+   Trois tons (ombres, tons moyens, hautes lumières) propres à chaque zone et à chaque pôle, pondérés par la luminance.
+   Vers −7 : ombres relevées et plancher teinté (jamais de noir pur), vignette teintée. Vers +7 : blancs adoucis, ombres pastel.
+   Sur Givrecloche (noir et blanc) et Chinampas (manga), force ×0,3 pour ne pas casser leur école. */
+if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty));
+  vec3 Y=vec3(.299,.587,.114);float L=dot(c,Y);
+  float ws=1.-smoothstep(0.,.42,L),wh=smoothstep(mix(.45,.62,sN),.95,L) /* à −7, seules les vraies lumières prennent la couleur haute */,wm=max(0.,1.-ws-wh);
+  vec3 T=sigSh*ws+sigMi*wm+sigHi*wh,tn=min(T/max(dot(T,Y),.02),vec3(2.)),sh=min(sigSh/max(dot(sigSh,Y),.01),vec3(2.4));
+  c=mix(c,c*tn,(.28+.42*sG)*fo); /* split-toning : la teinte change, la luminance reste */
+  /* −7 : les ombres se relèvent (les formes du sol se lisent), le plancher prend la couleur d'ombre de la zone */
+  c=mix(c,pow(max(c,0.),vec3(.62)),sN*fo*(1.-smoothstep(0.,.3,L)));
+  vec3 fl=sh*mix(.012,.06,sN)*fo;c=fl+c*(1.-fl);
+  float vg=smoothstep(.04,.45,dot(q,q)*2.);c=mix(c,sigSh*mix(.8,.5,sN),vg*(.15+.2*sN-.07*sP)*fo);
+  /* +7 : blancs désaturés de 10 %, ombres teintées pastel froid (le relief tient sans boucher) */
+  L=dot(c,Y);c=mix(c,vec3(L),.1*sP*wh*fo);c=mix(c,c*sh,.18*sP*ws*fo);
+  c=clamp(c,0.,1.);}
 c+=(fract(sin(dot(vUv*vec2(1920.,1080.)+time,vec2(12.9898,78.233)))*43758.5453)-.5)*gr;gl_FragColor=vec4(c,1.);}`;
 mFinal.needsUpdate=true;
 
@@ -9422,6 +9646,56 @@ function styleBorder(id){const Z=ZB[id],Q=CIT;let best=null;
     if(dPoly(Q.poly,m[0],m[1])<1)best=m}
   if(!best)best=Z.poly[0];const dx=Z.c[0]-best[0],dz=Z.c[1]-best[1],d=Math.hypot(dx,dz);
   P.x=best[0]-dx/d*22;P.z=best[1]-dz/d*22;P.yaw=Math.atan2(dx,dz);P.y=stand(P.x,P.z,1e3).g+.1}
+
+/* ---------- Boucle 1 (19 nov. 2026) : étalonnage signature par zone et par pôle ----------
+   Chaque zone a deux jeux de trois couleurs [ombres, tons moyens, hautes lumières] : n = pôle −7, p = pôle +7.
+   Entre les deux, la couleur glisse avec le niveau ; la passe finale s'en sert pour le split-toning, le plancher des noirs
+   et la vignette. Mise à jour une fois par image, depuis la zone de la caméra (aucun test de zone par pixel). */
+const SIG={
+  /* zones d'origine */
+  CIT:{n:['#14203a','#4a5672','#d8964a'],p:['#5a78a8','#c4b49c','#ffd68a']}, /* Berestograd : ardoise / ambre */
+  DON:{n:['#2c0a16','#6a2a30','#e8c8a0'],p:['#9a5a6a','#e8c4ac','#fff4dc']}, /* Donjon : bordeaux / crème */
+  ANT:{n:['#03201c','#24584c','#a8e6c8'],p:['#3a7a8c','#a4d6cc','#f0fff4']}, /* Antre : vert abysse / écume */
+  MAR:{n:['#12141c','#6a6c76','#e6e8f0'],p:['#949aaa','#d8dade','#fafbff']}, /* Givrecloche : neutre froid (noir et blanc) */
+  RES:{n:['#22140e','#5a5048','#f2dca8'],p:['#4a6a9a','#a8d0c0','#fff8e8']}, /* Chinampas : terre / jade (manga) */
+  ASS:{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8']}, /* Assemblée : prune / braise, lavande / ivoire */
+  /* familles des types des nouvelles tuiles (même parti pris que la zone d'origine du type, sans être identiques) */
+  Ressource:{n:['#022630','#1a6a72','#b4f0e0'],p:['#3a8aa8','#86dccc','#d0fff0']}, /* sarcelle / menthe : à l'opposé des Donjons */
+  Donjon:{n:['#3a0812','#7a2a22','#f4b878'],p:['#a85a78','#f0a898','#ffc8b0']},    /* bordeaux / or rose */
+  Antre:{n:['#161a04','#56561e','#e6cc7a'],p:['#4a8a6a','#d6e6a0','#fffbe0']},     /* olive / chartreuse */
+  'Assemblée':{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8']},
+  'Marché':{n:['#10161e','#5a6470','#e0e6ee'],p:['#8a9ab0','#d6dce2','#fbfcff']},
+  'Cité':{n:['#16243a','#4e5a70','#dca050'],p:['#6080b0','#c8b8a0','#ffd890']}};
+/* ajustement léger par biome (rotation de teinte en degrés) : deux tuiles du même type ne se confondent pas */
+const SIG_BIO={'Forêt boréale':-8,'Fjord':-16,'Canyon':14,'Désert de sable':10,'Oasis':6,'Cité en ruines':0,'Récif':-12,
+  'Cavernes cristallines':-22,'Lande':18,'Steppe':8,'Delta fluvial':-6,'Falaise côtière':-10};
+const sigLin=h=>{const v=parseInt(h.slice(1),16);return[(v>>16&255)/255,(v>>8&255)/255,(v&255)/255]};
+/* rotation de teinte autour de l'axe gris */
+const sigRot=(c,deg)=>{const a=deg*D2R,co=Math.cos(a),si=Math.sin(a),k=1/3,s3=Math.sqrt(k),m=x=>Math.max(0,Math.min(1,x)),t=(1-co)*k;
+  const r=c[0],g=c[1],b=c[2];
+  return[m(r*(co+t)+g*(t-s3*si)+b*(t+s3*si)),m(r*(t+s3*si)+g*(co+t)+b*(t-s3*si)),m(r*(t-s3*si)+g*(t+s3*si)+b*(co+t))]};
+/* tuile « plus » : famille de son type (70 %) mêlée aux couleurs des pôles de son mana (30 %), puis tournée selon le biome.
+   Repli si le type est inconnu : couleurs tirées de PMANA[mana] seules. */
+const sigCv=x=>typeof x==='string'?sigLin(x):x,sigMx=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t);
+function sigOf(Z){if(Z._sig)return Z._sig;let r=Z.plus?null:SIG[Z.id];
+  if(Z.id==='ASS152')r=SIG.ASS; /* ASS152 : la recette des Assemblées tenue exactement (prune / braise à −7, lavande / ivoire à +7) */
+  if(!r&&Z.plus){const d=Z.d,[ng,ps]=(PMANA[d.mana]||PMANA.Pierre).map(sigLin),w=[1,1,1],
+      man={n:[sigMx(ng,[0,0,0],.15),sigMx(ng,ps,.4),sigMx(ps,w,.1)],p:[sigMx(sigMx(ng,ps,.55),[.42,.48,.66],.35),sigMx(ps,w,.3),sigMx(ps,w,.6)]},
+      fam=SIG[d.type],rot=SIG_BIO[d.biome]||0;
+    r={};for(const s of['n','p'])r[s]=[0,1,2].map(i=>sigRot(fam?sigMx(sigCv(fam[s][i]),man[s][i],.3):man[s][i],rot))}
+  if(!r)r=SIG.MAR;
+  return Z._sig={n:r.n.map(sigCv),p:r.p.map(sigCv)}}
+const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0};
+const _drawSig=draw;
+draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCur.t)/1000):0;sigCur.t=now;
+  const Z=zoneAt(camera.position.x,camera.position.z);let f=1-Math.exp(-dt*1.6); /* fondu ~2 s, comme skM/skR */
+  if(Z){const S=sigOf(Z),k=clamp((Z.lv||0)/7,-1,1),u=(k+1)/2;
+    if(!sigCur.on)f=1; /* première image dans une zone : on part directement de ses couleurs */
+    for(const [n,i] of [['sh',0],['mi',1],['hi',2]]){const a=S.n[i],b=S.p[i],c=sigCur[n];for(let j=0;j<3;j++)c[j]=lerp(c[j],lerp(a[j],b[j],u),f)}
+    sigCur.k=lerp(sigCur.k,k,f)}
+  sigCur.on=lerp(sigCur.on,Z&&STYLE_ON?1:0,f);
+  const U=mFinal.uniforms;U.sigSh.value.set(sigCur.sh[0],sigCur.sh[1],sigCur.sh[2]);U.sigMi.value.set(sigCur.mi[0],sigCur.mi[1],sigCur.mi[2]);
+  U.sigHi.value.set(sigCur.hi[0],sigCur.hi[1],sigCur.hi[2]);U.sigK.value=sigCur.k;U.sigOn.value=sigCur.on;_drawSig(t)};
 /* MozaWorld TV : combat au tour par tour (v1).
    Le héros et jusqu'à 3 bêtes alliées affrontent les gardiens d'une zone. Chaque tour : le mana se remplit,
    on pioche jusqu'à 5 cartes, on joue ses cartes, puis les bêtes frappent et les monstres font ce qu'ils ont annoncé.
@@ -10951,18 +11225,53 @@ const css=document.createElement('style');css.textContent=`
 @keyframes fxFissure{0%,70%{opacity:0}75%{opacity:.9}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.fx *{animation:none!important}}
 .ksuite{display:none}
-#cb-main .cc.kcarte:not(.f) .ktr{display:none}
-#cb-main .cc.kcarte:not(.f) .ksuite{display:inline;color:var(--kl)}
-#cb-main .cc.kcarte:not(.f) .art{height:calc(var(--u)*7.6)}
-#cb-main .cc.kcarte:not(.f) .ct{font-size:calc(var(--u)*.9);line-height:1.25}
 .kcadre path{stroke-width:2.2}
+/* ---- Boucle 1 (19 novembre 2026) : cartes de combat sans texte coupé net ----
+   Cartes non choisies : nom, ligne de type, puis le texte entier limité à trois lignes (line-clamp) ; si le texte déborde,
+   la dernière ligne se fond vers le bas (mask-image). L'illustration prend la place qui reste : un nom sur deux lignes la
+   raccourcit au lieu de pousser le texte hors de la carte. Le bas du cadre de texte est une bordure transparente, et non
+   une marge intérieure, pour qu'aucun morceau de quatrième ligne ne s'y montre. */
+#cb-main .cc.kcarte:not(.f) .art{flex:1 1 auto;height:auto;min-height:calc(var(--u)*3.4)}
+#cb-main .cc.kcarte:not(.f) .ct{flex:0 0 auto;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;
+  font-size:calc(var(--u)*.84);line-height:1.3;padding:.4em .5em 0;border-bottom:.4em solid transparent}
+#cb-main .cc.kcarte:not(.f) .ct .kprix{display:inline}
+#cb-main .cc.kcarte .ct.deborde{-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 1.75em),rgba(0,0,0,.12) calc(100% - .4em));
+  mask-image:linear-gradient(180deg,#000 calc(100% - 1.75em),rgba(0,0,0,.12) calc(100% - .4em))}
+#cb-main .cc.kcarte:not(.f) .kamb,#cb-main .cc.kcarte:not(.f) .kband.bas{display:none}
+/* Carte choisie (et agrandie) : hauteur fixe, texte entier ; ajuster() réduit la police par pas de 4 % s'il le faut.
+   Elle s'écarte de ses voisines (marge latérale) et porte une ombre de la couleur de son mana, au lieu du halo uniforme. */
+#cb-main .cc.kcarte.f{height:calc(var(--u)*21);min-height:0;padding-bottom:calc(var(--u)*.75);flex:0 0 calc(var(--u)*14);width:calc(var(--u)*14);margin:0 calc(var(--u)*1.7);
+  box-shadow:0 0 0 2px rgba(245,220,156,.6),0 calc(var(--u)*1.6) calc(var(--u)*2.4) calc(var(--u)*-.3) var(--kcB,rgba(201,164,92,.7)),0 calc(var(--u)*2.4) calc(var(--u)*3.2) rgba(0,0,0,.72),inset 0 0 0 1px rgba(255,255,255,.08)}
+#cb-main .cc.kcarte.f .ct{flex:1 1 0;min-height:0;overflow:hidden;font-size:calc(var(--u)*.86*var(--kf,1));line-height:1.26;padding:.4em .5em 0;border-bottom:.35em solid transparent}
+#cb-main .cc.kcarte.f .kamb{font-size:calc(var(--u)*.74*var(--kf,1));flex:none;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-bottom:0;border-bottom:.3em solid transparent}
+#cb-main .cc.kcarte.f.serre .kamb{display:none}
 `;document.head.appendChild(css);
+
+/* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)
+   tant qu'il déborde ; sinon la citation d'ambiance s'efface, et en dernier recours la dernière ligne se fond.
+   Les cartes non choisies ne reçoivent que le fondu, et seulement si leur texte dépasse trois lignes.
+   Une seule mesure par carte et par main distribuée : le résultat est gardé tant que la main ne change pas. */
+const deborde=t=>t.scrollHeight>t.clientHeight+1;
+function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false;const trop=()=>deborde(t)||deborde(el);
+  el.style.removeProperty('--kf');el.classList.remove('serre');t.classList.remove('deborde');
+  for(let i=0;i<6&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
+  if(trop()&&el.querySelector('.kamb')){serre=true;el.classList.add('serre')}
+  const fondu=deborde(t);t.classList.toggle('deborde',fondu);return{k,serre,fondu}}
+function appliquer(el,r){const t=el.querySelector('.ct');if(r.k<1)el.style.setProperty('--kf',r.k.toFixed(3));el.classList.toggle('serre',!!r.serre);if(t)t.classList.toggle('deborde',!!r.fondu)}
+window.ajuster=ajuster;
+const AJ={main:'',m:new Map()},hm=document.getElementById('cb-main');
+if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return;
+  const cle=CB.main.join('|')+'#'+CB.tour;if(cle!==AJ.main){AJ.main=cle;AJ.m.clear()}
+  [...hm.children].forEach((el,i)=>{if(!el.classList.contains('kcarte'))return;const f=el.classList.contains('f'),id=i+'|'+(CB.main[i]||'')+(f?'|f':'');
+    const r=AJ.m.get(id);if(r){appliquer(el,r);return}
+    if(f)AJ.m.set(id,ajuster(el));else{const t=el.querySelector('.ct'),fondu=!!t&&deborde(t);if(t)t.classList.toggle('deborde',fondu);AJ.m.set(id,{k:1,fondu})}})
+}).observe(hm,{childList:true});
 })();
 /* MozaWorld 2.5 : l'écrin (17 nov., « retravaille les interfaces pour être plus jolies », consigne : interface classieuse).
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.8';
+const MZ_VERSION='2.10';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -11045,31 +11354,81 @@ const MZ_VERSION='2.8';
 .cb-piles{padding:calc(var(--u)*.8) calc(var(--u)*1.1)!important}
 .cb-piles span{display:flex;justify-content:space-between;align-items:baseline;gap:.8em}
 .cb-tete h2,.cb-tete .t{text-shadow:0 2px 22px rgba(232,199,127,.2)}
+/* Boucle 1 (19 novembre 2026) : le mana du tour en grille de pastilles alignées (5 par rang au plus, rangs centrés) */
+.cb-mana .mp{display:grid;grid-template-columns:repeat(var(--n,5),calc(var(--u)*1.05));gap:calc(var(--u)*.38);justify-content:center;max-width:none;margin:.15em 0 .1em}
+.cb-mana .mp:not(:has(i:nth-child(2))){--n:1}.cb-mana .mp:has(i:nth-child(2)):not(:has(i:nth-child(3))){--n:2}
+.cb-mana .mp:has(i:nth-child(3)):not(:has(i:nth-child(4))){--n:3}.cb-mana .mp:has(i:nth-child(4)):not(:has(i:nth-child(5))){--n:4}
+.cb-mana .mp i{width:calc(var(--u)*1.05);height:calc(var(--u)*1.05);transform:none;border-radius:50%;box-sizing:border-box;border:1px solid rgba(245,220,156,.75);background:radial-gradient(circle at 50% 40%,rgba(0,0,0,.2),rgba(0,0,0,.55))}
+.cb-mana .mp i.on{background:radial-gradient(circle at 38% 32%,#fff6d6,#e8c77f 45%,#9c7834);border-color:#f5dc9c;box-shadow:0 0 8px rgba(232,199,127,.7)}
 /* ---- 2.5.1 (retour de test du 18 nov. : « le bandeau est bien trop grand, en haut, sombre et efficace, une barre ») ----
    tout l'état tient sur une seule barre sombre en haut de l'écran */
 .hud.etat{top:0;left:0;right:0;bottom:auto;display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:0;text-align:left;
   padding:calc(var(--u)*.35) var(--mx);background:linear-gradient(180deg,rgba(8,7,10,.92),rgba(8,7,10,.78));border:0;border-bottom:1px solid rgba(201,164,92,.38);border-radius:0;
   box-shadow:0 4px 18px rgba(0,0,0,.45);backdrop-filter:none;white-space:nowrap}
+/* Boucle 1 (19 novembre 2026) : la barre se lit en trois îlots (mana · territoire · ressources), séparés par un filet d'or
+   à losange ; dans chaque îlot, la valeur clé est en grand (Cormorant), le reste en petit. Un seul accent : l'or. */
 .hud.etat .bandeau{display:flex;flex-wrap:nowrap;align-items:center;gap:0;padding:0;margin:0;background:none;border:0}
-.hud.etat .bandeau .ligne,.hud.etat>div:not(.bandeau){display:flex;flex-wrap:nowrap;align-items:center;gap:calc(var(--u)*.55);padding:0 calc(var(--u)*1);margin:0;background:none;
-  border-left:1px solid rgba(201,164,92,.28)}
-.hud.etat .bandeau .ligne:first-child{border-left:0}
-.hud.etat .bandeau .titre{display:none}
-.hud.etat .bandeau .ligne.prod .titre{display:inline;margin:0;font-size:calc(var(--u)*.72);letter-spacing:.08em;color:var(--sable)}
-.hud.etat .bandeau .m{font-size:calc(var(--u)*1.1)}
-.hud.etat .bandeau .d{font-size:calc(var(--u)*1)}
-.hud.etat .bandeau .dg{font-size:calc(var(--u)*.85);padding:0 .4em}
-.hud.etat .l{font-size:calc(var(--u)*.7);letter-spacing:.12em}
-.hud.etat b{font-size:calc(var(--u)*1.25)}
-.hud.etat .vie{width:calc(var(--u)*.7);height:calc(var(--u)*.7)}
-.hud.etat .bandeau .ligne.prod,.hud.etat [title="Plus grand territoire d'un seul tenant"],.hud.etat [title="Niveaux de vos zones"],.hud.etat>div:has(#h-deck){display:none}
-.hud.etat>div:not(.bandeau) .l{display:none}
-.hud.etat>div:has(#h-sec)::before{content:"✧";color:var(--or);font-size:calc(var(--u)*1)}
-.hud.etat>div:has(#h-sec) .l:last-child{display:inline;letter-spacing:0;font-size:calc(var(--u)*.9);color:var(--sable)}
+.hud.etat .ilot{display:flex;flex-wrap:nowrap;align-items:center;gap:calc(var(--u)*.75);padding:calc(var(--u)*.22) calc(var(--u)*1.1);border-radius:calc(var(--u)*1.2);
+  background:linear-gradient(180deg,rgba(239,231,214,.05),rgba(239,231,214,.012));box-shadow:inset 0 0 0 1px rgba(201,164,92,.13)}
+.hud.etat .sep{flex:none;display:block;width:calc(var(--u)*2.6);height:calc(var(--u)*1.8);
+  background:${losange} center/calc(var(--u)*.55) calc(var(--u)*.55) no-repeat,linear-gradient(180deg,transparent,rgba(232,199,127,.75),transparent) center/1px 100% no-repeat}
+.hud.etat .pt{flex:none;display:block;width:1px;height:calc(var(--u)*1.1);background:rgba(201,164,92,.22)}
+.hud.etat .bandeau .m{gap:.32em;font-family:var(--texte);font-size:calc(var(--u)*.95);font-weight:500;color:var(--ivoire)}
+.hud.etat .bandeau .m i{width:.62em;height:.62em;box-shadow:0 0 0 1px rgba(0,0,0,.55),0 0 0 2px rgba(239,231,214,.12)}
+.hud.etat .bandeau .m.vide{opacity:.38}
+.hud.etat .bandeau .d{gap:.3em;font-size:calc(var(--u)*.92);color:var(--ivoire);align-items:baseline}
+.hud.etat .bandeau .d>span{color:var(--or);font-size:.95em}
+.hud.etat .bandeau .d small{color:var(--sable);font-size:.78em}
+.hud.etat .bandeau .d.petit{font-size:calc(var(--u)*.82);color:rgba(239,231,214,.8)}
+.hud.etat .bandeau .d.petit>span{color:rgba(232,199,127,.78)}
+.hud.etat .bandeau .d.cle{font-family:var(--titre);font-weight:600;font-size:calc(var(--u)*1.5);line-height:1;letter-spacing:.01em}
+.hud.etat .bandeau .d.cle>span{font-family:var(--texte);font-size:.62em;margin-right:.1em}
+.hud.etat .bandeau .d.cle small{font-family:var(--texte);font-weight:400;font-size:.52em;letter-spacing:.04em}
+.hud.etat .bandeau .dg{padding:0;border:0;font-size:calc(var(--u)*.7);font-weight:600;letter-spacing:.16em;text-transform:uppercase}
+.hud.etat .bandeau .dg.faible{color:var(--sable)}.hud.etat .bandeau .dg.reel{color:var(--or)}.hud.etat .bandeau .dg.mortel{color:#ff7a6a}
+.hud.etat .fixe{display:flex;flex-wrap:nowrap;align-items:center;gap:.35em;padding:0;margin:0;border:0;background:none}
+.hud.etat .fixe .l{display:none}
+.hud.etat .fixe:has(#h-deck){display:none}
+.hud.etat .fixe:has(#h-sec)::before{content:"✧";color:var(--or);font-size:calc(var(--u)*.95)}
+.hud.etat .fixe:has(#h-sec) .l:last-child{display:inline;letter-spacing:0;font-size:calc(var(--u)*.78);color:var(--sable)}
+.hud.etat .fixe b{font-family:var(--titre);font-size:calc(var(--u)*1.25);line-height:1}
+.hud.etat .vies{gap:calc(var(--u)*.42)}
+.hud.etat .vie{width:calc(var(--u)*.58);height:calc(var(--u)*.58);border:1px solid rgba(232,199,127,.7)}
+.hud.etat .vie.on{background:var(--rouge);border-color:var(--rouge);box-shadow:0 0 6px rgba(208,86,74,.6)}
 .cart{top:calc(var(--my) + var(--u)*2.6)}
 /* ---- message flottant ---- */
 .toast .t2{background:linear-gradient(90deg,transparent,rgba(232,199,127,.5),transparent) bottom/60% 1px no-repeat;padding-bottom:.15em}
 `;document.head.appendChild(st)})();
+
+/* ---- Boucle 1 (19 novembre 2026) : un seul titre de zone à l'écran ----
+   Tant que le bandeau central (#toast) est visible, le cartouche du haut à gauche s'efface (body.toast-vu), puis revient.
+   À l'entrée dans une zone, le bandeau central part au bout de 2,4 s (≈ 3 s avec son fondu) et ne répète pas la phrase
+   du palier, que le cartouche affiche ensuite. Le surtitre garde deux éléments (type · biome) sur une seule ligne.
+   Rien ne change dans main.js : tout passe par des classes et des MutationObserver. */
+(()=>{const st=document.createElement('style');st.id='titre-unique';st.textContent=`
+.hud.cart>*{transition:opacity .4s ease .3s}
+body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
+.hud.cart .sur{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.14em;font-size:calc(var(--u)*.82);font-weight:600;line-height:1.5;margin-bottom:calc(var(--u)*.35);
+  color:var(--or);text-shadow:0 0 2px rgba(0,0,0,.95),0 1px 3px rgba(0,0,0,.9),0 0 14px rgba(0,0,0,.75)}
+.hud.cart .nom{margin-top:0}
+.toast::before{content:"";position:absolute;z-index:-1;inset:-40% -22% -45%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(8,7,10,.6),rgba(8,7,10,.42) 55%,rgba(8,7,10,0))}
+.toast.sans-t3 .t3{display:none}
+`;document.head.appendChild(st);
+  const T=document.getElementById('toast'),B=document.body,txt=id=>{const e=document.getElementById(id);return e?e.textContent.trim():''};
+  if(T){let fin=null;
+    const voir=recs=>{const vu=T.classList.contains('vu');B.classList.toggle('toast-vu',vu);
+      if(!vu){clearTimeout(fin);fin=null;return}
+      /* un nouveau message : texte changé, ou « vu » posé alors qu'il n'y était pas (nos propres classes ne comptent pas) */
+      const neuf=!recs||recs.some(r=>r.type!=='attributes'||!/\bvu\b/.test(r.oldValue||''));if(!neuf)return;
+      const entree=txt('t2')!==''&&txt('t2')===txt('h-nom')&&/· niveau /.test(txt('t1'));
+      T.classList.toggle('sans-t3',entree&&txt('t3')===txt('h-pal'));
+      clearTimeout(fin);fin=entree?setTimeout(()=>T.classList.remove('vu'),2400):null};
+    new MutationObserver(voir).observe(T,{attributes:true,attributeFilter:['class'],attributeOldValue:true,childList:true,characterData:true,subtree:true})}
+  const sur=document.getElementById('h-sur');
+  if(sur){const court=()=>{const t=sur.textContent,p=t.split(' · ');if(p.length<=2)return;sur.title=t;sur.textContent=p[0]+' · '+(p[2]||p[1])};
+    new MutationObserver(court).observe(sur,{childList:true,characterData:true,subtree:true});court()}
+})();
 /* MozaWorld 2.6 : combat animé (18 novembre, idée 6 de l'évaluation graphique).
    Avant : héros et monstres étaient des icônes immobiles, un coup se voyait seulement à un chiffre.
    Ici, seulement du mouvement, sans toucher aux règles : la carte jouée vole vers sa cible, l'attaquant prend son élan
@@ -11462,20 +11821,31 @@ const BTYPES=[['CIT','⛫','Citadelles'],['DON','⬟','Donjons'],['RES','⬢','R
 .bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}
 /* 19 nov. : avec les lignes Menaces et Rivaux, la barre peut dépasser 1280 px ; elle passe alors sur deux lignes au lieu d'être coupée */
 .hud.etat,.hud.etat .bandeau{flex-wrap:wrap!important;row-gap:calc(var(--u)*.3)}`;document.head.appendChild(st)})();
+/* Boucle 1 (19 novembre 2026) : la barre du haut se lit en trois îlots, mana · territoire · ressources.
+   Chaque îlot porte une valeur clé plus grande (le compte de zones, le paquet), le reste est en petit ; un seul accent, l'or.
+   Les cases fixes de head.html (blessures, secrets) sont rangées dans l'îlot des ressources : main.js les met à jour par leur id. */
+let BANDEAU_FIXES=null;
 function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;let b=document.getElementById('bandeau');
   if(!b){b=document.createElement('div');b.id='bandeau';b.className='bandeau';box.prepend(b)}
-  const mana=`<span class="m"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');
+  if(!BANDEAU_FIXES)BANDEAU_FIXES=['h-vies','h-deck','h-sec'].map(id=>{const e=document.getElementById(id);return e&&e.closest('.hud.etat>div')}).filter(Boolean).map(d=>(d.classList.add('fixe'),d));
+  const mana=`<span class="m" title="Mana gris, sans limite"><i style="--mc:#8d8a86"></i>∞</span>`+MTYPES.map(t=>`<span class="m${resN(t)?'':' vide'}" title="${t}"><i style="--mc:${MCOL[t]}"></i>${resN(t)}</span>`).join('');
   const dom=BTYPES.map(([m,ic,nom])=>{const tot=ZN.filter(Z=>(Z.mod||Z.id)===m),own=tot.filter(Z=>S.own[Z.id]).length;
-    return`<span class="d" title="${nom}"><span>${ic}</span>${own}<small>/${tot.length}</small></span>`}).join('');
+    return`<span class="d petit" title="${nom}"><span>${ic}</span>${own}<small>/${tot.length}</small></span>`}).join('');
   const dfe=typeof bandeauDomaines==='function'?(suivreDomaines(),bandeauDomaines()):'';   /* domaines fermés (domaines.js) */
-  const prod=typeof prodTexte==='function'&&prodRessource()?`<span class="titre">+ ${prodTexte()} par cycle</span>`:'';
+  const prod=typeof prodTexte==='function'&&prodRessource()?`<span class="d" title="Production des Ressources"><small>+ ${prodTexte()} par cycle</small></span>`:'';
   /* territoire : zones à vous, et le plus grand bloc de zones voisines d'un seul tenant */
-  const mes=ZN.filter(Z=>S.own[Z.id]).map(Z=>Z.id),vu=new Set();let bloc=0;
-  if(typeof VOISINES!=='undefined')for(const id of mes){if(vu.has(id))continue;let n=0;const pile=[id];vu.add(id);
+  const ids=ZN.filter(Z=>S.own[Z.id]).map(Z=>Z.id),vu=new Set();let bloc=0;
+  if(typeof VOISINES!=='undefined')for(const id of ids){if(vu.has(id))continue;let n=0;const pile=[id];vu.add(id);
     while(pile.length){const z=pile.pop();n++;for(const v of VOISINES[z]||[])if(S.own[v]&&!vu.has(v)){vu.add(v);pile.push(v)}}bloc=Math.max(bloc,n)}
   const niv=ZN.reduce((a,Z)=>a+(S.own[Z.id]?Math.abs(S.lv[Z.id]||0):0),0);
-  const terr=`<span class="d" title="Zones à vous"><span>⚑</span>${mes.length}<small>/${ZN.length}</small></span>${typeof ZONES_DEP!=='undefined'?`<span class="d" title="Territoire de départ pris (les zones autour ne cèdent qu'après)"><span>⌂</span>${departPris()}<small>/${ZONES_DEP.length} départ</small></span>`:''}<span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}<small> d'un tenant</small></span><span class="d" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}<small> niv.</small></span>`;
-  b.innerHTML=`<div class="ligne"><span class="titre">Mana</span>${mana}</div>${prod?`<div class="ligne prod">${prod}</div>`:''}<div class="ligne"><span class="titre">Domaines</span>${dom}${dfe}</div><div class="ligne"><span class="titre">Territoire</span>${terr}</div>${royaume()}${(()=>{const m=typeof menacesHordes==='function'?menacesHordes():[];return m.length?`<div class="ligne"><span class="titre">Menaces</span>${m.join('')}</div>`:''})()}${typeof ligneRivaux==='function'?ligneRivaux():''}`}
+  const dep=typeof ZONES_DEP!=='undefined'?`<span class="d" title="Territoire de départ pris (les zones autour ne cèdent qu'après)"><span>⌂</span>${departPris()}<small>/${ZONES_DEP.length}</small></span>`:'';
+  const terr=`<span class="d cle" title="Zones à vous"><span>⚑</span>${ids.length}<small>/${ZN.length}</small></span>${dep}<span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}</span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}</span><i class="pt"></i>${dom}${dfe}`;
+  const res=`<span class="d cle" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span>${royaume()}`;
+  const men=typeof menacesHordes==='function'?menacesHordes():[];
+  /* boucle 1 + fils domaines, hordes, rivaux (19 nov.) : trois îlots, puis menaces et rivaux s'il y en a */
+  b.innerHTML=`<div class="ilot i-mana">${mana}${prod}</div><i class="sep"></i><div class="ilot i-terr">${terr}</div><i class="sep"></i><div class="ilot i-res">${res}</div>`+
+    (men.length?`<i class="sep"></i><div class="ilot i-men"><span class="titre">Menaces</span>${men.join('')}</div>`:'')+(typeof ligneRivaux==='function'?ligneRivaux():'');
+  const ir=b.querySelector('.i-res');for(const d of BANDEAU_FIXES)ir.appendChild(d)}
 /* 17 nov. (« affichons ces chiffres dans la barre d'état ») : la boucle de jeu en chiffres — cartes de zone éveillées dans le paquet,
    bêtes, bonus greffés, routes — et le danger estimé de la zone où l'on se trouve. */
 function puissancePaquet(){return(S.deck||[]).filter(k=>k.indexOf('#')>0&&(typeof eveillee!=='function'||eveillee(k))||CK[k]&&CK[k].z&&k.indexOf('#')<0).length}
@@ -11485,8 +11855,8 @@ function royaume(){const own=Z=>S.own[Z.id]&&S.act[Z.id];
   const betes=ZN.filter(Z=>(Z.mod||Z.id)==='ANT'&&own(Z)).length;
   let routes=0,bonus=0;if(typeof etatRoutes==='function'){etatRoutes();for(const r in S.routes){routes+=S.routes[r].length;if(Math.abs(S.lv[r]||0)>=3&&S.atout[r]!==undefined)bonus+=S.routes[r].length}}
   const dz=typeof curZ!=='undefined'&&curZ?dangerZone(curZ):null;
-  return`<div class="ligne"><span class="titre">Royaume</span><span class="d" title="Cartes de zone éveillées dans le paquet"><span>🂠</span>${puissancePaquet()}</span><span class="d" title="Antres actifs : vos bêtes"><span>✦</span>${betes}</span><span class="d" title="Bonus greffés par les routes"><span>⬢</span>${bonus}</span><span class="d" title="Routes ouvertes"><span>═</span>${routes}</span></div>`+
-    (dz?`<div class="ligne"><span class="titre">Danger ici</span><span class="dg ${dz[0]}">${dz[1]}</span></div>`:'')}
+  return`<span class="d petit" title="Cartes de zone éveillées dans le paquet"><span>❖</span>${puissancePaquet()}</span><span class="d petit" title="Antres actifs : vos bêtes"><span>✦</span>${betes}</span><span class="d petit" title="Bonus greffés par les routes"><span>⬢</span>${bonus}</span><span class="d petit" title="Routes ouvertes"><span>═</span>${routes}</span>`+
+    (dz?`<i class="pt"></i><span class="dg ${dz[0]}" title="Danger dans cette zone">${dz[1]}</span>`:'')}
 /* MozaWorld 2.4 : sauvegardes (demande du 17 nov. : « nouvelle partie, sauvegarde et recharge, juste 20 sauvegardes »).
    20 emplacements dans le stockage du navigateur (Edge sur Xbox). Charger recopie l'emplacement dans la partie en cours puis recharge la page. */
 const NSAUV=20,cleSauv=i=>'mz-sauv-'+i;

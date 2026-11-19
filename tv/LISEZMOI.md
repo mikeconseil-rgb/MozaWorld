@@ -4,6 +4,14 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.10 : boucle graphique 1 (19 novembre)
+
+Première boucle de l'équipe graphique (critique, direction artistique, rendu et performance, producteur, trois artisans, testeur-juge). Les trois améliorations ont été acceptées par le testeur ; détails dans les sections « Boucle 1 » plus bas, captures avant, après et intégrées dans `boucles/boucle-1/` du dossier du projet.
+- Étalonnage signature par zone et par pôle (`src/styles.js`) : fini le noir bouché à −7 et le blanc brûlé à +7, chaque zone a ses teintes.
+- Sol vivant (`src/sol.js`) : grain par biome, failles lumineuses vers −7, motif Girih doré vers +7.
+- Interface : un seul titre de zone, barre du haut en îlots (avec domaines, hordes et rivaux), texte des cartes de combat lisible.
+- Mesures intégrées contre la 2.9 : triangles +0 à +9 %, appels de dessin +2 à +7 %.
+
 ## Gameplay du monde : test d'ensemble (19 nov.)
 
 Domaines, hordes et rivaux joués ensemble : `node tv/tools/test-monde.js [dossier]` lance une longue partie simulée (40 cycles, prises, hordes, rivaux, combats d'avant-garde et de champion, mort du héros, rechargement de la sauvegarde), vérifie la cohérence de l'état et les menus, et prend trois captures (bandeau, Pierre d'une zone menacée, écran Rivaux). Réglages du 19 nov. (provisoires) : une horde ne vise que des zones plus faibles de 2 ou 3 paliers ; une zone à vous tombée à 0 reste à vous ; la même Citadelle ne compte qu'une fois dans la défense contre une horde ; les rivaux agissent une fois sur 6 cycles, pas avant le 10e ; une contestation tombe si la zone n'est plus à vous. Quand la barre d'état est trop pleine, elle passe sur deux lignes au lieu d'être coupée.
@@ -130,6 +138,28 @@ Demandes de l'utilisateur : des cartes différentes selon le pôle, liées au ba
 - Code : `src/cartes.js` (moteur des opérations) et `src/cartes-donnees.js` (généré par `design/cartes-2.2/outils/assembler.py` à partir des fichiers des conteurs). Règles : `design/cartes-2.2/regles-avancees.md`. Méthode pour les nouvelles tuiles : `design/cartes-2.2/consignes-cartes.md`.
 
 APK : `MozaWorld-TV-2.2-cartes.apk`, versionCode 15, s'installe par-dessus la 2.1 (les anciennes copies de cartes de zone restent jouables et suivent le niveau actuel de la zone).
+
+## Boucle 1 · 2 (web) : le sol vivant (19 novembre 2026)
+
+Constat : de près, le sol des zones était un aplat uni (une couleur par sommet tous les 4,2 m). Nouveau fichier `src/sol.js` (assemblé juste après `poles-decor.js`), qui enchaîne un second `onBeforeCompile` sur le matériau du terrain, sans toucher à `core.js` ni à `zonesplus.js`.
+
+- **Carte des zones** : une DataTexture GW×GH (un texel par sommet du terrain) donne au fragment le motif du biome, le niveau ((lv+7)/14) et le mana du pôle. Remplie au chargement, réécrite pour la seule zone qui mue (on enveloppe `rebuild`). Un fondu près des frontières évite toute marche entre zones.
+- **Grain** : taches de ~8 m et grain de ~0,7 m (±8 % de luminosité), fondus avec la distance (pas de moiré). Le bruit vient d'une petite texture de bruit **générée par le code** (aucune image).
+- **Motif par biome** : rides de sable (Désert, Récif, fond des Canyons), givre et paillettes qui scintillent avec le regard (Forêt boréale côté Donjon, Fjord, Cavernes, Berestograd), touffes sombres (Steppe, Lande, Delta, autres forêts boréales, Lucioles), dalles en quinconce (Cité en ruines), strates sur les pentes (Canyon, Falaise), oasis = sable ou touffes selon la couleur du sol ; ailleurs, roche selon la pente. Deux zones de même couleur se distinguent ainsi par leur motif.
+- **Pôle −** : failles en réseau de Voronoï, plus nombreuses et plus larges à chaque palier (un quart du réseau au palier 1, tout au palier 7), le fond luit dans la couleur du pôle négatif du mana : braise (Feu), glace noire (Glace), vase luisante (Eau), sève aigre (Sève), sang de la roche (Pierre), orage violet (Vent).
+- **Pôle +** : incrustation Girih or pâle, médaillons à étoile à 10 branches en quinconce : palier 1 l'étoile seule et un quart des médaillons, 3 le décagone, 4 la faïence turquoise, 5 l'étoile intérieure et la rosace, 6 les rayons et le treillis qui relient les médaillons, 7 tous posés.
+- **Givrecloche et Chinampas** gardent leur style de rendu : le motif y est coupé tant que « Styles par zone » est actif (le grain reste).
+- **Qualité « Fluide »** : ni Voronoï ni Girih complet ; un repli bon marché garde les pôles lisibles (failles tirées d'une seule lecture de bruit, médaillon réduit à l'étoile et son décagone). Le shader se recompile seul quand la qualité entre ou sort de « Fluide ».
+- Mesure (rendu logiciel, même vue, avec et sans `sol.js`) : 0 triangle et 0 appel de dessin en plus ; le temps d'une image ne bouge pas de façon mesurable. Les chiffres de `boucle.js` varient de quelques % d'une passe à l'autre (cadrage de la caméra), avec ou sans le sol.
+## Boucle 1-1 (web) : étalonnage signature par zone et par pôle (19 novembre)
+
+Dans la passe finale seulement (`src/styles.js`, uniformes `sigSh`, `sigMi`, `sigHi`, `sigK`, `sigOn` de `mFinal`) : aucun objet, aucun appel de dessin en plus.
+
+- **Table `SIG`** : chaque zone a trois couleurs (ombres, tons moyens, hautes lumières) au pôle −7 et trois au pôle +7. Berestograd ombres ardoise / lumières ambre, les Neuf Édits bordeaux / crème, les Lucioles vert abysse / écume, Givrecloche neutre froid, Tezcamixtli terre / jade, les Assemblées prune / braise à −7 et lavande / ivoire à +7 (ASS152 exactement). Les nouvelles tuiles prennent la famille de leur type (Donjon bordeaux / or rose, Ressource sarcelle / menthe, Antre olive / chartreuse…), mêlée à 30 % aux couleurs de leur mana et tournée selon le biome ; repli sur `PMANA` seul. La Taïga de Kobor (DON045) et la Taïga de Chika (RES374), même biome et même mana, ont maintenant des teintes opposées.
+- **Dans le shader** : split-toning à trois tons pondéré par la luminance ; vers −7, ombres relevées et plancher des noirs teinté (fin des aplats noirs), vignette teintée ; vers +7, un cran d'exposition en moins, épaule douce avant l'unique ACES, halo réduit, blancs désaturés de 10 %, ombres pastel (fin du blanc brûlé). Progression sur |niveau|/7 avec une petite marche nette aux paliers ±3 et ±6 ; fondu d'environ 2 s quand on change de zone ou de palier.
+- Givrecloche (noir et blanc) et Tezcamixtli (manga) gardent leur école : l'étalonnage n'y agit qu'à 30 %.
+- **Frange blanche de Givrecloche −7** corrigée : depuis la zone, à −7, les tuiles voisines au loin passent dans la brume de MAR et le ciel reste à la couleur du brouillard.
+- Mesure (rendu logiciel) : triangles et appels de dessin inchangés (même écart que d'une capture à l'autre).
 
 ## Version 2.8 (web) : décors par pôle partout, exploration épurée, monde animé (18 novembre)
 
@@ -262,3 +292,10 @@ Code : tv/src/assemblees.js. Une Assemblée n'agit pas en combat : sa loi agit s
 - 2.5.1 (retour de test du 18 nov.) : l'état tient sur une seule barre sombre en haut de l'écran (mana, domaines, territoire, royaume, danger, blessures, secrets).
 - tv/src/ecrin.js : habillage commun des interfaces (cadres à filets d'or, coins ornés, fleurons, menus en lignes de manuscrit, bandeau en tableau, mue mise en scène). MZ_VERSION (affiché au titre et dans la pause) : à monter à chaque PR de jeu.
 - Graphismes : la version web part en qualité « Belle » (ombres 2048, anticrénelage ×4) ; nouveau réglage « Splendide » (image en pleine largeur 1920). Si l'image tombe sous 27 images/s, la qualité baisse seule. Poussières de lumière autour du héros, couleur de la zone (tv/src/poussiere.js).
+
+### Boucle 1.3 · Interface classieuse (19 nov. 2026)
+- Un seul titre de zone : tant que le bandeau central est visible, le cartouche du haut à gauche s'efface (`body.toast-vu`, MutationObserver sur `#toast`), puis revient. À l'entrée dans une zone, le bandeau part au bout de ~3 s, sans répéter la phrase du palier que le cartouche affiche ensuite ; un léger voile sombre (60 %, sans cadre) le détache du décor.
+- Surtitre du cartouche : deux éléments (type · biome) sur une seule ligne ; le détail complet reste en infobulle.
+- Barre du haut en trois îlots (mana · territoire · ressources) séparés d'un filet d'or à losange ; valeurs clés en grand (zones à vous, paquet), un seul accent (l'or). Blessures et secrets rejoignent l'îlot des ressources (bandeau.js).
+- Cartes de combat : les cartes non choisies montrent nom, type et trois lignes de texte avec fondu bas ; la carte choisie a une hauteur fixe et `ajuster()` réduit sa police par pas de 4 % (6 au plus), une mesure par carte et par main ; elle s'écarte de ses voisines et porte une ombre de la couleur de son mana. Mana du tour en grille de pastilles.
+- Fichiers : ecrin.js, bandeau.js, cartes-visuel.js. Rien ne change dans main.js, combat.js, cartes.js ni anim-combat.js, ni dans la scène 3D (triangles et appels de dessin identiques, aux variations du tirage près).

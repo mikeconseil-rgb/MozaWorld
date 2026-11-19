@@ -506,10 +506,45 @@ const css=document.createElement('style');css.textContent=`
 @keyframes fxFissure{0%,70%{opacity:0}75%{opacity:.9}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.fx *{animation:none!important}}
 .ksuite{display:none}
-#cb-main .cc.kcarte:not(.f) .ktr{display:none}
-#cb-main .cc.kcarte:not(.f) .ksuite{display:inline;color:var(--kl)}
-#cb-main .cc.kcarte:not(.f) .art{height:calc(var(--u)*7.6)}
-#cb-main .cc.kcarte:not(.f) .ct{font-size:calc(var(--u)*.9);line-height:1.25}
 .kcadre path{stroke-width:2.2}
+/* ---- Boucle 1 (19 novembre 2026) : cartes de combat sans texte coupé net ----
+   Cartes non choisies : nom, ligne de type, puis le texte entier limité à trois lignes (line-clamp) ; si le texte déborde,
+   la dernière ligne se fond vers le bas (mask-image). L'illustration prend la place qui reste : un nom sur deux lignes la
+   raccourcit au lieu de pousser le texte hors de la carte. Le bas du cadre de texte est une bordure transparente, et non
+   une marge intérieure, pour qu'aucun morceau de quatrième ligne ne s'y montre. */
+#cb-main .cc.kcarte:not(.f) .art{flex:1 1 auto;height:auto;min-height:calc(var(--u)*3.4)}
+#cb-main .cc.kcarte:not(.f) .ct{flex:0 0 auto;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;
+  font-size:calc(var(--u)*.84);line-height:1.3;padding:.4em .5em 0;border-bottom:.4em solid transparent}
+#cb-main .cc.kcarte:not(.f) .ct .kprix{display:inline}
+#cb-main .cc.kcarte .ct.deborde{-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 1.75em),rgba(0,0,0,.12) calc(100% - .4em));
+  mask-image:linear-gradient(180deg,#000 calc(100% - 1.75em),rgba(0,0,0,.12) calc(100% - .4em))}
+#cb-main .cc.kcarte:not(.f) .kamb,#cb-main .cc.kcarte:not(.f) .kband.bas{display:none}
+/* Carte choisie (et agrandie) : hauteur fixe, texte entier ; ajuster() réduit la police par pas de 4 % s'il le faut.
+   Elle s'écarte de ses voisines (marge latérale) et porte une ombre de la couleur de son mana, au lieu du halo uniforme. */
+#cb-main .cc.kcarte.f{height:calc(var(--u)*21);min-height:0;padding-bottom:calc(var(--u)*.75);flex:0 0 calc(var(--u)*14);width:calc(var(--u)*14);margin:0 calc(var(--u)*1.7);
+  box-shadow:0 0 0 2px rgba(245,220,156,.6),0 calc(var(--u)*1.6) calc(var(--u)*2.4) calc(var(--u)*-.3) var(--kcB,rgba(201,164,92,.7)),0 calc(var(--u)*2.4) calc(var(--u)*3.2) rgba(0,0,0,.72),inset 0 0 0 1px rgba(255,255,255,.08)}
+#cb-main .cc.kcarte.f .ct{flex:1 1 0;min-height:0;overflow:hidden;font-size:calc(var(--u)*.86*var(--kf,1));line-height:1.26;padding:.4em .5em 0;border-bottom:.35em solid transparent}
+#cb-main .cc.kcarte.f .kamb{font-size:calc(var(--u)*.74*var(--kf,1));flex:none;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-bottom:0;border-bottom:.3em solid transparent}
+#cb-main .cc.kcarte.f.serre .kamb{display:none}
 `;document.head.appendChild(css);
+
+/* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)
+   tant qu'il déborde ; sinon la citation d'ambiance s'efface, et en dernier recours la dernière ligne se fond.
+   Les cartes non choisies ne reçoivent que le fondu, et seulement si leur texte dépasse trois lignes.
+   Une seule mesure par carte et par main distribuée : le résultat est gardé tant que la main ne change pas. */
+const deborde=t=>t.scrollHeight>t.clientHeight+1;
+function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false;const trop=()=>deborde(t)||deborde(el);
+  el.style.removeProperty('--kf');el.classList.remove('serre');t.classList.remove('deborde');
+  for(let i=0;i<6&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
+  if(trop()&&el.querySelector('.kamb')){serre=true;el.classList.add('serre')}
+  const fondu=deborde(t);t.classList.toggle('deborde',fondu);return{k,serre,fondu}}
+function appliquer(el,r){const t=el.querySelector('.ct');if(r.k<1)el.style.setProperty('--kf',r.k.toFixed(3));el.classList.toggle('serre',!!r.serre);if(t)t.classList.toggle('deborde',!!r.fondu)}
+window.ajuster=ajuster;
+const AJ={main:'',m:new Map()},hm=document.getElementById('cb-main');
+if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return;
+  const cle=CB.main.join('|')+'#'+CB.tour;if(cle!==AJ.main){AJ.main=cle;AJ.m.clear()}
+  [...hm.children].forEach((el,i)=>{if(!el.classList.contains('kcarte'))return;const f=el.classList.contains('f'),id=i+'|'+(CB.main[i]||'')+(f?'|f':'');
+    const r=AJ.m.get(id);if(r){appliquer(el,r);return}
+    if(f)AJ.m.set(id,ajuster(el));else{const t=el.querySelector('.ct'),fondu=!!t&&deborde(t);if(t)t.classList.toggle('deborde',fondu);AJ.m.set(id,{k:1,fondu})}})
+}).observe(hm,{childList:true});
 })();
