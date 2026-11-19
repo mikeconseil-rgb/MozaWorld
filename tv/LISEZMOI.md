@@ -4,6 +4,34 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Gameplay du monde : test d'ensemble (19 nov.)
+
+Domaines, hordes et rivaux joués ensemble : `node tv/tools/test-monde.js [dossier]` lance une longue partie simulée (40 cycles, prises, hordes, rivaux, combats d'avant-garde et de champion, mort du héros, rechargement de la sauvegarde), vérifie la cohérence de l'état et les menus, et prend trois captures (bandeau, Pierre d'une zone menacée, écran Rivaux). Réglages du 19 nov. (provisoires) : une horde ne vise que des zones plus faibles de 2 ou 3 paliers ; une zone à vous tombée à 0 reste à vous ; la même Citadelle ne compte qu'une fois dans la défense contre une horde ; les rivaux agissent une fois sur 6 cycles, pas avant le 10e ; une contestation tombe si la zone n'est plus à vous. Quand la barre d'état est trop pleine, elle passe sur deux lignes au lieu d'être coupée.
+
+## Gameplay du monde : les hordes du sauvage (18-19 nov.)
+
+Fichier `src/hordes.js`. Chaque zone a un pôle envahisseur (−7, +7 ou les deux), affiché dans la fiche de zone et à la Pierre d'éveil. Une zone au palier 7 de ce pôle lève une horde après 5 cycles ; la horde est annoncée (message, flèche rouge sur la minicarte, ligne « Menaces » du bandeau) et arrive 3 cycles plus tard sur une zone voisine (2 tuiles au plus) plus faible de 2 ou 3 paliers (pas au-delà), vos zones d'abord. Pour la briser : allez à la Pierre d'éveil de la zone visée, OK, « Affronter l'avant-garde ». Sinon, à l'arrivée, sa force affronte la défense de la zone (niveau, Citadelle à 3 tuiles, rempart, pièges du Donjon, lois) ; si elle passe, la zone recule d'un palier (une Ressource perd aussi ses routes) et une zone à vous tombée à 0 reste à vous. Au palier 7 de l'autre pôle, pas de horde et une carte de palier 7 plus forte. Les zones sauvages à ±6 peuvent gronder et monter à ±7. L'assaut contre le Donjon d'origine (economie.js) ne change pas.
+
+Tests : `MZ.horde(source?, cible?)` lève une horde tout de suite (sans argument, il choisit ou crée une source à ±7), `MZ.hordeArrive(source?)` la résout. Script : `node tv/tools/test-hordes.js`.
+
+## Gameplay du monde : contrôle des zones (18-19 nov., `src/domaines.js`)
+
+Un peu de Go, un peu de Carcassonne. Un **domaine** est un groupe d'au moins 2 tuiles voisines du même type ; quand elles sont toutes à vous et activées, il est **fermé** et donne son bonus (Ressources +1 mana par cycle, Antres +2 PV par bête, Citadelles +5 PV au héros, Donjons +1 résistance, Assemblées +1 voix au vote du duel). Une zone à vous entourée des vôtres est **au cœur du royaume** ; une zone sauvage entourée des vôtres est **encerclée** et ses gardiens d'activation sont affaiblis (PV −25 %, attaque −1). Une Citadelle tenue **verrouille** sa zone et ses voisines contre les rivaux. Bandeau : ◈ domaines fermés, sur la ligne Domaines ; Pierre d'éveil : domaine et statut de la zone ; toast à chaque domaine fermé ou rouvert. Pour les autres modules : `verrouillee(id)`, `defenseMonde(id)` → `{bonus, raisons}`, `domaines()` → `[{type, ids, ferme}]`. Test : `window.MZ.domaines()`, `MZ.prendre(id)` (prend et active une zone ; `MZ.prendre(id,true)` la rend), `MZ.statutZone(id)`, `MZ.cycle()` ; script `node tv/tools/test-domaines.js`.
+
+
+## Gameplay du monde : les rivaux (18-19 nov.)
+
+Quatre maisons rivales (`src/rivaux.js`), secondaires face au monde sauvage : Grisaille ♜, Comptevent ☼, Sombreclef ☾, Ombrelieue ⊚, chacune avec sa couleur, son blason et son type de zone préféré. Une fois tous les 6 cycles en moyenne, pas avant le 10e cycle, l'une prend une zone sauvage hors du départ (sa couleur sur la minicarte, son nom dans la fiche de zone, une ligne « Rivaux » dans le bandeau) ou annonce qu'elle conteste une de vos zones dans 2 cycles. Pour défendre : aller à la Pierre de la zone et battre le champion ; sinon la zone risque de perdre un palier. Zones bornées, verrouillées ou au repos : intouchables. Une zone de rival se reprend en l'activant (gardiens renforcés). Une ancienne zone à vous (empreinte) se reprend aussi en réussissant un seul palier. Écran « Rivaux » au menu Pause. Tests : `MZ.rival()` (ou `MZ.rival('prise')`, `MZ.rival('conteste')`), `MZ.rivalArrive()` ; script `node tools/test-rivaux.js`.
+
+## Version 2.9 : inscriptions des zones (19 novembre)
+
+Demande de l'utilisateur : enrichir chaque zone qui n'est pas une Ressource avec des textes et des inscriptions.
+
+- Les 12 Antres, Assemblées, Donjons et Citadelles du jeu ont chacun **quatre objets écrits** : stèle, panneau, mur gravé ou borne (48 objets, 240 textes). Chaque texte est écrit par le conteur de la zone (A, B, C ou D) et relu par le critique (84/100, 16 corrections appliquées).
+- Le texte **change avec le niveau**, en cinq bandes : −7..−5, −4..−2, −1..+1, +2..+4, +5..+7. L'objet suit aussi le pôle : vers −7 il s'enfonce, penche et se ternit ; vers +7 il se dresse et prend la lumière du pôle.
+- **Lire** : il suffit de passer à côté (moins de 11 m). Un cartouche sombre s'ouvre en bas de l'écran, sans bouton et sans arrêter le jeu. Une **rune bleue** flotte au-dessus d'un texte pas encore lu à ce niveau ; quand une zone a changé de bande, le cartouche le dit.
+- Fichiers : `src/inscriptions.js` (objets, lecture), `src/inscriptions-donnees.js` (généré par `python3 design/inscriptions/assembler.py` depuis `design/inscriptions/conteur_*.json`). Pour une nouvelle zone, ajouter ses 4 inscriptions dans le fichier de son conteur, relancer l'assembleur puis `sh tv/build.sh`.
+
 ## Historique : édition salon (Sony Bravia / Google TV), 15 novembre
 
 Version légère de la démo « grandes zones », pensée pour une télé vue du canapé et pilotée à la télécommande.

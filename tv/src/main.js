@@ -200,7 +200,7 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
   ui('seuil',{opts:o})}
 function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
+    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
     donnerDepart();CULL.dirty=true;terrainAll();save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
@@ -222,6 +222,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Musique',ic:'♪',d:(soundOn?'activée':'coupée')+(typeof musiqueTitre==='function'&&curZ?' · '+musiqueTitre(curZ):''),go:()=>{toggleSound();openMenu()}},
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%QUALS.length;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize();openMenu()}},
+    ...(typeof openRivaux==='function'?[{l:'Rivaux',ic:'♜',d:'les quatre maisons et leurs menaces',go:()=>openRivaux()}]:[]),
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
@@ -254,9 +255,12 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(res?lv>=3:Math.abs(lv)>=cap)o.push({l:'Niveau maximal atteint',ic:'◆',off:true,d:'une Ressource va de 0 à 3, sans pôle'})}
   if(Z.id==='DON'&&S.act.DON&&S.own.DON)o.unshift({l:'Aménager le Donjon',ic:'⛬',cls:'p',d:`${nbPieges()} piège(s) · réserve ${resTot()}`,go:()=>openDonjon()});
   o.push({l:'Repérage : entrevoir les deux paliers',ic:'◎',d:'sans risque',go:()=>reperage(Z)});
-  if(ct.pw)o.push({l:`Contre-pouvoir de ${ct.Z.info.nom}`,ic:'⚔',off:true,d:`vous possédez la zone qui la contre : épreuve −${ct.pw}`});
+  if(ct.pw)o.push({l:`Contre-pouvoir ${typeof de_==='function'?de_(ct.Z.info.nom):'de '+ct.Z.info.nom}`,ic:'⚔',off:true,d:`vous possédez la zone qui la contre : épreuve −${ct.pw}`});
   if(typeof optionsRoutes==='function')o.push(...optionsRoutes(Z));
   if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
+  if(typeof optionsRivaux==='function')o.unshift(...optionsRivaux(Z));
+  if(typeof optionsDomaines==='function')o.push(...optionsDomaines(Z));
+  if(typeof optionsHorde==='function'){const h=optionsHorde(Z);o.unshift(...h.filter(x=>x.go));o.push(...h.filter(x=>!x.go))}   /* l'avant-garde à affronter en tête, comme la défense contre un rival */
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
     corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
@@ -292,7 +296,7 @@ function startEpreuve(Z,target){const pw=contrePar(Z).pw;
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){const de=S.lv[Z.id]||0,carte=typeof sceneDonneCarte!=='function'||sceneDonneCarte(Z,de,target);if(typeof tenirParole==='function')tenirParole(Z);S.lv[Z.id]=target;Z._sansCarte=!carte;S.own[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(carte&&S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
+  if(ok){const de=S.lv[Z.id]||0,carte=typeof sceneDonneCarte!=='function'||sceneDonneCarte(Z,de,target);if(typeof tenirParole==='function')tenirParole(Z);S.lv[Z.id]=target;Z._sansCarte=!carte;S.own[Z.id]=true;S.act[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(carte&&S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
@@ -439,7 +443,7 @@ function camMue(dt){const Z=mue.Z,a=Z.alt,ang=a.yaw+PI+mue.t*.32,R=38+mue.t*2.5,
 const pips=$('h-pips');for(let i=-7;i<=7;i++){const s=document.createElement('span');s.className='pip'+(i===0?' z':'');pips.appendChild(s)}
 function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+S.own[Z.id]+S.emp[Z.id];if(key===hudKey)return;hudKey=key;if(typeof bandeau==='function')bandeau();const I=Z.info;
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
-  $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
+  $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':typeof maitreRival==='function'&&maitreRival(Z.id)?maitreRival(Z.id):S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';if(typeof ficheHorde==='function')ficheHorde(Z);
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
 function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length;if(typeof bandeau==='function')bandeau()}
 let invKey='';
@@ -469,6 +473,8 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
     const g=dispo?6+2*pulse:S.own[Z.id]?5:3.5;mc.fillStyle=r?'#7d7466':dispo?`rgba(255,217,138,${.6+.4*pulse})`:'rgba(201,164,92,.7)';mc.beginPath();mc.moveTo(x,y-g);mc.lineTo(x+g*.7,y);mc.lineTo(x,y+g);mc.lineTo(x-g*.7,y);mc.fill();
     if(dispo){mc.strokeStyle=`rgba(255,217,138,${.5*pulse})`;mc.lineWidth=1.5;mc.beginPath();mc.arc(x,y,g+4,0,TAU);mc.stroke()}}
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
+  if(typeof dessinerRivaux==='function')dessinerRivaux(mc,s,ox,oz);
+  if(typeof dessinerHordes==='function')dessinerHordes(mc,s,ox,oz,T);
   const CL=typeof clarte==='function'?clarte():null;
   if(CL)for(const Z of ZN)if(CL[Z.id]!==undefined&&!S.own[Z.id]){const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 13px sans-serif';mc.textAlign='center';mc.fillStyle='#bfe3ff';mc.fillText(sgn(S.lv[Z.id])||'0',cx,cy-10)}
   for(const q of secrets){if(q.found||!q.cond(q.Z.lv)&&!(CL&&CL[q.Z.id]!==undefined))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
@@ -553,3 +559,6 @@ addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);
 window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};
+Object.assign(window.MZ,{rival:s=>typeof rivalAgit==='function'?rivalAgit(true,s):null,rivalArrive:g=>typeof rivalArrive==='function'?rivalArrive(g):null});
+if(typeof domaines==='function')Object.assign(window.MZ,{domaines,verrouillee,defenseMonde,statutZone,prendre:domPrendre,cycle:()=>cycle()});
+if(typeof hordeTest==='function')Object.assign(window.MZ,{horde:hordeTest,hordeArrive,poleEnvahisseur,hordeDefense:defenseHorde});
