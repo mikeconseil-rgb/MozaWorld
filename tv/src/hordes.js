@@ -81,12 +81,12 @@ function hordeArrive(src){initHordes();src=src||Object.keys(S.hordes).sort((a,b)
   if(aVous||S.own[src]||h.vu)hordeRapports.push({ok:!passe,force:h.force,cible:h.cible,lignes:l});
   else if(started)toast('Le sauvage gronde','Horde '+de_(nomS),l[l.length-1]);
   montrerHorde();return{passe,lignes:l}}
-/* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous à 0 reste à vous (19 nov.) */
+/* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous qui tombe à 0 redevient sauvage, avec votre empreinte (réponse de l'utilisateur, 19 nov.) */
 function defaite(id){const Z=ZB[id],l=[],a=S.own[id],lv=S.lv[id]||0;
   if(typeof borne==='function'&&borne(id)){l.push('La Pierre de bornage de Raak tient : la zone ne recule pas.');return l}
   if(estRESh(id)){if(S.routes&&S.routes[id]&&S.routes[id].length){delete S.routes[id];l.push('Ses routes sont coupées.')}}
   if(lv!==0){const n=lv-Math.sign(lv);S.lv[id]=n;Z.lvT=n;l.push(`${Z.info.nom} recule d'un palier (${sgn(n)||'0'}).`)}
-  if(a&&(S.lv[id]||0)===0)l.push('La zone tombe à 0, mais elle reste à vous.');   /* une seule horde ne la rend pas sauvage (provisoire) */
+  if(a&&(S.lv[id]||0)===0){S.own[id]=false;S.act[id]=false;S.emp[id]=true;l.push('La zone tombe à 0 et redevient sauvage. Votre empreinte y reste : vous la reprendrez plus facilement.')}
   if(typeof etatRoutes==='function')etatRoutes();
   return l}
 function montrerHorde(){if(!hordeRapports.length||mode!=='monde')return;const r=hordeRapports.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');

@@ -81,8 +81,8 @@ const COHERENT=()=>{const S=MZ.S,p=[];
 
   /* 5. une horde contre une zone à vous à ±1 : elle tombe à 0 et reste à vous */
   const zero=await p.evaluate(()=>{const S=MZ.S,id=MZ.ZN.find(Z=>S.own[Z.id]&&(Z.mod||Z.id)!=='RES'&&Math.abs(S.lv[Z.id])===1&&S.borne!==Z.id).id;const l=defaite(id);
-    return{id,lv:S.lv[id],own:S.own[id],act:S.act[id],l}});
-  ok('une zone à vous tombée à 0 par une horde reste à vous',zero.lv===0&&zero.own&&zero.act,JSON.stringify(zero));
+    return{id,lv:S.lv[id],own:S.own[id],act:S.act[id],emp:S.emp[id],l}});
+  ok('une zone à vous tombée à 0 par une horde redevient sauvage avec empreinte',zero.lv===0&&!zero.own&&!zero.act&&zero.emp,JSON.stringify(zero));
 
   /* 6. défense : la Citadelle ne compte qu'une fois (pas de +3 et de +2 pour la même) */
   const dfn=await p.evaluate(()=>{const S=MZ.S,id=(VOISINES.CIT||[]).find(v=>S.own[v]);S.own.CIT=S.act.CIT=true;const D=defenseHorde(id),dm=defenseMonde(id);

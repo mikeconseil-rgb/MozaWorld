@@ -14,6 +14,19 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
+
+## 19 novembre 2026 (gameplay du monde, réponses de l'utilisateur)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Hordes | Une horde ne vise que les zones plus faibles de 2 ou 3 paliers | en vigueur | |
+| Hordes | Une zone à vous qui tombe à 0 sous une horde redevient sauvage (« Non » à « elle reste à vous ») ; elle garde votre empreinte (lecture de Claude, provisoire) | en vigueur | « reste à vous » (essai du 19 nov.) |
+| Rivaux | Un rival ne prend pas une zone sauvage sans rien faire : il doit réussir une épreuve annoncée et visible | en vigueur | prise sans combat (essai du 19 nov.) |
+| Empreinte | Reprendre une ancienne zone en réussissant un seul palier | en vigueur | |
+| Domaines | Un domaine compte dès 2 tuiles sur la petite carte, 3 sur la grande | en vigueur | |
+| Verrous | Le verrou de Citadelle empêche les prises des rivaux, pas leurs contestations | en vigueur | |
+| Lot 2 | Tours de guet (7) et commerce en Citadelle avec les tesselles (9) | en cours | |
+
 ## 19 novembre 2026
 
 | Sujet | Décision | Statut | Remplace |

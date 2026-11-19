@@ -53,8 +53,8 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     }
     /* 4. une horde qui passe : la zone à vous recule ; à 0 elle reste à vous (19 nov.) */
     const r1=await p.evaluate(()=>{const cible=MZ.ZN.find(Z=>MZ.S.own[Z.id]&&(Z.mod||Z.id)!=='RES'&&Z.id!=='CIT').id;MZ.S.lv[cible]=1;
-      const h=MZ.horde(null,cible);if(!h)return null;h.force=99;const r=MZ.hordeArrive(h.src);return{cible,lv:MZ.S.lv[cible],own:MZ.S.own[cible],passe:r&&r.passe,lignes:r&&r.lignes}});
-    ok('horde sans réponse : la zone recule, à 0 elle reste à vous',!!r1&&r1.passe&&r1.lv===0&&r1.own,JSON.stringify(r1));
+      const h=MZ.horde(null,cible);if(!h)return null;h.force=99;const r=MZ.hordeArrive(h.src);return{cible,lv:MZ.S.lv[cible],own:MZ.S.own[cible],emp:MZ.S.emp[cible],passe:r&&r.passe,lignes:r&&r.lignes}});
+    ok('horde sans réponse : la zone recule, à 0 elle redevient sauvage avec empreinte',!!r1&&r1.passe&&r1.lv===0&&!r1.own&&r1.emp,JSON.stringify(r1));
     await p.waitForTimeout(800);
     ok('rapport à l\'écran',await p.evaluate(()=>MZ.mode==='menu'&&/forcée|tient/.test(document.getElementById('menu-t').textContent)));
     await p.evaluate(()=>toMonde());
