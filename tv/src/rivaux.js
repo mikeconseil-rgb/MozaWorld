@@ -38,6 +38,8 @@ const zonesMaison=k=>ZN.filter(Z=>S.riv&&S.riv.z[Z.id]===k&&!S.own[Z.id]);
 const typeZ=Z=>Z.mod||Z.id;
 const protege=id=>(typeof borne==='function'&&borne(id))||(typeof verrouillee==='function'&&!!verrouillee(id));
 const protection=id=>{if(typeof defenseMonde!=='function')return 0;try{const d=defenseMonde(id);return d&&+d.bonus||0}catch(_){return 0}};
+/* 19 nov. (provisoire) : le verrou de Citadelle protège des prises, pas des contestations (il donne alors −20 %) ; seules les zones au cœur et bornées sont intouchables */
+const protegeConteste=id=>(typeof borne==='function'&&borne(id))||(typeof auCoeur==='function'&&!!auCoeur(id));
 const chanceRival=id=>Math.max(.1,RIV_CHANCE-RIV_PROT*protection(id));
 /* texte de la fiche de zone (bandeau d'exploration) */
 const maitreRival=id=>{const r=maisonDe(id);return r?`<b style="color:${r.col}">${r.bl} ${r.nom}</b> · gardiens renforcés`:''};
@@ -47,7 +49,7 @@ const procheDe=(k,id)=>(typeof VOISINES!=='undefined'&&VOISINES[id]||[]).some(v=
 function choisir(l,r){if(!l.length)return null;   /* préférence : type aimé, puis voisine d'une zone de la maison */
   const sc=Z=>(typeZ(Z)===r.pref?2:0)+(procheDe(r.k,Z.id)?1:0)+Math.random()*1.5;return l.slice().sort((a,b)=>sc(b)-sc(a))[0]}
 function ciblesPrise(){const R=riv();return ZN.filter(Z=>!S.own[Z.id]&&!(typeof ESTDEP!=='undefined'&&ESTDEP.has(Z.id))&&!R.z[Z.id]&&!(R.c&&R.c.id===Z.id)&&!protege(Z.id))}
-function ciblesConteste(){const R=riv();if(R.c)return[];return ZN.filter(Z=>S.own[Z.id]&&S.act[Z.id]&&(S.lv[Z.id]||0)!==0&&!protege(Z.id)&&restLeft(Z)<=0)}
+function ciblesConteste(){const R=riv();if(R.c)return[];return ZN.filter(Z=>S.own[Z.id]&&S.act[Z.id]&&(S.lv[Z.id]||0)!==0&&!protegeConteste(Z.id)&&restLeft(Z)<=0)}
 
 /* ---------- une maison agit ---------- */
 function rivalAgit(force,sorte){const R=riv();
