@@ -260,6 +260,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
   if(typeof optionsRivaux==='function')o.unshift(...optionsRivaux(Z));
   if(typeof optionsDomaines==='function')o.push(...optionsDomaines(Z));
+  if(typeof optionsHorde==='function')o.push(...optionsHorde(Z));
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
     corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
@@ -442,7 +443,7 @@ function camMue(dt){const Z=mue.Z,a=Z.alt,ang=a.yaw+PI+mue.t*.32,R=38+mue.t*2.5,
 const pips=$('h-pips');for(let i=-7;i<=7;i++){const s=document.createElement('span');s.className='pip'+(i===0?' z':'');pips.appendChild(s)}
 function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+S.own[Z.id]+S.emp[Z.id];if(key===hudKey)return;hudKey=key;if(typeof bandeau==='function')bandeau();const I=Z.info;
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
-  $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':typeof maitreRival==='function'&&maitreRival(Z.id)?maitreRival(Z.id):S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';
+  $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':typeof maitreRival==='function'&&maitreRival(Z.id)?maitreRival(Z.id):S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';if(typeof ficheHorde==='function')ficheHorde(Z);
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
 function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length;if(typeof bandeau==='function')bandeau()}
 let invKey='';
@@ -473,6 +474,7 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
     if(dispo){mc.strokeStyle=`rgba(255,217,138,${.5*pulse})`;mc.lineWidth=1.5;mc.beginPath();mc.arc(x,y,g+4,0,TAU);mc.stroke()}}
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
   if(typeof dessinerRivaux==='function')dessinerRivaux(mc,s,ox,oz);
+  if(typeof dessinerHordes==='function')dessinerHordes(mc,s,ox,oz,T);
   const CL=typeof clarte==='function'?clarte():null;
   if(CL)for(const Z of ZN)if(CL[Z.id]!==undefined&&!S.own[Z.id]){const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 13px sans-serif';mc.textAlign='center';mc.fillStyle='#bfe3ff';mc.fillText(sgn(S.lv[Z.id])||'0',cx,cy-10)}
   for(const q of secrets){if(q.found||!q.cond(q.Z.lv)&&!(CL&&CL[q.Z.id]!==undefined))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
@@ -559,3 +561,4 @@ plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requ
 window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};
 Object.assign(window.MZ,{rival:s=>typeof rivalAgit==='function'?rivalAgit(true,s):null,rivalArrive:g=>typeof rivalArrive==='function'?rivalArrive(g):null});
 if(typeof domaines==='function')Object.assign(window.MZ,{domaines,verrouillee,defenseMonde,statutZone,prendre:domPrendre,cycle:()=>cycle()});
+if(typeof hordeTest==='function')Object.assign(window.MZ,{horde:hordeTest,hordeArrive,poleEnvahisseur,hordeDefense:defenseHorde});

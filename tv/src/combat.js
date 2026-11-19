@@ -199,6 +199,7 @@ const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1
 function finCombat(ok){const C=CB,Z=C.Z;fermerCombat();mode='menu';etatHud();
   if(C.kind==='duel'&&typeof finDuel==='function'){finDuel(ok);return}
   if(C.kind==='rival'&&typeof finRival==='function'){finRival(ok,C);return}
+  if(C.kind==='horde'&&typeof finHorde==='function'){finHorde(ok,C);return}
   let gain='';if(ok){const t=ZMANA[Z.id],n=(C.kind==='eveil'?2:1)+(C.kind==='renc'&&typeof bonusChant==='function'?bonusChant():0);gagner(t,n);gain=` Les vaincus lâchent ${n} ${t}.`;etatHud()}
   const retour=`${gain} Réserve : ${resTexte()}.`;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
