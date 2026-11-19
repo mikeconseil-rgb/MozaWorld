@@ -12,6 +12,13 @@
   - Couleurs saturées, mêlées à la teinte du mana ; la force suit le palier ; en qualité Fluide, le repli à une seule lecture de bruit garde la couleur et l'ordre de l'étoile de chaque grammaire.
 - Décors de pôle (`src/poles-decor.js`) : un jeu d'objets par type (même nombre d'objets par pôle) et un repère + différent par type : tour Girih, arche en fer à cheval, terrasses à degrés, aiguilles de cristal, coupole, kiosque.
 - Mesures contre la base (même code sans ces changements) : triangles et appels de dessin à moins de 1,5 % (bruit de mesure).
+- Reprise après le testeur (même jour, `src/sol.js` seul) :
+  - Ressource −7 : moins de flaques, mieux découpées ; noir d'eau profond, reflet au ton du mana (fresnel ramené de 0,08 + 1,6 f à 0,012 + 0,26 f), rides et éclats en points, frange de reflet au bord et liseré clair de berge ; la terre détrempée n'est presque plus assombrie.
+  - Ressource +7 : anneaux pleins alternés jade sombre / jade clair, contremarches dans l'ombre, rayon borné pour rester des cercles, opacité 0,35 + 0,09 par palier.
+  - Marqueterie posée (khatam, hexagones, losanges) : opacité 0,05 + 0,13 par palier (≈ 0,18 au palier 1, ≈ 0,96 au palier 7), bord fondu de 0,45 m au palier 1 à presque franc au palier 7 ; le khatam ne montre que ses étoiles aux bas paliers.
+  - Antre +7 : turquoise plus bleue, nacre plus irisée et plus présente, joints sombres et épais, mélange au mana ramené à 0,08.
+  - Donjon +7 : étoiles blanches sur champ de cobalt, mélange au mana à 0,05, un peu de cobalt émis et moins de reflet ; près du repère, le halo chaud de la zone (hors de `sol.js`) rosit encore le sol.
+  - Mesures (RES227) : sous +2 % par rapport à la version refusée, sous +15 % par rapport à la base.
 
 ## Version 2.11 : livres des zones (19 novembre)
 

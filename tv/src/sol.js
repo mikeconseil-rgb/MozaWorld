@@ -104,6 +104,10 @@ vec4 solHex(vec2 p){vec2 s=vec2(1.,1.7320508),h=s*.5,a=mod(p,s)-h,b=mod(p-h,s)-h
 float solHexD(vec2 g){g=abs(g);return max(g.x,dot(g,vec2(.5,.8660254)));}
 /* une pièce de marqueterie est posée ou non d'un bloc (lecture au centre de la pièce), selon la même carte de couverture que les failles */
 float solPose(vec2 c,float k){return step(texture2D(tSolB,c*.001094+vec2(.5,.1)).b,(.12+.13*k)*step(.5,k));}
+/* boucle 2 (reprise, 19 nov. 2026) : opacité d'une pièce posée, ~0,18 au palier 1 jusqu'à ~0,96 au palier 7,
+   et bord fondu (~0,45 m au palier 1, presque franc au palier 7) : aux bas paliers on devine la marqueterie, on ne voit pas des carreaux collés */
+float solOp(float k){return min(1.,.05+.13*k);}
+float solBord(float e,float k){return smoothstep(0.,max(.04,.5-.065*k),e);}
 `;
 /* fragment : après color_fragment (diffuseColor contient déjà la couleur du sommet) */
 const FRAG_COL=`
@@ -186,16 +190,24 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
     #else
     float pz=1.-db*.14;
     #endif
-    float plat=1.-smoothstep(.1,.28,pente),sf=.77-.035*k,fl=smoothstep(sf,sf+.012+aa*.05,pz)*step(.5,k)*plat,mouil=smoothstep(sf-.1,sf,pz)*step(.5,k);   /* l'eau ne tient que sur le plat */
+    /* reprise boucle 2 : moins de flaques et mieux découpées, berge claire, noir d'eau profond, reflet au ton du mana (et non le brouillard brut) */
+    float plat=1.-smoothstep(.1,.28,pente),on=step(.5,k)*plat,sf=.8-.028*k,fl=smoothstep(sf,sf+.006+aa*.03,pz)*on;   /* l'eau ne tient que sur le plat */
+    float berge=smoothstep(sf-.05,sf-.008,pz)*(1.-fl)*on,mouil=smoothstep(sf-.15,sf-.03,pz)*step(.5,k);
+    float frange=fl*(1.-smoothstep(sf+.004,sf+.028+aa*.03,pz));   /* frange de reflet nette, juste à l'intérieur du bord */
     vec3 ciel=vec3(.42,.46,.52);
     #ifdef USE_FOG
     ciel=fogColor;
     #endif
+    vec3 refl=mix(ciel*.5,nc,.6);
     float fres=pow(1.-abs((vSolP.y-cameraPosition.y)/dc),5.);
-    c*=1.-mouil*(.3+.04*k)*mo;                     /* terre détrempée autour */
-    c=mix(c,vec3(.004,.005,.007),fl*mo);
-    solE+=ciel*(.08+1.6*fres)*(1.+(B07.g-.5)*.3*nPres)*fl*mo*nLoin;solLisse=fl*mo;
-    c=mix(c,vec3(.03,.035,.04),solTrait(abs(pz-sf)*14.,.04,aa)*plat*mo*step(.5,k));}   /* liseré de vase au bord de l'eau */
+    float ride=(sin(dot(p,vec2(.71,.7))*5.+B07.g*9.)*.5+.5)*nPres;   /* rides que le vent pousse sur l'eau */
+    c*=1.-mouil*(.12+.02*k)*mo;                             /* terre détrempée, à peine plus sombre : elle reste plus claire que l'eau */
+    c=mix(c,c*1.18+vec3(.05,.052,.055),berge*min(1.,.3+.1*k)*mo);   /* liseré clair de berge (sel, sable lavé) */
+    c=mix(c,vec3(.003,.004,.006),fl*mo);
+    solE+=refl*((.012+.26*fres)*(.45+1.1*ride)+frange*(.3+.04*k))*fl*mo*nLoin;solLisse=fl*mo;
+    if(dc<16.){vec2 ce=floor(p*5.);vec3 vd=(vSolP-cameraPosition)/dc;   /* éclats de lumière en points sur l'eau, comme le givre */
+     float tw=sH(ce+floor(vd.xz*24.)*5.31),sp=step(.975,tw)*(1.-smoothstep(.05,.18,length(fract(p*5.)-.5)));
+     solE+=mix(nc,vec3(1.),.6)*sp*fl*mo*(.6+ride)*(1.-smoothstep(6.,16.,dc));}}
    else if(gr>2.5&&gr<3.5){   /* (c−) Antre : mycélium phosphorescent, lignes fines et ramifiées tirées d'un bruit à domaine déformé */
     #ifdef SOL_FIN
     vec2 q=w2*.16;q+=(texture2D(tSolB,q*.008+vec2(.3,.6)).ba-.5)*2.6;
@@ -245,12 +257,13 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
    vec3 mp=uSolPos[0];if(mana>.5)mp=uSolPos[1];if(mana>1.5)mp=uSolPos[2];if(mana>2.5)mp=uSolPos[3];if(mana>3.5)mp=uSolPos[4];if(mana>4.5)mp=uSolPos[5];
    /* deux couleurs saturées par grammaire (trait ou première pièce, fond ou seconde pièce), et l'ordre de l'étoile du repli */
    vec3 cA=vec3(.95,.7,.3),cB=vec3(.3,.6,.62);float n=10.;
-   if(gr>.5&&gr<1.5){cA=vec3(.02,.07,.55);cB=vec3(.66,.71,.8);n=8.;}       /* Donjon : cobalt et blanc */
-   if(gr>1.5&&gr<2.5){cA=vec3(.03,.36,.17);cB=vec3(.16,.6,.34);n=6.;}     /* Ressource : jade */
-   if(gr>2.5&&gr<3.5){cA=vec3(.02,.5,.55);cB=vec3(.82,.74,.8);n=6.;}      /* Antre : turquoise et nacre */
+   if(gr>.5&&gr<1.5){cA=vec3(0.,.08,.5);cB=vec3(.5,.55,.66);n=8.;}       /* Donjon : cobalt et blanc */
+   if(gr>1.5&&gr<2.5){cA=vec3(.01,.22,.11);cB=vec3(.2,.62,.4);n=6.;}     /* Ressource : jade */
+   if(gr>2.5&&gr<3.5){cA=vec3(0.,.48,.72);cB=vec3(.92,.78,.9);n=6.;}      /* Antre : turquoise et nacre */
    if(gr>3.5&&gr<4.5){cA=vec3(.78,.8,.88);cB=vec3(.04,.08,.55);n=12.;}    /* Assemblée : argent sur lapis */
    if(gr>4.5){cA=vec3(.2,.55,.95);cB=vec3(.82,.88,.93);n=4.;}             /* Marché : bleu glacier et blanc */
-   cA=mix(cA,mp*max(cA.r,max(cA.g,cA.b)),.18);cB=mix(cB,mp*max(cB.r,max(cB.g,cB.b)),.18);   /* teinte du mana, jamais le blanc */
+   float mt=(gr>.5&&gr<1.5)?.05:(gr>2.5&&gr<3.5?.08:.18);   /* reprise : le cobalt et la turquoise se protègent du mana */
+   cA=mix(cA,mp*max(cA.r,max(cA.g,cA.b)),mt);cB=mix(cB,mp*max(cB.r,max(cB.g,cB.b)),mt);   /* teinte du mana, jamais le blanc */
    float gi=1.;
    #ifdef SOL_FIN
    gi=(gr<.5||gr>3.5&&gr<4.5)?1.:0.;   /* Citadelle et Assemblée : médaillons ; les autres : marqueteries pleines */
@@ -272,42 +285,45 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
     c=mix(c,cA,tr*mo);solGold=max(tr,fond*.6)*mo;
     solE+=cA*.95*tr*(.04+.03*k)*mo*nLoin;}
    #ifdef SOL_FIN
-   else if(gr<1.5){   /* (c+) Donjon : zellige khatam, étoiles à 8 branches de cobalt sur fond blanc, octogone central dès le palier 5 */
+   else if(gr<1.5){   /* (c+) Donjon : zellige khatam, étoiles blanches à 8 branches sur champ de cobalt, octogone central dès le palier 5 */
     float S=5.2;vec2 id=floor(p/S),l=(fract(p/S)-.5)*S;
-    float sa=max(abs(l.x),abs(l.y)),sb=(abs(l.x)+abs(l.y))*.7071,R=1.78,on=solPose((id+.5)*S,k);
+    float sa=max(abs(l.x),abs(l.y)),sb=(abs(l.x)+abs(l.y))*.7071,R=1.78,on=solPose((id+.5)*S,k),op=solOp(k)*solBord(S*.5-sa,k);
     float dd=abs(min(sa,sb)-R),ins=step(min(sa,sb),R),oct=step(max(sa,sb),R*.6)*step(4.5,k);
     if(k>2.5)dd=min(dd,S*.5-sa);
     if(k>4.5)dd=min(dd,abs(max(sa,sb)-R*.6));
-    vec3 f=mix(cB,cA,ins-oct);
-    c=mix(c,f*(.88+.24*sH(id+3.)),on*mo*min(1.,.55+.07*k));
-    float tr=solTrait(dd,.03+.006*k,aa)*on;
-    c=mix(c,cA*.3,tr*mo);solGold=on*mo*.8;}
-   else if(gr<2.5){   /* (c+) Ressource : terrasses concentriques de jade, plus larges à chaque palier, liserés clairs aux contremarches */
+    /* reprise : étoiles blanches sur champ de cobalt (le cobalt domine) ; aux bas paliers l'étoile seule, le champ vient à partir du palier 2 */
+    vec3 f=mix(cA,cB,ins-oct);
+    c=mix(c,f*(.88+.24*sH(id+3.)),on*mo*op*mix(ins,1.,smoothstep(1.5,4.5,k)));
+    float tr=solTrait(dd,.03+.006*k,aa)*on*solOp(k);
+    c=mix(c,cA*.45,tr*mo);solGold=on*mo*op*.3;
+    solE+=cA*(1.-ins+oct)*on*op*smoothstep(1.5,4.5,k)*.22*mo*nLoin;}   /* un peu de cobalt propre, que la lumière chaude et le voile ne rosissent pas */   /* peu de reflet : le ciel chaud ne rosit plus le cobalt */
+   else if(gr<2.5){   /* (c+) Ressource : terrasses concentriques de jade, plus larges à chaque palier, contremarches dans l'ombre */
+    /* reprise boucle 2 : anneaux pleins alternés jade sombre / jade clair, ombre de contremarche, rayon borné pour rester des cercles */
     float S=30.;vec4 hx=solHex(p/S);float r=length(hx.xy)*S,hs=sH(hx.zw);
-    float on=step(hs,.3+.1*k)*step(.5,k),Rm=(4.+2.6*k)*(.8+.3*hs);
-    float pas=2.4,ri=floor(r/pas),fr=fract(r/pas);
-    float dedans=on*(1.-smoothstep(Rm-.4,Rm+.4,r));
-    vec3 f=mix(cA,cB,mod(ri,2.))*(1.-.3*smoothstep(.55,1.,fr));
-    c=mix(c,f,dedans*mo*min(1.,.5+.07*k));
-    float tr=solTrait(min(fr,1.-fr)*pas,.04+.008*k,aa)*dedans;
-    c=mix(c,cB*1.45,tr*mo);solGold=dedans*mo*.4;
-    solE+=cB*tr*.02*k*mo*nLoin;}
+    float on=step(hs,.3+.1*k)*step(.5,k),Rm=min(13.6,(3.5+1.6*k)*(.85+.2*hs));
+    float pas=2.2,ri=floor(r/pas),fr=fract(r/pas);
+    float dedans=on*(1.-smoothstep(Rm-.3,Rm+.3,r));
+    vec3 f=mix(cA,cB,mix(.5,mod(ri,2.),nMoy));   /* au loin, une teinte moyenne (pas de moiré) */
+    f*=(1.-.6*smoothstep(.7,.98,fr)*nMoy)*(1.+.3*(1.-smoothstep(0.,.14,fr))*nMoy);   /* contremarche dans l'ombre, nez de marche éclairé */
+    c=mix(c,f,dedans*mo*min(1.,.35+.09*k));
+    float tr=solTrait((1.-fr)*pas,.03+.004*k,aa)*dedans;
+    c=mix(c,cA*.2,tr*mo);solGold=dedans*mo*.35;}
    else if(gr<3.5){   /* (c+) Antre : mosaïque d'hexagones turquoise et nacre (la nacre change avec le regard), joints sombres */
-    float S=1.4;vec4 hx=solHex(p/S);float e=(.5-solHexD(hx.xy))*S,hs=sH(hx.zw),on=solPose(hx.zw*S,k);
+    float S=1.4;vec4 hx=solHex(p/S);float e=(.5-solHexD(hx.xy))*S,hs=sH(hx.zw),on=solPose(hx.zw*S,k),op=solOp(k)*solBord(e,k);
     hs=mix(hs,.5,smoothstep(30.,80.,dc));   /* au loin, les pièces se fondent en une teinte moyenne (pas de moiré) */
-    float nac=smoothstep(.55,.6,hs*.55+B8.b*.6);
+    float nac=smoothstep(.6,.64,hs*.55+B8.b*.6);
     vec3 vd=(vSolP-cameraPosition)/dc;float ir=hs*11.+(vd.x+vd.z)*5.;
-    vec3 nacre=cB*(vec3(1.)+.22*vec3(sin(ir),sin(ir+2.1),sin(ir+4.2)));
-    c=mix(c,mix(cA*(.8+.4*hs),nacre,nac),on*mo*min(1.,.6+.06*k));
-    float tr=solTrait(e,.022+.004*k,aa)*on;
-    c=mix(c,cA*.22,tr*mo);solGold=on*mo*.85;}
+    vec3 nacre=cB*(vec3(1.)+.28*vec3(sin(ir),sin(ir+2.1),sin(ir+4.2)));
+    c=mix(c,mix(cA*(.85+.35*hs),nacre,nac),on*mo*op);
+    float tr=solTrait(e,.034+.006*k,aa)*on*solOp(k);   /* joints sombres et épais */
+    c=mix(c,vec3(.01,.015,.025),tr*mo);solGold=on*mo*op*.85;}
    else{   /* (c+) Marché : losanges en arlequin blanc et bleu glacier, petit losange inversé au cœur dès le palier 5 */
     vec2 a=vec2(p.x/2.6+p.y/4.4,p.x/2.6-p.y/4.4),id=floor(a),f=fract(a)-.5;
-    float m=max(abs(f.x),abs(f.y)),e=(.5-m)*2.24,on=solPose(vec2((id.x+id.y+1.)*1.3,(id.x-id.y)*2.2),k);
+    float m=max(abs(f.x),abs(f.y)),e=(.5-m)*2.24,on=solPose(vec2((id.x+id.y+1.)*1.3,(id.x-id.y)*2.2),k),op=solOp(k)*solBord(e,k);
     float bl=mod(id.x+id.y,2.);if(k>4.5&&m<.17)bl=1.-bl;
-    c=mix(c,mix(cB,cA,bl)*(.9+.2*sH(id)),on*mo*min(1.,.55+.07*k));
-    float tr=solTrait(min(e,k>4.5?abs(m-.17)*2.24:9.),.025+.005*k,aa)*on;
-    c=mix(c,cA*.35,tr*mo);solGold=on*mo*.7;}
+    c=mix(c,mix(cB,cA,bl)*(.9+.2*sH(id)),on*mo*op);
+    float tr=solTrait(min(e,k>4.5?abs(m-.17)*2.24:9.),.025+.005*k,aa)*on*solOp(k);
+    c=mix(c,cA*.35,tr*mo);solGold=on*mo*op*.7;}
    #endif
   }
  }
