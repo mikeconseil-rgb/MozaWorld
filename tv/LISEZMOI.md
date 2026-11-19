@@ -4,6 +4,13 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.15 : choix moraux, lot 2 (19 novembre)
+
+- Quatre zones de plus ont leur scénario en 15 scènes (`src/scenarios-zones.js`) : **le Puits des Neuf Édits** (Tyrannie / Liberté : graver l'Édit ou ouvrir la cangue de Lan ; un ordre s'applique d'abord à la main qui le grave), **le Canyon de Fjorhel** (Silence / Chant : le tison qui dure trois souffles, l'écho qui finit par voter seul), **l'Oasis de Raak** (Pierre / Cristal : la loi gravée dans le grès ou écrite sur des barres de sel qui fondent), **les Cavernes de Balpak** (Cendre / Floraison : la résine qui noircit les bulletins ou l'eau qui fait fleurir les ongles).
+- Dans les trois Assemblées, l'épreuve qui suit le choix reste le Duel d'arguments.
+- Un prix peut maintenant coûter plusieurs cartes (« deux cartes perdues »).
+- 8 zones sur 12 (hors Ressources) ont maintenant leur scénario ; restent l'Antre et l'Assemblée d'origine, la Lande de Cezo et le Delta de Pama.
+
 ## Version 2.14 : choix moraux de trois nouvelles zones (19 novembre)
 
 - Trois zones de plus ont leur scénario en 15 scènes (`src/scenarios-zones.js`), sur le modèle de la Taïga de Kobor : **Berestograd** (Oubli / Mémoire : l'écorce pliée en huit d'Ouliana, le frère noyé du kniaz), **l'Oasis de Maulu** (Glace / Feu : une source pour un seul troupeau, la quatrième bête boit à votre place), **le Fjord de Rames** (Cauchemar / Rêve : le cent quarante et unième coup de rame, les embaumés sous la glace).
