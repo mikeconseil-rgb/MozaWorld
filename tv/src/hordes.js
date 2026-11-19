@@ -56,11 +56,12 @@ function defenseHorde(id){const parts=[],L=Math.abs(S.lv[id]||0);parts.push(['ni
     if(typeof piegesDonjon==='function')parts.push(...piegesHorde(id))}   /* donjons.js : la horde traverse les salles de chaque Donjon tenu, cible ou voisin (remplace « 2 au plus ») */
   /* le verrou de Citadelle (+2) ne s'ajoute pas au +3 de la Citadelle à 3 tuiles : la même Citadelle ne compte qu'une fois, la plus forte (provisoire) */
   if(typeof defenseMonde==='function'){const dm=defenseMonde(id)||{},b=(+dm.bonus||0)-(parts.some(p=>p[2])&&dm.verrou?Math.min(dm.verrou,3):0);if(b)parts.push(['pouvoirs du domaine',b])}
+  if(typeof defenseTours==='function'){const dt=defenseTours(id)||{};if(dt.bonus)parts.push([(dt.raisons||[]).join(', ')||'tour de guet',dt.bonus])}
   return{total:parts.reduce((a,p)=>a+p[1],0),parts}}
 
 /* ---------- Lever, annoncer, résoudre ---------- */
 function leverHorde(src,cible,force){initHordes();if(!ZB[src]||S.hordes[src])return null;cible=cible||cibleHorde(src);if(!cible||!ZB[cible]||cible===src)return null;
-  const greniers=S.own[cible]&&typeof loi==='function'&&loi('ASS150'),delai=HORDE_DELAI*(greniers?2:1);
+  const greniers=S.own[cible]&&typeof loi==='function'&&loi('ASS150'),delai=HORDE_DELAI*(greniers?2:1)+(typeof preavisTours==='function'?preavisTours(cible):0);   /* tour de guet : préavis */
   const h=S.hordes[src]={src,cible,nee:S.nc,arrive:S.nc+delai,force:force||Math.abs(S.lv[src]||0)+Math.floor(Math.random()*4)};
   save();hudKey='';etatHud();
   if(started&&(S.own[cible]||S.own[src]))toast('Une horde se lève · '+court(src),'Elle marche sur '+ZB[cible].info.nom,

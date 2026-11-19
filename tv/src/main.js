@@ -261,6 +261,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(typeof optionsRivaux==='function')o.unshift(...optionsRivaux(Z));
   if(typeof optionsDomaines==='function')o.push(...optionsDomaines(Z));
   if(typeof optionsCommerce==='function')o.push(...optionsCommerce(Z));   /* lot 2 : le Comptoir des Citadelles tenues (commerce.js) */
+  if(typeof optionsTours==='function')o.push(...optionsTours(Z));
   if(typeof optionsHorde==='function'){const h=optionsHorde(Z);o.unshift(...h.filter(x=>x.go));o.push(...h.filter(x=>!x.go))}   /* l'avant-garde à affronter en tête, comme la défense contre un rival */
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
@@ -476,6 +477,7 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
   if(typeof dessinerRivaux==='function')dessinerRivaux(mc,s,ox,oz);
   if(typeof dessinerHordes==='function')dessinerHordes(mc,s,ox,oz,T);
+  if(typeof dessinerTours==='function')dessinerTours(mc,s,ox,oz);
   const CL=typeof clarte==='function'?clarte():null;
   if(CL)for(const Z of ZN)if(CL[Z.id]!==undefined&&!S.own[Z.id]){const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 13px sans-serif';mc.textAlign='center';mc.fillStyle='#bfe3ff';mc.fillText(sgn(S.lv[Z.id])||'0',cx,cy-10)}
   for(const q of secrets){if(q.found||!q.cond(q.Z.lv)&&!(CL&&CL[q.Z.id]!==undefined))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
@@ -565,3 +567,4 @@ if(typeof domaines==='function')Object.assign(window.MZ,{domaines,verrouillee,de
 if(typeof hordeTest==='function')Object.assign(window.MZ,{horde:hordeTest,hordeArrive,poleEnvahisseur,hordeDefense:defenseHorde});
 if(typeof amenagerTest==='function')Object.assign(window.MZ,{amenager:amenagerTest,piegesDonjon,reparerPieges,piegesHorde,donjonsTenus});
 if(typeof tessellesTest==='function')Object.assign(window.MZ,{tesselles:tessellesTest,comptoir:id=>openComptoir(ZB[id||'CIT']),commerceCycle});
+if(typeof tourTest==='function')Object.assign(window.MZ,{tour:tourTest,tourTombe:id=>tomberTour(id,'Test.'),defenseTours,preavisTours});
