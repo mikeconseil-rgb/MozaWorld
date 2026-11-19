@@ -25,7 +25,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Empreinte | Reprendre une ancienne zone en réussissant un seul palier | en vigueur | |
 | Domaines | Un domaine compte dès 2 tuiles sur la petite carte, 3 sur la grande | en vigueur | |
 | Verrous | Le verrou de Citadelle empêche les prises des rivaux, pas leurs contestations | en vigueur | |
-| Lot 2 | Tours de guet (7) et commerce en Citadelle avec les tesselles (9) | en cours | |
+| Lot 2 | Tours de guet (7), commerce en Citadelle avec les tesselles (9), aménager chaque Donjon possédé (10) | en cours | |
 
 ## 19 novembre 2026
 
