@@ -22,6 +22,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 |---|---|---|---|
 | Zones | Option 1 choisie : le monde entier est posé, ~580 zones jouables le 28 nov. (383 Ressources + ~200 zones à cartes), les autres visibles mais scellées jusqu'en décembre ; pas de zones au rabais | en vigueur | |
 | Monde | Chargement par régions de 1,7 km (voyage = sauvegarde et recomposition), choix technique de Claude pour tenir sur la Xbox | en vigueur | toutes les zones construites au démarrage |
+| Taille du monde | « 1 a » (20 nov., 15 h 45 UTC) : on garde 925 zones et 88 Donjons pour l'instant (le pavage n'a pas pu être agrandi) et on finit d'écrire les zones ; pas de travail sur le pavage avant le 28 nov. | en vigueur | but de 986 zones et 130 Donjons |
 
 ## 19 novembre 2026 (gameplay du monde, réponses de l'utilisateur)
 
