@@ -97,3 +97,14 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 6. **Les noms se comparent par moitié.** La seconde partie d'un nom (« la Porte des Bannis », « la Citadelle des Ruches ») ne revient pas, même avec un autre lieu. Un préfixe de lieu (Kalten-, Prey) ne sert qu'une fois par lot.
 7. **Tics à surveiller** : le « vous » de C dans 3 récits au plus ; une famille d'animaux (rapaces, singes, cervidés) dans 2 pôles du lot au plus ; un même geste de Ressource (gauler ou battre des branches au-dessus d'une toile) une fois par lot, toutes tables confondues.
 8. **Table commune** : `ennemiSoin` n = 2 n, comme `ennemiGarde`.
+
+## Leçons du lot 7 (pour le lot 8)
+
+1. **Une vocation suit la règle des mots de pôle.** Un conteur ne reprend jamais sa propre vocation (invocations, gros coups) sur un mot qu'il a déjà joué. Entre conteurs, une seule reprise par mot, avec d'autres bêtes et un autre crochet.
+2. **Trois pôles sans famille principale au plus par conteur.** La colonne est un prix que le pôle paie et dont il profite, ou un crochet que le pôle remplit lui-même. Un crochet d'intention ennemie (`seul`, `elan`, `vol`, `pietine`) ne fait pas une colonne à lui seul. Chaque couple prix-crochet (`prixPV` et `blesse`, défausse et `defausseAPrix`, `prixBete` et `bete`, `ennemiGarde` et `cibleGarde`) sert dans 2 pôles du lot au plus.
+3. **Les places se répartissent avant d'écrire.** Avec 48 zones, les familles sont pleines. LISTE.md donne à chaque conteur ses places (trois familles à 2 pôles, une place rare), et le dernier inscrit n'hérite plus des restes.
+4. **La liste commune porte l'intrigue, pas seulement la forme** : une ligne « qui fait quoi, et comment ça finit », la première et la dernière phrase de chaque récit. Un seul récit en dialogue par lot, une seule ouverture « X était petit quand ».
+5. **Les familles d'animaux se comptent au script sur les noms d'invocation**, à la maille de la famille courante (rongeurs, mustélidés, félins, ours, équidés, gallinacés, lézards, rapaces…) : 2 pôles du lot au plus.
+6. **Noms** : le mot principal de la seconde moitié (Plaine, Rempart, Garnison) ne revient pas dans le lot. Le premier mot d'une Ressource ne reprend pas un premier mot en jeu. Un mot traduit (Fortezza) compte comme le même mot.
+7. **Ressources : l'objet se compare par catégorie** (l'eau, les galets, les poissons qui sèchent), pas seulement par geste.
+8. **Validateur** : une condition rendue fausse ou toujours vraie par une opération qui la précède dans la même carte est une erreur : `hesite` puis `hesite` ou `hesiteAvant` ; `briseGarde` puis `cibleGarde` ; `hesite` puis `elan`, `vol` ou `pietine`.

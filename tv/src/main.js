@@ -276,11 +276,11 @@ function openEveil(Z,f){if(Z.d&&Z.d.pret===false){toast(Z.info.nom,'Zone pas enc
   if(ct.pw)o.push({l:`Contre-pouvoir ${typeof de_==='function'?de_(ct.Z.info.nom):'de '+ct.Z.info.nom}`,ic:'⚔',off:true,d:`vous possédez la zone qui la contre : épreuve −${ct.pw}`});
   if(typeof optionsRoutes==='function')o.push(...optionsRoutes(Z));
   if(typeof optionsAssemblee==='function')o.push(...optionsAssemblee(Z));
+  if(typeof optionsCaravanes==='function'){const c=optionsCaravanes(Z);o.unshift(...c.filter(x=>x.go));o.push(...c.filter(x=>!x.go))}   /* lot 3 : escorter en tête (après les défenses contre un rival ou une horde), état de la caravane plus bas (caravanes.js) */
   if(typeof optionsRivaux==='function')o.unshift(...optionsRivaux(Z));
   if(typeof optionsDomaines==='function')o.push(...optionsDomaines(Z));
   if(typeof optionsCommerce==='function')o.push(...optionsCommerce(Z));   /* lot 2 : le Comptoir des Citadelles tenues (commerce.js) */
   if(typeof optionsTours==='function')o.push(...optionsTours(Z));
-  if(typeof optionsCaravanes==='function'){const c=optionsCaravanes(Z);o.unshift(...c.filter(x=>x.go));o.push(...c.filter(x=>!x.go))}   /* lot 3 : escorter en tête, état de la caravane plus bas (caravanes.js) */
   if(typeof optionsHorde==='function'){const h=optionsHorde(Z);o.unshift(...h.filter(x=>x.go));o.push(...h.filter(x=>!x.go))}   /* l'avant-garde à affronter en tête, comme la défense contre un rival */
   if(typeof optionsSiege==='function'){const s=optionsSiege(Z);o.unshift(...s.filter(x=>x.go));o.push(...s.filter(x=>!x.go))}   /* lot 3 : Citadelle épique et siège final (siege.js) */
   o.push({l:'Partir',ic:'◆',go:toMonde});
