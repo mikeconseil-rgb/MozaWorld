@@ -64,3 +64,14 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 6. **La liste des nombres précis est commune aux quatre conteurs**, pour les récits, les `pal`, les noms et les ambiances. Les tics à surveiller sont l'instrument qui « répond » dans la bande +2..+5 (B, au plus deux fois), le récit qui finit sur un conseil à l'impératif (C, au plus deux fois) et la marque en appoint réflexe (A).
 7. **Une seule table de budget, complétée** : exil = 3 points de prix, vol de vie = moitié des dégâts de la carte, `si` = 50 %. Le validateur commun la porte, et ses écarts au-delà de ±15 % sont corrigés avant la remise.
 8. **Ressources** : la chute « le produit part vers… » (B) suit la même règle que les autres gabarits (3 au plus). Un même objet est un doublon même quand le geste diffère (tesselles d'or fabriquées, puis décollées).
+
+## Leçons du critique après le lot 4 (à appliquer dès le lot 5)
+
+1. **Un couple de mots de pôle sert deux fois au plus par lot**, et jamais deux fois chez le même conteur. LISTE.md le vérifie avant la distribution. Si un couple revient, le second conteur prend une autre famille principale sur **les deux** pôles, et le dit dans sa carte des familles.
+2. **Relire les pôles du même couple dans les lots précédents**, pas seulement dans le lot : les reprises de A (Tempête, Rouille, Mémoire, Rêve) étaient connues et signalées, mais pas corrigées. Signaler ne suffit pas : on change avant de remettre.
+3. **La récupération suit le moteur** : `recup` joue deux fois par tour au plus et saute les cartes qui récupèrent. Elle n'est jamais famille principale : 4 cartes au plus par pôle.
+4. **Ne plus utiliser `defausseCommune`** : les communes ne sont plus dans le paquet, la condition est toujours fausse.
+5. **Une carte sans cible joue contre le premier ennemi vivant.** Si l'effet ou la condition porte sur un ennemi précis (`elan`, `pietine`, `vol`, dégâts), on met `"cible":1` et on écrit « la cible ». « L'ennemi en tête » et « l'ennemi vole » sont interdits.
+6. **Pas d'appoint réflexe** : une même famille d'appoint (le mana chez A au lot 4, la marque au lot 3) ne revient pas dans plus de 3 pôles d'un même conteur.
+7. **Un pôle « tous les ennemis » ne frappe pas tous les ennemis sur plus de 3 cartes sur 7**, et une forme ne répète pas « X dégâts à la cible » sur toutes les cartes d'un pôle. Au moins trois familles par pôle, comme au lot 3.
+8. **Ressources** : un produit tinctorial, un récipient (calebasse, épuisette) ou un premier mot de nom (« Claies ») ne revient pas deux fois dans le lot. La liste commune des objets s'ajoute à celle des nombres.
