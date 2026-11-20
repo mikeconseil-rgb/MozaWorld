@@ -223,6 +223,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Styles par zone',ic:'✎',d:STYLE_ON?'Oui':'Non',go:()=>{toggleStyles();openMenu()}},
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%QUALS.length;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize();openMenu()}},
     ...(typeof openRivaux==='function'?[{l:'Rivaux',ic:'♜',d:'les quatre maisons et leurs menaces',go:()=>openRivaux()}]:[]),
+    ...(typeof openLois==='function'?[{l:'Lois du monde',ic:'⚖',d:resumeLois(),go:()=>openLois()}]:[]),
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
@@ -262,6 +263,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(typeof optionsDomaines==='function')o.push(...optionsDomaines(Z));
   if(typeof optionsCommerce==='function')o.push(...optionsCommerce(Z));   /* lot 2 : le Comptoir des Citadelles tenues (commerce.js) */
   if(typeof optionsTours==='function')o.push(...optionsTours(Z));
+  if(typeof optionsCaravanes==='function'){const c=optionsCaravanes(Z);o.unshift(...c.filter(x=>x.go));o.push(...c.filter(x=>!x.go))}   /* lot 3 : escorter en tête, état de la caravane plus bas (caravanes.js) */
   if(typeof optionsHorde==='function'){const h=optionsHorde(Z);o.unshift(...h.filter(x=>x.go));o.push(...h.filter(x=>!x.go))}   /* l'avant-garde à affronter en tête, comme la défense contre un rival */
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
@@ -478,6 +480,7 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
   if(typeof dessinerRivaux==='function')dessinerRivaux(mc,s,ox,oz);
   if(typeof dessinerHordes==='function')dessinerHordes(mc,s,ox,oz,T);
   if(typeof dessinerTours==='function')dessinerTours(mc,s,ox,oz);
+  if(typeof dessinerCaravanes==='function')dessinerCaravanes(mc,s,ox,oz,T);   /* lot 3 : caravanes sur les routes (caravanes.js) */
   const CL=typeof clarte==='function'?clarte():null;
   if(CL)for(const Z of ZN)if(CL[Z.id]!==undefined&&!S.own[Z.id]){const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;mc.font='bold 13px sans-serif';mc.textAlign='center';mc.fillStyle='#bfe3ff';mc.fillText(sgn(S.lv[Z.id])||'0',cx,cy-10)}
   for(const q of secrets){if(q.found||!q.cond(q.Z.lv)&&!(CL&&CL[q.Z.id]!==undefined))continue;const p=q.pos();mc.fillStyle='#ffe9a8';mc.beginPath();mc.arc((p[0]+ox)*s,(p[2]+oz)*s,2.4,0,TAU);mc.fill()}
@@ -568,3 +571,5 @@ if(typeof hordeTest==='function')Object.assign(window.MZ,{horde:hordeTest,hordeA
 if(typeof amenagerTest==='function')Object.assign(window.MZ,{amenager:amenagerTest,piegesDonjon,reparerPieges,piegesHorde,donjonsTenus});
 if(typeof tessellesTest==='function')Object.assign(window.MZ,{tesselles:tessellesTest,comptoir:id=>openComptoir(ZB[id||'CIT']),commerceCycle});
 if(typeof tourTest==='function')Object.assign(window.MZ,{tour:tourTest,tourTombe:id=>tomberTour(id,'Test.'),defenseTours,preavisTours});
+if(typeof caravanesTest==='function')Object.assign(window.MZ,{caravanes:caravanesTest,piller:pillerTest,escorter:escorterCaravane,caravanesCycle});
+if(typeof loisEtat==='function')Object.assign(window.MZ,{lois:loisEtat,loiForcer,loiRenforcer,loisCycle,loisTest:LOIS_TEST});

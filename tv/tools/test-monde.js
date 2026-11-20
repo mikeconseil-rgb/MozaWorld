@@ -6,6 +6,9 @@
    Lot 2 (19 nov.) joué dans la même partie : tour de guet, deuxième Donjon aménagé, tesselles gagnées et dépensées au Comptoir
    (les quatre achats), tentative de rival devancée puis réussie, horde contre une zone couverte par une tour et un Donjon,
    mort (tours, bourse, salles), rechargement ; défense de chaque zone de départ calculée et rapportée.
+   Lot 3 (19 nov.) joué dans la même partie : caravane ouverte, pillée (butin qui grossit), escortée ; Loi des Relais sur la caravane ;
+   loi du catalogue réveillée (Pama au pôle −, LOIS_CATALOGUE_CARTE) puis renforcée par un Duel d'arguments gagné, et sa fin ; écran
+   « Lois du monde » ; mort et rechargement avec caravane et loi renforcée. Captures lot3-*.png (1280×720).
    Usage : sh tv/build.sh && node tv/tools/test-monde.js [dossier des captures]   (depuis la racine du dépôt ; Playwright et Chromium installés) */
 const path=require('path'),fs=require('fs');
 const {chromium}=require('playwright');
@@ -37,6 +40,15 @@ const COHERENT=()=>{const S=MZ.S,p=[];
   for(const id in S.tours||{})if(!ZB[id]||!S.own[id])p.push('tour sur '+id+', qui n\'est pas à vous');
   for(const s in S.hordes||{}){const h=S.hordes[s];if(typeof h.force!=='number'||!isFinite(h.arrive))p.push('horde '+s+' NaN')}
   for(const t in S.res)if(S.res[t]!==Math.floor(S.res[t]))p.push('mana non entier '+t+' = '+S.res[t]);
+  /* lot 3 : caravanes (seulement depuis des Ressources à vous, butin entier >= 0), lois renforcées */
+  const ent=x=>typeof x==='number'&&Number.isInteger(x)&&x>=0;
+  for(const r in S.car||{}){const e=S.car[r];if(!ZB[r]||(ZB[r].mod||r)!=='RES')p.push('caravane depuis '+r+', qui n\'est pas une Ressource');
+    if(!e||!ent(e.perdu||0)||!Number.isInteger(e.arret))p.push('caravane '+r+' '+JSON.stringify(e))}
+  if(typeof caravanes==='function')for(const c of caravanes()){if(!S.own[c.r]||!S.act[c.r])p.push('caravane depuis '+c.r+', qui n\'est pas à vous');
+    if(!ent(c.n)||!ent(c.perdu))p.push('caravane '+c.r+' gain '+c.n+' butin '+c.perdu);if(c.traj&&c.traj.some(z=>!S.own[z]))p.push('trajet de '+c.r+' hors de vos zones')}
+  if(S.carBilan)for(const k in S.carBilan)if(!ent(S.carBilan[k]))p.push('carBilan.'+k+' = '+S.carBilan[k]);
+  for(const k of['carNc','loisNc'])if(S[k]!==undefined&&!ent(S[k]))p.push(k+' = '+S[k]);
+  for(const id in S.loisRenf||{})if(!ZB[id]||!ent(S.loisRenf[id]))p.push('loi renforcée '+id+' = '+S.loisRenf[id]);
   return p};
 /* défense de chaque zone de départ contre une horde : telle quelle, et au palier 4 (le palier qu'une horde de ±7 vise au plus fort,
    3 paliers plus faible) ; chance de tenir contre une horde levée maintenant (force 7 + 1 par tranche de HORDE_CROIT cycles + 0 à 3) */
@@ -265,6 +277,77 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
   await p.screenshot({path:path.join(dossier,'monde-rivaux.png')});
   await monde();
 
+
+  /* 11 bis. LOT 3 joué ensemble : caravane (ouverte, pillée, escortée), Loi des Relais, loi du catalogue réveillée puis renforcée, écran Lois du monde */
+  await p.evaluate(()=>{window.__toasts=[];const t0=toast;toast=function(a){window.__toasts.push(a);return t0.apply(this,arguments)}});
+  const cv=await p.evaluate(()=>{const S=MZ.S;for(const id of['CIT','RES'])if(!S.own[id]||!S.act[id]){delete S.riv.z[id];MZ.prendre(id)}
+    for(const s in S.hordes)if(['RES','CIT'].includes(S.hordes[s].cible))delete S.hordes[s];
+    MZ.set('RES',2);S.routes=S.routes||{};S.routes.RES=['CIT'];const c=MZ.caravanes().find(c=>c.r==='RES');
+    return c&&{traj:c.traj&&c.traj.join(),etat:c.etat,n:c.n,risque:c.risque,bilan:Object.assign({},S.carBilan)}});
+  ok('lot 3 : caravane ouverte (Ressource au niveau 2, route vers la Citadelle)',!!cv&&cv.traj==='RES,CIT'&&cv.etat==='en route',JSON.stringify(cv));
+  await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1300);
+  const cv1=await p.evaluate(()=>({b:Object.assign({},MZ.S.carBilan),c:MZ.caravanes().find(c=>c.r==='RES')}));
+  ok('lot 3 : un cycle, la caravane rapporte (ou se fait piller)',!!cv&&(cv1.b.gains-cv.bilan.gains===cv.n||cv1.b.pillages>cv.bilan.pillages),JSON.stringify(cv1));
+  await monde();
+  const pl=await p.evaluate(()=>{let c=MZ.caravanes().find(c=>c.r==='RES');if(c.etat==='en route')MZ.piller('RES');c=MZ.caravanes().find(c=>c.r==='RES');return{etat:c.etat,perdu:c.perdu,n:c.n,lieu:c.lieu}});
+  ok('lot 3 : caravane pillée, arrêtée',pl.etat==='pillée'&&pl.perdu>=pl.n,JSON.stringify(pl));
+  await p.evaluate(()=>{for(const s in MZ.S.hordes)if(['RES','CIT'].includes(MZ.S.hordes[s].cible))delete MZ.S.hordes[s];MZ.cycle()});await p.waitForTimeout(1300);await monde();
+  const pl2=await p.evaluate(()=>{const c=MZ.caravanes().find(c=>c.r==='RES');return{etat:c.etat,perdu:c.perdu}});
+  ok('lot 3 : pendant l\'arrêt, le butin grossit',pl2.etat==='pillée'&&pl2.perdu===pl.perdu+pl.n,JSON.stringify(pl2));
+  /* capture : Pierre de la Ressource, avec la caravane pillée (« Escorter » en tête) */
+  await p.evaluate(()=>{tp('RES');openEveil(ZB.RES)});await p.waitForTimeout(600);
+  await p.screenshot({path:path.join(dossier,'lot3-pierre-caravane-pillee.png')});
+  const es=await p.evaluate(async()=>{const S=MZ.S,o=UI.opts[0],pierre=!!o&&/Escorter la caravane/.test(o.l);if(!pierre)return{pierre,l:UI.opts.map(o=>o.l)};
+    o.go();await new Promise(r=>setTimeout(r,700));const k=MZ.CB&&MZ.CB.caravane,n=MZ.CB&&MZ.CB.foes.length,t0=S.tess,e0=S.carBilan.escortes;finCombat(true);
+    const titre=document.getElementById('menu-t').textContent;toMonde();const c=MZ.caravanes().find(c=>c.r==='RES');return{pierre,k,n,rendu:S.tess-t0,esc:S.carBilan.escortes-e0,etat:c.etat,titre}});
+  ok('lot 3 : escorte depuis la Pierre, deux pillards, le butin entier est rendu',es.pierre&&es.k==='RES'&&es.n===2&&es.rendu===pl2.perdu&&es.esc===1&&es.etat==='en route',JSON.stringify(es));
+  await coherent('caravane escortée');
+  /* loi du catalogue réveillée : Pama au pôle − (Loi des Corvées) ; Loi des Relais sur la caravane */
+  const lw=await p.evaluate(()=>{const S=MZ.S;delete S.riv.z.ASS150;MZ.prendre('ASS150');MZ.set('ASS150',-1);if(S.riv.c&&S.riv.c.id==='ASS150')S.riv.c=null;
+    const v=MZ.lois().vigueur.find(v=>v.id==='ASS150');return{carte:typeof LOIS_CATALOGUE_CARTE!=='undefined'&&LOIS_CATALOGUE_CARTE,v,greniers:loi('ASS150')}});
+  ok('lot 3 : Pama au pôle − réveille une loi du catalogue (Corvées), les Greniers dorment',!lw.carte||(!!lw.v&&lw.v.k==='corvee'&&lw.greniers===0),JSON.stringify(lw));
+  await p.waitForTimeout(2500);await monde();
+  ok('lot 3 : un message annonce la loi en vigueur',await p.evaluate(()=>window.__toasts.some(t=>/^Loi en vigueur · /.test(t))||LOI_FILE.some(m=>Array.isArray(m)&&/^Loi en vigueur/.test(m[0]))),await p.evaluate(()=>window.__toasts.slice(-4).join(' | ')));
+  const rl=await p.evaluate(()=>{const S=MZ.S,n0=MZ.caravanes().find(c=>c.r==='RES').n,had={own:S.own.MAR,act:S.act.MAR,lv:S.lv.MAR};MZ.loiForcer('MAR','relais');
+    S.own.MAR=S.act.MAR=true;if(!S.lv.MAR)S.lv.MAR=1;const c=MZ.caravanes().find(c=>c.r==='RES');MZ.loiForcer('MAR',null);S.own.MAR=had.own;S.act.MAR=had.act;S.lv.MAR=had.lv;
+    return{n0,n1:c.n,relais:c.relais,dans:c.traj.some(z=>aPortee('MAR',2)[z]!==undefined)}});
+  ok('lot 3 : Loi des Relais, +1 tesselle par cycle pour la caravane qui traverse la juridiction',rl.dans&&rl.n1===rl.n0+1,JSON.stringify(rl));
+  /* Duel d'arguments gagné sur Pama : la loi passe en vigueur renforcée 10 cycles */
+  const du=await p.evaluate(()=>{const S=MZ.S;LOI_FILE.length=0;DUEL={Z:ZB.ASS150,target:-2,eff:1,vote:{v:0,pour:[],contre:[]}};finDuel(true);
+    const v=MZ.lois().vigueur.find(v=>v.id==='ASS150');return{lv:S.lv.ASS150,v,nc:S.nc}});
+  ok('lot 3 : Duel gagné, Pama monte et sa loi est renforcée 10 cycles',du.lv===-2&&!!du.v&&du.v.renforcee&&du.v.jusqua===du.nc+10,JSON.stringify(du));
+  await p.waitForFunction(()=>MZ.mode==='menu'&&/Mue/.test(document.getElementById('menu-sur').textContent),null,{timeout:60000}).catch(()=>{});
+  await p.evaluate(()=>{toMonde();toastT=0;for(const f of['TOUR_FILE','CAR_FILE','DOM_FILE'])try{eval(f).length=0}catch(_){}});
+  await p.waitForFunction(()=>{if(MZ.mode!=='monde'&&!MZ.CB)toMonde();if(LOI_FILE.length&&toastT>0&&!/renforcée/.test(document.getElementById('t1').textContent))toastT=0;return window.__toasts.some(t=>/^Loi en vigueur renforcée/.test(t))},null,{timeout:30000,polling:250}).catch(()=>{});
+  ok('lot 3 : un message annonce la loi renforcée',await p.evaluate(()=>window.__toasts.some(t=>/^Loi en vigueur renforcée · /.test(t))),await p.evaluate(()=>window.__toasts.slice(-4).join(' | ')));
+  await coherent('loi renforcée');
+  /* écran « Lois du monde » au menu Pause (capture), et détail de Pama */
+  const lm=await p.evaluate(()=>{openMenu();const m=UI.opts.find(o=>o.l==='Lois du monde');if(!m)return null;m.go();
+    return{t:document.getElementById('menu-t').textContent,opts:UI.opts.map(o=>o.l)}});
+  ok('lot 3 : menu Pause → « Lois du monde », Corvées renforcée',!!lm&&lm.t==='Lois du monde'&&lm.opts.some(o=>/Loi des Corvées · renforcée/.test(o))&&lm.opts.includes('Lois endormies'),JSON.stringify(lm&&lm.opts));
+  await p.waitForTimeout(400);await p.screenshot({path:path.join(dossier,'lot3-lois-du-monde.png')});
+  const ld=await p.evaluate(()=>{const i=UI.opts.findIndex(o=>/Corvées/.test(o.l));if(i<0)return{t:'',txt:''};UI.opts[i].go();return{t:document.getElementById('menu-t').textContent,txt:document.getElementById('menu-corps').textContent}});
+  ok('lot 3 : détail de Pama, loi écrite et loi du catalogue',/Pama/.test(ld.t)&&/Corvées/.test(ld.txt)&&/Greniers/.test(ld.txt),ld.txt.slice(0,240));
+  await p.waitForTimeout(300);await p.screenshot({path:path.join(dossier,'lot3-lois-pama.png')});
+  await monde();
+  /* captures : Pierre de la Ressource (caravane en route), monde, minicarte, bandeau */
+  await p.evaluate(()=>{tp('RES');openEveil(ZB.RES)});await p.waitForTimeout(600);
+  await p.screenshot({path:path.join(dossier,'lot3-pierre-caravane.png')});
+  await p.evaluate(()=>{toMonde();hudKey='';etatHud()});await p.waitForTimeout(1500);
+  await p.screenshot({path:path.join(dossier,'lot3-monde.png')});
+  const mini=await p.$('#mini');if(mini)await mini.screenshot({path:path.join(dossier,'lot3-minicarte.png')});
+  const ban=await p.$('#bandeau');if(ban)await ban.screenshot({path:path.join(dossier,'lot3-bandeau.png')});
+  ok('lot 3 : le bandeau montre la caravane (⛟)',await p.evaluate(()=>!!document.querySelector('#bandeau [title^="Caravanes"]')));
+  /* dix cycles : la vigueur renforcée s'éteint, la caravane continue de rapporter */
+  const g0=await p.evaluate(()=>MZ.S.carBilan.gains);
+  for(let i=0;i<10;i++){await p.evaluate(()=>{for(const s in MZ.S.hordes)if(['RES','CIT','ASS150'].includes(MZ.S.hordes[s].cible))delete MZ.S.hordes[s];if(MZ.S.riv.c&&['RES','CIT','ASS150'].includes(MZ.S.riv.c.id))MZ.S.riv.c=null;MZ.cycle()});await p.waitForTimeout(1050);await monde()}
+  const fr=await p.evaluate(()=>{const v=MZ.lois().vigueur.find(v=>v.id==='ASS150');return{v,gains:MZ.S.carBilan.gains,fin:window.__toasts.some(t=>/^Fin de la vigueur renforcée/.test(t))||LOI_FILE.some(m=>Array.isArray(m)&&/^Fin de la vigueur/.test(m[0]))}});
+  ok('lot 3 : dix cycles plus tard, la loi reste en vigueur sans renfort (message)',!!fr.v&&!fr.v.renforcee&&fr.fin,JSON.stringify(fr));
+  ok('lot 3 : la caravane a rapporté pendant ces dix cycles',fr.gains>g0,g0+' → '+fr.gains);
+  await coherent('dix cycles du lot 3');
+  /* avant la mort : une loi renforcée et une caravane pillée */
+  await p.evaluate(()=>{MZ.loiRenforcer('ASS150');const c=MZ.caravanes().find(c=>c.r==='RES');if(c&&c.etat==='en route')MZ.piller('RES')});
+
   /* 12. mort du héros avec des menaces en cours */
   const mt=await p.evaluate(async()=>{const S=MZ.S;const id=MZ.ZN.map(Z=>Z.id).find(id=>S.own[id]&&!ESTDEP.has(id)&&S.lv[id]!==0);
     if(id)S.riv.c={r:'gri',id,de:S.riv.nc,du:S.riv.nc+2};const hAvant=Object.keys(S.hordes).length;
@@ -281,16 +364,21 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
   ok('mort : les pièges des Donjons sont perdus',mt.lot2.salAvant>0&&mt.lot2.salApres===0,JSON.stringify(mt.lot2));
   ok('mort : la carte du secret trouvé est perdue',mt.lot2.sec<0||mt.lot2.carteAvant&&!mt.lot2.carteApres,JSON.stringify(mt.lot2));
   info('mort : hordes en cours',`${mt.hAvant} avant, ${mt.hApres} après (elles marchent toujours)`);
+  const ml=await p.evaluate(()=>({car:Object.keys(MZ.S.car).length,carav:MZ.caravanes().length,renf:Object.keys(MZ.S.loisRenf).length,pama:MZ.lois().vigueur.some(v=>v.id==='ASS150'&&!ESTDEP.has('ASS150'))}));
+  ok('mort (lot 3) : caravanes perdues, lois renforcées retombées, loi de Pama endormie',ml.car===0&&ml.carav===0&&ml.renf===0&&!ml.pama,JSON.stringify(ml));
   await p.evaluate(()=>toMonde());await coherent('après la mort');
   for(let i=0;i<5;i++){await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1050);await monde()}
   await coherent('cinq cycles après la mort');
 
   /* 13. rechargement avec la sauvegarde */
-  await p.evaluate(()=>{MZ.tour('CIT');MZ.amenager('DON',['herse']);MZ.tesselles(7)});
-  const avant=await p.evaluate(()=>{save();return JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c,t:MZ.S.riv.t,tess:MZ.S.tess,tours:Object.keys(MZ.S.tours),pg:MZ.S.pieges,dj:MZ.S.donjons,found:MZ.S.found})});
+  await p.evaluate(()=>{MZ.tour('CIT');MZ.amenager('DON',['herse']);MZ.tesselles(7);
+    /* lot 3 : une caravane de l'héritier, pillée, et une loi renforcée (Givrecloche si elle est à vous) */
+    const S=MZ.S;MZ.set('RES',2);S.routes.RES=['CIT'];if(MZ.caravanes().find(c=>c.r==='RES'&&c.etat==='en route'))MZ.piller('RES');
+    if(S.own.MAR&&S.act.MAR&&S.lv.MAR)MZ.loiRenforcer('MAR')});
+  const avant=await p.evaluate(()=>{save();return JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c,t:MZ.S.riv.t,tess:MZ.S.tess,tours:Object.keys(MZ.S.tours),pg:MZ.S.pieges,dj:MZ.S.donjons,found:MZ.S.found,car:MZ.S.car,cb:MZ.S.carBilan,lr:MZ.S.loisRenf,cv:MZ.caravanes().map(c=>c.r+':'+c.etat)})});
   await p.reload();await p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function',null,{timeout:30000});
   await p.evaluate(()=>startGame(false));await p.waitForTimeout(2500);
-  const apres=await p.evaluate(()=>JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c,t:MZ.S.riv.t,tess:MZ.S.tess,tours:Object.keys(MZ.S.tours),pg:MZ.S.pieges,dj:MZ.S.donjons,found:MZ.S.found}));
+  const apres=await p.evaluate(()=>JSON.stringify({nc:MZ.S.nc,lv:MZ.S.lv,own:MZ.S.own,h:Object.keys(MZ.S.hordes).sort(),rz:MZ.S.riv.z,c:MZ.S.riv.c,t:MZ.S.riv.t,tess:MZ.S.tess,tours:Object.keys(MZ.S.tours),pg:MZ.S.pieges,dj:MZ.S.donjons,found:MZ.S.found,car:MZ.S.car,cb:MZ.S.carBilan,lr:MZ.S.loisRenf,cv:MZ.caravanes().map(c=>c.r+':'+c.etat)}));
   ok('rechargement : la partie reprend à l\'identique',avant===apres,avant===apres?undefined:avant.slice(0,200)+' ≠ '+apres.slice(0,200));
   for(let i=0;i<5;i++){await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1050);await monde()}
   await coherent('après rechargement et cinq cycles');
@@ -305,7 +393,10 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
   /* 14. textes visibles : pas de « undefined », « NaN », « null » */
   const txt=await p.evaluate(()=>{const S=MZ.S,o=[];const id=MZ.ZN.find(Z=>S.own[Z.id]).id;openEveil(ZB[id]);o.push(document.getElementById('menu').textContent);
     openRivaux();o.push(document.getElementById('menu').textContent);RIVAUX.forEach((r,i)=>{openMaison(r,i);o.push(document.getElementById('menu').textContent)});toMonde();
-    o.push(document.getElementById('bandeau').textContent);return o.join('\n')});
+    o.push(document.getElementById('bandeau').textContent);
+    openEveil(ZB.RES);o.push(document.getElementById('menu').textContent);openLois();o.push(document.getElementById('menu').textContent);
+    for(const Z of MZ.ZN.filter(Z=>(Z.mod||Z.id)==='MAR')){openLoi(Z.id);o.push(document.getElementById('menu').textContent);openEveil(Z);o.push(document.getElementById('menu').textContent)}toMonde();
+    return o.join('\n')});
   const mauvais=(txt.match(/undefined|NaN|\bnull\b|\[object/g)||[]);
   ok('textes visibles sans « undefined », « NaN » ni « null »',mauvais.length===0,mauvais.join(', ')||undefined);
 
