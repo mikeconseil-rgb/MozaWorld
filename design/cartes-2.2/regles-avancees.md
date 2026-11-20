@@ -2,6 +2,8 @@
 
 Ces règles complètent le combat au tour par tour du jeu (page web jouée dans Edge sur Xbox depuis le 17 novembre ; la version télé est arrêtée). Elles s'appliquent à toutes les cartes du Grimoire.
 
+> **Note du 20 novembre.** Le champ de bataille en vigueur est **le Plateau** (trois voies, avant et arrière, cases Girih à effet), décrit dans `design/plateau/PLATEAU.md`, qui gagne sur cette page pour tout ce qui touche au terrain et au placement. La section 1 quinquies sur le Nœud (deux voies) décrit l'ancien terrain. Les cinq cartes communes de départ ont été retirées le 18 novembre (voir `design/REGLES.md`, sections 4 et 5).
+
 ## 1. Le tour de jeu
 
 1. Début du tour : la **capacité de dépense** vaut le numéro du tour (1 au tour 1, 2 au tour 2…). On pioche jusqu'à 5 cartes (6 avec une Ressource au niveau 3). Les **brûlures** des ennemis se déclenchent au début de leur tour. La **riposte** et l'**écho** du tour précédent s'éteignent.
@@ -21,7 +23,7 @@ Direction choisie par l'utilisateur : « bloqueurs sur le terrain », dans l'esp
 
 ## 1 ter. Le territoire de départ (17 nov.)
 
-- Le paquet visé avant de sortir du territoire de départ compte **15 cartes** : les 5 communes et 10 cartes de zone.
+- Le paquet visé avant de sortir du territoire de départ compte **15 cartes**, toutes des cartes de zone (depuis le 18 nov. : plus de cartes communes ; on part avec les 6 cartes de palier 1 des zones de départ).
 - Les Ressources ne donnent pas de carte. Les 10 cartes viennent donc des zones à cartes montées au palier 2.
 - Le territoire de départ compte **12 tuiles au niveau 0** (choix C2 de l'utilisateur, 17 nov. ; la première version de cette section disait environ 9) : **6 zones à cartes** (1 Citadelle, 2 Donjons, 2 Antres, 1 Assemblée) et **6 Ressources** pour le mana et les premiers atouts.
 - Les zones qui l'entourent sont au niveau ±5. Elles **ne cèdent** (Pierre d'éveil fermée, combats mortels) **qu'une fois toutes les zones de départ prises** et le royaume assez développé : paquet d'au moins 15 cartes.
@@ -81,7 +83,7 @@ Chaque zone est unique : chacune donne son propre bonus.
 | **Utilitaire (secret)** | Trouver un secret doré dans une zone | 1 par secret | gris |
 | **Atout** | Pas une carte : un bonus greffé sur une carte par une route (section 6) | — | — |
 
-Les combats ne donnent pas de cartes. Le paquet compte au plus 40 cartes. À la mort, le héros perd tout : il repart avec les 5 communes ; ses zones redeviennent sauvages avec leur niveau.
+Les combats ne donnent pas de cartes. Le paquet compte au plus 40 cartes. À la mort, le héros perd tout : il repart avec son territoire de départ au niveau 1 et les 6 cartes de palier 1 de ces zones (depuis le 18 nov. ; avant : les 5 communes) ; ses zones redeviennent sauvages avec leur niveau.
 
 ## 3. Les deux pôles
 
