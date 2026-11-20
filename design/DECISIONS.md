@@ -16,6 +16,13 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
 
+## 20 novembre 2026 (zones en série)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Zones | Option 1 choisie : le monde entier est posé, ~580 zones jouables le 28 nov. (383 Ressources + ~200 zones à cartes), les autres visibles mais scellées jusqu'en décembre ; pas de zones au rabais | en vigueur | |
+| Monde | Chargement par régions de 1,7 km (voyage = sauvegarde et recomposition), choix technique de Claude pour tenir sur la Xbox | en vigueur | toutes les zones construites au démarrage |
+
 ## 19 novembre 2026 (gameplay du monde, réponses de l'utilisateur)
 
 | Sujet | Décision | Statut | Remplace |
@@ -26,12 +33,16 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Empreinte | Reprendre une ancienne zone en réussissant un seul palier | en vigueur | |
 | Domaines | Un domaine compte dès 2 tuiles sur la petite carte, 3 sur la grande | en vigueur | |
 | Verrous | Le verrou de Citadelle empêche les prises des rivaux, pas leurs contestations | en vigueur | |
+| Tesselles | Primes gardées (horde brisée 5, rival repoussé 4) ; change de 4 tesselles contre 1 mana gardé | en vigueur | |
+| Tours de guet | Pas d'entretien en mana pour l'instant | en vigueur | |
+| Lot 3 | Les quatre idées : caravanes (4), pacte avec une maison (5), siège final d'une Citadelle épique (6), pouvoirs des Assemblées (7) (« Oui à tout », « Les deux ») | en cours | |
 | Lot 2 | Tours de guet (7), commerce en Citadelle avec les tesselles (9), aménager chaque Donjon possédé (10) | en cours | |
 
 ## 19 novembre 2026
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Choix moraux | « Oui à tout », lot 2 des scénarios : le Puits des Neuf Édits, le Canyon de Fjorhel, l'Oasis de Raak, les Cavernes de Balpak | en vigueur | |
 | Choix moraux | Continuer les scénarios sur d'autres zones sans attendre le verdict sur Kobor (testé ce week-end) : lot 1 = Berestograd, l'Oasis de Maulu, le Fjord de Rames | en vigueur | |
 | Livres | « Ajoute également des livres à laisser dans les zones, racontant l'histoire de la zone » : un livre par zone non Ressource (4 pages + dernière page selon le niveau) ; Ressources sans livre pour l'instant (design simple) | en vigueur (2.11) | rien |
 | Livres | « Ajoute également des livres à laisser dans les zones, racontant l'histoire de la zone » : un livre par zone non Ressource (4 pages + dernière page selon le niveau) ; Ressources sans livre (design simple), confirmé par l'utilisateur le 19 nov. (« Ressources sans livre ») | en vigueur (2.11) | rien |
