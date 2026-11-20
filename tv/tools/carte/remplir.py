@@ -123,7 +123,7 @@ while True:
     c=max(cs,key=score) if len(cs)>1 else cs[0];P.poser(c[1],c[2],c[3])
   else:
     mx,my=[(a+b)/2 for a,b in zip(G.xy(e[0]),G.xy(e[1]))];cle=(round(mx),round(my));echecs[cle]+=1
-    r=1.6+0.8*min(echecs[cle],8)
+    r=1.6+0.8*min(echecs[cle],int(os.environ.get("RMAX","8")))
     for tid in [t for t in list(P.T) if t not in fixes and (P.T[t][0]!='decagone' or echecs[cle]>=int(os.environ.get('COLLE','4'))) and math.hypot(cen(t)[0]-mx,cen(t)[1]-my)<r]:P.retirer(tid)
   if n>int(os.environ.get('MAXPAS','30000')):print('abandon',flush=True);sys.exit(2)
   if n%200==0:print('pas',n,'tuiles',len(P.T),'réparations',sum(echecs.values()),flush=True)

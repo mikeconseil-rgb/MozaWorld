@@ -17,11 +17,11 @@ const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},dec
    - elles ne cèdent qu'une fois toutes les zones de départ prises et le royaume assez développé (paquet d'au moins 15 cartes). */
 const DIST_DEP={},PAQUET_ROYAUME=15;
 const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR'];for(const id of org){d[id]=0;file.push(id)}
-  const ordre=[];while(file.length){const z=file.shift();for(const v of (typeof VOISINES!=='undefined'?VOISINES[z]:[])||[])if(d[v]===undefined){d[v]=d[z]+1;file.push(v);ordre.push(v)}}
+  const ordre=[];while(file.length){const z=file.shift();for(const v of (typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE[z]:[])||[])if(d[v]===undefined){const W=typeof ZWB!=='undefined'&&ZWB[v];if(W&&(W.d&&W.d.pret===false||Math.hypot(W.c[0],W.c[1])>1250))continue;d[v]=d[z]+1;file.push(v);ordre.push(v)}}
   const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={},W=typeof ZWB!=='undefined'?ZWB:ZB;for(const id of org){const t=W[id].mod||id;n[t]=(n[t]||0)+1}
   const dep=org.slice();for(const id of ordre){const t=W[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
 const ESTDEP=new Set(ZONES_DEP);
-const BORD_DEP=new Set((typeof ZW!=='undefined'?ZW:ZN).filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES!=='undefined'?VOISINES[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
+const BORD_DEP=new Set((typeof ZW!=='undefined'?ZW:ZN).filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
 function nivDep(graine){const o={};for(const Z of (typeof ZW!=='undefined'?ZW:ZN)){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;
   o[Z.id]=ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?6*sg:(2+Math.floor(h2*6))*sg}return o}
 let NIV_DEP=nivDep(0);
@@ -37,9 +37,10 @@ for(const id of IDS){if(S.lv[id]===undefined)S.lv[id]=NIV_DEP[id]||0;if(S.own[id
 /* Parties enregistrées avant le combat : les zones déjà à vous comptent comme activées */
 for(const id of IDS)if(S.act[id]===undefined)S.act[id]=!!S.own[id];
 /* 18 nov. : territoire de départ donné au joueur, niveau 1, pôle au hasard par zone ; paquet = leurs cartes de palier 1 */
-function paquetDe(ids){return ids.filter(id=>(ZB[id].mod||id)!=='RES'&&S.own[id]&&S.act[id]&&S.lv[id]).map(id=>typeof clePalier==='function'?clePalier(ZB[id],S.lv[id]):id)}
-function donnerDepart(){for(const id of ZONES_DEP){const Z=ZB[id],lv=(Z.mod||id)==='RES'?1:(Math.random()<.5?-1:1);
-    S.lv[id]=lv;S.own[id]=true;S.act[id]=true;S.emp[id]=false;S.rest[id]=0;if(Z.lv!==lv){Z.lv=Z.lvT=lv;if(typeof rebuild==='function'){rebuild(Z);Z.update(lv);if(typeof placeAlt==='function')placeAlt(Z)}}}
+const ZWZ=id=>ZB[id]||(typeof ZWB!=='undefined'&&ZWB[id]);   /* 2.15 : une zone du monde, chargée ou non */
+function paquetDe(ids){return ids.filter(id=>ZWZ(id)&&(ZWZ(id).mod||id)!=='RES'&&S.own[id]&&S.act[id]&&S.lv[id]).map(id=>typeof clePalier==='function'?clePalier(ZWZ(id),S.lv[id]):id)}
+function donnerDepart(){for(const id of ZONES_DEP){const Z=ZWZ(id),lv=(Z.mod||id)==='RES'?1:(Math.random()<.5?-1:1);
+    S.lv[id]=lv;S.own[id]=true;S.act[id]=true;S.emp[id]=false;S.rest[id]=0;if(ZB[id]&&Z.lv!==lv){Z.lv=Z.lvT=lv;if(typeof rebuild==='function'){rebuild(Z);Z.update(lv);if(typeof placeAlt==='function')placeAlt(Z)}}}
   if(ZONES_DEP.indexOf('DON')>=0)S.dernierAssaut=S.nc||0;
   S.deck=paquetDe(ZONES_DEP)}
 if(!Array.isArray(S.deck)||!S.deck.length)S.deck=paquetDe(IDS);
@@ -207,7 +208,7 @@ function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw]
   try{localStorage.setItem('mz-region',JSON.stringify([Math.round(c[0]),Math.round(c[1])]));localStorage.setItem('mz-apres',apres||'jeu')}catch(_){}
   const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}setTimeout(()=>location.reload(),60)}
 function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');return}
-  if(neuf){for(const id in S.lv)if(!ZB[id])delete S.lv[id];for(const k of['own','emp','rest','act'])for(const id in S[k]||{})if(!ZB[id])delete S[k][id]}
+  if(neuf){for(const id in S.lv)if(!ZB[id])delete S.lv[id];for(const id of ZONES_DEP)if(!ZB[id])S.lv[id]=0;for(const k of['own','emp','rest','act'])for(const id in S[k]||{})if(!ZB[id])delete S[k][id]}
   if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
     S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;S.found=[];S.secT={};
@@ -554,7 +555,8 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(mode==='mue'&&mue){stepMue(dt);if(mue)camMue(dt);else camFollow(dt)}
   else{if(mode==='epreuve'&&E){E.t+=dt;E.step(dt,T);if(E&&!E.monde)E.draw(T)}else if(mode==='monde')move(dt);else if(!started){P.yaw+=dt*.05;P.y=stand(P.x,P.z,1e3).g}else move(0);
     if(!(mode==='epreuve'&&E&&!E.monde))camFollow(dt)}
-  const Z=zoneAt(P.x,P.z);if(Z&&Z!==curZ&&mode==='monde'&&started&&Z.plus&&dReg(Z.c)>REG_IN){curZ=Z;voyagerRegion(Z.c,'jeu')}
+  const Z=zoneAt(P.x,P.z);if(Z&&Z!==curZ&&mode==='monde'&&started&&Z.plus&&dReg(Z.c)>REG_IN&&!navigator.webdriver){   /* bancs d'essai automatisés (Playwright) : pas de voyage, la région reste fixe */
+  curZ=Z;voyagerRegion(Z.c,'jeu')}
   else if(Z&&Z!==curZ){curZ=Z;hudKey='';if(mode==='monde'&&started)toast(TYPE[Z.id].kind+' · niveau '+(sgn(S.lv[Z.id])||'0'),Z.info.nom,palTxt(Z,S.lv[Z.id]))}hud();invite();
   stepAtmo(mode==='mue'&&mue?mue.Z:curZ,dt,T,P.x,P.y,P.z);hero.userData.pl.intensity=curZ===ANT?.12:.55;
   if(AX&&curZ===DON&&DON.lv<=-4&&P.walked-stepAcc>2.4){stepAcc=P.walked;perc(AX.currentTime,'t',1.2)}

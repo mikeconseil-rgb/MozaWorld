@@ -46,7 +46,7 @@ const DON=zone('DON',walk(VX[4],VX[3],[108,108,108]));
    Une région = les tuiles dont le centre est à moins de REG_R du centre de région. Quand le héros entre dans une tuile à plus de REG_IN
    de ce centre, on enregistre et on recharge la page centrée sur cette tuile (voyage, voir main.js). Les cinq zones d'origine restent
    toujours dans ZN (beaucoup de code les nomme), mais hors de la grille de terrain quand la région est loin. */
-const REG_R=1750,REG_IN=1000;
+const REG_R=1700,REG_IN=1300;
 const REGION=(()=>{let c=[0,0];try{const j=JSON.parse(localStorage.getItem('mz-region')||'null');if(j&&isFinite(j[0])&&isFinite(j[1]))c=[+j[0],+j[1]]}catch(_){}return{c}})();
 const dReg=c=>Math.hypot(c[0]-REGION.c[0],c[1]-REGION.c[1]);
 for(const Z of ZN)Z.reg=dReg(Z.c)<REG_R+400;

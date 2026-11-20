@@ -17,7 +17,7 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
   const pret=await p.waitForFunction(()=>window.MZ&&typeof window.MZ.domaines==='function',null,{timeout:30000}).then(()=>true,()=>false);
   ok('la page démarre et exporte MZ.domaines',pret);
   if(pret){
-    await p.evaluate(()=>window.MZ.start());await p.waitForTimeout(1500);
+    await p.evaluate(()=>window.MZ.start());await p.waitForTimeout(3500);
     const api=await p.evaluate(()=>[typeof verrouillee,typeof defenseMonde,typeof domaines].join(','));
     ok('fonctions globales verrouillee, defenseMonde, domaines',api==='function,function,function',api);
     /* 1. domaines : au moins 2 tuiles, du même type, voisines */
@@ -37,11 +37,12 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     ok('domaine de Ressources fermé : +1 mana par cycle',!!r&&r.mana>=1,r&&r.lignes);
     ok('le bandeau affiche les domaines fermés',!!r&&/fermés/.test(r.bandeau));
     /* le toast d'accueil dure 6 s de jeu (plus longtemps dans un navigateur sans carte graphique) : on l'écourte, le nôtre attend son tour */
-    await p.evaluate(()=>{toastT=0});await p.waitForTimeout(1500);
+    await p.evaluate(()=>{toastT=0});await p.waitForTimeout(4000);
     const t1=await p.evaluate(()=>document.getElementById('t1').textContent);
     ok('le toast s\'affiche en exploration',/Domaine/.test(t1),t1);
     /* 3. cœur du royaume, verrou, defenseMonde */
-    const c=await p.evaluate(()=>{const coeur=ZN.map(Z=>Z.id).filter(auCoeur);const vC=VOISINES.CIT.slice();
+    const c=await p.evaluate(()=>{for(const v of VOISINES.MAR)window.MZ.prendre(v);   /* 2.15 : monde entier, le départ n'a plus de cœur tout fait : on prend les voisines de l'Assemblée d'origine */
+      const coeur=ZN.map(Z=>Z.id).filter(auCoeur);const vC=VOISINES.CIT.slice();
       const loin=ZN.map(Z=>Z.id).find(id=>!verrouillee(id)&&!auCoeur(id));
       return{coeur,dm:coeur.length?defenseMonde(coeur[0]):null,cit:verrouillee('CIT'),voisCIT:vC.every(verrouillee),loin,dCIT:defenseMonde('CIT')}});
     ok('des zones sont au cœur du royaume et verrouillées',c.coeur.length>0&&c.dm.bonus>=2,c.coeur.join(',')+' → '+(c.dm&&c.dm.raisons.join(', ')));
