@@ -38,4 +38,4 @@ Le joueur commence faible, prend possession des zones une à une et tire ses pou
 
 Un test de fumée tourne sur chaque pull request (`.github/workflows/test-fumee.yml`) : la page démarre, une partie se lance, un combat se joue, sans erreur. Pour le lancer à la main : `node tv/tools/test-fumee.js`.
 
-Les tests du gameplay du monde ne tournent pas tout seuls : `node tv/tools/test-monde.js` (longue partie, plusieurs minutes) et `test-hordes`, `test-rivaux`, `test-domaines`, `test-donjons`, `test-tours`, `test-commerce`, `test-caravanes`, `test-lois`, `test-pacte`, `test-siege` (même dossier). À lancer quand on touche au module concerné.
+Les tests du gameplay du monde tournent tout seuls chaque nuit et à la demande (`.github/workflows/tests-monde.yml`, onglet Actions de GitHub) : `test-voyage` (voyage entre deux régions), `test-monde` (longue partie, plusieurs minutes), `test-hordes`, `test-rivaux`, `test-domaines`, `test-donjons`, `test-tours`, `test-commerce`, `test-caravanes`, `test-lois`, `test-pacte`, `test-siege` (dossier `tv/tools/`). À lancer aussi à la main quand on touche au module concerné.
