@@ -84,7 +84,7 @@ function payerPrix(p){if(!p)return[];const fait=[];
   if(p.glace){S.res.Glace=Math.max(0,resN('Glace')-p.glace);fait.push('−'+p.glace+' Glace')}
   if(p.mana){for(let i=0;i<p.mana;i++){const b=MTYPES.reduce((m,x)=>resN(x)>resN(m)?x:m,MTYPES[0]);if(resN(b)>0)S.res[b]=resN(b)-1}fait.push('−'+p.mana+' mana')}
   if(p.pv){S.fatigue=(S.fatigue||0)+p.pv;fait.push('−'+p.pv+' PV au prochain combat')}
-  if(p.perte){const c=S.deck.map((k,i)=>[k,i]).filter(x=>DEPART.indexOf(x[0])<0);if(c.length){const x=c[Math.floor(Math.random()*c.length)];S.deck.splice(x[1],1);
+  for(let n=0;n<(p.perte||0);n++){const c=S.deck.map((k,i)=>[k,i]).filter(x=>DEPART.indexOf(x[0])<0);if(c.length){const x=c[Math.floor(Math.random()*c.length)];S.deck.splice(x[1],1);
     fait.push('« '+(CK[x[0]]?CK[x[0]].nom():x[0])+' » perdue')}}
   if(p.exil){const i=S.deck.indexOf(p.exil);if(i>=0){S.deck.splice(i,1);fait.push('« '+(CK[p.exil]?CK[p.exil].nom():p.exil)+' » exilée')}}
   return fait}

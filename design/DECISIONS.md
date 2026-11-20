@@ -35,6 +35,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Choix moraux | « Oui à tout », lot 2 des scénarios : le Puits des Neuf Édits, le Canyon de Fjorhel, l'Oasis de Raak, les Cavernes de Balpak | en vigueur | |
 | Choix moraux | Continuer les scénarios sur d'autres zones sans attendre le verdict sur Kobor (testé ce week-end) : lot 1 = Berestograd, l'Oasis de Maulu, le Fjord de Rames | en vigueur | |
 | Livres | « Ajoute également des livres à laisser dans les zones, racontant l'histoire de la zone » : un livre par zone non Ressource (4 pages + dernière page selon le niveau) ; Ressources sans livre pour l'instant (design simple) | en vigueur (2.11) | rien |
 | Livres | « Ajoute également des livres à laisser dans les zones, racontant l'histoire de la zone » : un livre par zone non Ressource (4 pages + dernière page selon le niveau) ; Ressources sans livre (design simple), confirmé par l'utilisateur le 19 nov. (« Ressources sans livre ») | en vigueur (2.11) | rien |
