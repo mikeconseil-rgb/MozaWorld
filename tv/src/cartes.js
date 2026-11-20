@@ -15,19 +15,23 @@ function execOp(o,c){const L=c.L,x=c.x,n=v=>Math.max(0,Math.round(val(v,L)*x)),o
     case'garde':for(const u of alliesDe(o[1]))garder(u,n(o[2]));break;
     case'soin':for(const u of alliesDe(o[1]))soigner(u,n(o[2]));break;
     case'pioche':pioche(Math.max(1,Math.round(val(o[1],L))));break;
-    case'hesite':{const q=o[1];if(q==='tous')tous().forEach(hesite);else if(typeof q==='number')tous().slice(0,q).forEach(hesite);else cibles('cible',c.t).forEach(hesite);break}
+    case'hesite':{const q=o[1];if(q==='tous'&&CB.cases)tous().forEach(m=>{if(m.chef){m.atk=Math.max(1,m.atk-1);pop(m,'−1 attaque','g')}else hesite(m)});else if(q==='tous')tous().forEach(hesite);else if(typeof q==='number')tous().slice(0,q).forEach(hesite);else cibles('cible',c.t).forEach(hesite);break}
     case'affaiblit':for(const m of cibles(o[1],c.t)){m.atk=Math.max(1,m.atk-Math.max(1,Math.round(val(o[2],L))));pop(m,'affaibli','g')}break;
     case'briseGarde':for(const m of cibles(o[1],c.t)){m.g=0;pop(m,'garde brisée','g')}break;
     case'ignoreGarde':c.ig=true;break;
     case'volVie':c.vv=true;break;
     case'invoque':invoquer(bete2(o[1],n(o[2]),n(o[3])));break;
     case'brulure':for(const m of cibles(o[1],c.t)){(m.br=m.br||[]).push([n(o[2]),Math.max(1,Math.round(val(o[3]||2,L)))]);pop(m,'brûle','deg')}break;
-    case'vulnerable':for(const m of cibles(o[1],c.t)){m.vul=(m.vul||0)+Math.max(1,Math.round(val(o[2],L)));pop(m,'marqué','deg')}break;
+    case'vulnerable':for(const m of cibles(o[1],c.t)){m.vul=Math.min(3,(m.vul||0)+Math.max(1,Math.round(val(o[2],L))));pop(m,'marqué '+m.vul,'deg')}break;
+    /* passe 4 (testeurs) : raclage (garde effacée, +1 dégât par 3 de garde, au plus +5), brume qui détourne les volants, carte reprise gratuite */
+    case'raclage':for(const m of cibles('cible',c.t)){const g=m.g||0;m.g=0;pop(m,'garde brisée','g');frappe(m,n(o[1]||5)+Math.min(5,Math.floor(g/3)))}break;
+    case'volGarde':CB.volGarde=CB.tour;journal('La brume monte : un ennemi qui vole par-dessus frappera la Garde.');break;
+    case'gratuit':CB.gratuitSuivant=1;break;
     case'riposte':CB.riposte=(CB.riposte||0)+n(o[1]);pop(CB.hero,'riposte '+CB.riposte,'g');break;
     case'echo':CB.echo=true;journal('Écho : la prochaine carte de zone de ce tour comptera double.');break;
     case'recup':{/* jamais une carte qui a elle-même une récupération ; 2 par tour au plus (anti-boucle) */
       if((CB.nrecup=(CB.nrecup||0)+1)>2)break;const d=CB.defausse;
-      for(let i=d.length-2;i>=0;i--){const kk=d[i],cc=CK[kk];const ops=cc&&cc.ops?cc.ops():[];if(ops.some(o=>o[0]==='recup'))continue;if(CB.main.length<8)CB.main.push(d.splice(i,1)[0]);break}break}
+      for(let i=d.length-2;i>=0;i--){const kk=d[i],cc=CK[kk];const ops=cc&&cc.ops?cc.ops():[];if(ops.some(o=>o[0]==='recup'))continue;if(CB.main.length<8){const kk2=d.splice(i,1)[0];CB.main.push(kk2);if(CB.gratuitSuivant){CB.gratuit=kk2;CB.gratuitSuivant=0;journal(`« ${CK[kk2].nom()} » revient en main et ne coûte rien ce tour.`)}}break}break}
     case'mana':{/* mana de combat : il disparaît à la fin du combat */const ty=o[1]==='zone'?ZMANA[c.z]:o[1],q=Math.min(2,Math.max(1,Math.round(val(o[2],L))));
       if(typeof gagner==='function'){gagner(ty,q);(CB.mg=CB.mg||{})[ty]=(CB.mg[ty]||0)+q}break}
     case'boost':CB.mana++;CB.capT++;break;
@@ -39,8 +43,10 @@ function execOp(o,c){const L=c.L,x=c.x,n=v=>Math.max(0,Math.round(val(v,L)*x)),o
       execOps(o[3],Object.assign({},c,{x:c.x/(c.dbl?2:1)*(plein?1:.5),ig:false,vv:false}))}break;
     case'si':if(condition(o[1],c))execOps(o[2],c);break;
     case'prixPV':perdPV(Math.round(val(o[1],L)));break;
-    case'prixDefausse':for(let i=0;i<val(o[1],L)&&CB.main.length;i++){CB.defPrix=(CB.defPrix||0)+1;const j=Math.floor(Math.random()*CB.main.length);CB.defausse.push(CB.main.splice(j,1)[0])}break;
-    case'prixBete':{const b=CB.allies.filter(u=>u.bete&&u.pv>0&&!(CB.cases&&u.mur)).sort((p,q)=>p.pv-q.pv)[0];if(b)frappe(b,Math.round(val(o[1],L)),CB.hero);break}
+    case'prixDefausse':/* main vide : le prix se paie sur le dessus de la pioche (sinon il serait gratuit en dernière carte) */
+      if(!CB.main.length&&CB.cases){for(let i=0;i<val(o[1],L)&&CB.pile.length;i++){CB.defPrix=(CB.defPrix||0)+1;CB.defausse.push(CB.pile.pop())}journal('Prix payé sur le dessus de la pioche.');break}
+      for(let i=0;i<val(o[1],L)&&CB.main.length;i++){CB.defPrix=(CB.defPrix||0)+1;const j=Math.floor(Math.random()*CB.main.length);CB.defausse.push(CB.main.splice(j,1)[0])}break;
+    case'prixBete':{const b=CB.allies.filter(u=>u.bete&&u.pv>0&&!(CB.cases&&u.mur)&&!(u.neCarte&&u.neCarte===CB.nJoues)).sort((p,q)=>p.pv-q.pv)[0];if(b)frappe(b,Math.round(val(o[1],L)),CB.hero);break}
     case'ennemiGarde':tous().forEach(m=>{m.g+=Math.round(val(o[1],L));pop(m,'+garde','g')});break;
     case'ennemiSoin':tous().forEach(m=>soigner(m,Math.round(val(o[1],L))));break;
   }}
@@ -76,7 +82,7 @@ function carteCK(id,choix,niv){const L=()=>Math.max(1,niv());const cur=()=>choix
     get reveille(){const p=(cur().ops||[]).find(o=>o[0]==='reveil');return p?p[1]:null},
     txt:k=>texteCarte(cur().effet,L(),contreX(k))+(typeof atoutsDe==='function'?atoutsDe(id).map(a=>` Atout ${a.nom}.`).join(''):''),jeu:(k,t)=>{if(typeof atoutsAvant==='function')atoutsAvant(id,k);const avant=vivants(CB.foes).reduce((a,m)=>a+m.pv,0);const dbl=CB.echo&&!(cur().ops||[]).some(o=>o[0]==='echo');if(dbl){CB.echo=false;journal('Écho : effet doublé.')}
       const ctx={L:L(),x:contreX(k)*(dbl?2:1),dbl,t,z:id,k};execOps(cur().ops,ctx);if(typeof atoutsApres==='function')atoutsApres(id,k,t,ctx,avant);if(ctx.exil){const i=CB.defausse.lastIndexOf(k);if(i>=0)CB.defausse.splice(i,1);(CB.exil=CB.exil||[]).push(k)}}}}
-function installerCartes22(){
+function installerCartes22(){if(typeof correctifsCartes==='function')correctifsCartes();
   /* anciennes parties : les cartes communes sortent du paquet (18 nov. : plus de communes) et les Ressources ne donnent plus de carte (17 nov.) */
   if(Array.isArray(S.deck)){S.deck=S.deck.filter(k=>COMMUNES.indexOf(k)<0&&(k in CK?(CK[k].z||CK[k].secret):true)).filter(k=>{const id=k.split('#')[0],Z=typeof ZWB!=='undefined'?ZWB[id]:typeof ZB!=='undefined'&&ZB[id];return!Z||(Z.mod||Z.id)!=='RES'})}
   if(typeof ART!=='undefined'){ART.pieu=ART.pieu||Object.assign({},ART.garde,{sorte:'Bloqueur'});ART.caillou=ART.caillou||Object.assign({},ART.coup);ART.torche=ART.torche||Object.assign({},ART.coup,{fond:['#2e1408','#c8541c'],sorte:'Brûlure'})}
@@ -104,3 +110,12 @@ function eveillee(k){const i=k.indexOf('#');if(i<0)return true;const id=k.slice(
 function clePalier(Z,lv){const k=Z.id+'#'+((Z.mod||Z.id)==='RES'?'r':lv<0?'-':'+')+Math.abs(lv);return CK[k]?k:Z.id}
 /* fin de combat : le mana gagné par les cartes s'évapore (seules les Ressources remplissent la réserve durable) */
 function oublierManaDeCombat(C){if(!C||!C.mg)return;for(const t in C.mg)S.res[t]=Math.max(0,(S.res[t]||0)-C.mg[t])}
+
+/* Passe 4 du Plateau (20 nov.) : cartes dont le texte et les ops ne disaient pas la même chose (relevé du testeur). Appliqué au chargement, survit à la régénération des données. */
+function correctifsCartes(){if(typeof CARTES22==='undefined'||CARTES22.corrige)return;CARTES22.corrige=1;const Z=CARTES22.zones;const fix=(id,s,f)=>{const c=Z[id]&&Z[id][s];if(c)f(c)};
+  fix('CIT','m1',c=>{c.ops=[['raclage',5]]});
+  fix('CIT','p1',c=>{c.effet="Reprenez en main la dernière carte de votre défausse. Cette carte s'exile : la lettre, une fois lue, ne revient pas.";c.ops=[['recup'],['exil']]});
+  fix('DON','p1',c=>{c.ops=[['si','cibleGarde',[['gratuit']]],['briseGarde','cible'],['deg','cible',2],['recup']]});
+  fix('MAR','m1',c=>{c.ops=[['garde','heros',3],['volGarde']]});
+  fix('ANT120','m3',c=>{c.cible=1});
+  fix('ANT120','p3',c=>{c.ops=[['invoque','Chacal de braise',4,4],['deg','cible',4],['si','brule',[['deg','cible',4]]],['brulure','cible',2,2],['prixBete',2]]})}

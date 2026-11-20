@@ -90,4 +90,4 @@ const graine=+(opt('graine')||1),lot=+(opt('lot')||0),profil=opt('profil')||'dep
       const e=await p.evaluate(()=>{const r={etat:JR.etat(),journal:JR.log.slice()};JR.log=[];return r});out+=JSON.stringify(e,null,1)+'\n';
       if(erreurs.length)out+='ERREURS JS : '+erreurs.join(' | ')+'\n'}catch(err){out+='ERR '+err+'\n'}rs.end(out)}).listen(+opt('port'),()=>console.log('pret'))})}
   if(erreurs.length)console.log('ERREURS JS : '+erreurs.slice(0,5).join(' | '));
-  await nav.close()})().catch(e=>{console.error(e);process.exit(1)});
+  await nav.close();process.exit(0)})().catch(e=>{console.error(e);process.exit(1)});
