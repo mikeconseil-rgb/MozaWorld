@@ -15,7 +15,6 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Gameplay du monde, lot 3 : caravanes (gains, risques de pillage), lois du catalogue de onze et leurs chiffres, prix des pactes par maison, forces des vagues du siège | 19-20 nov. | Les jouer ; les six réglages posés le 20 nov. sont confirmés (« Oui à tout »), les autres chiffres restent ceux de l'équipe |
 | Monde de 925 zones (347 Ressources, 249 Antres, 195 Assemblées, 90 Donjons, 44 Citadelles posés) au lieu des 986 de la liste | 20 nov. | Décidé « pour l'instant » ; à revoir après le 28 nov. (pavage) |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
-| Minicarte qui tourne avec la caméra, carte du monde sur Vue | 20 nov. | Son avis après un soir de jeu |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
@@ -24,7 +23,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
-| Minicarte | « Améliore encore la minimap pour qu'elle soit plus jolie et pratique » : médaillon rond centré sur le héros et zoom à trois crans, plus une carte du monde complète (Vue ou C) d'où l'on voyage | provisoire (présentation choisie par Claude : rotation avec la caméra, couleurs par type) | minicarte carrée de toute la région (2.4) ; Vue = liste de voyage |
+| Minicarte | « Améliore encore la minimap pour qu'elle soit plus jolie et pratique » : médaillon rond centré sur le héros et zoom à trois crans, plus une carte du monde complète (Vue ou C) d'où l'on voyage | en vigueur : rotation avec la caméra confirmée par l'utilisateur le 20 nov. (« Oui » à la recommandation de garder la rotation, lecture du coordinateur) ; couleurs par type | minicarte carrée de toute la région (2.4) ; Vue = liste de voyage |
 
 ## 20 novembre 2026 (zones en série)
 
