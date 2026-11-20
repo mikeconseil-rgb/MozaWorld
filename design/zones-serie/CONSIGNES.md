@@ -141,3 +141,18 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 5. **La table commune des bêtes donne la famille scientifique de chaque nom avant l'écriture** : le saïga, le bouquetin et le buffle sont trois bovidés ; le frelon n'est pas un apidé ; la chouette n'est pas un rapace diurne.
 6. **Une forme ou un geste signalé en double se change avant la remise, par le second inscrit**, et sa chute avec lui. On ne le laisse pas au critique.
 7. **Noms : le complément de la seconde moitié (« des Cendres ») ne revient pas non plus dans le lot**, et un conteur ne répète jamais son propre mot principal (« l'Eau » deux fois).
+
+## Leçons du critique après le lot 11 (à appliquer dès le lot 12)
+
+1. **`hesite` et `hesiteAvant` sont un seul crochet** (le moteur lit `int.a === 'h'` pour les deux). Ils comptent ensemble dans le plafond de 3 pôles par conteur.
+2. **« Vos alliés gagnent n de garde » lève aussi la Garde du héros**, car le héros est dans `CB.allies` (et « vos alliés se soignent » le soigne aussi). Elle nourrit `garde` dans les couples, les demi-couples et les conditions rendues vraies.
+3. **Une reprise de famille principale sur un mot** :
+   - est un 2e emploi seulement, par un autre conteur que le premier ;
+   - prend un crochet, un prix principal et une bête principale nouveaux ;
+   - est déclarée dans familles_X.md ;
+   - se fait 2 fois au plus par conteur et par lot.
+   Au-delà, la place est perdue, et LISTE.md la retire avant de répartir.
+4. **Les gros coups font 5 cartes de dégâts ciblés, jamais 6.** Un même assemblage de crochet et de deux prix (`blesse`, défausse, soin ennemi) compte comme un seul assemblage.
+5. **Registre grand public pour adultes.** Pas de sacrifice humain, de mutilation, de châtiment corporel décrit, ni de coup porté à un enfant ou à un « garçon ». On suggère (les fers, la porte barrée) au lieu de montrer, même quand la culture d'inspiration le ferait.
+6. **Même couple dans le lot : le second inscrit compare les images du ±7, pas seulement les familles.** Deux réserves de rêves ou deux « plus d'ombre » font une même métamorphose.
+7. **Noms : la première moitié se compare aussi à une lettre près** (Salinella, Salinera). Un nombre précis compte aussi dans les ambiances (« trois » dans trois zones de C).
