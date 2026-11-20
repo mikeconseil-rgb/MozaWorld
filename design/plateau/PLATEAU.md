@@ -4,7 +4,7 @@ Demande de l'utilisateur (19 nov. 2026) : améliorer le gameplay du jeu de carte
 
 Le Plateau agrandit le Nœud (deux voies et un centre, choisi le 17 nov.). Code : `tv/src/plateau.js` (terrain, placement, dessin) et `tv/src/combat.js` (coups).
 
-## Les règles (passe 3)
+## Les règles (passe 5)
 
 - **Trois voies** : haute, du milieu, basse. De votre côté, chaque voie a **deux cases** : l'avant et l'arrière. Le héros est derrière tout le monde, la Garde juste devant lui. Le décagone du centre reste à tenir (vos coups +2 si vous avez au moins autant d'unités que l'ennemi).
 - **Placement** : quand une carte fait venir une bête ou un bloqueur, le jeu propose une case (l'avant de la voie la plus menacée), puis vous la déplacez : ▲ ▼ change de voie, ◀ arrière, ▶ avant, OK pose, Retour garde la case proposée. Poser sur une case prise échange les deux unités. Quatre unités au plus sur le plateau (la plus faible part pour faire de la place).
@@ -22,6 +22,9 @@ Le Plateau agrandit le Nœud (deux voies et un centre, choisi le 17 nov.). Code 
   - Hexagone, **Source** (Ressource) : l'unité posée là frappe +2.
   - Losange, **Tribune** (Assemblée) : l'unité posée là attire les coups des voies voisines laissées vides.
 - Le bélier ne fait double que contre la Garde et les bloqueurs. Un ennemi qui vole par-dessus ignore la Garde, même avec les blessures.
+- **Renforts** : en éveil, le chef appelle un sbire aux tours 3 et 5 (annoncé au tour d'avant, dans la voie qu'il vise) ; en rencontre, un renfort au tour 3 s'il reste moins de 2 ennemis.
+- **Hésitation bornée** : un ennemi qui a hésité ne peut pas hésiter au tour suivant (tout ce tour-là) ; un chef, une fois tous les 3 tours ; « tous les ennemis hésitent » retire seulement 1 d'attaque au chef. La vulnérabilité ne dépasse pas 3.
+- Une Garde qui cède laisse passer le reste du coup au héros.
 - La Garde change de place : elle protège le héros, derrière les voies (avant le Plateau, elle prenait tous les coups en premier).
 
 ## Banc de jeu pour les testeurs

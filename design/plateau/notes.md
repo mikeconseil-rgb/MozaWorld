@@ -6,6 +6,7 @@ Quatre testeurs jouent de vrais combats avec le banc `tv/tools/jouer.js` et note
 |---|---|---|---|---|---|
 | 1 (19 nov.) | 6,5 | 4,5 | 4,5 | 5,5 | 4,8 |
 | 2 (19 nov.) | 7,5 | 6,5 | 6 | 6,5 | 6,3 |
+| 3-4 (20 nov., jeu de la passe 3) | 7 | 6,5 | 6,5 | 6,5 | 6,5 |
 
 ## Passe 1 : ce qui a été dit
 
@@ -30,3 +31,12 @@ Réglages et correctifs : capacité de dépense au moins la moitié du tour, et 
 ## Passe 3 : ce qui change (réglages, pas de nouvelle mécanique)
 
 Soutien de l'arrière (+2 de garde à l'avant de sa voie) ; une unité sur Bastion, Piège ou Tanière tient sa case ; menace séparée « ce tour » et « élan au prochain tour », « frappe tout le monde » comptée ; case proposée qui évite le bélier pour un bloqueur ; Sentinelle à 6 + niveau PV mais bélier ×1,5 contre elle et épargnée par les prix ; chef +30 % de PV (+50 % en éveil) ; +2 du centre réservé aux bêtes et au héros ; bouton Y pour la Manœuvre ; coups des bêtes écrits au journal ; correctifs (tour 1 pour tous les ennemis, Retour, main, fantômes, force affichée).
+
+## Passe 4 (20 nov.) : ce qui a été dit sur le jeu de la passe 3
+
+- Mieux : l'arrière sert enfin (soutien, cases tenues) ; vrais combos ; la Manœuvre avec échange est le meilleur geste ; combats de 4-5 tours avec une courbe.
+- Reste : beaucoup trop facile (héros jamais touché par un ennemi, robot 60-90 %) ; la Garde qui cède absorbait tout le coup ; l'hésitation domine, l'habitude se contournait ; plus de vagues quand les sbires tombent ; badge de menace caché et faux (bélier, centre, vol) ; six cartes dont les ops ne disaient pas leur texte ; un prix « défaussez » gratuit en dernière carte.
+
+## Passe 5 : ce qui change
+
+Garde qui cède : le reste du coup passe au héros ; renforts (éveil : le chef appelle un sbire aux tours 3 et 5, annoncé la veille, dans sa voie ; rencontre : un renfort au tour 3 s'il reste moins de 2 ennemis) ; hésitation : l'habitude tient tout le tour, un chef n'hésite qu'une fois tous les 3 tours, « tous hésitent » ne retire au chef qu'1 d'attaque ; vulnérabilité plafonnée à 3 ; menace calculée comme le coup réel (bélier, Source, centre +1, vol affiché à part) ; l'élan du tour 1 garde le vrai coup pour le tour 2 ; une bête dont la voie est vide vise d'abord une voie voisine occupée ; un bloqueur n'est plus proposé face à un bélier ni retiré d'office ; prix « défaussez » sur le dessus de la pioche si la main est vide ; six cartes corrigées (Écorces à la boue, Lettre ramassée, La Cangue ouverte, Brume des crevasses, Dalles bleues, Le premier chacal) ; badge de menace au-dessus des bulles ; aide lisible pendant le placement.
