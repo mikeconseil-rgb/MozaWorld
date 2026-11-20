@@ -1,0 +1,33 @@
+name: Tests du monde (chaque nuit)
+# Décision du 20 nov. (« a partout », question 4) : les tests du gameplay du monde tournent tout seuls chaque nuit
+# et à la demande (onglet Actions, « Run workflow »), pas à chaque PR : ils prennent une vingtaine de minutes.
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 3 h du matin à Toronto
+  workflow_dispatch:
+jobs:
+  monde:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Installer Playwright et Chromium
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Tous les tests, l'un après l'autre
+        run: |
+          rate=""
+          for t in fumee voyage hordes rivaux domaines donjons tours commerce caravanes lois pacte siege monde; do
+            echo "::group::test-$t"
+            if node tv/tools/test-$t.js; then echo "RÉUSSI test-$t"; else echo "ÉCHEC test-$t"; rate="$rate test-$t"; fi
+            echo "::endgroup::"
+          done
+          if [ -n "$rate" ]; then
+            echo "### Tests en échec :$rate" >> "$GITHUB_STEP_SUMMARY"
+            echo "Tests en échec :$rate"; exit 1
+          fi
+          echo "### Les 13 tests passent" >> "$GITHUB_STEP_SUMMARY"
