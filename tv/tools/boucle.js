@@ -3,7 +3,8 @@
      node tv/tools/boucle.js <dossier de sortie> [zones séparées par des virgules]
    Produit : planche-<zone>.png (−7 | 0 | +7, sans interface, vue depuis la Pierre vers le centre de la zone),
    interface.png (exploration avec l'interface), combat.png (un combat en cours), mesures.json
-   (temps de chargement, triangles et appels de dessin par image, ombres comprises, dans trois zones).
+   (temps de chargement, triangles et appels de dessin par image, ombres comprises, dans chacune des zones des planches ;
+   boucle 3, 20 nov. 2026 : avant, trois zones fixes CIT, RES227, ASS152).
    Rendu logiciel (SwiftShader) : les chiffres servent à comparer deux versions entre elles, pas à prédire la Xbox. */
 const path=require('path'),fs=require('fs');const {chromium}=require('playwright');
 const racine=path.resolve(__dirname,'..'),out=path.resolve(process.argv[2]||'boucle-sortie');fs.mkdirSync(out,{recursive:true});
@@ -18,7 +19,7 @@ const three=fs.readFileSync(path.join(racine,'android','assets','three.min.js'))
   await p.evaluate(()=>MZ.start());await p.waitForTimeout(2500);
   /* mesures */
   const mes={chargement_ms:charge,zones:{}};
-  for(const id of ['CIT','RES227','ASS152'])mes.zones[id]=await p.evaluate(async id=>{MZ.tp(id);await new Promise(r=>setTimeout(r,1800));const i=__R.info;i.autoReset=false;i.reset();
+  for(const id of zones)mes.zones[id]=await p.evaluate(async id=>{MZ.tp(id);await new Promise(r=>setTimeout(r,1800));const i=__R.info;i.autoReset=false;i.reset();
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const o={triangles:i.render.triangles,appels:i.render.calls};i.autoReset=true;return o},id);
   /* interface d'exploration */
   await p.evaluate(()=>MZ.tp('DON045'));await p.waitForTimeout(3000);await p.screenshot({path:path.join(out,'interface.png')});
