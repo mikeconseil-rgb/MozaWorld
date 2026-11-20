@@ -27,6 +27,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Lot 3, réglages | Prix du pacte au moins le quart du revenu, qui suit ce quart ; 3e vague du siège au-dessus de la défense (combat obligatoire) ; Fossés, Guet, Greniers et Feux trompeurs sans effet sur les vagues ; une vague en marche menace les caravanes ; vengeance d'un pacte rompu hors Couvre-feu ; on peut rester dans le monde après la victoire | en vigueur (20 nov., « Oui à tout ») | |
 | Hordes | Une horde ne vise que les zones plus faibles de 2 ou 3 paliers | en vigueur | |
 | Hordes | Une zone à vous qui tombe à 0 sous une horde redevient sauvage (« Non » à « elle reste à vous ») ; elle garde votre empreinte (« Bonne idée », 19 nov.) | en vigueur | « reste à vous » (essai du 19 nov.) |
 | Rivaux | Un rival ne prend pas une zone sauvage sans rien faire : il doit réussir une épreuve annoncée et visible | en vigueur | prise sans combat (essai du 19 nov.) |
@@ -35,8 +36,8 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Verrous | Le verrou de Citadelle empêche les prises des rivaux, pas leurs contestations | en vigueur | |
 | Tesselles | Primes gardées (horde brisée 5, rival repoussé 4) ; change de 4 tesselles contre 1 mana gardé | en vigueur | |
 | Tours de guet | Pas d'entretien en mana pour l'instant | en vigueur | |
-| Lot 3 | Les quatre idées : caravanes (4), pacte avec une maison (5), siège final d'une Citadelle épique (6), pouvoirs des Assemblées (7) (« Oui à tout », « Les deux ») | en cours | |
-| Lot 2 | Tours de guet (7), commerce en Citadelle avec les tesselles (9), aménager chaque Donjon possédé (10) | en cours | |
+| Lot 3 | Les quatre idées : caravanes (4), pacte avec une maison (5), siège final d'une Citadelle épique (6), pouvoirs des Assemblées (7) (« Oui à tout », « Les deux ») | en vigueur (en ligne, PR 61) | |
+| Lot 2 | Tours de guet (7), commerce en Citadelle avec les tesselles (9), aménager chaque Donjon possédé (10) | en vigueur (en ligne, PR 55) | |
 
 ## 19 novembre 2026
 
