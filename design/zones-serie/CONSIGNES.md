@@ -75,3 +75,14 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 6. **Pas d'appoint réflexe** : une même famille d'appoint (le mana chez A au lot 4, la marque au lot 3) ne revient pas dans plus de 3 pôles d'un même conteur.
 7. **Un pôle « tous les ennemis » ne frappe pas tous les ennemis sur plus de 3 cartes sur 7**, et une forme ne répète pas « X dégâts à la cible » sur toutes les cartes d'un pôle. Au moins trois familles par pôle, comme au lot 3.
 8. **Ressources** : un produit tinctorial, un récipient (calebasse, épuisette) ou un premier mot de nom (« Claies ») ne revient pas deux fois dans le lot. La liste commune des objets s'ajoute à celle des nombres.
+
+## Leçons du critique après le lot 5 (à appliquer dès le lot 6)
+
+1. **Dégâts ciblés : 4 cartes au plus par pôle, 5 dans un Donjon**, `si` compris. Ils ne servent jamais de lest en fin de carte, et jamais 7 sur 7.
+2. **L'écho n'est jamais sur plus de 4 cartes d'un pôle**, et au moins 2 cartes du pôle, sans écho, sont faites pour être doublées : le moteur ne double pas une carte qui porte un écho. Même règle pour toute famille que le moteur bloque sur elle-même.
+3. **Une place au plafond se choisit, elle ne se prend pas.** Si la famille ne tient pas dans le moteur ou dans la zone, le pôle prend une vocation de son type (bêtes, gros coups, pioche) ou un crochet, pas la dernière place libre. Les deux pôles d'une zone n'ont jamais la même famille principale, pioche comprise.
+4. **Prix à égalité, comptés au script** : même nombre de cartes à prix par pôle, à une carte près.
+5. **Couples déjà joués : compter les cartes des lots précédents au script**, pas lire leurs notes. La Mort n'est plus l'affaiblissement, la Vérité n'est plus la marque, le Foyer n'est plus la brûlure.
+6. **Une liste commune des prénoms et des institutions**, comme celle des nombres : aucun prénom deux fois dans un lot, et un mot d'institution (kurultai, conseil) dans une seule zone.
+7. **Tics à surveiller** : la pioche de A en appoint dans 3 pôles au plus ; « au prix de… » chez B une fois ; une recette de récit de C pas deux fois mot pour mot ; chez D, un nombre précis dans 6 récits sur 12 au plus et le compte faux d'un une fois. Une recette d'un lot ne revient pas au lot suivant chez le même conteur.
+8. **Formes du palier 7 : base de 45 à 55, sans tolérance**, et vol de vie compté sur les dégâts des `si` dans la table commune.
