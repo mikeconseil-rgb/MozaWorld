@@ -3,26 +3,39 @@ Anémoskala, l'Escalier des Moulins
 Atishdan, le Cratère aux Caracals
 Aukpaluk, les Fosses Rouges
 Banteay Chhatr, le Fort des Parasols
+Beinvellir, la Savane des Arbres-Corail
+Belolëd, la Citadelle du Glacier
 Berestograd, la Ville-Écorce
 Bouthysia, la Ville des Broches
+Bīt-Erpeti, les Îles aux Nuées
 Ca' Frasca, le Ridotto sous la Canopée
+Ca' Zelada, le Comptoir aux Mains nues
 Cathair Ceirte, la Source aux Chiffons
 Châh-e Bâd, la Tour du Puits
 Debre Nefas, la Falaise des Songes
 Dezh-Saravand, le Col numéroté
 Dún Ailithir, la Porte des Bannis
 Dûr-Ellamê, la Forteresse sous les Chapeaux
+Elatóessa, le Bois des Cassenoix
 Favillae, le Port des Palétuviers
+Fondasecca, le Collège des Eaux
 Gedel-Kokeb, la Citadelle à la Corde
 Glødting, l'Assemblée sur la Lave
 Haifeng-tai, la Falaise aux Onze Feux
 Halmgard, la Citadelle-Horloge
+Halmyrà, le Parvis des Sauniers
 Halophoros, les Galeries du Géomètre
 Hampiwasi, l'Île des Remèdes
 Hengivík, le Skáli aux Paresseux
 Ihuitepec, les Îles-Volières
+Inqilf-Meda, la Plaine du Rêve commun
 Iou-Nefer, les Îles aux Chadoufs
+Ishikiri-dō, la Carrière sous la Glace
 Ixkabal, la Citadelle des Ruches
+Khet-Neheh, la Forêt aux Mâts
+Kirî-Ešnun, les Jardins des Coupeuses
+KwaPhuphe, les Marais des Songes
+Kâmpoul Sla, la Citadelle aux Pieds de pierre
 Kār-Tâmti, la Citadelle de l'Appel
 L'Adbar d'Arbatana
 L'Aire de Kaldbrekka
@@ -35,11 +48,14 @@ L'Almunia de Zahrabel
 L'Anjoman des Vannes de Nayzar
 L'Apacheta de Kachi Pampa
 L'Ardoise à encre de Yanxi-Jian
+L'Argousaie de Chatsargan-Nuur
 L'Ekklèsia de Kryolimnè
 L'Ekklésia aux Vapeurs d'Athymna
 L'Encrerie de Corte Mufa
 L'Ermitage-Glacier d'Amba Tsehel
 L'Exarchat des Lucioles
+L'Hospice du Wendeljoch
+L'Imbizo d'eMatsheni
 L'Indaba de Sikhotheni
 L'Oasis de Maulu
 L'Oasis de Raak
@@ -55,12 +71,14 @@ La Caldeira de Bürgüdei
 La Camomille de Peñablanca
 La Carrière de Sangsafid
 La Caverne d'Âyinehkar
+La Chambre des Tables de Motiband
 La Chartreuse de Morvèle
 La Chaussée des Dormeurs de Veal Ambel
 La Corniche de Xaman K'iin
 La Coupole noyée de Kyrtè
 La Croûte de Solonets
 La Cueva de los Espejuelos
+La Curie de Fervidum
 La Draille de Morvannoc
 La Foire de Givrecloche
 La Fontaine aux Lévriers d'Aynalgar
@@ -86,12 +104,16 @@ La Lande de Jagodnik
 La Lande de Muka-Roa
 La Lande de Yaxuntik
 La Lanterne des Herbes de Malgrange
+La Latérite de Srae Krâham
 La Laure d'Ammokhoros
 La Ligne de Napaartuliit
+La Madrague d'Isla Atunera
 La Maison des Nattes de Che'ha'
 La Mangrove d'Atlacuixco
 La Mangrove de Bayan-Tsuur
 La Mangrove de Harâbân
+La Manne de Tamrī-ṣēri
+La Monnaie haute de Silbertann
 La Moraine bleue de Mer-Ikhem
 La Moraine d'Itztepetl
 La Ménagerie de Rukhsabad
@@ -118,11 +140,16 @@ La Tourbière d'Aqpivik
 La Tourbière de Myrvåg
 La Yourte des Khans de Zev-Tal
 Las Albercas de Salmedina
+Le Banc des Jours de Sak-Tz'ib
 Le Baoli de Marjanabad
 Le Baray sec de Romeas-Kor
+Le Bargad de Kishtpur
+Le Bois d'aigle de Prey Khmau
 Le Bureau des Fourneaux de Lianyao-Shan
+Le Cabildo de Jaralenga
 Le Cabildo de l'Atalaya de Bermejal
 Le Cadran de Tonalixco
+Le Cairn des Enchères de Sliabh Scáile
 Le Canyon d'Iōzaka
 Le Canyon de Danxue
 Le Canyon de Fjorhel
@@ -155,6 +182,7 @@ Le Fjord d'Ukiuttaq
 Le Fjord de Nextépec
 Le Fjord de Rames
 Le Fondaco de Malcanton
+Le Fono des Glaces de Tai-Hukapapa
 Le Fort-Récif de Hikuera
 Le Glacier d'Esh-Kurra
 Le Glacier d'Uxte'kal
@@ -162,11 +190,17 @@ Le Glacier de Saran-Mösön
 Le Glacier de Tuk Kâk
 Le Glirarium du Mons Sabucus
 Le Gouffre de Lianjiu
+Le Guet des Feux de Duanya
+Le Gui de Tír Luain
 Le Hawz de Tondābād
+Le Houblon de Staro Gradište
 Le Hursag des Noms grattés
 Le Jardin Ratissé de Sunagiri
 Le Jaugeur de Ta-Senut
 Le Kastron de Phoinikoussa
+Le Kava de Vaiharuru
+Le Kenbet des Roseaux de Pa-Mehet
+Le Khat d'Amba Tsehay
 Le Khural de Davs-Ulaan
 Le Kolo de Vaimanu
 Le Kourgane de Studenets
@@ -183,6 +217,7 @@ Le Piquet de Tsaa-Nuur
 Le Plateau de Toetoe-Nui
 Le Platier de Pa-Hetep
 Le Polissoir de Lann-Holen
+Le Pollen de Pujiang
 Le Popol Na de Taab Ek'
 Le Prieuré de sel d'Aumbrevaux
 Le Prieuré des Palmes de Hohensand
@@ -202,13 +237,16 @@ Le Scriptorium de Gullemont
 Le Sentier luisant de Coill Lonrach
 Le Shikargah de Badal-Ghat
 Le Sous-bois d'Ox Lu'um
+Le Sumac d'Aerokampos
 Le Sycomore de Thermochora
 Le Synode des Fumées d'Embrakion
 Le Sémantron de Pétrokhora
 Le Tajo de Almagrán
+Le Tambo de Pampachaka
 Le Terrain des Tatous de Kanpet
 Le Tionól des Îles amarrées de Muirgheal
 Le Tribunal des Treilles de Quanhe
+Le Triclinos de Lychnopétra
 Le Tsuglaan de Nogoon-Ordo
 Le Vicus de Ventidia
 Le Vivier de Kopua-nui
@@ -216,19 +254,27 @@ Le Vétché de Smolna Pouchtcha
 Le Warka d'Addi Kerkerra
 Le Yamen des Craquelures de Hanzhai
 Le Zygostasion de Prasonèsi
+Les Affûtoirs de Togiyama
 Les Agrafes de Palaiomolyvos
 Les Aires de KwaMoya
 Les Aires à chuño de Chiri-Pampa
+Les Aires à vanner de Qinwa Uta
 Les Aires à vanner de Ta-Nefou
 Les Alambics de Gulbahar
 Les Alunières de Rodalcázar
+Les Amadouviers de Coill Dorcha
 Les Ardoisières de Kurosuzuri
 Les Arçons de Möögtei
 Les Ateliers de Shankhabad
 Les Bains de salpêtre de Shorabad
 Les Bancs de Sfoungária
+Les Baobabs de Qaqqaliaq
 Les Barbes de Ciste d'Aigolophos
+Les Bardeaux de Tjärnvik
+Les Barene de Sant'Orsola
 Les Barques à torches de Kiṣal-Appari
+Les Barrages de Sheleqo
+Les Bassins de Chiauhtla
 Les Battoirs de Kiriraki
 Les Bergeries de Kiša-Ṣēri
 Les Blocs d'Orsella
@@ -243,21 +289,28 @@ Les Brûlis de Popelnik
 Les Brûlis de Tzaknal
 Les Brûloirs de Bunna Gara
 Les Bulles de bitume d'Id-Kalam
+Les Buttes de Nebtyu
 Les Cabosses de Kakaw-Ha'
 Les Cadres de Firnhalde
 Les Calebasses de Wenchit-Kuba
 Les Cales de Shuimu
 Les Cannaies de Melada
+Les Cannaies de la Marisma Honda
+Les Capsules de Wänzä Mädr
 Les Cardères de Fullonica
 Les Caroubiers de Puquio Ch'aki
 Les Carrières de Kbal Thmâ
 Les Cavernes d'Iqsinaq
 Les Cavernes de cristal de Balpak
 Les Caves de Drobnograd
+Les Cerfs-volants de Motu Hīhī
+Les Cerisiers écorcés de Kabayama
 Les Chantiers de Qajarnaq
 Les Chapeaux-citernes de Kampong Phsit
 Les Charbonnières de Brusaval
 Les Chardons de Cuajarejo
+Les Chaudrons de Campi Grassi
+Les Chenaux d'Imaarsuk
 Les Chenaux de Chak Che'
 Les Chenaux de Luoyanwan
 Les Chinampas Dérivantes de Tezcamixtli
@@ -266,7 +319,11 @@ Les Chênes-lièges de Corchuela
 Les Citernes de Mélikrata
 Les Claies de Shimidera
 Les Clos de Port Feamainn
+Les Clous de Khöshöö-Balgas
 Les Collets de Bulga-Tal
+Les Colliers de Plavuchka
+Les Coloquintes du Dürrfeld
+Les Concrétions de Yuraq-Machay
 Les Cordiers d'eMakhoweni
 Les Corniches de Hut-Benu
 Les Corniches de Rospis
@@ -274,6 +331,7 @@ Les Corniches de Zäräkot
 Les Coulées de Itztlacoyan
 Les Coupes de Billaurgarh
 Les Coupoles à miel de Chrysokamara
+Les Couteaux de Caño Salado
 Les Couvées de Campus Struthius
 Les Crabières de Sainte-Racine
 Les Creusets de Per-Biat
@@ -283,24 +341,32 @@ Les Degrés de Moetoa
 Les Digues de Dahan-Abzar
 Les Draps de Gribnoïé
 Les Dunes de Balo
+Les Dunes à scinques de Rena Morta
+Les Défenses de Castra Borealis
 Les Défenses de Palaiokeras
 Les Encensiers de Gondamar
 Les Enclos de Qasapata
 Les Enclos de Saltvidda
 Les Encriers de Q'umirumi
+Les Escamoles de Tlalxoco
+Les Escargots de Rabenmauer
 Les Fagots à écrevisses de Rakovets
 Les Falaises d'Urpichay
 Les Falaises de Srekor
 Les Fascines de Sandgarð
 Les Fentes de Tezcacuitla
+Les Ferrières d'oKhuni
+Les Feuillages de kwaNgcolosi
 Les Feuillets de Per-Iâh
 Les Feux de marque de Tamgal
 Les Filets d'Appalik
 Les Filières de K'ak'nab Sis
 Les Flaques de Caleta Ortiga
 Les Flaques de Ježevac
+Les Foins de Khar-Tsöl
 Les Fonderies de Kraleng-Dek
 Les Fonds de Chalchiuhapan
+Les Forges de Chernolesye
 Les Forges de sable noir d'Hinoura
 Les Fornaci de Vedrana
 Les Fosses ardentes de Glenn Teinnte
@@ -315,26 +381,34 @@ Les Fours de Thermokleia
 Les Fours à vif-argent de Monte Zenèr
 Les Fours-Dragons de Shuyao
 Les Fumoirs de Kesse-Wenz
+Les Fumoirs à piments de Chilapan
 Les Futaies de Prey Rongea
 Les Fûts de Sutunabad
 Les Galeries aux Ibis de Hor-Ouadjet
 Les Galeries d'Aqqutik
 Les Galeries de Pellucia
 Les Genévriers de Krähenheide
+Les Glaces chantantes de K'ayab Nal
 Les Glacières de Kâmpéng Trey
+Les Gluaux de Nubifera
 Les Gradins noyés d'Ak'ab Ha'
 Les Greniers sur pilotis de Lanshui
+Les Grillons de Jiuchengli
 Les Grimpeurs de Mer-Ouadj
 Les Grèves d'Ak Ek'
 Les Grèves d'Anbar-Sar
 Les Grèves à bois de Rekavík
+Les Gués de Chak-Sayab
 Les Hameçons de Motu Hukarere
+Les Hampes de Rumi-Tika
 Les Hautes Termitières d'eNhlwathi
 Les Hautes-Herbes de Brannvik
 Les Hauts Pâturages de Shalnagar
 Les Hommes-racines de Lingshen
 Les Huîtres des Échasses de Kalamonia
+Les Iris de Motta Fosca
 Les Jarres de Koh Prâmâ
+Les Jasmins de Chameli-Bagh
 Les Jonchaies de Marisalga
 Les Joncs de Mesqel-Wuha
 Les Kapokiers de Xylokampos
@@ -345,41 +419,55 @@ Les Lanières de Rit'i Qocha
 Les Laptis de Lipovka
 Les Larmes d'encens de Däbrä Säqo
 Les Lianes de Tlilapan
+Les Lianes à rotin de Prey Phdau
 Les Loutres de Jaldiyar
+Les Lucioles de Kurehama
 Les Macrières de Thermolimni
 Les Magnaneries de Luntai-Ye
 Les Marches de Kabarzar
 Les Mares de Tariuqarvik
 Les Meules de Kvernhammar
 Les Meules de Ta-Ikem
+Les Miroirs de Tlachialoyan
 Les Morillères de Kalamyki
 Les Mouillères de Grisemoutier
 Les Moulins-Gouffres d'Anaplora
+Les Mousses de Móin Lia
+Les Mues blanches de Kaltenmoor
 Les Murets d'Ammokapari
+Les Murex de Rupes Purpurea
 Les Mygales de Srok Khsach
 Les Naphtes d'Erešu
 Les Nasses de Lochmairg
 Les Nasses à nuage de Motu-Haupō
 Les Neiges de Qalibaf
 Les Nopaleras de Sak Ik'
+Les Néfliers de Jangal-e Siyah
+Les Oliviers du Vide d'Almenara-Alta
 Les Outres d'Aiolopétra
+Les Palmes d'Emaqhingeni
 Les Palmiers à sucre de Phnom Thnot
 Les Paniers de sel d'Iztacoyan
 Les Parcs perliers de Lingshao
 Les Pentes de Halepili
 Les Perches de Sakegawa
 Les Perches du col de Gelidum
+Les Perchoirs de Qurawit
 Les Perles de Gainimh Gorm
 Les Pierres chaudes de K'ak' Witz
 Les Pierres de Caer Lladron
 Les Pierres de plongée d'Akrokymé
 Les Pierres parlantes de Haurangi
 Les Pierres à faux de Szarogłaz
+Les Pieux de Valle Sorda
 Les Piliers sonnants de Lithophonia
 Les Pilotis de Yamaimizu
+Les Pinares de Barranco Rubio
 Les Piquets d'Emaphandleni
 Les Pistachiers du Šad-Išāti
 Les Pistes de Veal Dâmrei
+Les Plaines d'Emlotheni
+Les Plaquebières de Hagia Thalassa
 Les Plaques de Namakdasht
 Les Platiers de Koh Ambok
 Les Plongeurs de Psykhrolimni
@@ -387,15 +475,20 @@ Les Poissons fendus d'Akuliaq
 Les Poivrières de Mirchbagh
 Les Ponces du lac de Kuh-e Dud
 Les Prunes salées de Shiohara
+Les Prés de khus de Sardabad
 Les Qollqa de Sara-Urqu
 Les Racines de Cecepan
 Les Radeaux à cormorans de Yuliangdu
+Les Ramures de Lu-yuan
 Les Rayons pendus de Shahd-Ban
+Les Renardières d'Iglunnguit
 Les Rets de Khenet-Ouret
 Les Rideaux de Kasamori
 Les Rochers à caillé de Khad-Ereg
+Les Ronces de Schwarzhalde
 Les Roselières de Qalamzar
 Les Roselières gelées de Myrsund
+Les Roses de Salinera
 Les Rouissoirs de Lnyana Guba
 Les Rouleaux de Khöövör
 Les Ruines de Kokemori
@@ -403,9 +496,11 @@ Les Ruines de Teoco
 Les Ruines à engrais de Hut-Neferet
 Les Sables d'Uchuwasi
 Les Sables de Topljanka
+Les Sables à truffes d'Aputsiaq
 Les Saignées de Castra Silvana
 Les Salines d'Iztapocan
 Les Sangsuaires de Palus Lenta
+Les Silexières de Cnoc Breac
 Les Souffleries de Rigzar
 Les Soufrières de Brennisteinn
 Les Soupiraux d'Érikeia
@@ -413,6 +508,7 @@ Les Séchoirs de Kōzogahara
 Les Séchoirs de Peñalbarda
 Les Séracs aux Œufs de Hukahau
 Les Tablettes de glace de Šuruppû
+Les Tamariniers de Trapeang Ampil
 Les Tamis d'Osetrovo
 Les Tankwa de Gäbrä-Bahr
 Les Tanneries de Gu-Ennara
@@ -424,6 +520,7 @@ Les Tertres de Berado
 Les Tessellaires de Kalothermos
 Les Tours de Prasat Prachiev
 Les Troncs à miel de Tepexco
+Les Tuiles froides de Huoyanling
 Les Vasières de Koh Damnek
 Les Vasques d'Ana-Kōura
 Les Vessies de Tsagaan-Shavar
@@ -431,6 +528,7 @@ Les Vignes-corbeilles d'Akrotéphra
 Les Échelles de Yanchuan-Bi
 Les Écoutes de la Secca Barbarana
 Les Écueils de Kerdual
+Les Élytres de Boscoverde
 Les Étuves de Hesy-Meref
 Les Îles aux Juments de Dalai-Aduu
 Les Îles de Bor-Tengis
@@ -440,28 +538,42 @@ Les Îles-Jardins de Khwabnagar
 Les Îles-Kraals d'Esithunzini
 Les Îles-champs d'Ambar-Diri
 Les Îlots de Wanumarka
+Les Œufs de Svartbjørg
 Linn nan Lann, le Bassin des Lames pliées
+Lua-Kapu, le Cratère des Interdits
+Mädrä Gwädgwad, la Cité des Stèles
+Mélissárion, la Tour du Cellier
+Möögön-Agui, la Cave à la Louche
 Nushdaru, la Citadelle du Contrepoison
 Patolcalco, la Citadelle des Fèves
 Per-Mehty, le Temple aux Bœufs musqués
 Per-Shena, le Grenier sous la Glace
 Pervigilium, le Fortin des Veilles
 Petchgorod, les Îles-Fourneaux
+Prasat Kânhchâk, le Temple au Miroir
 Qilinpo, le Camp des Envoyés
 Ráth Mórbanna, le Fort aux Truies
 Rótavík, le Bourg sur pieux
+Sabiyama-jō, le Château sur la Lave
 Sabzgarh, le Fort sur la Digue
+Saltgrav, les Caves aux Morues
 Sangomori, le Fort de chaux
 Scopulum Aquilae, le Cap des Relégués
 Sekhet-Antyou, la Savane aux Résines
 Skuggaskáli, le Naust des Dunes
 Statio Ursaria, le Poste des Ours
+Ta-Wehat, la Tombe aux Pas
+Tecciztlan, l'Îlot aux Conques
 Tettigeia, la Chaussée aux Cigales
 Titanokastro, l'Agora des Chaufourniers
+Tozcatépetl, la Montagne à la Gorge
 Tz'unkab, la Cité aux Entailles
 Ulluriarjuk, la Clairière du Conseil
+Veal Chhngai, le Réservoir sous les Dunes
+Wayraq'asa, la Forteresse des Voix
 Wolfsglas, l'Église des Loups
 Xiuhtecalco, la Ville aux Pots brisés
+Yaku Pata, les Terrasses du Récif
 Yoake-dani, la Gorge des Veilleurs
 Zegwa-Dél, les Îles aux Gypaètes
 Zibad-Gimb, la Citadelle aux Civettes
