@@ -1,6 +1,8 @@
 # MozaWorld, version jouable (page web, Edge sur Xbox Series S)
 
-> **État au 17 novembre 2026 (soir).** La version Google TV / Bravia est arrêtée : on ne livre plus d'APK. Le jeu se joue sur la page web (GitHub Pages, qui suit la branche main), dans Edge sur Xbox Series S, à la manette. Le dossier s'appelle encore `tv/` pour des raisons d'historique.
+> **État au 20 novembre 2026 : version 2.24.** Depuis le 17 : les 5 cartes communes sont retirées (départ avec 12 zones à vous), le combat se joue sur le Plateau (le Nœud est l'ancien terrain), le monde compte 925 zones chargées par régions. Les règles en vigueur sont dans `design/REGLES.md`.
+>
+> **Rappel du 17 novembre.** La version Google TV / Bravia est arrêtée : on ne livre plus d'APK. Le jeu se joue sur la page web (GitHub Pages, qui suit la branche main), dans Edge sur Xbox Series S, à la manette. Le dossier s'appelle encore `tv/` pour des raisons d'historique.
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
