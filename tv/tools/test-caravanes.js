@@ -92,10 +92,13 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
     ok('une zone de maison rivale voisine du trajet menace la caravane (15 %)',rv.c3&&Math.abs(rv.c3.risque-.15)<1e-9,JSON.stringify(rv.c3));
     /* 9. route coupée : la caravane s'arrête */
     const rc=await p.evaluate(async()=>{MZ.set('RES',1);etatRoutes();const c=MZ.caravanes().find(c=>c.r==='RES');openEveil(ZB.RES);const t=document.getElementById('menu-choix').textContent;toMonde();
-      const t0=MZ.S.tess,g0=MZ.S.carBilan.gains,enRoute=MZ.caravanes().filter(c=>c.etat==='en route');const rev=revenuTess()+enRoute.reduce((a,c)=>a+c.n,0);await unCycle();
+      const t0=MZ.S.tess,g0=MZ.S.carBilan.gains,avant=MZ.caravanes().filter(c=>c.r!=='RES'),enRoute=avant.filter(c=>c.etat==='en route');const rev=revenuTess()+enRoute.reduce((a,c)=>a+c.n,0);await unCycle();
       /* 2.21 : une autre caravane en route peut être pillée pendant ce cycle (horde ou maison rivale près de son trajet, hasard selon le cycle) : elle ne rapporte rien, on la retire du compte attendu */
-      const pillees=enRoute.filter(c=>MZ.S.car[c.r]&&MZ.S.car[c.r].arret>=MZ.S.nc).map(c=>c.r),autres=enRoute.filter(c=>!pillees.includes(c.r)).reduce((a,c)=>a+c.n,0);
-      return{etat:c&&c.etat,pierre:/route coupée/.test(t),d:MZ.S.tess-t0,rev,gainCar:MZ.S.carBilan.gains-g0,autres,pillees}});
+      const pillees=enRoute.filter(c=>MZ.S.car[c.r]&&MZ.S.car[c.r].arret>=MZ.S.nc).map(c=>c.r);
+      /* 2.23 : une caravane pillée plus tôt dont l'arrêt finit pendant ce cycle repart et rapporte : on la compte aussi */
+      const reparties=avant.filter(c=>c.etat==='pillée'&&MZ.S.car[c.r]&&MZ.S.car[c.r].arret<MZ.S.nc).map(c=>c.r);
+      const autres=avant.filter(c=>(c.etat==='en route'&&!pillees.includes(c.r))||reparties.includes(c.r)).reduce((a,c)=>a+c.n,0);
+      return{etat:c&&c.etat,pierre:/route coupée/.test(t),d:MZ.S.tess-t0,rev,gainCar:MZ.S.carBilan.gains-g0,autres,pillees,reparties}});
     ok('route coupée : la caravane est arrêtée',rc.etat==='coupée'&&rc.pierre,JSON.stringify(rc));
     /* 2.19 : on compte les gains des caravanes (celles encore en route seulement), pas toute la bourse : une horde brisée, une maison rivale ou une loi peuvent aussi payer (ou coûter) pendant le cycle */
     ok('une caravane coupée ne rapporte rien',rc.gainCar===rc.autres,JSON.stringify(rc));
