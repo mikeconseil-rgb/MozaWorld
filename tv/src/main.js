@@ -16,13 +16,18 @@ const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},dec
    - les zones qui l'entourent sont à ±6 (18 nov. : départ au niveau 1, l'écart mortel de 5 est gardé) ; au-delà, pôle ET niveau au hasard (tirés à chaque nouvelle partie) ;
    - elles ne cèdent qu'une fois toutes les zones de départ prises et le royaume assez développé (paquet d'au moins 15 cartes). */
 const DIST_DEP={},PAQUET_ROYAUME=15;
-const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR'];for(const id of org){d[id]=0;file.push(id)}
-  const ordre=[];while(file.length){const z=file.shift();for(const v of (typeof VOISINES!=='undefined'?VOISINES[z]:[])||[])if(d[v]===undefined){d[v]=d[z]+1;file.push(v);ordre.push(v)}}
-  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={};for(const id of org){const t=ZB[id].mod||id;n[t]=(n[t]||0)+1}
-  const dep=org.slice();for(const id of ordre){const t=ZB[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
+const ZONES_DEP=(()=>{const org=['CIT','DON','RES','ANT','MAR'],V=typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE:{},W=typeof ZWB!=='undefined'?ZWB:ZB;
+  /* 2.16 : le départ se tire d'abord parmi les 21 zones de la 2.0 (il reste celui d'avant), puis parmi les zones écrites proches */
+  const anc=new Set(org.concat((typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[]).slice(0,16).map(d=>d.id)));
+  const bfs=garde=>{const d={},file=[],ordre=[];for(const id of org){d[id]=0;file.push(id)}
+    while(file.length){const z=file.shift();for(const v of V[z]||[])if(d[v]===undefined&&W[v]&&garde(v)){d[v]=d[z]+1;file.push(v);ordre.push(v)}}return{d,ordre}};
+  const A=bfs(v=>anc.has(v)),B=bfs(v=>anc.has(v)||!(W[v].d&&W[v].d.pret===false||Math.hypot(W[v].c[0],W[v].c[1])>1250));
+  Object.assign(DIST_DEP,B.d,A.d);
+  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={};for(const id of org){const t=W[id].mod||id;n[t]=(n[t]||0)+1}
+  const dep=org.slice();for(const id of A.ordre.concat(B.ordre.filter(v=>!anc.has(v)))){const t=W[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
 const ESTDEP=new Set(ZONES_DEP);
-const BORD_DEP=new Set(ZN.filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES!=='undefined'?VOISINES[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
-function nivDep(graine){const o={};for(const Z of ZN){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;
+const BORD_DEP=new Set((typeof ZW!=='undefined'?ZW:ZN).filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
+function nivDep(graine){const o={};for(const Z of (typeof ZW!=='undefined'?ZW:ZN)){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;
   o[Z.id]=ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?6*sg:(2+Math.floor(h2*6))*sg}return o}
 let NIV_DEP=nivDep(0);
 const departPris=()=>ZONES_DEP.filter(id=>S.own[id]).length;
@@ -37,22 +42,26 @@ for(const id of IDS){if(S.lv[id]===undefined)S.lv[id]=NIV_DEP[id]||0;if(S.own[id
 /* Parties enregistrées avant le combat : les zones déjà à vous comptent comme activées */
 for(const id of IDS)if(S.act[id]===undefined)S.act[id]=!!S.own[id];
 /* 18 nov. : territoire de départ donné au joueur, niveau 1, pôle au hasard par zone ; paquet = leurs cartes de palier 1 */
-function paquetDe(ids){return ids.filter(id=>(ZB[id].mod||id)!=='RES'&&S.own[id]&&S.act[id]&&S.lv[id]).map(id=>typeof clePalier==='function'?clePalier(ZB[id],S.lv[id]):id)}
-function donnerDepart(){for(const id of ZONES_DEP){const Z=ZB[id],lv=(Z.mod||id)==='RES'?1:(Math.random()<.5?-1:1);
-    S.lv[id]=lv;S.own[id]=true;S.act[id]=true;S.emp[id]=false;S.rest[id]=0;if(Z.lv!==lv){Z.lv=Z.lvT=lv;if(typeof rebuild==='function'){rebuild(Z);Z.update(lv);if(typeof placeAlt==='function')placeAlt(Z)}}}
+const ZWZ=id=>ZB[id]||(typeof ZWB!=='undefined'&&ZWB[id]);   /* 2.15 : une zone du monde, chargée ou non */
+function paquetDe(ids){return ids.filter(id=>ZWZ(id)&&(ZWZ(id).mod||id)!=='RES'&&S.own[id]&&S.act[id]&&S.lv[id]).map(id=>typeof clePalier==='function'?clePalier(ZWZ(id),S.lv[id]):id)}
+function donnerDepart(){for(const id of ZONES_DEP){const Z=ZWZ(id),lv=(Z.mod||id)==='RES'?1:(Math.random()<.5?-1:1);
+    S.lv[id]=lv;S.own[id]=true;S.act[id]=true;S.emp[id]=false;S.rest[id]=0;if(ZB[id]&&Z.lv!==lv){Z.lv=Z.lvT=lv;if(typeof rebuild==='function'){rebuild(Z);Z.update(lv);if(typeof placeAlt==='function')placeAlt(Z)}}}
   if(ZONES_DEP.indexOf('DON')>=0)S.dernierAssaut=S.nc||0;
   S.deck=paquetDe(ZONES_DEP)}
 if(!Array.isArray(S.deck)||!S.deck.length)S.deck=paquetDe(IDS);
 if(S.renc===undefined)S.renc=1;
 initEco();
-function save(){S.found=secrets.map((s,i)=>s.found?i:-1).filter(i=>i>=0);try{localStorage.setItem('mz-tv-1',JSON.stringify(S))}catch(_){}}
+function save(){const ici=new Set(secrets.map(q=>q.k));S.found=(S.found||[]).filter(k=>typeof k==='string'&&!ici.has(k)).concat(secrets.filter(q=>q.found).map(q=>q.k));try{localStorage.setItem('mz-tv-1',JSON.stringify(S))}catch(_){}}
 const now=()=>Date.now()/1000;
 const restLeft=Z=>Math.max(0,(S.rest[Z.id]||0)-now());
 
 for(const Z of ZN){Z.lv=Z.lvT=S.lv[Z.id]||0;Z.build()}
 if(typeof lieuxSecrets==='function')lieuxSecrets();   /* 2.6 : secrets des lieux, après tous les autres (numéros des sauvegardes inchangés) */
 buildTerrain();buildBorders();for(const Z of ZN)Z.update(Z.lv);
-for(const i of S.found||[])if(secrets[i])secrets[i].found=true;
+/* 2.15 : S.found garde des clés stables ; une ancienne sauvegarde (numéros) est traduite avec l'ordre d'avant (région d'origine) */
+if((S.found||[]).some(x=>typeof x==='number')){const tr=x=>typeof x==='number'?(secrets[x]&&secrets[x].k):x;S.found=(S.found||[]).map(tr).filter(Boolean);
+  if(Array.isArray(S.deck))S.deck=S.deck.map(k=>/^S\d+$/.test(k)&&secrets[+k.slice(1)]?secrets[+k.slice(1)].k:k)}
+{const f=new Set(S.found||[]);for(const q of secrets)if(f.has(q.k))q.found=true}
 $('h-sect').textContent=secrets.length;
 
 /* ---------- Épreuves et cartes : une épreuve par type de zone, une carte par pôle ---------- */
@@ -198,9 +207,16 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
   o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
   ui('seuil',{opts:o})}
-function startGame(neuf){if(neuf){const g0=S.graine;do S.graine=Math.floor(Math.random()*997)+1;while(S.graine===g0);   /* 20 nov. : une graine neuve, pour que chaque module oublie l'ancien monde */NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
+/* 2.15 : régions. Voyager = enregistrer, recentrer la région sur une tuile, recharger la page ; « apres » dit quoi faire au réveil. */
+const regionOrigine=()=>dReg([0,0])<1;
+function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw];if(apres!=='neuf')save();
+  try{localStorage.setItem('mz-region',JSON.stringify([Math.round(c[0]),Math.round(c[1])]));localStorage.setItem('mz-apres',apres||'jeu')}catch(_){}
+  const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}setTimeout(()=>location.reload(),60)}
+function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');return}
+  if(neuf){for(const id in S.lv)if(!ZB[id])delete S.lv[id];for(const id of ZONES_DEP)if(!ZB[id])S.lv[id]=0;for(const k of['own','emp','rest','act'])for(const id in S[k]||{})if(!ZB[id])delete S[k][id]}
+  if(neuf){const g0=S.graine;do S.graine=Math.floor(Math.random()*997)+1;while(S.graine===g0);   /* 20 nov. : une graine neuve, pour que chaque module oublie l'ancien monde */NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
-    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
+    S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;S.found=[];S.secT={};
     donnerDepart();CULL.dirty=true;terrainAll();save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
@@ -242,7 +258,7 @@ function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',c
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 
 /* ---------- Éveil d'une zone ---------- */
-function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ct=contrePar(Z),emp=S.emp[Z.id];
+function openEveil(Z,f){if(Z.d&&Z.d.pret===false){toast(Z.info.nom,'Zone pas encore écrite','Les conteurs n\'ont pas encore écrit son histoire : sa Pierre dort. Elle s\'éveillera dans une prochaine version.');return}mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ct=contrePar(Z),emp=S.emp[Z.id];
   const diff=t=>{const b=Math.abs(t)-(emp?1:0)-ct.pw;return'Épreuve '+['très facile','facile','facile','moyenne','dure','dure','très dure','redoutable'][clamp(b,0,7)]};
   const o=[],res=(Z.mod||Z.id)==='RES',cap=res?3:7;
   if(!S.act[Z.id]&&verrouLoin(Z)){o.push({l:'Zone scellée : elle ne cède pas encore',ic:'⛓',off:true,d:`départ pris ${departPris()}/${ZONES_DEP.length} · paquet ${S.deck.length}/${PAQUET_ROYAUME}`})}
@@ -307,11 +323,11 @@ function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('j
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
       opts:[{l:'Réessayer',ic:'▲',go:()=>openEveil(Z)},{l:'Repartir explorer',ic:'◆',go:toMonde}]});mode='menu'}}
-function mort(){for(const Z of ZN){if(S.own[Z.id]){S.own[Z.id]=false;S.emp[Z.id]=true}S.act[Z.id]=false}
+function mort(){for(const id of Object.keys(S.own)){if(S.own[id]){S.own[id]=false;S.emp[id]=true}S.act[id]=false}
   donnerDepart();CULL.dirty=true;terrainAll();   /* 18 nov. : l'héritier repart comme une nouvelle partie, territoire de départ au niveau 1, pôles retirés au hasard */
   S.cards=[];S.hurt=0;S.lives=(S.lives||1)+1;save();etatHud();hudKey='';
   ui('menu',{sur:'Mort du héros',t:'La mosaïque vous oublie',corps:`<p>Troisième blessure. Vous perdez vos cartes et vos zones : elles gardent leur niveau mais redeviennent sauvages. L'héritier reçoit à nouveau le territoire de départ, au niveau 1, et ses cartes de palier 1.</p><p class="petit">Votre empreinte reste : reprendre une ancienne zone à vous sera plus facile. Un héritier se lève à Berestograd.</p>`,
-    opts:[{l:'Se relever',ic:'✦',go:()=>{tp('CIT');toMonde()}}]});mode='menu'}
+    opts:[{l:'Se relever',ic:'✦',go:()=>{if(!regionOrigine()){S.pos=null;save();voyagerRegion([0,0],'jeu');return}tp('CIT');toMonde()}}]});mode='menu'}
 function pauseEpreuve(){const keep=E;mode='menu';ui('menu',{sur:'Épreuve en pause',t:'Abandonner ?',corps:'<p class="petit">Abandonner ne blesse pas, la zone ne change pas.</p>',
   back:()=>{closeUI();mode='epreuve'},opts:[{l:'Continuer l\'épreuve',ic:'▲',go:()=>{closeUI();mode='epreuve'}},{l:'Abandonner',ic:'◆',go:()=>{if(E&&E.fin)E.fin();E=null;$('jeu').hidden=true;toMonde()}}]});$('jeu').hidden=!keep.monde?false:false}
 
@@ -550,12 +566,14 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(mode==='mue'&&mue){stepMue(dt);if(mue)camMue(dt);else camFollow(dt)}
   else{if(mode==='epreuve'&&E){E.t+=dt;E.step(dt,T);if(E&&!E.monde)E.draw(T)}else if(mode==='monde')move(dt);else if(!started){P.yaw+=dt*.05;P.y=stand(P.x,P.z,1e3).g}else move(0);
     if(!(mode==='epreuve'&&E&&!E.monde))camFollow(dt)}
-  const Z=zoneAt(P.x,P.z);if(Z&&Z!==curZ){curZ=Z;hudKey='';if(mode==='monde'&&started)toast(TYPE[Z.id].kind+' · niveau '+(sgn(S.lv[Z.id])||'0'),Z.info.nom,palTxt(Z,S.lv[Z.id]))}hud();invite();
+  const Z=zoneAt(P.x,P.z);if(Z&&Z!==curZ&&mode==='monde'&&started&&Z.plus&&dReg(Z.c)>REG_IN&&!navigator.webdriver){   /* bancs d'essai automatisés (Playwright) : pas de voyage, la région reste fixe */
+  curZ=Z;voyagerRegion(Z.c,'jeu')}
+  else if(Z&&Z!==curZ){curZ=Z;hudKey='';if(mode==='monde'&&started)toast(TYPE[Z.id].kind+' · niveau '+(sgn(S.lv[Z.id])||'0'),Z.info.nom,palTxt(Z,S.lv[Z.id]))}hud();invite();
   stepAtmo(mode==='mue'&&mue?mue.Z:curZ,dt,T,P.x,P.y,P.z);hero.userData.pl.intensity=curZ===ANT?.12:.55;
   if(AX&&curZ===DON&&DON.lv<=-4&&P.walked-stepAcc>2.4){stepAcc=P.walked;perc(AX.currentTime,'t',1.2)}
   let hi=0;for(const q of secrets){const ok=!q.found&&q.cond(q.Z.lv);q.m.visible=ok;if(!ok)continue;const p=q.pos();q.m.position.set(p[0],p[1]+Math.sin(T*2+p[0])*.18,p[2]);q.m.rotation.y=T*1.3;
     secHalo.P[hi*3]=p[0];secHalo.P[hi*3+1]=p[1];secHalo.P[hi*3+2]=p[2];const b=.5+.2*Math.sin(T*3);secHalo.C[hi*3]=2.2*b;secHalo.C[hi*3+1]=1.5*b;secHalo.C[hi*3+2]=.5*b;hi++;
-    if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const k='S'+secrets.indexOf(q),av=S.deck.indexOf(k)>=0,cn=typeof carteDeSecret==='function'?carteDeSecret(q):'',ap=S.deck.indexOf(k)>=0;toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(!cn?'':!av&&ap?` Carte utilitaire gagnée : « ${cn} ».`:av?` Sa carte « ${cn} » est déjà dans votre paquet.`:` Votre paquet est plein : la carte « ${cn} » attend au Comptoir des Citadelles.`))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
+    if(started&&mode==='monde'&&Math.hypot(p[0]-P.x,p[1]-P.y-1,p[2]-P.z)<2.6){q.found=true;{const k=q.k,av=S.deck.indexOf(k)>=0,cn=typeof carteDeSecret==='function'?carteDeSecret(q):'',ap=S.deck.indexOf(k)>=0;toast('Secret · '+q.Z.info.nom,q.titre,q.texte+(!cn?'':!av&&ap?` Carte utilitaire gagnée : « ${cn} ».`:av?` Sa carte « ${cn} » est déjà dans votre paquet.`:` Votre paquet est plein : la carte « ${cn} » attend au Comptoir des Citadelles.`))}etatHud();save();if(AX&&soundOn){const t=AX.currentTime;[0,4,7,12].forEach((s,i)=>note(t+i*.09,523*Math.pow(2,s/12),SIN,.9,.1))}}}
   for(let i=hi;i<32;i++)secHalo.P[i*3+1]=-999;secHalo.up();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('vu')}
   if(typeof majPoussiere==='function')majPoussiere(dt,T);
@@ -567,6 +585,9 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);
+/* 2.15 : au réveil d'un voyage entre régions, on reprend directement la partie (ou on en commence une neuve) */
+(()=>{let a=null;try{a=localStorage.getItem('mz-apres');localStorage.removeItem('mz-apres')}catch(_){}
+  if(a==='neuf')startGame(true);else if(a==='jeu'&&hasSave)startGame(false)})();
 window.MZ={pause(){save();if(AX)AX.suspend()},P,ZN,S,tp,secrets,act,held,style(on){STYLE_ON=on},border:styleBorder,win:()=>E&&endEpreuve(true),lose:()=>E&&endEpreuve(false),get mode(){return mode},get E(){return E},get CB(){return CB},combat(id,k){startCombat(ZB[id],k||'renc')},start(){startGame(true)},set(id,lv){const Z=ZB[id];Z.lvT=Z.lv=lv;S.lv[id]=lv;rebuild(Z);terrainAll();Z.update(lv);placeAlt(Z);CULL.dirty=true},A};
 Object.assign(window.MZ,{rival:s=>typeof rivalAgit==='function'?rivalAgit(true,s):null,rivalArrive:g=>typeof rivalArrive==='function'?rivalArrive(g):null});
 if(typeof domaines==='function')Object.assign(window.MZ,{domaines,verrouillee,defenseMonde,statutZone,prendre:domPrendre,cycle:()=>cycle()});

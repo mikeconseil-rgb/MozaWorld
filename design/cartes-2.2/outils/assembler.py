@@ -43,7 +43,8 @@ def comb(ops):
   p=[o[1] for o in ops if o[0]=='pose'];r=[o for o in ops if o[0]=='reveil']
   return {'pose':p[0] if p else None,'reveil':r[0][1] if r else None}
 cards=[]
-for f in sorted(glob.glob(os.path.join(D,'conteur_[A-D].md'))+glob.glob(os.path.join(D,'conteur_[A-D]_paliers.md')))+sorted(glob.glob(os.path.join(D,'conteur_[A-D]_impact.md'))):  # revue impact (17 nov.) : lue en dernier, elle remplace
+SERIE=sorted(glob.glob(os.path.join(D,'..','zones-serie','lot-*','conteur_[A-D].md')))  # 2.15 : zones écrites en série (fiche + 14 cartes)
+for f in sorted(glob.glob(os.path.join(D,'conteur_[A-D].md'))+glob.glob(os.path.join(D,'conteur_[A-D]_paliers.md')))+sorted(glob.glob(os.path.join(D,'conteur_[A-D]_impact.md')))+SERIE:  # revue impact (17 nov.) : lue en dernier, elle remplace
   who=os.path.basename(f)[8];txt=open(f).read()
   for blk in re.findall(r'```json\s*(.*?)```',txt,re.S):
     try: arr=json.loads(blk)
@@ -53,7 +54,7 @@ for f in sorted(glob.glob(os.path.join(D,'conteur_[A-D].md'))+glob.glob(os.path.
       except Exception as e2: print('JSON illisible dans',f,e2);continue
     if isinstance(arr,dict):arr=[arr]
     for c in arr:
-      if not isinstance(c,dict) or 'nom' not in c: continue
+      if not isinstance(c,dict) or 'nom' not in c or c.get('fiche'): continue
       z=str(c.get('zone','')).replace('-','');z=ALIAS.get(z,z)
       if z not in META: print('zone inconnue',z,c['nom']);continue
       c['zone']=z;c['effet']=re.sub(r'(\d*)N\)',r'\1L)',str(c.get('effet','')));c['ops']=[norm_op(o) for o in c.get('ops',[])];c['conteur']=who;cards.append(c)
@@ -70,7 +71,7 @@ for c in cards:
     slot=('m' if pol.startswith('-') else 'p')+(pal if pal.isdigit() else ('7' if '7' in pol else ''))
     J['zones'].setdefault(c['zone'],{})[slot]=d
 J['gerbes']={}  # 17 nov. : Gerbes retirées du jeu (textes gardés dans les fichiers des conteurs)
-open(OUTJS,'w').write('/* MozaWorld TV 2.2 : cartes écrites par les quatre conteurs (généré par cartes-2.2/outils/assembler.py, ne pas modifier à la main). */\nconst CARTES22='+json.dumps(J,ensure_ascii=False,indent=0)+';\n')
+open(OUTJS,'w').write('/* MozaWorld TV 2.2 : cartes écrites par les quatre conteurs (généré par cartes-2.2/outils/assembler.py, ne pas modifier à la main). */\nconst CARTES22='+json.dumps(J,ensure_ascii=False,separators=(',',':'))+';\n')
 # ---- Grimoire ----
 G=[]
 seen=set();keep=[]

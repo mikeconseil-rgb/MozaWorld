@@ -44,7 +44,9 @@ const nbSalles=id=>id==='DON'?4:Math.min(4,1+Math.max(1,Math.abs(S.lv[id]||0)));
 /* ---------- Noms des salles, tirés de la zone ---------- */
 const DJ_BIOME={'Forêt boréale':'Galerie des racines gelées','Fjord':'Grotte sous le fjord','Canyon':'Faille rouge','Désert de sable':'Salle des sables mouvants',
   'Oasis':'Citerne de l\'oasis','Cité en ruines':'Nef effondrée','Récif':'Bassin de corail','Cavernes cristallines':'Salle des cristaux','Lande':'Tertre de bruyère',
-  'Steppe':'Silo des vents','Delta fluvial':'Écluse noyée','Falaise côtière':'Corniche des embruns','Volcan':'Puits de lave','Glacier':'Crevasse bleue','Mangrove':'Racines noyées'};
+  'Steppe':'Silo des vents','Delta fluvial':'Écluse noyée','Falaise côtière':'Corniche des embruns','Volcan':'Puits de lave','Glacier':'Crevasse bleue','Mangrove':'Racines noyées',
+  'Jungle':'Temple sous les lianes','Archipel':'Grotte marine','Haute montagne':'Gouffre des cimes','Forêt de champignons géants':'Salle des spores',
+  'Marais':'Tourbière noyée','Désert de sel':'Galerie de sel','Iles flottantes':'Racines suspendues','Savane':'Termitière creuse','Toundra':'Cave du pergélisol'};
 const djDe=n=>/^[AEIOUYÉÈÊÂÎÔaeiouyéèêâîôh]/.test(n)?'d\''+n:'de '+n;
 const djCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
 const djLieu=id=>{const n=djCourt(id),m=n.match(/\bd(?:e |['’])([^']+)$/);return m?m[1]:n.replace(/^(Le|La|Les|L['’]) ?/,'')};

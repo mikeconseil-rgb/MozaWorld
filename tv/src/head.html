@@ -269,6 +269,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
 /* 2.1 : longues listes (Voyager, Grimoire) : les choix défilent, le texte au-dessus reste */
 #menu .boite{display:flex;flex-direction:column;max-height:84vh}#menu-choix{position:relative}#menu-corps{flex:0 1 auto;overflow:hidden;min-height:0}#menu .choix{flex:0 1 auto;overflow-y:auto;min-height:calc(var(--u)*8);padding:4px 6px}
 .cartes.grim{grid-template-columns:repeat(2,calc(var(--u)*12));justify-content:center;max-height:none}
+#voyage{position:fixed;inset:0;z-index:9999;background:#07080c;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s}#voyage.on{opacity:1}#voyage div{text-align:center;color:#e8dcc0;font-size:2.2vw;letter-spacing:.08em}#voyage b{display:block;font-size:3vw;margin-bottom:.6em;color:#f0c870}#voyage span{opacity:.8}
 </style>
 
 <canvas id="vue" tabindex="0"></canvas>
@@ -313,6 +314,7 @@ body.manette .cc.fin::before{content:"X";position:absolute;top:calc(var(--u)*-.6
 
 <div class="hud toast" id="toast"><div class="t1" id="t1"></div><div class="t2" id="t2"></div><div class="t3" id="t3"></div></div>
 
+<div id="voyage" hidden><div><b>Voyage</b><span>La mosaïque se recompose autour de vous…</span></div></div>
 <div class="ecran" id="seuil">
   <div class="boite">
     <div class="sur">MozaWorld · <span id="seuil-ver"></span></div>
