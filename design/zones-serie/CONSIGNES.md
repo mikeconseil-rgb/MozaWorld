@@ -131,3 +131,13 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 6. **Même couple de mots, autre image au ±7** : deux zones du même couple dans un lot ne finissent pas sur la même métamorphose (« tout devient verre ») et ne partagent pas le mot de matière du nom (Vitres, Verre).
 7. **La liste commune nomme la forme réelle du récit et son geste.** Un ostracon, une tablette ou un billet adressés à quelqu'un sont des lettres. Une stèle et une inscription sont un même document. Un geste d'intrigue (monter chercher la glace, souffler la lampe) sert une fois par lot.
 8. **Familles d'animaux : une table commune, à la maille de la famille courante, lue par le script.** On n'identifie pas la famille au nom : la viscache et le cuy sont des rongeurs, le termite n'est pas un coléoptère.
+
+## Leçons du critique après le lot 10 (à appliquer dès le lot 11)
+
+1. **Cinq cartes de dégâts ciblés font des gros coups, même dans un Donjon et même non déclarés.** Un pôle de Donjon qui a une autre famille principale s'arrête à 4. Le compte des vocations lit aussi les cartes des familles des lots anciens : un emploi déclaré compte, même avant le lot 5.
+2. **Tout crochet, pas seulement d'intention ennemie, sert dans 3 pôles au plus par conteur.** Un pôle qui lit un crochet sur 3 cartes et le nourrit sur 2 compte dans son couple, avec le même plafond de 2 pôles par lot.
+3. **L'enchaînement (`cartesJouees`, `troisCartes`) est une famille** : en appoint dans 3 pôles au plus par conteur, comme les autres.
+4. **Une reprise de vocation change de bête principale** : la famille qui porte le plus de cartes ne doit avoir servi dans aucun emploi précédent du mot, pas même en appoint.
+5. **La table commune des bêtes donne la famille scientifique de chaque nom avant l'écriture** : le saïga, le bouquetin et le buffle sont trois bovidés ; le frelon n'est pas un apidé ; la chouette n'est pas un rapace diurne.
+6. **Une forme ou un geste signalé en double se change avant la remise, par le second inscrit**, et sa chute avec lui. On ne le laisse pas au critique.
+7. **Noms : le complément de la seconde moitié (« des Cendres ») ne revient pas non plus dans le lot**, et un conteur ne répète jamais son propre mot principal (« l'Eau » deux fois).
