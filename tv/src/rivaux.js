@@ -19,7 +19,7 @@ const RIV_CHANCE=.55;  /* chance de réussite d'une maison si vous ne défendez 
 const RIV_PROT=.1;     /* chaque point de protection (defenseMonde(id).bonus) retire 10 % (provisoire) */
 const RIV_TENTE=2;    /* une tentative de prise est annoncée 2 cycles avant l'épreuve (provisoire) */
 const RIV_EPREUVE=[.75,.6,.4,.25];   /* chance de réussir l'épreuve d'une zone sauvage : |palier| 0-1, 2-3, 4-5, 6-7 (provisoire) */
-const RIV_MAX=()=>1+Math.floor(ZN.length/20);   /* zones au plus par maison : 2 sur la carte de 21 zones (provisoire) */
+const RIV_MAX=()=>1+Math.floor(Math.min(ZN.length,21)/20);   /* 2.16 : les régions chargent ~50 zones ; le plafond reste celui de la carte de 21 zones */   /* zones au plus par maison : 2 sur la carte de 21 zones (provisoire) */
 /* Quatre maisons, chacune avec le tempérament d'un des quatre conteurs du projet. p = part des contestations parmi ses actions. */
 const RIVAUX=[
   {k:'gri',nom:'Maison Grisaille',bl:'♜',col:'#b0614d',pref:'CIT',p:.6,conteur:'A',

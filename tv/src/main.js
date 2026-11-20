@@ -16,10 +16,15 @@ const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},dec
    - les zones qui l'entourent sont à ±6 (18 nov. : départ au niveau 1, l'écart mortel de 5 est gardé) ; au-delà, pôle ET niveau au hasard (tirés à chaque nouvelle partie) ;
    - elles ne cèdent qu'une fois toutes les zones de départ prises et le royaume assez développé (paquet d'au moins 15 cartes). */
 const DIST_DEP={},PAQUET_ROYAUME=15;
-const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR'];for(const id of org){d[id]=0;file.push(id)}
-  const ordre=[];while(file.length){const z=file.shift();for(const v of (typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE[z]:[])||[])if(d[v]===undefined){const W=typeof ZWB!=='undefined'&&ZWB[v];if(W&&(W.d&&W.d.pret===false||Math.hypot(W.c[0],W.c[1])>1250))continue;d[v]=d[z]+1;file.push(v);ordre.push(v)}}
-  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={},W=typeof ZWB!=='undefined'?ZWB:ZB;for(const id of org){const t=W[id].mod||id;n[t]=(n[t]||0)+1}
-  const dep=org.slice();for(const id of ordre){const t=W[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
+const ZONES_DEP=(()=>{const org=['CIT','DON','RES','ANT','MAR'],V=typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE:{},W=typeof ZWB!=='undefined'?ZWB:ZB;
+  /* 2.16 : le départ se tire d'abord parmi les 21 zones de la 2.0 (il reste celui d'avant), puis parmi les zones écrites proches */
+  const anc=new Set(org.concat((typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[]).slice(0,16).map(d=>d.id)));
+  const bfs=garde=>{const d={},file=[],ordre=[];for(const id of org){d[id]=0;file.push(id)}
+    while(file.length){const z=file.shift();for(const v of V[z]||[])if(d[v]===undefined&&W[v]&&garde(v)){d[v]=d[z]+1;file.push(v);ordre.push(v)}}return{d,ordre}};
+  const A=bfs(v=>anc.has(v)),B=bfs(v=>anc.has(v)||!(W[v].d&&W[v].d.pret===false||Math.hypot(W[v].c[0],W[v].c[1])>1250));
+  Object.assign(DIST_DEP,B.d,A.d);
+  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={};for(const id of org){const t=W[id].mod||id;n[t]=(n[t]||0)+1}
+  const dep=org.slice();for(const id of A.ordre.concat(B.ordre.filter(v=>!anc.has(v)))){const t=W[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
 const ESTDEP=new Set(ZONES_DEP);
 const BORD_DEP=new Set((typeof ZW!=='undefined'?ZW:ZN).filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
 function nivDep(graine){const o={};for(const Z of (typeof ZW!=='undefined'?ZW:ZN)){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;

@@ -51,9 +51,11 @@ const REGION=(()=>{let c=[0,0];try{const j=JSON.parse(localStorage.getItem('mz-r
 const dReg=c=>Math.hypot(c[0]-REGION.c[0],c[1]-REGION.c[1]);
 for(const Z of ZN)Z.reg=dReg(Z.c)<REG_R+400;
 const ZW=ZN.slice();
-for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const poly=d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]);
+/* les 16 zones de la 2.0 (en tête de CARTE_PLUS) restent toutes construites dans la région d'origine */
+const REG_ORIG=dReg([0,0])<1;let iPlus=0;
+for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=iPlus++<16;const poly=d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]);
   const c=[0,0];for(const p of poly){c[0]+=p[0]/poly.length;c[1]+=p[1]/poly.length}
-  if(dReg(c)<REG_R){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
+  if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};

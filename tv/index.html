@@ -403,9 +403,11 @@ const REGION=(()=>{let c=[0,0];try{const j=JSON.parse(localStorage.getItem('mz-r
 const dReg=c=>Math.hypot(c[0]-REGION.c[0],c[1]-REGION.c[1]);
 for(const Z of ZN)Z.reg=dReg(Z.c)<REG_R+400;
 const ZW=ZN.slice();
-for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const poly=d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]);
+/* les 16 zones de la 2.0 (en tête de CARTE_PLUS) restent toutes construites dans la région d'origine */
+const REG_ORIG=dReg([0,0])<1;let iPlus=0;
+for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=iPlus++<16;const poly=d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]);
   const c=[0,0];for(const p of poly){c[0]+=p[0]/poly.length;c[1]+=p[1]/poly.length}
-  if(dReg(c)<REG_R){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
+  if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
@@ -4237,7 +4239,7 @@ const RIV_CHANCE=.55;  /* chance de réussite d'une maison si vous ne défendez 
 const RIV_PROT=.1;     /* chaque point de protection (defenseMonde(id).bonus) retire 10 % (provisoire) */
 const RIV_TENTE=2;    /* une tentative de prise est annoncée 2 cycles avant l'épreuve (provisoire) */
 const RIV_EPREUVE=[.75,.6,.4,.25];   /* chance de réussir l'épreuve d'une zone sauvage : |palier| 0-1, 2-3, 4-5, 6-7 (provisoire) */
-const RIV_MAX=()=>1+Math.floor(ZN.length/20);   /* zones au plus par maison : 2 sur la carte de 21 zones (provisoire) */
+const RIV_MAX=()=>1+Math.floor(Math.min(ZN.length,21)/20);   /* 2.16 : les régions chargent ~50 zones ; le plafond reste celui de la carte de 21 zones */   /* zones au plus par maison : 2 sur la carte de 21 zones (provisoire) */
 /* Quatre maisons, chacune avec le tempérament d'un des quatre conteurs du projet. p = part des contestations parmi ses actions. */
 const RIVAUX=[
   {k:'gri',nom:'Maison Grisaille',bl:'♜',col:'#b0614d',pref:'CIT',p:.6,conteur:'A',
@@ -7467,10 +7469,15 @@ const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},dec
    - les zones qui l'entourent sont à ±6 (18 nov. : départ au niveau 1, l'écart mortel de 5 est gardé) ; au-delà, pôle ET niveau au hasard (tirés à chaque nouvelle partie) ;
    - elles ne cèdent qu'une fois toutes les zones de départ prises et le royaume assez développé (paquet d'au moins 15 cartes). */
 const DIST_DEP={},PAQUET_ROYAUME=15;
-const ZONES_DEP=(()=>{const d=DIST_DEP,file=[],org=['CIT','DON','RES','ANT','MAR'];for(const id of org){d[id]=0;file.push(id)}
-  const ordre=[];while(file.length){const z=file.shift();for(const v of (typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE[z]:[])||[])if(d[v]===undefined){const W=typeof ZWB!=='undefined'&&ZWB[v];if(W&&(W.d&&W.d.pret===false||Math.hypot(W.c[0],W.c[1])>1250))continue;d[v]=d[z]+1;file.push(v);ordre.push(v)}}
-  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={},W=typeof ZWB!=='undefined'?ZWB:ZB;for(const id of org){const t=W[id].mod||id;n[t]=(n[t]||0)+1}
-  const dep=org.slice();for(const id of ordre){const t=W[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
+const ZONES_DEP=(()=>{const org=['CIT','DON','RES','ANT','MAR'],V=typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE:{},W=typeof ZWB!=='undefined'?ZWB:ZB;
+  /* 2.16 : le départ se tire d'abord parmi les 21 zones de la 2.0 (il reste celui d'avant), puis parmi les zones écrites proches */
+  const anc=new Set(org.concat((typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[]).slice(0,16).map(d=>d.id)));
+  const bfs=garde=>{const d={},file=[],ordre=[];for(const id of org){d[id]=0;file.push(id)}
+    while(file.length){const z=file.shift();for(const v of V[z]||[])if(d[v]===undefined&&W[v]&&garde(v)){d[v]=d[z]+1;file.push(v);ordre.push(v)}}return{d,ordre}};
+  const A=bfs(v=>anc.has(v)),B=bfs(v=>anc.has(v)||!(W[v].d&&W[v].d.pret===false||Math.hypot(W[v].c[0],W[v].c[1])>1250));
+  Object.assign(DIST_DEP,B.d,A.d);
+  const vise={CIT:1,DON:2,ANT:2,MAR:1,RES:6},n={};for(const id of org){const t=W[id].mod||id;n[t]=(n[t]||0)+1}
+  const dep=org.slice();for(const id of A.ordre.concat(B.ordre.filter(v=>!anc.has(v)))){const t=W[id].mod||id;if((n[t]||0)<(vise[t]||0)){n[t]=(n[t]||0)+1;dep.push(id)}}return dep})();
 const ESTDEP=new Set(ZONES_DEP);
 const BORD_DEP=new Set((typeof ZW!=='undefined'?ZW:ZN).filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
 function nivDep(graine){const o={};for(const Z of (typeof ZW!=='undefined'?ZW:ZN)){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;

@@ -24,7 +24,8 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     const d=await p.evaluate(()=>{const L=domaines();return{n:L.length,min:Math.min(...L.map(x=>x.ids.length)),
       memeType:L.every(x=>x.ids.every(id=>(ZB[id].mod||id)===x.type)),fermes:L.filter(x=>x.ferme).map(x=>x.type+':'+x.ids.join('+'))}});
     ok('domaines de 2 tuiles au moins, d\'un seul type',d.n>0&&d.min>=2&&d.memeType,d.n+' domaines');
-    ok('le territoire de départ ferme déjà des domaines',d.fermes.length>0,d.fermes.join(' · '));
+    /* 2.16 : dans le monde entier, les domaines de départ touchent des zones sauvages ; ils ne sont plus forcément fermés */
+    console.log('INFO  domaines fermés au départ : '+(d.fermes.join(' · ')||'aucun'));
     /* 2. fermer un domaine de Ressources : toast en file, bonus de mana au cycle */
     const r=await p.evaluate(()=>{const S=window.MZ.S,L=domaines().filter(x=>x.type==='RES'&&!x.ferme);if(!L.length)return null;const D=L[0];
       const avant=domFermes('RES').length;for(const id of D.ids)window.MZ.prendre(id);
