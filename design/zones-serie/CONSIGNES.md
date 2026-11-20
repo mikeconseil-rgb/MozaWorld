@@ -108,3 +108,15 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 6. **Noms** : le mot principal de la seconde moitié (Plaine, Rempart, Garnison) ne revient pas dans le lot. Le premier mot d'une Ressource ne reprend pas un premier mot en jeu. Un mot traduit (Fortezza) compte comme le même mot.
 7. **Ressources : l'objet se compare par catégorie** (l'eau, les galets, les poissons qui sèchent), pas seulement par geste.
 8. **Validateur** : une condition rendue fausse ou toujours vraie par une opération qui la précède dans la même carte est une erreur : `hesite` puis `hesite` ou `hesiteAvant` ; `briseGarde` puis `cibleGarde` ; `hesite` puis `elan`, `vol` ou `pietine`.
+
+
+## Leçons du critique après le lot 8 (à appliquer dès le lot 9)
+
+1. **LISTE.md vérifie les vocations avant de répartir.** Pour chaque conteur, elle compte au script les mots qui peuvent encore porter une vocation (pas déjà joués en vocation par lui, pas déjà repris). S'il en manque, elle échange une place avec un autre conteur au lieu de laisser une colonne de trop.
+2. **La place d'écho se tient à 4 cartes** (le plafond du moteur), et elle compte comme famille principale. Jamais 5, même sous un `si`.
+3. **Une colonne est un couple qui se remplit lui-même**, avec un prix (PV et `blesse`, défausse et `defausseAPrix`, bête et `bete`, garde ennemie et `cibleGarde`) ou sans prix (garde et `garde`, brûlure et `brule`, marque et `vulnerable`, hésitation et `hesite`). Chaque couple sert dans 2 pôles du lot au plus. Un prix qui ne nourrit pas la condition (PV et `pietine`) n'en est pas un, mais le même assemblage ne revient pas dans plus de 2 pôles d'un conteur.
+4. **Plafonds de valeur, en plus du budget** : riposte 8 au plus par carte ; dégâts ciblés 20 au plus hors Donjon aux paliers 1 à 6. On ne répète pas une opération dans une carte pour passer un plafond (deux « +2 mana »).
+5. **Une reprise de mot prend un autre crochet que le pôle d'origine**, quel que soit le type de zone : une famille principale de dégâts ciblés compte comme des gros coups.
+6. **Noms** : la première moitié (le nom de lieu) se compare aussi à noms-pris.txt, et le mot traduit compte, y compris chez le même conteur (Scuola et École).
+7. **Chutes** : « X dit que », ou le témoin dont on rapporte la parole, compte comme une tournure de fin, deux fois au plus par conteur et par lot. Chez C, l'ironie de l'effet inverse ne fait pas plus de 6 récits sur 12.
+8. **La carte des familles s'écrit avant les cartes, et le dernier inscrit relit les avertissements des autres** (bêtes, couples, places) avant de remettre.
