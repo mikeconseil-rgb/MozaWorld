@@ -63,6 +63,8 @@ function carMenace(t){let m={risque:0,lieu:null,par:null,qui:null};if(!t)return 
   const rivaux=S.riv&&S.riv.z?S.riv.z:{};
   for(const z of t){let base=0,par=null,qui=null;
     const h=hordes.find(h=>h&&h.cible===z&&ZB[h.src]);if(h){base=CAR_RISQUE.horde;par='horde';qui=h.src}
+    /* 20 nov. (testeur, provisoire) : une vague du siège final marche sur la Citadelle ; elle menace les caravanes comme une horde */
+    if(!base&&S.siege&&S.siege.cit===z&&ZB[S.siege.src]){base=CAR_RISQUE.horde;par='horde';qui=S.siege.src}
     if(!base){const v=(VOISINES[z]||[]).find(v=>rivaux[v]&&!S.own[v]);if(v){base=CAR_RISQUE.rival;par='rival';qui=rivaux[v]}}
     if(!base)continue;
     const tour=typeof defenseTours==='function'&&(defenseTours(z)||{}).bonus>0,k=base*(tour?CAR_TOUR:1);

@@ -22,8 +22,18 @@ const PACTE_CR_DELAI=2;      /* une contestation contre une maison rivale est an
 const PACTE_CR_CHANCE=.5;    /* et réussit une fois sur deux (provisoire) */
 /* prix par cycle (provisoire) : 2 + 1 par zone de la maison ; Comptevent −1, Grisaille +1 ; Ombrelieue : la dîme */
 const dimePacte=()=>Math.max(1,Math.ceil((typeof revenuTess==='function'?revenuTess():0)/2));
-function PACTE_PRIX(r){const n=typeof zonesMaison==='function'?zonesMaison(r.k).length:0;
+/* 20 nov. (critique, provisoire) : le prix vaut au moins le quart du revenu en tesselles par cycle (Citadelles, caravanes en route,
+   lois : Dîme et Relais), arrondi au-dessus ; on garde le plus élevé des deux, pour que le pacte reste un vrai choix en fin de partie */
+const PACTE_PART=.25;
+function revenuPacte(){let n=typeof revenuTess==='function'?revenuTess():0;
+  if(typeof caravanes==='function')for(const c of caravanes())if(c.etat==='en route')n+=c.n||0;
+  if(typeof loisTess==='function')n+=loisTess().tess||0;return n}
+const quartPacte=()=>Math.ceil(revenuPacte()*PACTE_PART);
+function prixTemp(r){const n=typeof zonesMaison==='function'?zonesMaison(r.k).length:0;
   return r.k==='cpv'?1+n:r.k==='gri'?3+n:r.k==='omb'?dimePacte():2+n}
+function PACTE_PRIX(r){return Math.max(prixTemp(r),quartPacte())}
+/* prix du cycle d'un pacte signé : le prix du tempérament fixé à la signature (la dîme d'Ombrelieue suit le revenu), ou le quart du revenu s'il est plus haut */
+function prixCycle(p,r){return Math.max(r.k==='omb'?dimePacte():typeof p.base==='number'?p.base:p.prix,quartPacte())}
 const PACTE_TEMP={
   gri:'Grisaille vend cher sa patience : 3 tesselles par cycle, plus 1 par zone qu\'elle tient.',
   cpv:'Comptevent aime les marchés conclus : 1 tesselle par cycle, plus 1 par zone qu\'elle tient. C\'est la moins chère.',
@@ -48,7 +58,7 @@ function pacDire(a,b,c){pacFile.push([a,b,c])}
 /* ---------- Signer, rompre ---------- */
 function signerPacte(r,gratuit){const p=pac();if(!r||p.k||refusPacte(r.k))return false;const prix=PACTE_PRIX(r);
   if(!gratuit){if(typeof S.tess!=='number'||S.tess<prix)return false;S.tess-=prix}
-  Object.assign(p,{k:r.k,prix,de:S.nc||0,warn:false,cr:null});
+  Object.assign(p,{k:r.k,prix,base:prixTemp(r),de:S.nc||0,warn:false,cr:null});
   if(p.rup&&p.rup.k===r.k)p.rup=null;
   /* la maison retire ce qu'elle menait contre vous */
   const R=typeof riv==='function'?riv():null,l=[];
@@ -84,6 +94,8 @@ function pacteAgit(r){const p=pac();if(!p||p.k!==r.k)return undefined;const R=ri
   const cp=plein?[]:ciblesPrise().filter(Z=>!S.emp[Z.id]);
   if(cp.length)return tenter(r,choisir(cp,r));
   return null}
+/* zones qu'une maison peut garder : la Loi du Cadastre (lois.js) en retire une, une au moins (20 nov., testeur) */
+const plafondPacte=()=>typeof forceLoi==='function'&&forceLoi('cadastre')?Math.max(1,RIV_MAX()-1):RIV_MAX();
 function contesterMaison(r,Z){const p=pac(),R=riv(),d=RIVK[R.z[Z.id]];
   p.cr={k:r.k,id:Z.id,de:d.k,du:(S.nc||0)+PACTE_CR_DELAI};R.vu[r.k]=(R.vu[r.k]||0)+1;save();pacMaj();
   pacDire(`${r.bl} ${LaM(r)} conteste ${Z.info.nom}`,`à ${laM(d)}, dans ${cyclesTxt(PACTE_CR_DELAI)}`,`Votre pacte la tourne contre les autres maisons : à l'échéance, elle réussit ${Math.round(PACTE_CR_CHANCE*100)} fois sur 100. La zone passera à elle, ou redeviendra sauvage si elle tient déjà assez de zones.`);
@@ -91,7 +103,7 @@ function contesterMaison(r,Z){const p=pac(),R=riv(),d=RIVK[R.z[Z.id]];
 function resoudreContesteMaison(gagne){const p=pac(),c=p&&p.cr;if(!c)return null;p.cr=null;const R=riv(),r=RIVK[c.k],d=RIVK[c.de],Z=ZB[c.id];let res;
   if(!Z||S.own[c.id]||R.z[c.id]!==c.de){res={fin:'sans objet'}}
   else{const ok=gagne===undefined?Math.random()<PACTE_CR_CHANCE:!!gagne;
-    if(ok&&zonesMaison(c.k).length<RIV_MAX()){R.z[c.id]=c.k;res={fin:'prise',id:c.id};
+    if(ok&&zonesMaison(c.k).length<plafondPacte()){R.z[c.id]=c.k;res={fin:'prise',id:c.id};
       pacDire(`${r.bl} ${LaM(r)} prend ${Z.info.nom}`,`à ${laM(d)}`,'La zone change de maison. Vous pourrez la reprendre en battant ses gardiens à la Pierre d\'éveil.')}
     else if(ok){delete R.z[c.id];res={fin:'sauvage',id:c.id};
       pacDire(`${r.bl} ${LaM(r)} chasse ${laM(d)}`,`${Z.info.nom} redevient sauvage`,'Elle tient déjà autant de zones qu\'elle peut en garder : elle laisse la zone au monde sauvage.')}
@@ -101,9 +113,9 @@ function resoudreContesteMaison(gagne){const p=pac(),c=p&&p.cr;if(!c)return null
 /* ---------- Un cycle de plus : paiement, échéances ---------- */
 function cyclePacte(){const p=pac();
   if(p.cr&&(S.nc||0)>=p.cr.du)resoudreContesteMaison();
-  if(!p.k)return;const r=RIVK[p.k];if(r.k==='omb')p.prix=PACTE_PRIX(r);
+  if(!p.k)return;const r=RIVK[p.k];p.prix=prixCycle(p,r);   /* la dîme, ou le quart du revenu s'il monte */
   if(S.tess>=p.prix){S.tess-=p.prix;
-    const suivant=r.k==='omb'?dimePacte():p.prix,peut=S.tess+(typeof revenuTess==='function'?revenuTess():0)>=suivant;
+    const suivant=prixCycle(p,r),peut=S.tess+(typeof revenuTess==='function'?revenuTess():0)>=suivant;
     if(!peut&&!p.warn)pacDire(`${PACTE_SYM} Pacte avec ${laM(r)} : bourse trop maigre`,`il vous faudra ${pacTxt(suivant)} au prochain cycle`,`Votre bourse compte ${pacTxt(S.tess)}. Sans paiement au prochain cycle, le pacte se rompra de lui-même, et la maison se vengera.`);
     p.warn=!peut}
   else if(!p.warn){p.warn=true;pacDire(`${PACTE_SYM} Pacte avec ${laM(r)} : paiement manqué`,`il vous faut ${pacTxt(p.prix)}`,`Votre bourse compte ${pacTxt(S.tess)}. La maison patiente un cycle : sans paiement au prochain, le pacte se rompra de lui-même.`)}
@@ -127,7 +139,7 @@ function openPacte(r,back){mode='menu';document.body.classList.add('jeu-ouvert')
     back:b,opts:[{l:'Garder le pacte',ic:'◆',go:b},{l:'Rompre le pacte',ic:'✂',cls:'m',d:'deux contestations de vos zones, puis aucun pacte avant '+PACTE_REFUS+' cycles',go:()=>{romprePacte('menu');sfx('fail');b()}}]});return}
   const raison=autre?`vous avez déjà un pacte avec ${laM(autre)} : rompez-le d'abord`:ref?`elle refuse tout pacte pendant encore ${cyclesTxt(ref)}`:S.tess<prix?`il vous faut ${pacTxt(prix)} pour le premier cycle (bourse : ${S.tess})`:'';
   ui('menu',{sur:'Rivaux · proposer un pacte',t:`${PACTE_SYM} Un pacte avec ${laM(r)}`,
-    corps:`<p>${PACTE_TEMP[r.k]}</p><p>Contre <b>${pacTxt(prix)} par cycle</b> (le premier tout de suite), elle cesse de contester vos zones et ne tente plus vos anciennes zones ; ses gens s'en prennent aux zones des autres maisons. Votre bourse : ${pacTxt(S.tess)}.</p><p class="petit">Un seul pacte à la fois. Si votre bourse ne suffit plus, vous êtes averti un cycle avant ; sans paiement, le pacte se rompt de lui-même. Une rupture, de votre fait ou faute de paiement, lui fait contester deux fois de suite vos zones, et elle refuse alors tout pacte pendant ${PACTE_REFUS} cycles. À la mort du héros, le pacte tombe sans rancune.</p>`,
+    corps:`<p>${PACTE_TEMP[r.k]}</p><p>Contre <b>${pacTxt(prix)} par cycle</b> (le premier tout de suite), elle cesse de contester vos zones et ne tente plus vos anciennes zones ; ses gens s'en prennent aux zones des autres maisons. Votre bourse : ${pacTxt(S.tess)}.</p><p class="petit">Quel que soit son tempérament, une maison demande au moins le quart de ce que vous rapportent vos Citadelles, vos caravanes et vos lois à chaque cycle (arrondi au-dessus) ; le prix monte avec vos revenus. Un seul pacte à la fois. Si votre bourse ne suffit plus, vous êtes averti un cycle avant ; sans paiement, le pacte se rompt de lui-même. Une rupture, de votre fait ou faute de paiement, lui fait contester deux fois de suite vos zones, et elle refuse alors tout pacte pendant ${PACTE_REFUS} cycles. À la mort du héros, le pacte tombe sans rancune.</p>`,
     back:b,opts:[{l:`Signer · ${pacTxt(prix)} par cycle`,ic:PACTE_SYM,cls:'p',off:!!raison,d:raison||(r.k==='sbc'?'elle trahit parfois':'payé à chaque cycle'),go:()=>{if(signerPacte(r)){sfx('hit');b()}}},{l:'Renoncer',ic:'◆',go:b}]})}
 /* fiche d'une maison (openMaison) : une option */
 function optionsPacte(r,i){const p=pac(),back=()=>openMaison(r,i);

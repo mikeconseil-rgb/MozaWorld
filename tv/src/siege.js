@@ -9,8 +9,9 @@
    - Trois vagues tenues ou brisées : victoire, palmarès gardé dans le navigateur, et proposition de commencer un nouveau monde. */
 const SIEGE_EPIQUES=5;          /* Citadelles épiques par monde (décision de l'utilisateur, provisoire) */
 const SIEGE_VAGUES=3;           /* vagues à tenir */
-const SIEGE_DELAI=2;            /* cycles entre l'annonce d'une vague et son arrivée (provisoire) */
+const SIEGE_DELAI=3;            /* cycles entre l'annonce d'une vague et son arrivée (provisoire ; 20 nov., critique : était 2) */
 const SIEGE_SURCROIT=[4,6,8];   /* force d'une vague = horde ordinaire (7 + 1 tous les 10 cycles) + ce surcroît + 0 ou 1 (provisoire) */
+const SIEGE_CHEF=1;             /* la dernière vague dépasse d'autant la défense de la Citadelle à son annonce (provisoire, 20 nov., testeur) */
 const SIEGE_REPOS=5;            /* cycles avant de pouvoir relancer un siège échoué (provisoire) */
 const SIEGE_BUTIN=3;            /* mana du type de la Citadelle quand le héros brise une vague (provisoire) */
 const PALMARES_CLE='mz-palmares-1';
@@ -31,6 +32,8 @@ function initSiege(){if(S.siege===undefined)S.siege=null;if(!S.siegeRepos||typeo
   if(S.siegeGraine!==S.graine){S.siege=null;S.siegeRepos={};S.siegeFini=null;S.siegeGraine=S.graine}}
 const resteSiege=s=>Math.max(0,(s.arrive-S.nc-1)*CYCLE+(CYCLE-S.tc));
 const peutSieger=id=>estEpique(id)&&tient(id)&&Math.abs(S.lv[id]||0)>=7;
+/* 20 nov. (critique, provisoire) : une Citadelle en siège est à l'abri des rivaux, ni contestation ni prise (rivaux.js, protegeConteste) */
+const enSiege=id=>typeof S!=='undefined'&&!!S.siege&&S.siege.cit===id;
 const reposSiege=id=>Math.max(0,(S.siegeRepos[id]||0)-S.nc);
 
 /* les assaillants : la zone sauvage la plus éveillée, la plus proche (pour les créatures du combat et le récit) */
@@ -40,12 +43,19 @@ function sourceSiege(cit){const d=typeof aPortee==='function'?aPortee(cit,12):{}
 
 /* ---------- Lancer, annoncer, résoudre ---------- */
 function lancerSiege(id){initSiege();if(S.siege||S.siegeFini||!peutSieger(id)||reposSiege(id))return null;
-  S.siege={cit:id,vague:0,tenues:0,brisees:0,debut:S.nc};annoncerVague();return S.siege}
+  S.siege={cit:id,vague:0,tenues:0,brisees:0,debut:S.nc};
+  /* les maisons s'écartent de la Citadelle assiégée : contestation en cours levée */
+  if(S.riv&&S.riv.c&&S.riv.c.id===id){const r=typeof RIVK!=='undefined'&&RIVK[S.riv.c.r];S.riv.c=null;if(r&&started)setTimeout(()=>toast(`${r.bl} ${r.nom} renonce à ${ZB[id].info.nom}`,'la Citadelle soutient le siège final','Aucune maison rivale ne s\'en approche tant que dure le siège.'),6000)}
+  annoncerVague();return S.siege}
 function annoncerVague(){const s=S.siege;if(!s)return;s.vague++;s.arrive=S.nc+SIEGE_DELAI;s.src=sourceSiege(s.cit);s.vu=0;
   s.force=7+Math.floor((S.nc||0)/(typeof HORDE_CROIT==='number'?HORDE_CROIT:10))+SIEGE_SURCROIT[s.vague-1]+Math.floor(Math.random()*2);
-  save();hudKey='';etatHud();const D=defenseHorde(s.cit);
+  const D=defenseHorde(s.cit);
+  /* 20 nov. (testeur, provisoire) : la dernière vague, menée par le chef, dépasse d'au moins 1 la défense de la Citadelle à son annonce ;
+     sans cela, une Citadelle bien aménagée (défense 22 à 25) tenait les trois vagues sans que le héros combatte */
+  if(s.vague>=SIEGE_VAGUES)s.force=Math.max(s.force,D.total+SIEGE_CHEF);
+  save();hudKey='';etatHud();
   if(started)toast(`Siège final · vague ${s.vague} sur ${SIEGE_VAGUES}`,`Le monde sauvage marche sur ${courtS(s.cit)}`,
-    `Force ${s.force} contre votre défense ${D.total}, arrivée dans ${cyclesS(SIEGE_DELAI)} (environ ${fmt(resteSiege(s))}). À la Pierre d'éveil de la Citadelle, « Briser la vague » pour l'affronter vous-même.`)}
+    `Force ${s.force} contre votre défense ${D.total}, arrivée dans ${cyclesS(SIEGE_DELAI)} (environ ${fmt(resteSiege(s))}). ${s.vague>=SIEGE_VAGUES?'Menée par leur chef, elle dépasse vos défenses : allez la briser vous-même à la Pierre d\'éveil de la Citadelle.':'À la Pierre d\'éveil de la Citadelle, « Briser la vague » pour l\'affronter vous-même.'}`)}
 let siegeRapports=[];
 /* forcer : true = la vague est tenue, false = elle passe, absent = force contre défense */
 function vagueArrive(forcer){initSiege();const s=S.siege;if(!s)return null;const Z=ZB[s.cit],D=defenseHorde(s.cit),l=[];
@@ -131,9 +141,9 @@ function optionsPalmares(){initSiege();const o=[],n=lirePalmares().length;
 /* ---------- Pierre d'éveil, fiche, bandeau, minicarte ---------- */
 function confirmerSiege(Z){const D=defenseHorde(Z.id),f0=7+Math.floor((S.nc||0)/(typeof HORDE_CROIT==='number'?HORDE_CROIT:10));
   ui('menu',{sur:'Siège final · '+Z.info.nom,t:'Lancer le siège final ?',
-    corps:`<p>Le monde sauvage enverra <b>trois vagues de suite</b> contre la Citadelle, une tous les ${SIEGE_DELAI} cycles, chacune plus forte qu'une horde ordinaire (environ ${f0+SIEGE_SURCROIT[0]}, ${f0+SIEGE_SURCROIT[1]}, puis ${f0+SIEGE_SURCROIT[2]}). Votre défense ici : <b>${D.total}</b> (${D.parts.map(p=>p[0]+' +'+p[1]).join(', ')}).</p>
+    corps:`<p>Le monde sauvage enverra <b>trois vagues de suite</b> contre la Citadelle, une tous les ${SIEGE_DELAI} cycles, chacune plus forte qu'une horde ordinaire (environ ${f0+SIEGE_SURCROIT[0]}, ${f0+SIEGE_SURCROIT[1]}, puis ${Math.max(f0+SIEGE_SURCROIT[2],D.total+SIEGE_CHEF)}). La dernière, menée par leur chef, dépasse toujours votre défense : il faudra la briser vous-même. Votre défense ici : <b>${D.total}</b> (${D.parts.map(p=>p[0]+' +'+p[1]).join(', ')}).</p>
 <p><b>Attention :</b> si une seule vague passe les murs, le siège échoue et la Citadelle recule d'un palier. Vous pourrez le relancer après ${cyclesS(SIEGE_REPOS)} de repos, une fois revenue à ±7.</p>
-<p class="petit">Vous pouvez briser chaque vague vous-même, ici, à la Pierre d'éveil. Tours de guet, Donjons aménagés voisins, remparts et pouvoirs des domaines renforcent la défense. Trois vagues tenues ou brisées : la victoire, et la fin de ce monde.</p>`,
+<p class="petit">Vous pouvez briser chaque vague vous-même, ici, à la Pierre d'éveil, et vous devrez briser la dernière. Tours de guet, Donjons aménagés voisins, remparts et pouvoirs des domaines renforcent la défense. Trois vagues tenues ou brisées : la victoire, et la fin de ce monde.</p>`,
     back:()=>openEveil(Z),opts:[{l:'Lancer le siège',ic:'♛',cls:'p',go:()=>{lancerSiege(Z.id);toMonde()}},{l:'Pas encore',ic:'◆',go:()=>openEveil(Z)}]})}
 function optionsSiege(Z){const o=[];if(!Z||!estCIT(Z)||!estEpique(Z.id))return o;initSiege();const id=Z.id,s=S.siege,lv=S.lv[id]||0;
   if(S.siegeFini){o.push({l:'Ce monde est gagné',ic:'♛',off:true,d:`victoire à ${courtS(S.siegeFini.cit)} ; la fin de ce monde vous attend`});

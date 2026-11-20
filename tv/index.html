@@ -10727,8 +10727,9 @@ function recoAssemblees(){for(const id in ASSEMBLEES){const A=ASSEMBLEES[id],Z=Z
    - Trois vagues tenues ou brisées : victoire, palmarès gardé dans le navigateur, et proposition de commencer un nouveau monde. */
 const SIEGE_EPIQUES=5;          /* Citadelles épiques par monde (décision de l'utilisateur, provisoire) */
 const SIEGE_VAGUES=3;           /* vagues à tenir */
-const SIEGE_DELAI=2;            /* cycles entre l'annonce d'une vague et son arrivée (provisoire) */
+const SIEGE_DELAI=3;            /* cycles entre l'annonce d'une vague et son arrivée (provisoire ; 20 nov., critique : était 2) */
 const SIEGE_SURCROIT=[4,6,8];   /* force d'une vague = horde ordinaire (7 + 1 tous les 10 cycles) + ce surcroît + 0 ou 1 (provisoire) */
+const SIEGE_CHEF=1;             /* la dernière vague dépasse d'autant la défense de la Citadelle à son annonce (provisoire, 20 nov., testeur) */
 const SIEGE_REPOS=5;            /* cycles avant de pouvoir relancer un siège échoué (provisoire) */
 const SIEGE_BUTIN=3;            /* mana du type de la Citadelle quand le héros brise une vague (provisoire) */
 const PALMARES_CLE='mz-palmares-1';
@@ -10749,6 +10750,8 @@ function initSiege(){if(S.siege===undefined)S.siege=null;if(!S.siegeRepos||typeo
   if(S.siegeGraine!==S.graine){S.siege=null;S.siegeRepos={};S.siegeFini=null;S.siegeGraine=S.graine}}
 const resteSiege=s=>Math.max(0,(s.arrive-S.nc-1)*CYCLE+(CYCLE-S.tc));
 const peutSieger=id=>estEpique(id)&&tient(id)&&Math.abs(S.lv[id]||0)>=7;
+/* 20 nov. (critique, provisoire) : une Citadelle en siège est à l'abri des rivaux, ni contestation ni prise (rivaux.js, protegeConteste) */
+const enSiege=id=>typeof S!=='undefined'&&!!S.siege&&S.siege.cit===id;
 const reposSiege=id=>Math.max(0,(S.siegeRepos[id]||0)-S.nc);
 
 /* les assaillants : la zone sauvage la plus éveillée, la plus proche (pour les créatures du combat et le récit) */
@@ -10758,12 +10761,19 @@ function sourceSiege(cit){const d=typeof aPortee==='function'?aPortee(cit,12):{}
 
 /* ---------- Lancer, annoncer, résoudre ---------- */
 function lancerSiege(id){initSiege();if(S.siege||S.siegeFini||!peutSieger(id)||reposSiege(id))return null;
-  S.siege={cit:id,vague:0,tenues:0,brisees:0,debut:S.nc};annoncerVague();return S.siege}
+  S.siege={cit:id,vague:0,tenues:0,brisees:0,debut:S.nc};
+  /* les maisons s'écartent de la Citadelle assiégée : contestation en cours levée */
+  if(S.riv&&S.riv.c&&S.riv.c.id===id){const r=typeof RIVK!=='undefined'&&RIVK[S.riv.c.r];S.riv.c=null;if(r&&started)setTimeout(()=>toast(`${r.bl} ${r.nom} renonce à ${ZB[id].info.nom}`,'la Citadelle soutient le siège final','Aucune maison rivale ne s\'en approche tant que dure le siège.'),6000)}
+  annoncerVague();return S.siege}
 function annoncerVague(){const s=S.siege;if(!s)return;s.vague++;s.arrive=S.nc+SIEGE_DELAI;s.src=sourceSiege(s.cit);s.vu=0;
   s.force=7+Math.floor((S.nc||0)/(typeof HORDE_CROIT==='number'?HORDE_CROIT:10))+SIEGE_SURCROIT[s.vague-1]+Math.floor(Math.random()*2);
-  save();hudKey='';etatHud();const D=defenseHorde(s.cit);
+  const D=defenseHorde(s.cit);
+  /* 20 nov. (testeur, provisoire) : la dernière vague, menée par le chef, dépasse d'au moins 1 la défense de la Citadelle à son annonce ;
+     sans cela, une Citadelle bien aménagée (défense 22 à 25) tenait les trois vagues sans que le héros combatte */
+  if(s.vague>=SIEGE_VAGUES)s.force=Math.max(s.force,D.total+SIEGE_CHEF);
+  save();hudKey='';etatHud();
   if(started)toast(`Siège final · vague ${s.vague} sur ${SIEGE_VAGUES}`,`Le monde sauvage marche sur ${courtS(s.cit)}`,
-    `Force ${s.force} contre votre défense ${D.total}, arrivée dans ${cyclesS(SIEGE_DELAI)} (environ ${fmt(resteSiege(s))}). À la Pierre d'éveil de la Citadelle, « Briser la vague » pour l'affronter vous-même.`)}
+    `Force ${s.force} contre votre défense ${D.total}, arrivée dans ${cyclesS(SIEGE_DELAI)} (environ ${fmt(resteSiege(s))}). ${s.vague>=SIEGE_VAGUES?'Menée par leur chef, elle dépasse vos défenses : allez la briser vous-même à la Pierre d\'éveil de la Citadelle.':'À la Pierre d\'éveil de la Citadelle, « Briser la vague » pour l\'affronter vous-même.'}`)}
 let siegeRapports=[];
 /* forcer : true = la vague est tenue, false = elle passe, absent = force contre défense */
 function vagueArrive(forcer){initSiege();const s=S.siege;if(!s)return null;const Z=ZB[s.cit],D=defenseHorde(s.cit),l=[];
@@ -10849,9 +10859,9 @@ function optionsPalmares(){initSiege();const o=[],n=lirePalmares().length;
 /* ---------- Pierre d'éveil, fiche, bandeau, minicarte ---------- */
 function confirmerSiege(Z){const D=defenseHorde(Z.id),f0=7+Math.floor((S.nc||0)/(typeof HORDE_CROIT==='number'?HORDE_CROIT:10));
   ui('menu',{sur:'Siège final · '+Z.info.nom,t:'Lancer le siège final ?',
-    corps:`<p>Le monde sauvage enverra <b>trois vagues de suite</b> contre la Citadelle, une tous les ${SIEGE_DELAI} cycles, chacune plus forte qu'une horde ordinaire (environ ${f0+SIEGE_SURCROIT[0]}, ${f0+SIEGE_SURCROIT[1]}, puis ${f0+SIEGE_SURCROIT[2]}). Votre défense ici : <b>${D.total}</b> (${D.parts.map(p=>p[0]+' +'+p[1]).join(', ')}).</p>
+    corps:`<p>Le monde sauvage enverra <b>trois vagues de suite</b> contre la Citadelle, une tous les ${SIEGE_DELAI} cycles, chacune plus forte qu'une horde ordinaire (environ ${f0+SIEGE_SURCROIT[0]}, ${f0+SIEGE_SURCROIT[1]}, puis ${Math.max(f0+SIEGE_SURCROIT[2],D.total+SIEGE_CHEF)}). La dernière, menée par leur chef, dépasse toujours votre défense : il faudra la briser vous-même. Votre défense ici : <b>${D.total}</b> (${D.parts.map(p=>p[0]+' +'+p[1]).join(', ')}).</p>
 <p><b>Attention :</b> si une seule vague passe les murs, le siège échoue et la Citadelle recule d'un palier. Vous pourrez le relancer après ${cyclesS(SIEGE_REPOS)} de repos, une fois revenue à ±7.</p>
-<p class="petit">Vous pouvez briser chaque vague vous-même, ici, à la Pierre d'éveil. Tours de guet, Donjons aménagés voisins, remparts et pouvoirs des domaines renforcent la défense. Trois vagues tenues ou brisées : la victoire, et la fin de ce monde.</p>`,
+<p class="petit">Vous pouvez briser chaque vague vous-même, ici, à la Pierre d'éveil, et vous devrez briser la dernière. Tours de guet, Donjons aménagés voisins, remparts et pouvoirs des domaines renforcent la défense. Trois vagues tenues ou brisées : la victoire, et la fin de ce monde.</p>`,
     back:()=>openEveil(Z),opts:[{l:'Lancer le siège',ic:'♛',cls:'p',go:()=>{lancerSiege(Z.id);toMonde()}},{l:'Pas encore',ic:'◆',go:()=>openEveil(Z)}]})}
 function optionsSiege(Z){const o=[];if(!Z||!estCIT(Z)||!estEpique(Z.id))return o;initSiege();const id=Z.id,s=S.siege,lv=S.lv[id]||0;
   if(S.siegeFini){o.push({l:'Ce monde est gagné',ic:'♛',off:true,d:`victoire à ${courtS(S.siegeFini.cit)} ; la fin de ce monde vous attend`});
@@ -11449,7 +11459,7 @@ const resteTente=k=>Math.max(0,S.riv.t[k].du-S.riv.nc);
 const protege=id=>(typeof borne==='function'&&borne(id))||(typeof verrouillee==='function'&&!!verrouillee(id));
 const protection=id=>{if(typeof defenseMonde!=='function')return 0;try{const d=defenseMonde(id);return d&&+d.bonus||0}catch(_){return 0}};
 /* 19 nov. (provisoire) : le verrou de Citadelle protège des prises, pas des contestations (il donne alors −20 %) ; seules les zones au cœur et bornées sont intouchables */
-const protegeConteste=id=>(typeof borne==='function'&&borne(id))||(typeof auCoeur==='function'&&!!auCoeur(id));
+const protegeConteste=id=>(typeof borne==='function'&&borne(id))||(typeof auCoeur==='function'&&!!auCoeur(id))||(typeof enSiege==='function'&&enSiege(id));   /* siege.js : Citadelle en siège (provisoire, 20 nov.) */
 const chanceRival=id=>Math.max(.1,RIV_CHANCE-RIV_PROT*protection(id)-(typeof piegesDonjon==='function'?DJ_RIVAL*piegesDonjon(id):0)-(typeof loiChanceRival==='function'?loiChanceRival(id):0));   /* lois.js : Loi des Témoins */   /* Donjon aménagé : −10 points par piège actif (donjons.js) */
 const chanceEpreuve=id=>Math.max(.1,RIV_EPREUVE[Math.min(RIV_EPREUVE.length-1,Math.floor(Math.abs(S.lv[id]||0)/2))]-(typeof loiChanceRival==='function'?loiChanceRival(id):0));   /* lois.js : Loi des Témoins */
 /* texte de la fiche de zone (bandeau d'exploration) */
@@ -11507,7 +11517,7 @@ function contester(r,Z){const R=riv();R.c={r:r.k,id:Z.id,de:R.nc,du:R.nc+RIV_DEL
 /* ---------- échéance d'une contestation ---------- */
 function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const r=RIVK[c.r],Z=ZB[c.id];let res;
   if(!Z||!S.own[c.id]||!S.act[c.id]){res={fin:'sans objet'}}
-  else if(protegeConteste(c.id)){res={fin:'protégée'};toast(`${r.bl} ${r.nom}`,`renonce à ${Z.info.nom}`,typeof borne==='function'&&borne(c.id)?'La Pierre de bornage de Raak tient : la zone ne recule pas.':'La zone est au cœur du royaume : la maison repart les mains vides.')}
+  else if(protegeConteste(c.id)){res={fin:'protégée'};toast(`${r.bl} ${r.nom}`,`renonce à ${Z.info.nom}`,typeof borne==='function'&&borne(c.id)?'La Pierre de bornage de Raak tient : la zone ne recule pas.':typeof enSiege==='function'&&enSiege(c.id)?'La Citadelle soutient le siège final : aucune maison n\'ose s\'en approcher.':'La zone est au cœur du royaume : la maison repart les mains vides.')}
   else{const ch=chanceRival(c.id),ok=gagne===undefined?Math.random()<ch:!!gagne,lv=S.lv[c.id]||0;
     if(ok&&lv!==0){const n=lv-Math.sign(lv);S.lv[c.id]=n;Z.lvT=n;S.rest[c.id]=now()+(typeof reposZone==='function'?reposZone(c.id):REPOS);
       if(typeof etatRoutes==='function')etatRoutes();
@@ -11623,8 +11633,18 @@ const PACTE_CR_DELAI=2;      /* une contestation contre une maison rivale est an
 const PACTE_CR_CHANCE=.5;    /* et réussit une fois sur deux (provisoire) */
 /* prix par cycle (provisoire) : 2 + 1 par zone de la maison ; Comptevent −1, Grisaille +1 ; Ombrelieue : la dîme */
 const dimePacte=()=>Math.max(1,Math.ceil((typeof revenuTess==='function'?revenuTess():0)/2));
-function PACTE_PRIX(r){const n=typeof zonesMaison==='function'?zonesMaison(r.k).length:0;
+/* 20 nov. (critique, provisoire) : le prix vaut au moins le quart du revenu en tesselles par cycle (Citadelles, caravanes en route,
+   lois : Dîme et Relais), arrondi au-dessus ; on garde le plus élevé des deux, pour que le pacte reste un vrai choix en fin de partie */
+const PACTE_PART=.25;
+function revenuPacte(){let n=typeof revenuTess==='function'?revenuTess():0;
+  if(typeof caravanes==='function')for(const c of caravanes())if(c.etat==='en route')n+=c.n||0;
+  if(typeof loisTess==='function')n+=loisTess().tess||0;return n}
+const quartPacte=()=>Math.ceil(revenuPacte()*PACTE_PART);
+function prixTemp(r){const n=typeof zonesMaison==='function'?zonesMaison(r.k).length:0;
   return r.k==='cpv'?1+n:r.k==='gri'?3+n:r.k==='omb'?dimePacte():2+n}
+function PACTE_PRIX(r){return Math.max(prixTemp(r),quartPacte())}
+/* prix du cycle d'un pacte signé : le prix du tempérament fixé à la signature (la dîme d'Ombrelieue suit le revenu), ou le quart du revenu s'il est plus haut */
+function prixCycle(p,r){return Math.max(r.k==='omb'?dimePacte():typeof p.base==='number'?p.base:p.prix,quartPacte())}
 const PACTE_TEMP={
   gri:'Grisaille vend cher sa patience : 3 tesselles par cycle, plus 1 par zone qu\'elle tient.',
   cpv:'Comptevent aime les marchés conclus : 1 tesselle par cycle, plus 1 par zone qu\'elle tient. C\'est la moins chère.',
@@ -11649,7 +11669,7 @@ function pacDire(a,b,c){pacFile.push([a,b,c])}
 /* ---------- Signer, rompre ---------- */
 function signerPacte(r,gratuit){const p=pac();if(!r||p.k||refusPacte(r.k))return false;const prix=PACTE_PRIX(r);
   if(!gratuit){if(typeof S.tess!=='number'||S.tess<prix)return false;S.tess-=prix}
-  Object.assign(p,{k:r.k,prix,de:S.nc||0,warn:false,cr:null});
+  Object.assign(p,{k:r.k,prix,base:prixTemp(r),de:S.nc||0,warn:false,cr:null});
   if(p.rup&&p.rup.k===r.k)p.rup=null;
   /* la maison retire ce qu'elle menait contre vous */
   const R=typeof riv==='function'?riv():null,l=[];
@@ -11685,6 +11705,8 @@ function pacteAgit(r){const p=pac();if(!p||p.k!==r.k)return undefined;const R=ri
   const cp=plein?[]:ciblesPrise().filter(Z=>!S.emp[Z.id]);
   if(cp.length)return tenter(r,choisir(cp,r));
   return null}
+/* zones qu'une maison peut garder : la Loi du Cadastre (lois.js) en retire une, une au moins (20 nov., testeur) */
+const plafondPacte=()=>typeof forceLoi==='function'&&forceLoi('cadastre')?Math.max(1,RIV_MAX()-1):RIV_MAX();
 function contesterMaison(r,Z){const p=pac(),R=riv(),d=RIVK[R.z[Z.id]];
   p.cr={k:r.k,id:Z.id,de:d.k,du:(S.nc||0)+PACTE_CR_DELAI};R.vu[r.k]=(R.vu[r.k]||0)+1;save();pacMaj();
   pacDire(`${r.bl} ${LaM(r)} conteste ${Z.info.nom}`,`à ${laM(d)}, dans ${cyclesTxt(PACTE_CR_DELAI)}`,`Votre pacte la tourne contre les autres maisons : à l'échéance, elle réussit ${Math.round(PACTE_CR_CHANCE*100)} fois sur 100. La zone passera à elle, ou redeviendra sauvage si elle tient déjà assez de zones.`);
@@ -11692,7 +11714,7 @@ function contesterMaison(r,Z){const p=pac(),R=riv(),d=RIVK[R.z[Z.id]];
 function resoudreContesteMaison(gagne){const p=pac(),c=p&&p.cr;if(!c)return null;p.cr=null;const R=riv(),r=RIVK[c.k],d=RIVK[c.de],Z=ZB[c.id];let res;
   if(!Z||S.own[c.id]||R.z[c.id]!==c.de){res={fin:'sans objet'}}
   else{const ok=gagne===undefined?Math.random()<PACTE_CR_CHANCE:!!gagne;
-    if(ok&&zonesMaison(c.k).length<RIV_MAX()){R.z[c.id]=c.k;res={fin:'prise',id:c.id};
+    if(ok&&zonesMaison(c.k).length<plafondPacte()){R.z[c.id]=c.k;res={fin:'prise',id:c.id};
       pacDire(`${r.bl} ${LaM(r)} prend ${Z.info.nom}`,`à ${laM(d)}`,'La zone change de maison. Vous pourrez la reprendre en battant ses gardiens à la Pierre d\'éveil.')}
     else if(ok){delete R.z[c.id];res={fin:'sauvage',id:c.id};
       pacDire(`${r.bl} ${LaM(r)} chasse ${laM(d)}`,`${Z.info.nom} redevient sauvage`,'Elle tient déjà autant de zones qu\'elle peut en garder : elle laisse la zone au monde sauvage.')}
@@ -11702,9 +11724,9 @@ function resoudreContesteMaison(gagne){const p=pac(),c=p&&p.cr;if(!c)return null
 /* ---------- Un cycle de plus : paiement, échéances ---------- */
 function cyclePacte(){const p=pac();
   if(p.cr&&(S.nc||0)>=p.cr.du)resoudreContesteMaison();
-  if(!p.k)return;const r=RIVK[p.k];if(r.k==='omb')p.prix=PACTE_PRIX(r);
+  if(!p.k)return;const r=RIVK[p.k];p.prix=prixCycle(p,r);   /* la dîme, ou le quart du revenu s'il monte */
   if(S.tess>=p.prix){S.tess-=p.prix;
-    const suivant=r.k==='omb'?dimePacte():p.prix,peut=S.tess+(typeof revenuTess==='function'?revenuTess():0)>=suivant;
+    const suivant=prixCycle(p,r),peut=S.tess+(typeof revenuTess==='function'?revenuTess():0)>=suivant;
     if(!peut&&!p.warn)pacDire(`${PACTE_SYM} Pacte avec ${laM(r)} : bourse trop maigre`,`il vous faudra ${pacTxt(suivant)} au prochain cycle`,`Votre bourse compte ${pacTxt(S.tess)}. Sans paiement au prochain cycle, le pacte se rompra de lui-même, et la maison se vengera.`);
     p.warn=!peut}
   else if(!p.warn){p.warn=true;pacDire(`${PACTE_SYM} Pacte avec ${laM(r)} : paiement manqué`,`il vous faut ${pacTxt(p.prix)}`,`Votre bourse compte ${pacTxt(S.tess)}. La maison patiente un cycle : sans paiement au prochain, le pacte se rompra de lui-même.`)}
@@ -11728,7 +11750,7 @@ function openPacte(r,back){mode='menu';document.body.classList.add('jeu-ouvert')
     back:b,opts:[{l:'Garder le pacte',ic:'◆',go:b},{l:'Rompre le pacte',ic:'✂',cls:'m',d:'deux contestations de vos zones, puis aucun pacte avant '+PACTE_REFUS+' cycles',go:()=>{romprePacte('menu');sfx('fail');b()}}]});return}
   const raison=autre?`vous avez déjà un pacte avec ${laM(autre)} : rompez-le d'abord`:ref?`elle refuse tout pacte pendant encore ${cyclesTxt(ref)}`:S.tess<prix?`il vous faut ${pacTxt(prix)} pour le premier cycle (bourse : ${S.tess})`:'';
   ui('menu',{sur:'Rivaux · proposer un pacte',t:`${PACTE_SYM} Un pacte avec ${laM(r)}`,
-    corps:`<p>${PACTE_TEMP[r.k]}</p><p>Contre <b>${pacTxt(prix)} par cycle</b> (le premier tout de suite), elle cesse de contester vos zones et ne tente plus vos anciennes zones ; ses gens s'en prennent aux zones des autres maisons. Votre bourse : ${pacTxt(S.tess)}.</p><p class="petit">Un seul pacte à la fois. Si votre bourse ne suffit plus, vous êtes averti un cycle avant ; sans paiement, le pacte se rompt de lui-même. Une rupture, de votre fait ou faute de paiement, lui fait contester deux fois de suite vos zones, et elle refuse alors tout pacte pendant ${PACTE_REFUS} cycles. À la mort du héros, le pacte tombe sans rancune.</p>`,
+    corps:`<p>${PACTE_TEMP[r.k]}</p><p>Contre <b>${pacTxt(prix)} par cycle</b> (le premier tout de suite), elle cesse de contester vos zones et ne tente plus vos anciennes zones ; ses gens s'en prennent aux zones des autres maisons. Votre bourse : ${pacTxt(S.tess)}.</p><p class="petit">Quel que soit son tempérament, une maison demande au moins le quart de ce que vous rapportent vos Citadelles, vos caravanes et vos lois à chaque cycle (arrondi au-dessus) ; le prix monte avec vos revenus. Un seul pacte à la fois. Si votre bourse ne suffit plus, vous êtes averti un cycle avant ; sans paiement, le pacte se rompt de lui-même. Une rupture, de votre fait ou faute de paiement, lui fait contester deux fois de suite vos zones, et elle refuse alors tout pacte pendant ${PACTE_REFUS} cycles. À la mort du héros, le pacte tombe sans rancune.</p>`,
     back:b,opts:[{l:`Signer · ${pacTxt(prix)} par cycle`,ic:PACTE_SYM,cls:'p',off:!!raison,d:raison||(r.k==='sbc'?'elle trahit parfois':'payé à chaque cycle'),go:()=>{if(signerPacte(r)){sfx('hit');b()}}},{l:'Renoncer',ic:'◆',go:b}]})}
 /* fiche d'une maison (openMaison) : une option */
 function optionsPacte(r,i){const p=pac(),back=()=>openMaison(r,i);
@@ -11926,6 +11948,8 @@ function carMenace(t){let m={risque:0,lieu:null,par:null,qui:null};if(!t)return 
   const rivaux=S.riv&&S.riv.z?S.riv.z:{};
   for(const z of t){let base=0,par=null,qui=null;
     const h=hordes.find(h=>h&&h.cible===z&&ZB[h.src]);if(h){base=CAR_RISQUE.horde;par='horde';qui=h.src}
+    /* 20 nov. (testeur, provisoire) : une vague du siège final marche sur la Citadelle ; elle menace les caravanes comme une horde */
+    if(!base&&S.siege&&S.siege.cit===z&&ZB[S.siege.src]){base=CAR_RISQUE.horde;par='horde';qui=S.siege.src}
     if(!base){const v=(VOISINES[z]||[]).find(v=>rivaux[v]&&!S.own[v]);if(v){base=CAR_RISQUE.rival;par='rival';qui=rivaux[v]}}
     if(!base)continue;
     const tour=typeof defenseTours==='function'&&(defenseTours(z)||{}).bonus>0,k=base*(tour?CAR_TOUR:1);
@@ -12189,11 +12213,14 @@ if(typeof mort==='function'){const _loisMort=mort;mort=function(){if(typeof S!==
 
 /* ---------- chaque cycle : Dîme, Relais (tesselles), Corvées (pièges) ---------- */
 const LOI_STATS={couvrefeu:0,cadastre:0};
-function loisCycle(){initLois();const r={tess:0,corvee:0,lignes:[]};
+/* tesselles que les lois lèveront ce cycle (Dîme, Relais), sans les verser ; aussi pour le prix du pacte (pacte.js) */
+function loisTess(r){initLois();r=r||{tess:0,lignes:[]};
   if(typeof etatRoutes==='function')etatRoutes();
   for(const a of loisActives()){
     if(a.k==='dime'){const c=ZN.filter(Z=>estCIT(Z)&&tient(Z.id)&&a.jur[Z.id]!==undefined).length,t=a.n*(1+c);r.tess+=t;r.lignes.push(`+${t} ◇ de la Dîme ${de_(nomAssL(a.id))}`)}
     if(a.k==='relais'&&S.routes){let c=0;for(const z in S.routes)if(a.jur[z]!==undefined)c+=S.routes[z].length;const t=Math.min(LOI_RELAIS_MAX*a.n,c*a.n);if(t){r.tess+=t;r.lignes.push(`+${t} ◇ des Relais ${de_(nomAssL(a.id))}`)}}}
+  return r}
+function loisCycle(){initLois();const r={tess:0,corvee:0,lignes:[]};loisTess(r);
   if(r.tess&&typeof gagnerTesselles==='function')gagnerTesselles(r.tess,'cycle');
   for(const Z of ZN){if(!estDON(Z)||!tient(Z.id))continue;const n=forceLoi('corvee',Z.id);if(!n)continue;
     const T=typeof piegesTab==='function'?piegesTab(Z.id):Z.id==='DON'&&Array.isArray(S.pieges)?S.pieges:[];let k=0;
@@ -14811,7 +14838,7 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
   o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
   ui('seuil',{opts:o})}
-function startGame(neuf){if(neuf){S.graine=Math.floor(Math.random()*997)+1;NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
+function startGame(neuf){if(neuf){const g0=S.graine;do S.graine=Math.floor(Math.random()*997)+1;while(S.graine===g0);   /* 20 nov. : une graine neuve, pour que chaque module oublie l'ancien monde */NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
     S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;
     donnerDepart();CULL.dirty=true;terrainAll();save()}

@@ -9,6 +9,8 @@
    Lot 3 (19 nov.) joué dans la même partie : caravane ouverte, pillée (butin qui grossit), escortée ; Loi des Relais sur la caravane ;
    loi du catalogue réveillée (Pama au pôle −, LOIS_CATALOGUE_CARTE) puis renforcée par un Duel d'arguments gagné, et sa fin ; écran
    « Lois du monde » ; mort et rechargement avec caravane et loi renforcée. Captures lot3-*.png (1280×720).
+   Lot 3b (20 nov.) : pacte signé, contestation entre maisons, rupture et ses deux contestations ; siège final lancé à la Pierre,
+   rechargement, mort, siège rejoué jusqu'à la victoire (vague brisée au combat), écran de victoire, palmarès, nouveau monde remis à zéro.
    Usage : sh tv/build.sh && node tv/tools/test-monde.js [dossier des captures]   (depuis la racine du dépôt ; Playwright et Chromium installés) */
 const path=require('path'),fs=require('fs');
 const {chromium}=require('playwright');
@@ -399,6 +401,133 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
     return o.join('\n')});
   const mauvais=(txt.match(/undefined|NaN|\bnull\b|\[object/g)||[]);
   ok('textes visibles sans « undefined », « NaN » ni « null »',mauvais.length===0,mauvais.join(', ')||undefined);
+
+  {
+  /* 15. LOT 3b (20 nov., testeur) : pacte et siège final joués dans la même partie, puis victoire et nouveau monde.
+     Pacte signé au menu (prix au moins le quart du revenu), contestation entre maisons et sa résolution, rupture et ses deux
+     contestations ; nouveau pacte et siège lancé à la Pierre, caravane menacée par la vague, rechargement ; mort (le pacte tombe
+     sans rancune, le siège est levé) ; siège rejoué : vague 1 tenue par les murs au fil des cycles, vague 2 brisée au combat,
+     vague 3 tenue : victoire, palmarès, nouveau monde et sa remise à zéro. Captures lot3b-*.png. */
+  const COHERENT3B=()=>{const S=MZ.S,p=[],P=S.pacte;
+    if(P){if(P.k&&!RIVK[P.k])p.push('pacte avec '+P.k);if(P.k&&(!Number.isInteger(P.prix)||P.prix<1))p.push('prix du pacte '+P.prix);
+      if(P.cr&&(!ZB[P.cr.id]||!RIVK[P.cr.k]||!RIVK[P.cr.de]||P.cr.k===P.cr.de||!isFinite(P.cr.du)))p.push('contestation entre maisons '+JSON.stringify(P.cr));
+      if(P.rup&&(!RIVK[P.rup.k]||!(P.rup.n>0)))p.push('rupture '+JSON.stringify(P.rup));if(P.k&&P.rup&&P.rup.k===P.k)p.push('pacte et vengeance de la même maison');
+      if(P.k&&S.riv&&S.riv.c&&S.riv.c.r===P.k)p.push('la maison du pacte conteste une de vos zones');
+      for(const k in P.refus||{})if(!RIVK[k]||!Number.isInteger(P.refus[k]))p.push('refus '+k+' '+P.refus[k])}
+    const s=S.siege;if(s){if(!ZB[s.cit]||!estEpique(s.cit))p.push('siège sur '+s.cit);if(!(s.vague>=1&&s.vague<=3))p.push('vague '+s.vague);
+      if(!Number.isInteger(s.force)||!Number.isInteger(s.arrive))p.push('siège '+JSON.stringify(s));if(s.tenues+s.brisees!==s.vague-1)p.push('vagues comptées '+JSON.stringify(s));
+      if(S.riv&&S.riv.c&&S.riv.c.id===s.cit)p.push('Citadelle assiégée contestée')}
+    if(s&&S.siegeFini)p.push('siège en cours dans un monde gagné');
+    for(const r of RIVAUX)if(zonesMaison(r.k).length>RIV_MAX())p.push('maison au-delà de son plafond : '+r.k);
+    return p};
+  const coherent3b=async nom=>{await coherent(nom);const pb=await p.evaluate(COHERENT3B);ok('pacte et siège cohérents · '+nom,pb.length===0,pb.slice(0,4).join(' | ')||undefined)};
+  const libre=()=>p.evaluate(()=>{const S=MZ.S;for(const Z of MZ.ZN)if(S.own[Z.id]){S.rest[Z.id]=0;S.act[Z.id]=true;if(!S.lv[Z.id])MZ.set(Z.id,1)}});
+  await monde();
+  /* 15a. pacte signé au menu : deux maisons tiennent une zone chacune */
+  const pa=await p.evaluate(()=>{const S=MZ.S;riv();S.riv.c=null;S.riv.t={};for(const id in S.riv.z)delete S.riv.z[id];
+    const sauv=MZ.ZN.filter(Z=>!S.own[Z.id]&&!ESTDEP.has(Z.id)&&(Z.mod||Z.id)!=='RES').map(Z=>Z.id);S.riv.z[sauv[0]]='gri';S.riv.z[sauv[1]]='omb';
+    const P=pac();P.k=null;P.rup=null;P.cr=null;P.refus={};
+    MZ.tesselles(60);const t0=S.tess,rev=revenuPacte(),prix=PACTE_PRIX(RIVK.cpv);openRivaux();openMaison(RIVK.cpv,1);const o=UI.opts.find(o=>o.l==='Proposer un pacte');if(!o)return{o:UI.opts.map(o=>o.l)};o.go();
+    const s=UI.opts.find(o=>/^Signer/.test(o.l));s.go();return{k:S.pacte.k,paye:t0-S.tess,prix,rev,quart:Math.ceil(rev/4),z:Object.assign({},S.riv.z)}});
+  ok('lot 3b : pacte signé avec Comptevent depuis sa fiche, premier cycle payé',pa.k==='cpv'&&pa.paye===pa.prix,JSON.stringify(pa));
+  ok('lot 3b : le prix vaut au moins le quart du revenu en tesselles',pa.prix>=pa.quart&&pa.prix>=1,JSON.stringify(pa));
+  await p.evaluate(()=>{openRivaux()});await p.waitForTimeout(500);await p.screenshot({path:path.join(dossier,'lot3b-rivaux-pacte.png')});
+  const rv=await p.evaluate(()=>document.getElementById('menu').textContent);
+  ok('lot 3b : écran Rivaux, le pacte est affiché',/⚭ pacte/.test(rv),rv.slice(0,200));
+  await monde();await coherent3b('pacte signé');
+  /* 15b. la maison du pacte conteste une zone d'une autre maison, puis la prend */
+  const cm=await p.evaluate(()=>{const S=MZ.S,a=MZ.pacteAgit(),cr=S.pacte.cr&&Object.assign({},S.pacte.cr);hudKey='';etatHud();const ban=document.getElementById('bandeau').textContent;const r=cr&&MZ.pacteResout(true);return{a,cr,ban,r,z:cr&&S.riv.z[cr.id]}});
+  ok('lot 3b : contestation entre maisons annoncée (Comptevent contre une autre maison)',!!cm.a&&cm.a.sorte==='contesteMaison'&&!!cm.cr&&cm.cr.k==='cpv'&&cm.cr.de!=='cpv',JSON.stringify(cm).slice(0,240));
+  ok('lot 3b : bandeau, ligne Rivaux avec ⚭ et la flèche entre blasons',/⚭/.test(cm.ban)&&/→/.test(cm.ban),cm.ban.slice(-120));
+  ok('lot 3b : contestation réussie, la zone passe à Comptevent',!!cm.r&&cm.r.fin==='prise'&&cm.z==='cpv',JSON.stringify(cm.r));
+  await coherent3b('contestation entre maisons');
+  /* 15c. rupture : deux contestations de vos zones, l'une après l'autre */
+  await libre();
+  const ru=await p.evaluate(async()=>{const S=MZ.S;S.riv.c=null;MZ.rompre();await new Promise(r=>setTimeout(r,300));const c1=S.riv.c&&S.riv.c.r,n1=S.pacte.rup&&S.pacte.rup.n;
+    hudKey='';etatHud();const ban=document.getElementById('bandeau').textContent;
+    MZ.rivalArrive(false);await new Promise(r=>setTimeout(r,1400));const c2=S.riv.c&&S.riv.c.r,rup2=S.pacte.rup;MZ.rivalArrive(false);await new Promise(r=>setTimeout(r,1400));
+    return{k:S.pacte.k,c1,n1,ban:ban.slice(-60),c2,rup2,c3:S.riv.c,refus:refusPacte('cpv')}});
+  ok('lot 3b : rupture, deux contestations de vengeance puis plus rien, refus 10 cycles',ru.k===null&&ru.c1==='cpv'&&ru.n1===1&&ru.c2==='cpv'&&ru.rup2===null&&ru.c3===null&&ru.refus===10,JSON.stringify(ru));
+  ok('lot 3b : bandeau, ✂ pour la vengeance',/✂/.test(ru.ban),ru.ban);
+  await monde();await coherent3b('rupture du pacte');
+  /* 15d. nouveau pacte (Grisaille) et siège final lancé à la Pierre de Berestograd */
+  const sg=await p.evaluate(()=>{const S=MZ.S;for(const s in S.hordes)if(S.hordes[s].cible==='CIT'||s==='CIT')delete S.hordes[s];S.siegeRepos={};S.siegeFini=null;S.siege=null;
+    MZ.set('CIT',7);S.own.CIT=S.act.CIT=true;MZ.tesselles(40);const okp=signerPacte(RIVK.gri);S.riv.c={r:'omb',id:'CIT',de:S.riv.nc,du:S.riv.nc+2};
+    tp('CIT');openEveil(ZB.CIT);return{okp,o:UI.opts.map(o=>o.l)}});
+  ok('lot 3b : la Pierre de Berestograd à +7 propose « Lancer le siège final »',sg.okp&&sg.o[0]==='Lancer le siège final',sg.o.slice(0,4).join(' / '));
+  await p.waitForTimeout(500);await p.screenshot({path:path.join(dossier,'lot3b-pierre-siege.png')});
+  const la=await p.evaluate(()=>{const S=MZ.S;UI.opts[0].go();const t=document.getElementById('menu-t').textContent;UI.opts.find(o=>o.l==='Lancer le siège').go();const s=S.siege;
+    return{t,s:s&&{vague:s.vague,arr:s.arrive-S.nc,force:s.force},c:S.riv.c,cc:ciblesConteste().some(Z=>Z.id==='CIT'),def:defenseHorde('CIT').total}});
+  ok('lot 3b : siège lancé (confirmation), vague 1 dans 3 cycles',/Lancer le siège final/.test(la.t)&&!!la.s&&la.s.vague===1&&la.s.arr===3,JSON.stringify(la));
+  ok('lot 3b : la Citadelle assiégée est à l\'abri des rivaux (contestation levée, plus contestable)',la.c===null&&!la.cc,JSON.stringify(la));
+  info('lot 3b : vague 1',`force ${la.s&&la.s.force} contre défense ${la.def}`);
+  const cs=await p.evaluate(()=>{const S=MZ.S;MZ.set('RES',2);S.own.RES=S.act.RES=true;S.routes=S.routes||{};S.routes.RES=['CIT'];if(S.car.RES)S.car.RES.arret=-1;const c=MZ.caravanes().find(c=>c.r==='RES');return c&&{etat:c.etat,risque:c.risque,menace:c.menace}});
+  ok('lot 3b : la vague menace la caravane qui va à la Citadelle',!!cs&&cs.risque>0&&cs.menace==='CIT',JSON.stringify(cs));
+  await p.evaluate(()=>{toMonde();hudKey='';etatHud()});await p.waitForTimeout(1500);
+  const ban=await p.$('#bandeau');if(ban)await ban.screenshot({path:path.join(dossier,'lot3b-bandeau-siege.png')});
+  await p.screenshot({path:path.join(dossier,'lot3b-monde-siege.png')});
+  ok('lot 3b : bandeau, « ♛ … vague 1/3 » dans les Menaces',await p.evaluate(()=>/♛.*vague 1\/3/.test(document.getElementById('bandeau').textContent)));
+  await coherent3b('siège lancé');
+  /* 15e. rechargement : pacte et siège reprennent à l'identique */
+  const cle3b='JSON.stringify({pacte:MZ.S.pacte,siege:MZ.S.siege,lv:MZ.S.lv.CIT,tess:MZ.S.tess,c:MZ.S.riv.c})';
+  await p.evaluate(()=>save());const av3=await p.evaluate(cle3b);
+  await p.reload();await p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function',null,{timeout:30000});
+  await p.evaluate(()=>startGame(false));await p.waitForTimeout(1500);
+  const ap3=await p.evaluate(cle3b);
+  ok('lot 3b : rechargement, pacte et siège à l\'identique',av3===ap3,av3===ap3?undefined:av3.slice(0,160)+' ≠ '+ap3.slice(0,160));
+  await monde();await coherent3b('rechargement');
+  /* 15f. mort : le pacte tombe sans rancune, le siège est levé */
+  const mo=await p.evaluate(async()=>{const S=MZ.S,k=S.pacte.k;mort();toMonde();await new Promise(r=>setTimeout(r,2600));return{k,apres:S.pacte.k,refus:Object.keys(S.pacte.refus).length,rup:S.pacte.rup,siege:S.siege}});
+  ok('lot 3b : mort, le pacte tombe sans rancune (ni vengeance, ni refus)',mo.k==='gri'&&mo.apres===null&&mo.refus===0&&mo.rup===null,JSON.stringify(mo));
+  ok('lot 3b : mort, le siège est levé',mo.siege===null,JSON.stringify(mo.siege));
+  await monde();await coherent3b('mort pendant le siège');
+  /* 15g. siège rejoué jusqu'à la victoire */
+  const s2=await p.evaluate(()=>{const S=MZ.S;for(const s in S.hordes)if(S.hordes[s].cible==='CIT')delete S.hordes[s];MZ.set('CIT',7);S.own.CIT=S.act.CIT=true;S.siegeRepos={};
+    const s=lancerSiege('CIT');if(!s)return null;const D=defenseHorde('CIT').total;s.force=D;save();return{force:s.force,D,arr:s.arrive,nc:S.nc}});
+  ok('lot 3b : siège relancé par l\'héritier',!!s2,JSON.stringify(s2));
+  const pierre0=await p.evaluate(()=>MZ.S.res[ZMANA.CIT]||0);
+  for(let i=0;i<3;i++){await p.evaluate(()=>{const S=MZ.S;for(const s in S.hordes)if(S.hordes[s].cible==='CIT')delete S.hordes[s];MZ.cycle()});await p.waitForTimeout(1300);
+    await p.evaluate(()=>{if(MZ.mode==='menu'&&/Siège final/.test(document.getElementById('menu-sur').textContent))toMonde()});await monde()}
+  const w1=await p.evaluate(()=>({s:MZ.S.siege&&{vague:MZ.S.siege.vague,tenues:MZ.S.siege.tenues},pierre:MZ.S.res[ZMANA.CIT]||0,lv:MZ.S.lv.CIT}));
+  ok('lot 3b : vague 1 tenue par les murs au fil des cycles (+1 mana), vague 2 annoncée',!!w1.s&&w1.s.vague===2&&w1.s.tenues===1&&w1.pierre>=pierre0+1&&w1.lv===7,JSON.stringify(w1));
+  await coherent3b('vague 1 tenue');
+  const cb=await p.evaluate(()=>{tp('CIT');openEveil(ZB.CIT);const i=UI.opts.findIndex(o=>/Briser la vague 2/.test(o.l));if(i<0)return{o:UI.opts.map(o=>o.l)};UI.opts[i].go();return MZ.CB&&{siege:MZ.CB.siege,foes:MZ.CB.foes.length}});
+  ok('lot 3b : « Briser la vague 2 » ouvre le combat (trois créatures)',!!cb&&cb.siege===2&&cb.foes===3,JSON.stringify(cb));
+  await p.waitForTimeout(600);await p.evaluate(()=>{if(MZ.CB){for(const m of MZ.CB.foes)m.pv=0;finSiFini()}});
+  await p.waitForFunction(()=>!MZ.CB&&MZ.mode==='menu',null,{timeout:20000}).catch(()=>{});await p.waitForTimeout(300);
+  const w2=await p.evaluate(()=>({s:MZ.S.siege&&{vague:MZ.S.siege.vague,brisees:MZ.S.siege.brisees},t:document.getElementById('menu-t').textContent}));
+  ok('lot 3b : vague 2 brisée au combat, vague 3 annoncée',!!w2.s&&w2.s.vague===3&&w2.s.brisees===1&&/respire/.test(w2.t),JSON.stringify(w2));
+  await monde();await coherent3b('vague 2 brisée');
+  const pal0=await p.evaluate(()=>MZ.palmares().length),g0=await p.evaluate(()=>MZ.S.graine);
+  const w3=await p.evaluate(()=>MZ.siegeVague(true));await p.waitForTimeout(600);
+  const vic=await p.evaluate(()=>({t:document.getElementById('menu-t').textContent,corps:document.getElementById('menu-corps').textContent,o:UI.opts.map(o=>o.l),fini:MZ.S.siegeFini,pal:MZ.palmares()}));
+  ok('lot 3b : vague 3 tenue, victoire',!!w3&&w3.victoire&&!!vic.fini,JSON.stringify(w3));
+  ok('lot 3b : écran de victoire (résumé, nouveau monde proposé)',/le monde est à vous/.test(vic.t)&&/Zones tenues/.test(vic.corps)&&/Temps de jeu/.test(vic.corps)&&vic.o[0]==='Commencer un nouveau monde',vic.t);
+  ok('lot 3b : victoire inscrite au palmarès',vic.pal.length===pal0+1&&vic.pal[vic.pal.length-1].vagues.brisees===1,JSON.stringify(vic.pal[vic.pal.length-1]).slice(0,200));
+  await p.screenshot({path:path.join(dossier,'lot3b-victoire.png')});
+  const pm=await p.evaluate(()=>{toMonde();openMenu();const i=UI.opts.findIndex(o=>o.l==='Palmarès');if(i<0)return null;UI.opts[i].go();return document.getElementById('menu-t').textContent});
+  ok('lot 3b : menu Pause → Palmarès',!!pm&&/gagné/.test(pm),pm);
+  await p.waitForTimeout(400);await p.screenshot({path:path.join(dossier,'lot3b-palmares.png')});
+  await monde();await coherent3b('monde gagné');
+  /* 15h. nouveau monde : tout repart de zéro, sauf le palmarès */
+  await p.evaluate(()=>{const S=MZ.S;MZ.tour('CIT');MZ.amenager('DON',['herse']);MZ.loiRenforcer('ASS150');MZ.tesselles(9);
+    const src=MZ.ZN.find(Z=>!S.own[Z.id]&&!S.hordes[Z.id]);if(src&&!Object.keys(S.hordes).length)S.hordes[src.id]={src:src.id,cible:'CIT',nee:S.nc,arrive:S.nc+3,force:9};
+    S.riv.z[MZ.ZN.find(Z=>!S.own[Z.id]&&!ESTDEP.has(Z.id)).id]='sbc';signerPacte(RIVK.cpv,true);S.pacte.refus.gri=S.nc+10;S.pacte.rup={k:'omb',n:1};save()});
+  const avNM=await p.evaluate(()=>{const S=MZ.S;return{tours:Object.keys(S.tours).length,hordes:Object.keys(S.hordes).length,pacte:S.pacte.k,tess:S.tess,riv:Object.keys(S.riv.z).length,renf:Object.keys(S.loisRenf).length,car:MZ.caravanes().length}});
+  info('lot 3b : avant le nouveau monde',JSON.stringify(avNM));
+  await p.evaluate(()=>{openEveil(ZB.CIT);UI.opts.find(o=>o.l==='Commencer un nouveau monde').go();UI.opts.find(o=>o.l==='Commencer le nouveau monde').go()});
+  await p.waitForTimeout(2500);await monde();
+  const nm=await p.evaluate(()=>{const S=MZ.S,P=S.pacte||{};return{graine:S.graine,nc:S.nc,hordes:Object.keys(S.hordes||{}).length,riv:S.riv?Object.keys(S.riv.z||{}).length+(S.riv.c?1:0)+Object.keys(S.riv.t||{}).length:0,
+    pacte:[P.k,P.cr,P.rup,Object.keys(P.refus||{}).length],car:Object.keys(S.car||{}).length+MZ.caravanes().length,renf:Object.keys(S.loisRenf||{}).length,tours:Object.keys(S.tours||{}).length,
+    salles:Object.keys(S.donjons||{}).length+S.pieges.filter(Boolean).length,tess:S.tess,siege:S.siege,fini:S.siegeFini,pal:MZ.palmares().length,
+    own:MZ.ZN.filter(Z=>S.own[Z.id]).length,dep:ZONES_DEP.filter(id=>S.own[id]).length,emp:MZ.ZN.filter(Z=>S.emp[Z.id]).length,lives:S.lives,hurt:S.hurt}});
+  ok('lot 3b : nouveau monde, graine neuve et cycle 0',nm.graine!==g0&&nm.nc===0,JSON.stringify(nm));
+  ok('lot 3b : nouveau monde, hordes, rivaux, pacte, caravanes, lois renforcées remis à zéro',nm.hordes===0&&nm.riv===0&&nm.pacte[0]===null&&nm.pacte[1]===null&&nm.pacte[2]===null&&nm.pacte[3]===0&&nm.car===0&&nm.renf===0,JSON.stringify(nm));
+  ok('lot 3b : nouveau monde, tours, salles, tesselles, siège remis à zéro',nm.tours===0&&nm.salles===0&&nm.tess===0&&nm.siege===null&&nm.fini===null,JSON.stringify(nm));
+  ok('lot 3b : nouveau monde, territoire de départ seul, sans empreinte, héros neuf ; palmarès gardé',nm.own===nm.dep&&nm.own===12&&nm.emp===0&&nm.lives===1&&nm.hurt===0&&nm.pal===pal0+1,JSON.stringify(nm));
+  for(let i=0;i<3;i++){await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1100);await monde()}
+  await coherent3b('nouveau monde, trois cycles');
+  }
 
   await nav.close();
   console.log(etapes.join('\n'));console.log('\nCaptures : '+dossier);

@@ -51,7 +51,7 @@ const resteTente=k=>Math.max(0,S.riv.t[k].du-S.riv.nc);
 const protege=id=>(typeof borne==='function'&&borne(id))||(typeof verrouillee==='function'&&!!verrouillee(id));
 const protection=id=>{if(typeof defenseMonde!=='function')return 0;try{const d=defenseMonde(id);return d&&+d.bonus||0}catch(_){return 0}};
 /* 19 nov. (provisoire) : le verrou de Citadelle protège des prises, pas des contestations (il donne alors −20 %) ; seules les zones au cœur et bornées sont intouchables */
-const protegeConteste=id=>(typeof borne==='function'&&borne(id))||(typeof auCoeur==='function'&&!!auCoeur(id));
+const protegeConteste=id=>(typeof borne==='function'&&borne(id))||(typeof auCoeur==='function'&&!!auCoeur(id))||(typeof enSiege==='function'&&enSiege(id));   /* siege.js : Citadelle en siège (provisoire, 20 nov.) */
 const chanceRival=id=>Math.max(.1,RIV_CHANCE-RIV_PROT*protection(id)-(typeof piegesDonjon==='function'?DJ_RIVAL*piegesDonjon(id):0)-(typeof loiChanceRival==='function'?loiChanceRival(id):0));   /* lois.js : Loi des Témoins */   /* Donjon aménagé : −10 points par piège actif (donjons.js) */
 const chanceEpreuve=id=>Math.max(.1,RIV_EPREUVE[Math.min(RIV_EPREUVE.length-1,Math.floor(Math.abs(S.lv[id]||0)/2))]-(typeof loiChanceRival==='function'?loiChanceRival(id):0));   /* lois.js : Loi des Témoins */
 /* texte de la fiche de zone (bandeau d'exploration) */
@@ -109,7 +109,7 @@ function contester(r,Z){const R=riv();R.c={r:r.k,id:Z.id,de:R.nc,du:R.nc+RIV_DEL
 /* ---------- échéance d'une contestation ---------- */
 function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const r=RIVK[c.r],Z=ZB[c.id];let res;
   if(!Z||!S.own[c.id]||!S.act[c.id]){res={fin:'sans objet'}}
-  else if(protegeConteste(c.id)){res={fin:'protégée'};toast(`${r.bl} ${r.nom}`,`renonce à ${Z.info.nom}`,typeof borne==='function'&&borne(c.id)?'La Pierre de bornage de Raak tient : la zone ne recule pas.':'La zone est au cœur du royaume : la maison repart les mains vides.')}
+  else if(protegeConteste(c.id)){res={fin:'protégée'};toast(`${r.bl} ${r.nom}`,`renonce à ${Z.info.nom}`,typeof borne==='function'&&borne(c.id)?'La Pierre de bornage de Raak tient : la zone ne recule pas.':typeof enSiege==='function'&&enSiege(c.id)?'La Citadelle soutient le siège final : aucune maison n\'ose s\'en approcher.':'La zone est au cœur du royaume : la maison repart les mains vides.')}
   else{const ch=chanceRival(c.id),ok=gagne===undefined?Math.random()<ch:!!gagne,lv=S.lv[c.id]||0;
     if(ok&&lv!==0){const n=lv-Math.sign(lv);S.lv[c.id]=n;Z.lvT=n;S.rest[c.id]=now()+(typeof reposZone==='function'?reposZone(c.id):REPOS);
       if(typeof etatRoutes==='function')etatRoutes();

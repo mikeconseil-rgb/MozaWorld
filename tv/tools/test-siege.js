@@ -33,11 +33,14 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     ok('pas de siège avant confirmation',await p.evaluate(()=>MZ.S.siege===null));
     /* 2. échec : vague 1 tenue, vague 2 passe */
     const l1=await p.evaluate(()=>{const i=UI.opts.findIndex(o=>/Lancer le siège$/.test(o.l));UI.opts[i].go();const s=MZ.S.siege;return s&&{vague:s.vague,force:s.force,arrive:s.arrive,nc:MZ.S.nc,mode:MZ.mode}});
-    ok('le siège est lancé : vague 1 annoncée',!!l1&&l1.vague===1&&l1.arrive-l1.nc===2&&l1.force>=11,JSON.stringify(l1));
+    ok('le siège est lancé : vague 1 annoncée',!!l1&&l1.vague===1&&l1.arrive-l1.nc===3&&l1.force>=11,JSON.stringify(l1));
     await p.waitForTimeout(400);
     const vu=await p.evaluate(()=>({toast:document.getElementById('t1').textContent,bandeau:(document.getElementById('bandeau')||{}).textContent||''}));
     ok('toast d\'annonce',/vague 1 sur 3/.test(vu.toast),vu.toast);
     ok('ligne Menaces : vague 1/3',/Menaces/.test(vu.bandeau)&&/vague 1\/3/.test(vu.bandeau),vu.bandeau.slice(-120));
+    /* 20 nov. (critique) : la Citadelle assiégée est à l'abri des rivaux */
+    const ab=await p.evaluate(()=>{const S=MZ.S;riv();S.rest.CIT=0;const cc=ciblesConteste().some(Z=>Z.id==='CIT');S.riv.c={r:'gri',id:'CIT',de:S.riv.nc,du:S.riv.nc};const r=MZ.rivalArrive(true);return{cc,r,lv:S.lv.CIT}});
+    ok('pendant le siège, la Citadelle n\'est ni contestable ni rabaissée par un rival',!ab.cc&&ab.r&&ab.r.fin==='protégée'&&ab.lv===7,JSON.stringify(ab));
     const v1=await p.evaluate(()=>MZ.siegeVague(true));
     ok('vague 1 tenue, vague 2 annoncée',!!v1&&v1.tenue&&v1.siege&&v1.siege.vague===2&&v1.siege.force>=13,JSON.stringify(v1));
     await p.waitForTimeout(300);await p.evaluate(()=>toMonde());
@@ -60,6 +63,8 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     await p.waitForFunction(()=>!MZ.CB&&MZ.mode==='menu',null,{timeout:20000}).catch(()=>{});await p.waitForTimeout(300);
     const ap=await p.evaluate(()=>({siege:MZ.S.siege&&MZ.S.siege.vague,titre:document.getElementById('menu-t').textContent,brisees:MZ.S.hordesBilan.brisees}));
     ok('vague 2 brisée par le héros, vague 3 annoncée',ap.siege===3&&/respire/.test(ap.titre)&&ap.brisees===brisees0+1,JSON.stringify(ap));
+    const f3=await p.evaluate(()=>({force:MZ.S.siege.force,def:defenseHorde('CIT').total}));
+    ok('vague 3 : menée par le chef, elle dépasse la défense (le héros doit la briser)',f3.force>f3.def,JSON.stringify(f3));
     await p.evaluate(()=>toMonde());
     const mini=await p.evaluate(()=>{try{const c=document.createElement('canvas').getContext('2d');dessinerSiege(c,1,0,0,1);return true}catch(e){return String(e)}});
     ok('minicarte : dessin du siège sans erreur',mini===true,String(mini));

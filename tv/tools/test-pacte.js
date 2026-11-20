@@ -69,8 +69,21 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
     /* 9. paiement à chaque cycle (après le revenu des Citadelles) */
     const cy=await p.evaluate(async()=>{const S=MZ.S;S.pacte.cr=null;const t0=S.tess,rev=revenuTess(),prix=S.pacte.prix;S.nc+=1;await new Promise(r=>setTimeout(r,2300));return{t0,t1:S.tess,rev,prix,k:S.pacte.k}});
     ok('chaque cycle, le prix du pacte est prélevé',cy.k==='cpv'&&cy.t1===cy.t0+cy.rev-cy.prix,JSON.stringify(cy));
+    /* 9 bis (20 nov.) : le prix vaut au moins le quart du revenu en tesselles (Citadelles, caravanes, lois), et suit ce quart */
+    const qr=await p.evaluate(()=>{const S=MZ.S,r0=revenuPacte(),c0=PACTE_PRIX(RIVK.cpv),a={own:S.own.MAR,act:S.act.MAR,lv:S.lv.MAR,cit:S.lv.CIT,z:Object.assign({},S.riv.z)};
+      for(const id in S.riv.z)delete S.riv.z[id];S.own.CIT=S.act.CIT=true;S.lv.CIT=7;MZ.loiForcer('MAR','dime');S.own.MAR=S.act.MAR=true;S.lv.MAR=1;MZ.loiRenforcer('MAR');
+      const r1=revenuPacte(),cit=revenuTess(),dime=loisTess().tess,c1=PACTE_PRIX(RIVK.cpv),temp=prixTemp(RIVK.cpv),omb=PACTE_PRIX(RIVK.omb),cy=prixCycle(S.pacte,RIVK.cpv);
+      MZ.loiRenforcer('MAR',true);MZ.loiForcer('MAR',null);S.own.MAR=a.own;S.act.MAR=a.act;S.lv.MAR=a.lv;S.lv.CIT=a.cit;Object.assign(S.riv.z,a.z);return{r0,c0,r1,cit,dime,c1,temp,omb,cy}});
+    ok('prix : au moins le quart du revenu (Citadelles, lois), arrondi au-dessus, et chaque cycle',qr.dime>0&&qr.r1===qr.cit+qr.dime&&qr.c1===Math.ceil(qr.r1/4)&&qr.c1>qr.temp&&qr.cy===qr.c1&&qr.omb>=qr.c1&&qr.c0>=Math.ceil(qr.r0/4),JSON.stringify(qr));
+    /* 9 ter (20 nov.) : Loi du Cadastre, une maison au plafond moins un ne garde pas la zone prise à une autre maison */
+    const ca=await p.evaluate(()=>{const S=MZ.S,R=S.riv,cr0=S.pacte.cr,z0=Object.assign({},R.z);for(const id in R.z)delete R.z[id];
+      const l=MZ.ZN.filter(Z=>!S.own[Z.id]).map(Z=>Z.id);R.z[l[0]]='gri';for(let i=1;i<Math.max(1,RIV_MAX()-1)+1;i++)R.z[l[i]]='cpv';
+      S.pacte.cr={k:'cpv',id:l[0],de:'gri',du:S.nc};MZ.loiForcer('MAR','cadastre');const a={own:S.own.MAR,act:S.act.MAR,lv:S.lv.MAR};S.own.MAR=S.act.MAR=true;S.lv.MAR=1;
+      const n=zonesMaison('cpv').length,r=MZ.pacteResout(true),z=R.z[l[0]]||null;MZ.loiForcer('MAR',null);S.own.MAR=a.own;S.act.MAR=a.act;S.lv.MAR=a.lv;
+      for(const id in R.z)delete R.z[id];Object.assign(R.z,z0);S.pacte.cr=cr0;return{n,max:RIV_MAX(),r,z}});
+    ok('Loi du Cadastre : la maison du pacte au plafond moins un chasse l\'autre maison sans garder la zone',ca.r&&ca.r.fin==='sauvage'&&ca.z===null,JSON.stringify(ca));
     /* 10. bourse trop maigre : avertissement, puis rupture au cycle suivant, deux contestations de vengeance */
-    const av=await p.evaluate(async()=>{const S=MZ.S;S.tess=0;S.pacte.prix=50;S.pacte.warn=false;S.riv.c=null;S.nc+=1;await new Promise(r=>setTimeout(r,2300));
+    const av=await p.evaluate(async()=>{const S=MZ.S;S.tess=0;S.pacte.prix=S.pacte.base=50;S.pacte.warn=false;S.riv.c=null;S.nc+=1;await new Promise(r=>setTimeout(r,2300));
       return{warn:S.pacte.warn,k:S.pacte.k,toast:document.getElementById('t1').textContent}});
     ok('paiement manqué : avertissement, le pacte tient encore un cycle',av.warn===true&&av.k==='cpv',JSON.stringify(av));
     const ru=await p.evaluate(async()=>{const S=MZ.S;S.tess=0;for(const Z of MZ.ZN)if(S.own[Z.id])S.rest[Z.id]=0;S.nc+=1;await new Promise(r=>setTimeout(r,2300));
