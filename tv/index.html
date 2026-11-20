@@ -1567,9 +1567,11 @@ const hesite=m=>{if(!m||m.pv<=0)return;const t=CB?CB.tour:0;
   /* Plateau, passe 5 : l'habitude tient tout le tour ; un chef n'hésite qu'une fois tous les 3 tours */
   const pl=CB&&CB.cases;if(pl&&m.hesBloque===t){pop(m,'s\'habitue','g');return}
   if((m.chef||pl)&&(m.hesT===t-1||(pl&&m.chef&&m.hesT!=null&&m.hesT!==t&&t-m.hesT<3))){if(m.int&&m.int.a==='c'){m.int={a:'a',v:m.atk,ic:'⚔',t:'attaque'};perdreElan(m);pop(m,'perd son élan','g')}else pop(m,'s\'habitue','g');if(typeof journal==='function')journal(m.chef&&pl?`${m.nom} s'habitue : un chef n'hésite qu'une fois tous les 3 tours.`:`${m.nom} s'habitue : une deuxième hésitation de suite ne prend plus.`);if(pl)m.hesBloque=t;else m.hesT=-9;return}
+  /* passe 8 : un renfort lourd ne lâche pas son élan */if(pl&&m.lourd&&m.int&&m.int.a==='c'){pop(m,'inébranlable','g');if(typeof journal==='function')journal(`${m.nom} est inébranlable : il garde son élan.`);return}
+  /* passe 8 : une hésitation pendant un élan le retarde d'un tour (il reprend son élan) */if(pl&&m.int&&m.int.a==='c')m.reElan=1;
   m.hesT=t;m.int={a:'h',v:0,ic:'?',t:'hésite'};pop(m,'hésite','g')};
 const tous=()=>vivants(CB.foes);
-const perdPV=n=>{if(CB.sr)n=Math.max(1,Math.ceil(n/3));CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');majUnites()};
+const perdPV=n=>{if(CB.sr)n=Math.max(1,Math.ceil(n/3));CB.hero.pv=Math.max(1,CB.hero.pv-n);pop(CB.hero,'−'+n,'deg');CB.pvPrix=(CB.pvPrix||0)+n;if(typeof journal==='function')journal(`Le héros paie ${n} PV (${CB.pvPrix} payés depuis le début du combat).`);majUnites()};
 const bete2=(nom,pv,atk)=>({nom,pv,max:pv,atk,g:0,bete:1});
 /* chaque entrée : [nom, coût, cible, texte(L,x), jeu(L,x,t)] */
 const POLES={
@@ -3054,7 +3056,7 @@ function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
 function debutTour(){if(!CB)return;CB.tour++;if(typeof renforts==='function')renforts();CB.hero.g=0;if(CB.cases)for(const u of CB.allies)if(u.bete)u.g=0;eroderGarde();if(typeof effetsCases==='function')effetsCases('a');CB.riposte=0;CB.defPrix=0;CB.gratuit=null;CB.gratuitSuivant=0;CB.echo=false;CB.nrecup=0;CB.nJoues=0;if(typeof atoutsDebutTour==='function')atoutsDebutTour();if(typeof avancerArriere==='function')avancerArriere();if(typeof releveSentinelle==='function')releveSentinelle();CB.mana=CB.capT=Math.max(1,Math.ceil(CB.tour/2),CB.tour-Math.min(srMalus(),CB.tour<4?1:99));if(srMalus())journal('Blessures : −'+Math.min(srMalus(),CB.tour<4?1:99)+' de capacité ce tour.');   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
   if(CB.tour===1){if(aPassif('abondance')){CB.mana++;CB.capT++}}
-  pioche(mainMax()+(CB.tour===1&&aPassif('vote')?1:0)-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;CB.man=null;dessinerMain();majUnites();if(CB.tour===1&&typeof debutPlacement==='function')debutPlacement()}
+  pioche(mainMax()+(CB.tour===1&&aPassif('vote')?1:0)-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;CB.man=null;dessinerMain();majUnites();if((CB.tour===1||(CB.aPlacer&&CB.aPlacer.length))&&typeof debutPlacement==='function')debutPlacement()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
 function jouer(i,t){const k=CB.main[i],c=CK[k],g=enGris(k);CB.nJoues=(CB.nJoues||0)+1;const cc0=coutDe(k);if(CB.gratuit===k)CB.gratuit=null;CB.mana-=cc0;if(mtype(k)&&!g&&cc0)payer(mtype(k),cc0);CB.main.splice(i,1);CB.defausse.push(k);
@@ -3082,7 +3084,7 @@ function garder(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u&
 function soigner(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(CB&&CB.sr&&u.hero)n=Math.max(1,Math.ceil(n/3));const a=Math.min(n,u.max-u.pv);u.pv+=a;pop(u,'+'+a,'soin');majUnites()}
 function invoquer(b){const pl=typeof caseAuto==='function'&&CB.cases;
   if(!pl&&b.voie==null){const n0=CB.allies.filter(u=>u.bete&&u.pv>0&&u.voie===0).length,n1=CB.allies.filter(u=>u.bete&&u.pv>0&&u.voie===1).length;b.voie=n1<n0?1:0}
-  const nb=CB.allies.filter(u=>u.bete&&u.pv>0).length;if(nb>=(pl?PL_MAX:3)){const l0=CB.allies.filter(u=>u.bete&&u.pv>0),l2=pl&&l0.some(u=>!u.mur)?l0.filter(u=>!u.mur):l0,l3=l2.filter(u=>u.neT!==CB.tour),l1=l3.length?l3:l2,w=l1.sort((p,q)=>p.pv-q.pv)[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove();journal(w.nom+' quitte le plateau pour faire de la place.')}
+  const nb=CB.allies.filter(u=>u.bete&&u.pv>0).length;if(nb>=(pl?PL_MAX:3)){const l0=CB.allies.filter(u=>u.bete&&u.pv>0),l3=l0.filter(u=>u.neT!==CB.tour),l2=pl&&l3.length?l3:l0,l1=pl?l2:(l0.some(u=>!u.mur)?l0.filter(u=>!u.mur):l0),poids=u=>pl?(u.atk+1)*u.pv*(u.mur?1.5:1):u.pv,w=l1.sort((p,q)=>poids(p)-poids(q))[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove();journal(w.nom+' quitte le plateau pour faire de la place.')}
   /* Plateau (19 nov.) : une case libre proposée (l'avant de la voie la plus menacée) ; une carte jouée laisse ensuite choisir la case */
   if(pl){if(b.voie!=null&&b.voie<3&&!occupant(b.voie,0))b.rang=0;else if(b.voie!=null&&b.voie<3&&!occupant(b.voie,1))b.rang=1;else{const c=caseAuto(b)||[0,0];b.voie=c[0];b.rang=c[1]}}
   if(CB.enCarte)b.neCarte=(CB.nJoues||0);b.neT=CB.tour;CB.allies.push(b);uniteEl(b,'cb-allies');pop(b,'arrive','soin');journal(b.nom+' rejoint le plateau'+(pl?', voie '+PL_NOMV[b.voie]+(b.rang?' à l\'arrière':' à l\'avant'):'')+'.');
@@ -3111,11 +3113,11 @@ function coupSurTerrain(m,v,opt){if(CB&&CB.cases&&!opt.vol){v+=bonusSource(m);pi
     /* le piétinement passe à l'unité suivante de la voie : arrière, Garde, héros */
     if(deja.indexOf(t)>=0){const v0=voieDe(m),ch=CB.cases?[occupant(v0,0),occupant(v0,1),gardeU(),CB.hero]:[gardeU(),CB.hero];t=ch.find(u=>u&&u.pv>0&&deja.indexOf(u)<0)||CB.hero}
     deja.push(t);const avant=t.pv+t.g,x=opt.belier&&!t.hero&&(t.garde||t.mur||!CB.cases)?(t.sentinelle?1.5:2):1;
-  journal(`${m.nom} ${opt.vol?'passe par-dessus et frappe le héros':opt.belier&&!t.hero?'enfonce '+t.nom:'frappe '+(t.hero?'le héros':t.nom)} (${Math.round(reste*x)}${CB.cases&&CB.centre==='ennemi'?' +1 du centre':''}).`);
+  journal(`${m.nom} ${opt.vol?(t.hero?'passe par-dessus et frappe le héros':'passe par-dessus et frappe '+t.nom):opt.belier&&!t.hero?'enfonce '+t.nom:'frappe '+(t.hero?'le héros':t.nom)} (${Math.round(reste*x)}${CB.cases&&CB.centre==='ennemi'?' +1 du centre':''}).`);
   frappe(t,Math.round(reste*x),m);if((t.hero||t.garde)&&CB.riposte)frappe(m,CB.riposte,CB.hero);if(t.epine&&m.pv>0)frappe(m,t.epine,t);
   /* passe 4 : sur le Plateau, une Garde qui cède laisse passer le reste du coup au héros */
   if((!opt.pietine&&!(t.garde&&CB.cases))||t.hero||t.pv>0)break;reste=Math.ceil((reste*x-avant)/x);if(reste>0)journal(opt.pietine?'Le coup piétine et passe au suivant.':'La Garde cède : le reste du coup passe au héros.')}}
-function intention(m){if(typeof plancherAtk==='function')plancherAtk(m);let a=m.mv[m.mi%m.mv.length],forc=0;m.mi++;if(m.forceF){a=m.forceF===2?'b':'f';m.forceF=0;m.mi--;forc=1}else if(CB&&CB.cases&&(CB.tour<1||m.renfort===1)&&(a==='f'||a==='b')){m.forceF=a==='b'?2:1;a='c'}if(m.chef&&CB&&CB.cases&&!(m.int&&m.int.a==='c')&&!forc&&a!=='f')m.cv=m.cv==null?Math.floor(Math.random()*3):(m.cv+1)%3;if(a==='c'&&m.chef&&aPassif('silence')&&!m.silence){m.silence=1;a='a'}const L=Lz(m.z);
+function intention(m){if(typeof plancherAtk==='function')plancherAtk(m);let a=m.mv[m.mi%m.mv.length],forc=0;m.mi++;if(m.reElan){m.reElan=0;m.mi--;a='c';forc=1}else if(m.forceF){a=m.forceF===2?'b':'f';m.forceF=0;m.mi--;forc=1}else if(CB&&CB.cases&&(CB.tour<1||m.renfort===1)&&(a==='f'||a==='b')){m.forceF=a==='b'?2:1;a='c'}if(m.chef&&CB&&CB.cases&&!(m.int&&m.int.a==='c')&&!forc&&a!=='f')m.cv=m.cv==null?Math.floor(Math.random()*3):(m.cv+1)%3;if(a==='g'&&CB&&CB.cases&&CB.tour>=5)a='a';if(a==='c'&&m.chef&&aPassif('silence')&&!m.silence){m.silence=1;a='a'}const L=Lz(m.z);
   m.int=a==='v'?{a,v:Math.max(1,m.atk-1),ic:'➶',t:'vole par-dessus'}:a==='b'?{a,v:m.atk,ic:'⚒',t:'bélier'}:a==='a'?{a,v:m.atk,ic:'⚔',t:'attaque'}:a==='g'?{a,v:m.atk+3,ic:'⛨',t:'se garde'}:a==='t'?{a,v:Math.max(1,m.atk-1),ic:'✶',t:'frappe tout le monde'}
     :a==='c'?{a,v:0,ic:'…',t:'prend son élan'}:a==='f'?{a,v:m.atk*2,ic:'⚔⚔',t:'frappe fort et piétine'}:{a,v:4+L,ic:'✚',t:'soigne les siens'}}
 function agir(m){const I=m.int;if(!I)return;m.el&&(m.el.classList.remove('agit'),void m.el.offsetWidth,m.el.classList.add('agit'));
@@ -3289,7 +3291,9 @@ function coupPrevu(m){const I=m&&m.int;if(!I||'afbv'.indexOf(I.a)<0)return null;
 function menaces(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes)){const I=m.int;if(!I)continue;if(I.a==='t'){for(let v=0;v<3;v++)t[v]+=I.v+(CB.centre==='ennemi'?1:0);continue}const c=coupPrevu(m);if(c&&!c.vol)t[c.voie]+=c.v}return t}
 const vols=()=>{const t=[0,0,0];if(CB)for(const m of vivants(CB.foes)){const c=coupPrevu(m);if(c&&c.vol)t[c.voie]+=c.v}return t};
 /* élans : la frappe forte arrivera au tour suivant (affichée à part) */
-function elans(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes))if(m.int&&m.int.a==='c')t[voieDe(m)]+=2*m.atk;return t}
+function elans(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes))if(m.int&&m.int.a==='c'){
+  /* passe 8 : le coup qui suit vraiment (bélier ou coup fort), échauffement compris, calculé comme coupPrevu */
+  const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;t[voieDe(m)]+=c?c.v:2*m.atk}return t}
 /* case proposée pour une nouvelle unité : l'avant de la voie la plus menacée qui n'a personne devant, sinon l'arrière ; une bête fragile va derrière */
 function caseAuto(u){const th=menaces(),el=elans();for(let v=0;v<3;v++)th[v]+=Math.round(el[v]/2);
   /* un bloqueur ne va pas d'office face à un bélier (double contre lui) */
@@ -3371,7 +3375,7 @@ function uniteDeDepart(){if(!plActif())return;const cits=zonesA('CIT');
   CB.aPlacer=surTerrain().slice()}
 /* passe 7 : Sentinelle de relève, une fois par combat : plateau vide au début de votre tour, la Citadelle en renvoie une à la moitié de ses PV */
 function releveSentinelle(){if(!plActif()||CB.kind==='duel'||CB.releve||CB.tour<2||surTerrain().length)return;const cits=zonesA('CIT');if(!cits.length)return;
-  CB.releve=1;const L=Math.max(...cits.map(Z=>Lz(Z.id))),n=Math.ceil((6+L)/2);journal('La Citadelle envoie une Sentinelle de relève.');invoquer({nom:'Sentinelle',pv:n,max:n,atk:1+Math.floor(L/2),g:0,bete:1,mur:1,sentinelle:1})}
+  CB.releve=1;const L=Math.max(...cits.map(Z=>Lz(Z.id))),n=Math.ceil((6+L)/2);journal('La Citadelle envoie une Sentinelle de relève.');const u={nom:'Sentinelle',pv:n,max:n,atk:1+Math.floor(L/2),g:0,bete:1,mur:1,sentinelle:1};invoquer(u);CB.aPlacer=[u]}
 /* l'arrière avance quand l'avant de sa voie est vide (au début de votre tour) */
 function avancerArriere(){if(!plActif())return;for(let v=0;v<3;v++){const ar=occupant(v,1);if(ar&&!occupant(v,0)&&['CIT','DON','ANT'].indexOf(terrainDe(ar))<0){ar.rang=0;pop(ar,'avance','g');journal(`${ar.nom} avance à l'avant de la voie ${PL_NOMV[v]}.`)}}}
 /* Manœuvre : une fois par tour, déplacer une de vos unités (échange compris) ; elle frappe à moitié ce tour-là */
@@ -3400,9 +3404,11 @@ function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.t
   if(tours.indexOf(t+1)>=0){const v=chef&&chef.cv!=null?chef.cv:Math.floor(Math.random()*3);C.renfortVoie=v;C.renfortT=t+1;journal(`${chef?chef.nom+' appelle':'Un cri appelle'} un renfort : il arrivera au prochain tour, voie ${PL_NOMV[v]}.`)}}
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
-  const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7 : en rencontre, le renfort a 30 % de PV en moins ; il entre toujours en prenant son élan */if(C.kind!=='eveil')m.pv=m.max=Math.max(1,Math.round(m.max*.7));C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+  const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7-8 : en rencontre de bas niveau (≤ 2), le renfort a 30 % de PV en moins ; le renfort du tour 5 de l'éveil est lourd (PV ×1,5, inébranlable pendant son élan) ; tous entrent en prenant leur élan, puis frappent fort */
+  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*1.5);m.nom+=' (lourd)'}
+  C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
-function perdreElan(m){m.forceF=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
+function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
 function plancherAtk(m){if(!plActif()||CB.kind==='duel')return;if(m.atk0==null)m.atk0=m.atk;
   if(CB.tour>=3&&m.renfort!==1&&m.echT!==CB.tour){m.echT=CB.tour;m.atk++;m.atk0++;if(CB.echJ!==CB.tour){CB.echJ=CB.tour;journal(`Les ennemis s'échauffent : +1 d'attaque au prochain tour (+${CB.tour-2} en tout).`)}pop(m,'s\'échauffe','deg')}

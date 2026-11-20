@@ -9,6 +9,7 @@ Quatre testeurs jouent de vrais combats avec le banc `tv/tools/jouer.js` et note
 | 3-4 (20 nov., jeu de la passe 3) | 7 | 6,5 | 6,5 | 6,5 | 6,5 |
 | 5 (20 nov.) | 7,5 | 7 | 7 | 7,5 | 7,2 |
 | 6 (20 nov.) | 7,5 | 7,5 | 7,5 | 7,5 | 7,5 |
+| 7 (20 nov.) | 8 | 7,5 | 7,5 | 8 | 7,7 |
 
 ## Passe 1 : ce qui a été dit
 
@@ -71,3 +72,17 @@ Nouveautés (3) :
 3. **Place gardée** : une unité arrivée ce tour n'est jamais évincée.
 
 Réglages : échauffement annoncé une fois, avec le total, et pas pour un renfort qui entre. Robot : milieu en rencontre 40 %, fort en éveil 55 %, départ 65 %.
+
+## Passe 7 : ce qui a été dit
+
+- Mieux : renforts qui entrent en élan (un tour pour répondre) ; éveil milieu « enfin dur et juste », gagné à 1 PV au tour 9 ; place gardée ; échauffement lisible.
+- Reste : le coup fort d'un renfort ne tombe jamais sur un mur (tué ou fait hésiter avant) ; un Colporteur de renfort prenait deux élans puis un bélier ; hésitation pendant un élan sans effet ; élan affiché trop bas ; relève posée d'office ; éviction invisible ; rencontres en fort encore faciles ; PV payés par les cartes nulle part récapitulés.
+
+## Passe 8 : ce qui change
+
+Nouveautés (3) :
+1. **Renfort lourd** : en éveil, le renfort du tour 5 a 1,5 fois ses PV et ne lâche pas son élan ; son coup fort tombe pour de bon sur la voie.
+2. **Hésitation qui retarde l'élan** : l'ennemi reprend son élan au tour suivant ; et l'élan affiché est le vrai coup qui suivra.
+3. **Fin de combat franche** : à partir du tour 6, plus de « se met en garde ».
+
+Réglages : tous les renforts finissent en coup fort (fin du double élan) ; −30 % de PV au renfort seulement en rencontre de niveau ≤ 2 ; Sentinelle de relève placée à la manette ; la plus faible part (attaque × PV, bloqueurs compris) ; journal du vol qui nomme la Garde ; PV payés écrits avec le total.
