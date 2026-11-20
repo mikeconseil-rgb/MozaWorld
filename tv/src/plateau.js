@@ -148,6 +148,9 @@ const plCss=document.createElement('style');plCss.textContent=`
 function uniteDeDepart(){if(!plActif())return;const cits=zonesA('CIT');
   if(cits.length){const L=Math.max(...cits.map(Z=>Lz(Z.id))),n=6+L;invoquer({nom:'Sentinelle',pv:n,max:n,atk:1+Math.floor(L/2),g:0,bete:1,mur:1,sentinelle:1})}
   CB.aPlacer=surTerrain().slice()}
+/* passe 7 : Sentinelle de relève, une fois par combat : plateau vide au début de votre tour, la Citadelle en renvoie une à la moitié de ses PV */
+function releveSentinelle(){if(!plActif()||CB.kind==='duel'||CB.releve||CB.tour<2||surTerrain().length)return;const cits=zonesA('CIT');if(!cits.length)return;
+  CB.releve=1;const L=Math.max(...cits.map(Z=>Lz(Z.id))),n=Math.ceil((6+L)/2);journal('La Citadelle envoie une Sentinelle de relève.');invoquer({nom:'Sentinelle',pv:n,max:n,atk:1+Math.floor(L/2),g:0,bete:1,mur:1,sentinelle:1})}
 /* l'arrière avance quand l'avant de sa voie est vide (au début de votre tour) */
 function avancerArriere(){if(!plActif())return;for(let v=0;v<3;v++){const ar=occupant(v,1);if(ar&&!occupant(v,0)&&['CIT','DON','ANT'].indexOf(terrainDe(ar))<0){ar.rang=0;pop(ar,'avance','g');journal(`${ar.nom} avance à l'avant de la voie ${PL_NOMV[v]}.`)}}}
 /* Manœuvre : une fois par tour, déplacer une de vos unités (échange compris) ; elle frappe à moitié ce tour-là */
@@ -171,14 +174,15 @@ function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;
    Rencontre et horde : un renfort au tour 3, toujours (passe 6). */
 function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.tour,chef=vivants(C.foes).find(m=>m.chef);
   const tours=C.kind==='eveil'&&chef?[3,5]:[3];
-  if(tours.indexOf(t+1)>=0){const v=chef&&chef.cv!=null?chef.cv:Math.floor(Math.random()*3);C.renfortVoie=v;journal(`${chef?chef.nom+' appelle':'Un cri appelle'} un renfort : il arrivera au prochain tour, voie ${PL_NOMV[v]}.`)}
-  if(tours.indexOf(t)<0||C.renfortVoie==null)return;arriveeRenfort(false)}
+  /* passe 7 : le tour d'arrivée est retenu à l'annonce ; le renfort vient même si le chef tombe entre-temps */
+  if(C.renfortT===t&&C.renfortVoie!=null)arriveeRenfort(false);
+  if(tours.indexOf(t+1)>=0){const v=chef&&chef.cv!=null?chef.cv:Math.floor(Math.random()*3);C.renfortVoie=v;C.renfortT=t+1;journal(`${chef?chef.nom+' appelle':'Un cri appelle'} un renfort : il arrivera au prochain tour, voie ${PL_NOMV[v]}.`)}}
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
-  const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;C.foes.push(m);uniteEl(m,'cb-foes');intention(m);m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+  const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7 : en rencontre, le renfort a 30 % de PV en moins ; il entre toujours en prenant son élan */if(C.kind!=='eveil')m.pv=m.max=Math.max(1,Math.round(m.max*.7));C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){m.forceF=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
 function plancherAtk(m){if(!plActif()||CB.kind==='duel')return;if(m.atk0==null)m.atk0=m.atk;
-  if(CB.tour>=3&&m.echT!==CB.tour){m.echT=CB.tour;m.atk++;m.atk0++;if(CB.echJ!==CB.tour){CB.echJ=CB.tour;journal('Les ennemis s\'échauffent : +1 d\'attaque.')}pop(m,'s\'échauffe','deg')}
+  if(CB.tour>=3&&m.renfort!==1&&m.echT!==CB.tour){m.echT=CB.tour;m.atk++;m.atk0++;if(CB.echJ!==CB.tour){CB.echJ=CB.tour;journal(`Les ennemis s'échauffent : +1 d'attaque au prochain tour (+${CB.tour-2} en tout).`)}pop(m,'s\'échauffe','deg')}
   const p=Math.ceil(m.atk0*(m.chef?.75:.6));if(m.atk<p)m.atk=p}

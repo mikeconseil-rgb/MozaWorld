@@ -3052,7 +3052,7 @@ function startCombat(Z,kind){
   attendre(.7,debutTour)}
 function attendre(s,fn){CB.q.push([s,fn])}
 function cbTick(dt){if(!CB||!CB.q.length)return;CB.q[0][0]-=dt;if(CB.q[0][0]<=0){const f=CB.q.shift()[1];f()}}
-function debutTour(){if(!CB)return;CB.tour++;if(typeof renforts==='function')renforts();CB.hero.g=0;if(CB.cases)for(const u of CB.allies)if(u.bete)u.g=0;eroderGarde();if(typeof effetsCases==='function')effetsCases('a');CB.riposte=0;CB.defPrix=0;CB.gratuit=null;CB.gratuitSuivant=0;CB.echo=false;CB.nrecup=0;CB.nJoues=0;if(typeof atoutsDebutTour==='function')atoutsDebutTour();if(typeof avancerArriere==='function')avancerArriere();CB.mana=CB.capT=Math.max(1,Math.ceil(CB.tour/2),CB.tour-Math.min(srMalus(),CB.tour<4?1:99));if(srMalus())journal('Blessures : −'+Math.min(srMalus(),CB.tour<4?1:99)+' de capacité ce tour.');   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
+function debutTour(){if(!CB)return;CB.tour++;if(typeof renforts==='function')renforts();CB.hero.g=0;if(CB.cases)for(const u of CB.allies)if(u.bete)u.g=0;eroderGarde();if(typeof effetsCases==='function')effetsCases('a');CB.riposte=0;CB.defPrix=0;CB.gratuit=null;CB.gratuitSuivant=0;CB.echo=false;CB.nrecup=0;CB.nJoues=0;if(typeof atoutsDebutTour==='function')atoutsDebutTour();if(typeof avancerArriere==='function')avancerArriere();if(typeof releveSentinelle==='function')releveSentinelle();CB.mana=CB.capT=Math.max(1,Math.ceil(CB.tour/2),CB.tour-Math.min(srMalus(),CB.tour<4?1:99));if(srMalus())journal('Blessures : −'+Math.min(srMalus(),CB.tour<4?1:99)+' de capacité ce tour.');   /* capacité de dépense : 1 au tour 1, 2 au tour 2… ; le mana lui-même sort de la réserve */
   if(CB.tour===1){if(aPassif('abondance')){CB.mana++;CB.capT++}}
   pioche(mainMax()+(CB.tour===1&&aPassif('vote')?1:0)-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;CB.man=null;dessinerMain();majUnites();if(CB.tour===1&&typeof debutPlacement==='function')debutPlacement()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
@@ -3082,10 +3082,10 @@ function garder(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u&
 function soigner(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(CB&&CB.sr&&u.hero)n=Math.max(1,Math.ceil(n/3));const a=Math.min(n,u.max-u.pv);u.pv+=a;pop(u,'+'+a,'soin');majUnites()}
 function invoquer(b){const pl=typeof caseAuto==='function'&&CB.cases;
   if(!pl&&b.voie==null){const n0=CB.allies.filter(u=>u.bete&&u.pv>0&&u.voie===0).length,n1=CB.allies.filter(u=>u.bete&&u.pv>0&&u.voie===1).length;b.voie=n1<n0?1:0}
-  const nb=CB.allies.filter(u=>u.bete&&u.pv>0).length;if(nb>=(pl?PL_MAX:3)){const l0=CB.allies.filter(u=>u.bete&&u.pv>0),l1=pl&&l0.some(u=>!u.mur)?l0.filter(u=>!u.mur):l0,w=l1.sort((p,q)=>p.pv-q.pv)[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove();journal(w.nom+' quitte le plateau pour faire de la place.')}
+  const nb=CB.allies.filter(u=>u.bete&&u.pv>0).length;if(nb>=(pl?PL_MAX:3)){const l0=CB.allies.filter(u=>u.bete&&u.pv>0),l2=pl&&l0.some(u=>!u.mur)?l0.filter(u=>!u.mur):l0,l3=l2.filter(u=>u.neT!==CB.tour),l1=l3.length?l3:l2,w=l1.sort((p,q)=>p.pv-q.pv)[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove();journal(w.nom+' quitte le plateau pour faire de la place.')}
   /* Plateau (19 nov.) : une case libre proposée (l'avant de la voie la plus menacée) ; une carte jouée laisse ensuite choisir la case */
   if(pl){if(b.voie!=null&&b.voie<3&&!occupant(b.voie,0))b.rang=0;else if(b.voie!=null&&b.voie<3&&!occupant(b.voie,1))b.rang=1;else{const c=caseAuto(b)||[0,0];b.voie=c[0];b.rang=c[1]}}
-  if(CB.enCarte)b.neCarte=(CB.nJoues||0);CB.allies.push(b);uniteEl(b,'cb-allies');pop(b,'arrive','soin');journal(b.nom+' rejoint le plateau'+(pl?', voie '+PL_NOMV[b.voie]+(b.rang?' à l\'arrière':' à l\'avant'):'')+'.');
+  if(CB.enCarte)b.neCarte=(CB.nJoues||0);b.neT=CB.tour;CB.allies.push(b);uniteEl(b,'cb-allies');pop(b,'arrive','soin');journal(b.nom+' rejoint le plateau'+(pl?', voie '+PL_NOMV[b.voie]+(b.rang?' à l\'arrière':' à l\'avant'):'')+'.');
   if(pl&&CB.enCarte&&!CB.busy)(CB.aPlacer=CB.aPlacer||[]).push(b)}
 /* Terrain (17 nov., « bloqueurs sur le terrain », esprit Magic et Monster Train) : les coups visent d'abord la Garde,
    puis les bloqueurs et les bêtes dans leur ordre d'arrivée, puis le héros. La garde du héros n'est plus un chiffre qui tombe :
@@ -3369,6 +3369,9 @@ const plCss=document.createElement('style');plCss.textContent=`
 function uniteDeDepart(){if(!plActif())return;const cits=zonesA('CIT');
   if(cits.length){const L=Math.max(...cits.map(Z=>Lz(Z.id))),n=6+L;invoquer({nom:'Sentinelle',pv:n,max:n,atk:1+Math.floor(L/2),g:0,bete:1,mur:1,sentinelle:1})}
   CB.aPlacer=surTerrain().slice()}
+/* passe 7 : Sentinelle de relève, une fois par combat : plateau vide au début de votre tour, la Citadelle en renvoie une à la moitié de ses PV */
+function releveSentinelle(){if(!plActif()||CB.kind==='duel'||CB.releve||CB.tour<2||surTerrain().length)return;const cits=zonesA('CIT');if(!cits.length)return;
+  CB.releve=1;const L=Math.max(...cits.map(Z=>Lz(Z.id))),n=Math.ceil((6+L)/2);journal('La Citadelle envoie une Sentinelle de relève.');invoquer({nom:'Sentinelle',pv:n,max:n,atk:1+Math.floor(L/2),g:0,bete:1,mur:1,sentinelle:1})}
 /* l'arrière avance quand l'avant de sa voie est vide (au début de votre tour) */
 function avancerArriere(){if(!plActif())return;for(let v=0;v<3;v++){const ar=occupant(v,1);if(ar&&!occupant(v,0)&&['CIT','DON','ANT'].indexOf(terrainDe(ar))<0){ar.rang=0;pop(ar,'avance','g');journal(`${ar.nom} avance à l'avant de la voie ${PL_NOMV[v]}.`)}}}
 /* Manœuvre : une fois par tour, déplacer une de vos unités (échange compris) ; elle frappe à moitié ce tour-là */
@@ -3392,16 +3395,17 @@ function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;
    Rencontre et horde : un renfort au tour 3, toujours (passe 6). */
 function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.tour,chef=vivants(C.foes).find(m=>m.chef);
   const tours=C.kind==='eveil'&&chef?[3,5]:[3];
-  if(tours.indexOf(t+1)>=0){const v=chef&&chef.cv!=null?chef.cv:Math.floor(Math.random()*3);C.renfortVoie=v;journal(`${chef?chef.nom+' appelle':'Un cri appelle'} un renfort : il arrivera au prochain tour, voie ${PL_NOMV[v]}.`)}
-  if(tours.indexOf(t)<0||C.renfortVoie==null)return;arriveeRenfort(false)}
+  /* passe 7 : le tour d'arrivée est retenu à l'annonce ; le renfort vient même si le chef tombe entre-temps */
+  if(C.renfortT===t&&C.renfortVoie!=null)arriveeRenfort(false);
+  if(tours.indexOf(t+1)>=0){const v=chef&&chef.cv!=null?chef.cv:Math.floor(Math.random()*3);C.renfortVoie=v;C.renfortT=t+1;journal(`${chef?chef.nom+' appelle':'Un cri appelle'} un renfort : il arrivera au prochain tour, voie ${PL_NOMV[v]}.`)}}
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
-  const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;C.foes.push(m);uniteEl(m,'cb-foes');intention(m);m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+  const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7 : en rencontre, le renfort a 30 % de PV en moins ; il entre toujours en prenant son élan */if(C.kind!=='eveil')m.pv=m.max=Math.max(1,Math.round(m.max*.7));C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){m.forceF=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
 function plancherAtk(m){if(!plActif()||CB.kind==='duel')return;if(m.atk0==null)m.atk0=m.atk;
-  if(CB.tour>=3&&m.echT!==CB.tour){m.echT=CB.tour;m.atk++;m.atk0++;if(CB.echJ!==CB.tour){CB.echJ=CB.tour;journal('Les ennemis s\'échauffent : +1 d\'attaque.')}pop(m,'s\'échauffe','deg')}
+  if(CB.tour>=3&&m.renfort!==1&&m.echT!==CB.tour){m.echT=CB.tour;m.atk++;m.atk0++;if(CB.echJ!==CB.tour){CB.echJ=CB.tour;journal(`Les ennemis s'échauffent : +1 d'attaque au prochain tour (+${CB.tour-2} en tout).`)}pop(m,'s\'échauffe','deg')}
   const p=Math.ceil(m.atk0*(m.chef?.75:.6));if(m.atk<p)m.atk=p}
 /* MozaWorld TV 1.5 : économie du mana et Donjon à aménager (premier test décidé le 16 novembre 2026).
    - Six réserves de mana, une par type (Feu, Glace, Eau, Sève, Pierre, Vent). La Ressource (Tezcamixtli, Vent) en remplit

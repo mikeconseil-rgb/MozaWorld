@@ -8,6 +8,7 @@ Quatre testeurs jouent de vrais combats avec le banc `tv/tools/jouer.js` et note
 | 2 (19 nov.) | 7,5 | 6,5 | 6 | 6,5 | 6,3 |
 | 3-4 (20 nov., jeu de la passe 3) | 7 | 6,5 | 6,5 | 6,5 | 6,5 |
 | 5 (20 nov.) | 7,5 | 7 | 7 | 7,5 | 7,2 |
+| 6 (20 nov.) | 7,5 | 7,5 | 7,5 | 7,5 | 7,5 |
 
 ## Passe 1 : ce qui a été dit
 
@@ -55,3 +56,18 @@ Nouveautés (3) :
 3. **Plancher et échauffement** : malus d'attaque bornés à 60 % (chef 75 %) ; à partir du tour 4, +1 d'attaque par tour pour les ennemis ; bonus de dégâts reçus plafonnés à +4 par coup ; chef +40 % de PV (+70 % en éveil). Robot : milieu en rencontre 70 %, fort en éveil 95 %.
 
 Correctifs : brûlures plafonnées (les 2 plus fortes comptent à chaque tic) ; élan perdu qui supprime le coup fort (et coup fort dans la voie de l'élan) ; bélier converti au tour 1 qui reste un bélier ; gratuité de la Cangue limitée au tour, coût 0 affiché ; dégâts arrondis contre la Sentinelle ; bloqueur plus proposé face au bélier ; badge du vol qui compte la résistance du héros ; message d'habitude du chef ; brûlure écrite avant « est vaincu ».
+
+## Passe 6 : ce qui a été dit
+
+Un commentaire mal fermé coupait les renforts dans la première version ; corrigé, les testeurs ont rejoué.
+- Mieux : le chef dans sa voie est « la meilleure idée depuis la Manœuvre » (on place à l'avance là où il ira) ; renforts tenus ; le plancher garde le chef dangereux ; l'échauffement rend la fin meurtrière ; un départ enfin tendu. Robot : 25 % en milieu (trop dur pour lui), les testeurs gagnent tout.
+- Reste : renforts qui n'entrent pas toujours en élan ; renfort perdu si le chef meurt avant l'annonce ; échauffement affiché deux fois ; plateau vide en fin de combat avec le paquet de départ ; une unité tout juste posée évincée ; le chef pas montré dans sa voie (pour les passes d'interface).
+
+## Passe 7 : ce qui change
+
+Nouveautés (3) :
+1. **Sentinelle de relève** : une fois par combat, plateau vide au début de votre tour, la Citadelle renvoie une Sentinelle à la moitié de ses PV.
+2. **Renforts qui entrent en élan** : toujours, avec leur coup fort au tour suivant ; tour d'arrivée retenu à l'annonce (vient même si le chef tombe) ; en rencontre, −30 % de PV.
+3. **Place gardée** : une unité arrivée ce tour n'est jamais évincée.
+
+Réglages : échauffement annoncé une fois, avec le total, et pas pour un renfort qui entre. Robot : milieu en rencontre 40 %, fort en éveil 55 %, départ 65 %.
