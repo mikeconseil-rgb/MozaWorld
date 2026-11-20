@@ -35,6 +35,8 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     if(c){for(let i=0;i<3&&await p.evaluate(()=>!!window.MZ.CB);i++){
         await p.keyboard.press('Enter');await p.waitForTimeout(500);await p.keyboard.press('Enter');await p.waitForTimeout(500);
         await p.keyboard.press('ArrowDown');await p.waitForTimeout(200);await p.keyboard.press('Enter');await p.waitForTimeout(2500)}
+      /* 2.21 : le dernier tour fini peut encore se jouer (ennemis, garde qui cède) : on attend la fin du tour ennemi, 10 s au plus */
+      await p.waitForFunction(t=>!window.MZ.CB||window.MZ.CB.tour>t||!window.MZ.CB.busy,c.tour,{timeout:10000}).catch(()=>{});
       const fin=await p.evaluate(()=>window.MZ.CB?window.MZ.CB.tour:'combat terminé');
       ok('le combat avance',fin==='combat terminé'||fin>c.tour,'tour '+c.tour+' → '+fin)}
     /* 6. le menu s'ouvre */
