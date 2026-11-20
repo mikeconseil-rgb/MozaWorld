@@ -14,7 +14,8 @@ const ASSEMBLEES={
           renf:l=>l<0?'trois fois moins de rencontres':'chaque rencontre gagnée donne 2 mana de plus'},
   ASS155:{nom:'Oasis de Raak',loi:()=>'Pierre de bornage : la zone bornée ne peut pas perdre de niveau face à une horde ou un rival',renf:()=>'la zone bornée gagne aussi +2 de défense contre les hordes'}};
 /* 0 si la loi dort ; sinon le signe du palier (−1 ou +1) */
-const loi=id=>!ASSEMBLEES[id]||!S.own[id]||!S.act[id]||!(S.lv[id])?0:Math.sign(S.lv[id]);
+/* lois.js (LOIS_CATALOGUE_CARTE) : sur le pôle qui porte une loi du catalogue, la loi écrite dort */
+const loi=id=>{if(!ASSEMBLEES[id]||!S.own[id]||!S.act[id]||!(S.lv[id]))return 0;const s=Math.sign(S.lv[id]);return typeof poleCatalogue==='function'&&poleCatalogue(id)===s?0:s};
 const voisinesDe=id=>(typeof VOISINES!=='undefined'&&VOISINES[id])||[];
 /* à n tuiles au plus (largeur d'abord) */
 function aPortee(id,n){const d={[id]:0},f=[id];while(f.length){const z=f.shift();if(d[z]>=n)continue;for(const v of voisinesDe(z))if(d[v]===undefined){d[v]=d[z]+1;f.push(v)}}return d}
@@ -36,7 +37,11 @@ const bonusChant=()=>loi('ASS152')>0?(renfAss('ASS152')?2:1):0;
 /* Raak : la zone bornée ne recule pas. 19 nov. (lot 3) : seulement tant qu'elle est à vous ; une zone perdue (mort, horde, rival) n'est plus bornée */
 const borne=id=>!!loi('ASS155')&&S.borne===id&&!!S.own[id];
 /* ligne de la Pierre d'éveil : loi de la fiche, ou loi du catalogue (lois.js) pour les autres Assemblées */
-function optionsAssemblee(Z){const A=ASSEMBLEES[Z.id];if(!A)return typeof optionsLoiCatalogue==='function'?optionsLoiCatalogue(Z):[];const l=loi(Z.id),o=[];
+function optionsAssemblee(Z){const A=ASSEMBLEES[Z.id];
+  if(!A||(typeof poleCatalogue==='function'&&poleCatalogue(Z.id))){const o=typeof optionsLoiCatalogue==='function'?optionsLoiCatalogue(Z):[];   /* loi écrite et loi du catalogue */
+    if(Z.id==='ASS155'&&loi('ASS155'))o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+ZB[S.borne].info.nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
+    return o}
+  const l=loi(Z.id),o=[];
   const r=l&&renfAss(Z.id),fin=r&&typeof finRenfTxt==='function'?finRenfTxt(Z.id):'';
   o.push({l:l?(r?'Loi en vigueur renforcée':'Loi en vigueur'):'Loi endormie',ic:'⚖',off:true,d:l?A.loi(l)+(r?' ; renforcée : '+A.renf(l)+fin:' · gagnez le Duel d\'arguments pour la renforcer'):'prenez et activez l\'Assemblée, puis montez-la au palier 1 ou plus : '+A.loi(1)});
   if(Z.id==='ASS155'&&l)o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+ZB[S.borne].info.nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});

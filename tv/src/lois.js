@@ -17,7 +17,13 @@ const LOI_RENF_CYCLES=10;    /* durée de la vigueur renforcée après un Duel d
 const LOI_TEMOINS=[0,.15,.25];     /* chance retirée aux rivaux par la Loi des Témoins (provisoire) */
 const LOI_COUVREFEU=[0,.25,.5];    /* part des actions des maisons qui avortent (provisoire) */
 const LOI_RELAIS_MAX=3;      /* tesselles de la Loi des Relais par Assemblée et par cycle, au plus (×2 renforcée) (provisoire) */
-const caravanesLa=()=>typeof S!=='undefined'&&!!S.caravanes;
+const caravanesLa=()=>typeof caravanes==='function';   /* module des caravanes présent (caravanes.js) */
+/* Carte jouée (21 zones) : ses six Assemblées ont une fiche, le catalogue ne s'y jouerait pas. Avec LOIS_CATALOGUE_CARTE, les quatre Assemblées
+   à loi unique (Cezo, Balpak, Pama, Raak) reçoivent une loi du catalogue sur leur pôle − (tirée du nom de ce pôle) ; leur loi écrite reste au pôle +.
+   (20 nov., provisoire ; false : comportement d'avant, loi écrite aux deux pôles) */
+const LOIS_CATALOGUE_CARTE=true;
+const LOI_CARTE={ASS006:-1,ASS012:-1,ASS150:-1,ASS155:-1};   /* pôle qui reçoit une loi du catalogue */
+function poleCatalogue(id){return LOIS_CATALOGUE_CARTE&&LOI_CARTE[id]||0}
 const pl_=(n,m)=>n+' '+m+(n>1?'s':'');
 /* le catalogue : n = 1 (en vigueur) ou 2 (en vigueur renforcée) */
 const LOIS={
@@ -63,7 +69,9 @@ const nomAssL=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
 function hashLoi(s){let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h}
 /* les deux lois du catalogue d'une Assemblée sans fiche : [loi du pôle −, loi du pôle +] ; null pour une Assemblée à fiche */
 const LOI_DE={};
-function loisDe(id){if(LOI_FORCEE[id])return[LOI_FORCEE[id],LOI_FORCEE[id]];const Z=ZB[id];if(!estAssL(Z)||ASSEMBLEES[id])return null;
+function loisDe(id){if(LOI_FORCEE[id])return[LOI_FORCEE[id],LOI_FORCEE[id]];const Z=ZB[id];if(!estAssL(Z))return null;
+  if(ASSEMBLEES[id]){const s=poleCatalogue(id);if(!s)return null;const pole=s<0?Z.info.pm:Z.info.pp,k=LOI_POLES[pole]||LOI_ORDRE[hashLoi(id+(s<0?'-':'+')+pole)%LOI_ORDRE.length];
+    return s<0?[k,null]:[null,k]}   /* loi écrite d'un côté (null), loi du catalogue de l'autre */
   if(LOI_DE[id])return LOI_DE[id];const pm=Z.info.pm,pp=Z.info.pp;
   const a=LOI_POLES[pm]||LOI_ORDRE[hashLoi(id+'-'+pm)%LOI_ORDRE.length];let b=LOI_POLES[pp]||LOI_ORDRE[hashLoi(id+'+'+pp)%LOI_ORDRE.length];
   if(b===a)b=LOI_ORDRE[(LOI_ORDRE.indexOf(a)+1)%LOI_ORDRE.length];
@@ -166,7 +174,7 @@ function vigueurDe(id){const A=ASSEMBLEES[id],Z=ZB[id];if(!Z)return null;
 /* les deux lois d'une Assemblée, par pôle : [{pole, nom, txt, renf}] */
 function loisParPole(id){const A=ASSEMBLEES[id],Z=ZB[id],L=loisDe(id),out=[];if(!Z)return out;
   for(const s of[-1,1]){const pole=s<0?Z.info.pm:Z.info.pp;
-    if(L){const k=L[s<0?0:1];out.push({s,pole,k,nom:LOIS[k].nom,txt:LOIS[k].txt(1),renf:LOIS[k].txt(2)})}
+    if(L&&L[s<0?0:1]){const k=L[s<0?0:1];out.push({s,pole,k,nom:LOIS[k].nom,txt:LOIS[k].txt(1),renf:LOIS[k].txt(2)})}
     else if(A){const t=A.loi(s),i=t.indexOf(' : ');out.push({s,pole,k:'fiche',nom:i>0?t.slice(0,i):t,txt:(i>0?t.slice(i+3):t).replace(/^./,c=>c.toUpperCase())+'.',renf:A.renf(s).replace(/^./,c=>c.toUpperCase())+'.'})}}
   return out}
 /* comment réveiller la loi d'une Assemblée */
@@ -181,12 +189,12 @@ function reveilTxt(id){const Z=ZB[id],P=loisParPole(id),deux=P.length===2&&P[0].
 function optionsLoiCatalogue(Z){const P=loisParPole(Z.id);if(!P.length)return[];const id=Z.id,s=signeLoi(id),o=[];
   const jur='Juridiction : l\'Assemblée et les zones à '+LOI_PORTEE+' tuiles ou moins.';
   if(s){const v=vigueurDe(id),r=v.n>1,autre=P.find(p=>p.s!==s);
-    o.push({l:(r?'Loi en vigueur renforcée : ':'Loi en vigueur : ')+v.nom,ic:'⚖',off:true,d:v.txt+' '+jur+(r?finRenfTxt(id):' Gagnez le Duel d\'arguments pour la renforcer '+LOI_RENF_CYCLES+' cycles.')});
+    o.push({l:(r?'Loi en vigueur renforcée : ':'Loi en vigueur : ')+v.nom,ic:'⚖',off:true,d:v.txt+(v.k==='fiche'?'':' '+jur)+(r?finRenfTxt(id):' Gagnez le Duel d\'arguments pour la renforcer '+LOI_RENF_CYCLES+' cycles.')});
     if(autre&&autre.k!==v.k)o.push({l:`Loi endormie du pôle ${autre.pole} : ${autre.nom}`,ic:'⚖',off:true,d:autre.txt+` Elle remplace l'autre si l'Assemblée passe au palier ${autre.s<0?'−1':'+1'} ou au-delà.`})}
   else o.push({l:'Lois endormies : '+P.map(p=>p.nom).filter((n,i,a)=>a.indexOf(n)===i).join(' ou '),ic:'⚖',off:true,d:P.map(p=>`${p.pole} : ${p.txt}`).join(' ')+' '+reveilTxt(id)});
   return o}
-function recoLoisCatalogue(){for(const Z of ZN){if(!estAssL(Z)||ASSEMBLEES[Z.id])continue;const P=loisParPole(Z.id);if(!P.length)continue;
-  RECO[Z.id]=`Lois du monde (au palier 1 ou plus, sur l'Assemblée et les zones à ${LOI_PORTEE} tuiles ou moins) : ${P.map(p=>`${p.pole}, ${p.nom} : ${p.txt.replace(/\.$/,'')}`).join(' ; ')}. Gagner le Duel d'arguments la renforce.`}}
+function recoLoisCatalogue(){for(const Z of ZN){if(!estAssL(Z)||!loisDe(Z.id))continue;const P=loisParPole(Z.id);if(!P.length)continue;
+  RECO[Z.id]=`Lois du monde (au palier 1 ou plus${ASSEMBLEES[Z.id]?' ; la loi du catalogue agit':''} sur l'Assemblée et les zones à ${LOI_PORTEE} tuiles ou moins) : ${P.map(p=>`${p.pole}, ${p.nom} : ${p.txt.replace(/\.$/,'')}`).join(' ; ')}. Gagner le Duel d'arguments la renforce.`}}
 
 /* ---------- message quand une loi s'éveille ou s'endort ---------- */
 let LOI_VU=null,LOI_VU_CLE='';
@@ -218,8 +226,9 @@ function openLois(f){mode='menu';document.body.classList.add('jeu-ouvert');initL
 function openLoi(id,f){const Z=ZB[id];if(!Z)return openLois();const P=loisParPole(id),v=vigueurDe(id),s=signeLoi(id);
   const jur=Object.keys(aPortee(id,LOI_PORTEE)).filter(z=>ZB[z]).map(z=>nomAssL(z)+(S.own[z]?' (à vous)':''));
   const lignes=P.map(p=>`<p class="petit"><b>${p.pole} (palier ${p.s<0?'−1 à −7':'+1 à +7'}) · ${p.nom}</b>${s===p.s?' · <b>en vigueur'+(v&&v.n>1?' renforcée':'')+'</b>':''}<br>${p.txt}<br><i>Renforcée : ${p.renf}</i></p>`).join('');
-  ui('menu',{sur:'Lois du monde · '+(ASSEMBLEES[id]?'loi écrite pour cette Assemblée':'catalogue des lois'),t:Z.info.nom,
-    corps:`${lignes}${ASSEMBLEES[id]?'':`<p class="petit">Juridiction : ${jur.join(', ')}.</p>`}<p class="petit">${v?'État : en vigueur'+(v.n>1?' renforcée'+finRenfTxt(id):'')+'. ':'État : endormie. '+reveilTxt(id)}</p>`,
+  const L=loisDe(id);
+  ui('menu',{sur:'Lois du monde · '+(ASSEMBLEES[id]?(L?'loi écrite et loi du catalogue':'loi écrite pour cette Assemblée'):'catalogue des lois'),t:Z.info.nom,
+    corps:`${lignes}${L?`<p class="petit">Juridiction${ASSEMBLEES[id]?' de la loi du catalogue':''} : ${jur.join(', ')}.</p>`:''}<p class="petit">${v?'État : en vigueur'+(v.n>1?' renforcée'+finRenfTxt(id):'')+'. ':'État : endormie. '+reveilTxt(id)}</p>`,
     back:()=>openLois(f),opts:[{l:'Aller à l\'Assemblée',ic:'✧',d:'devant sa Pierre d\'éveil',go:()=>{tp(id);toMonde()}},{l:'Retour aux lois',ic:'◆',go:()=>openLois(f)}]})}
 
 /* ---------- tests : MZ.lois() (état), MZ.loiForcer(id, loi), MZ.loiRenforcer(id), MZ.loisCycle() ---------- */

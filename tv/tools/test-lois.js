@@ -100,7 +100,7 @@ const appelees=new Set();
     /* 7. Loi des Vigies : une tour couvre une zone de la juridiction : défense +1 et préavis +1 */
     const vig=await p.evaluate(()=>{const S=MZ.S,jur=aPortee('MAR',2),c=Object.keys(jur).find(id=>S.own[id]&&!empecheTour(id));MZ.tour(c);
       MZ.loiForcer('MAR',null);const d0=MZ.defenseTours(c).bonus,p0=MZ.preavisTours(c);MZ.loiForcer('MAR','vigies');const d1=MZ.defenseTours(c).bonus,p1=MZ.preavisTours(c),rs=MZ.defenseTours(c).raisons;
-      MZ.tourTombe(c);return{c,d0,d1,p0,p1,rs}});
+      MZ.tourTombe(c);TOUR_FILE.length=0;return{c,d0,d1,p0,p1,rs}});   /* (testeur) le message « Tour de guet abattue » de cet essai passait devant celui de la loi renforcée */
     appelees.add('vigies');
     ok('Loi des Vigies : tour à +3 de défense et 3 cycles de préavis',vig.d1===vig.d0+1&&vig.p1===vig.p0+1&&vig.rs.some(r=>/Vigies/.test(r)),JSON.stringify(vig));
 
@@ -161,14 +161,31 @@ const appelees=new Set();
     ok('Pierre de bornage : la zone ne recule pas, +2 renforcée ; une zone perdue n\'est plus bornée (corrigé)',fic.bornee&&fic.tient&&fic.borneDef&&!fic.perdue,JSON.stringify(fic));
     ok('Clarté renforcée : on voit plus loin',fic.clarteR>fic.clarte,fic.clarte+' → '+fic.clarteR);
 
+    /* 12 bis. carte jouée (LOIS_CATALOGUE_CARTE) : les quatre Assemblées à loi unique ont une loi du catalogue au pôle −, leur loi écrite au pôle + */
+    const crt=await p.evaluate(()=>{const S=MZ.S,ids=['ASS006','ASS012','ASS150','ASS155'],sv={};for(const id of ids)sv[id]={own:S.own[id],act:S.act[id],lv:S.lv[id]};
+      const r={on:LOIS_CATALOGUE_CARTE,poles:Object.fromEntries(ids.map(id=>[id,MZ.lois().assemblees[id]]))};
+      for(const id of ids){S.own[id]=S.act[id]=true;S.lv[id]=-1}
+      r.moins=Object.fromEntries(ids.map(id=>[id,{cat:MZ.loisTest.loiCat(id),fiche:loi(id)}]));r.greniers=cyclesAssaut()===ASSAUT_CYCLES;r.borne=(S.borne='CIT',borne('CIT'));
+      openEveil(ZB.ASS150);r.pierre=UI.opts.filter(o=>/Loi/.test(o.l)).map(o=>o.l);toMonde();
+      for(const id of ids)S.lv[id]=1;r.plus=Object.fromEntries(ids.map(id=>[id,{cat:MZ.loisTest.loiCat(id),fiche:loi(id)}]));r.borneP=borne('CIT');
+      openEveil(ZB.ASS155);r.pierreP=UI.opts.map(o=>o.l);toMonde();r.vig=MZ.lois().vigueur.filter(v=>ids.includes(v.id)).map(v=>v.id+':'+v.k);
+      S.borne=null;for(const id of ids){S.own[id]=sv[id].own;S.act[id]=sv[id].act;S.lv[id]=sv[id].lv}return r});
+    if(crt.on){
+      ok('carte jouée : Cezo, Balpak, Pama et Raak ont une loi du catalogue au pôle −',Object.values(crt.moins).every(x=>x.cat&&x.fiche===0)&&crt.moins.ASS150.cat==='corvee'&&crt.moins.ASS155.cat==='fosses',JSON.stringify(crt.moins));
+      ok('carte jouée : au pôle −, Greniers et bornage dorment',crt.greniers&&!crt.borne,JSON.stringify(crt));
+      ok('carte jouée : au pôle +, la loi écrite revient (et « Borner une zone »)',Object.values(crt.plus).every(x=>!x.cat&&x.fiche===1)&&crt.borneP&&crt.pierreP.includes('Borner une zone')&&crt.vig.every(v=>/fiche/.test(v)),JSON.stringify(crt));
+      ok('carte jouée : la Pierre de Pama au pôle − dit la loi du catalogue',crt.pierre.some(l=>/Loi en vigueur : Loi des Corvées/.test(l)),crt.pierre.join(' | '))}
+
     /* 13. Duel d'arguments gagné : la loi passe en vigueur renforcée */
     const duel=await p.evaluate(()=>{const S=MZ.S;S.lv.MAR=1;suivreLois();LOI_FILE.length=0;window.__toasts=[];const t0=toast;toast=function(a){window.__toasts.push(a);return t0.apply(this,arguments)};DUEL={Z:ZB.MAR,target:2,eff:1,vote:{v:0,pour:[],contre:[]}};finDuel(true);
       const e=MZ.lois(),v=e.vigueur.find(v=>v.id==='MAR');return{lv:S.lv.MAR,renf:v&&v.renforcee,jusqua:v&&v.jusqua,nc:S.nc,cycles:e.renfCycles}});
     ok('Duel gagné : Givrecloche monte et sa loi est renforcée 10 cycles',duel.lv===2&&duel.renf&&duel.jusqua===duel.nc+duel.cycles,JSON.stringify(duel));
     /* la mue se joue, puis l'écran de mue ; de retour dans le monde, le message de la loi renforcée passe */
     await p.waitForFunction(()=>MZ.mode==='menu'&&/Mue/.test(document.getElementById('menu-sur').textContent),null,{timeout:60000}).catch(()=>{});
-    await p.evaluate(()=>{toMonde();toastT=0});   /* rendu logiciel lent : on n'attend pas la fin du toast de la mue */
-    await p.waitForFunction(()=>window.__toasts.some(t=>/renforcée/.test(t)),null,{timeout:30000}).catch(()=>{});
+    /* rendu logiciel lent : on n'attend pas la fin du toast de la mue ; les messages des autres modules (tours, caravanes, domaines) déjà en file
+       et ceux des cycles passent sinon devant (19 nov., testeur : échec « Tour de guet abattue · Berestograd » puis « Cycle 1 ») */
+    await p.evaluate(()=>{toMonde();toastT=0;for(const f of['TOUR_FILE','CAR_FILE','DOM_FILE'])try{eval(f).length=0}catch(_){}});
+    await p.waitForFunction(()=>{if(MZ.mode==='monde'&&LOI_FILE.length&&toastT>0&&!/renforcée/.test(document.getElementById('t1').textContent))toastT=0;return window.__toasts.some(t=>/renforcée/.test(t))},null,{timeout:30000,polling:250}).catch(()=>{});
     ok('un message annonce la loi renforcée',await p.evaluate(()=>window.__toasts.some(t=>/renforcée/.test(t))),await p.evaluate(()=>window.__toasts.join(' | ')));
 
     /* 14. écran « Lois du monde » au menu Pause, Pierre d'éveil */

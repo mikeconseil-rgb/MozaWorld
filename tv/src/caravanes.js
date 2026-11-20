@@ -5,11 +5,11 @@
      zone tenue ; de là, des zones tenues voisines de proche en proche jusqu'à une Citadelle tenue. On garde le trajet le plus court.
      Une route reliée directement à la Citadelle suffit. Une route coupée, une zone du trajet perdue : la caravane s'arrête.
    - Gain : à chaque cycle, chaque caravane en route rapporte CAR_GAIN tesselles, une de plus si la Ressource est au niveau 3
-     (gagnerTesselles, commerce.js).
+     (gagnerTesselles, commerce.js) ; une de plus (deux renforcée) si le trajet passe dans la juridiction d'une Loi des Relais (lois.js, loiRelais).
    - Pillage : une horde en marche dont la cible est sur le trajet, ou une zone d'une maison rivale voisine du trajet, peut piller
      la caravane (chance par cycle CAR_RISQUE ; une tour de guet qui couvre la zone menacée la divise par deux). La caravane perd
      la cargaison du cycle et s'arrête CAR_ARRET cycles. Le héros peut l'escorter : combat court contre deux pillards dans la zone
-     du pillage ; victoire, la caravane repart et rend sa cargaison.
+     du pillage ; victoire, la caravane repart et rend tout le butin (la cargaison du pillage, plus le gain de chaque cycle d'arrêt).
    - Hasard : tiré d'un hachage (graine, Ressource, cycle), sans toucher à Math.random, pour ne pas déranger les autres modules.
    - Visible : point qui avance sur la minicarte, ligne à la Pierre d'éveil de la Ressource, élément « ⛟ » du bandeau, petit chariot 3D.
    État : S.car = {idRessource: {arret, lieu, perdu, par, qui}} (les caravanes déjà parties, pour les dire « arrêtées » si la route est coupée), S.carNc, S.carG, S.carV,
@@ -34,7 +34,9 @@ const carEstCIT=id=>!!ZB[id]&&(ZB[id].mod||id)==='CIT';
 const carCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
 const carDe=n=>typeof de_==='function'?de_(n):'de '+n;
 const carA=n=>typeof a_==='function'?a_(n):'à '+n;
-const carGain=r=>CAR_GAIN+(Math.abs(S.lv[r]||0)>=3?1:0);
+/* Loi des Relais (lois.js) : une caravane dont le trajet passe dans sa juridiction rapporte n de plus (1, 2 renforcée ; provisoire) */
+const carRelais=t=>!t||typeof loiRelais!=='function'?0:t.reduce((m,z)=>Math.max(m,loiRelais(z)||0),0);
+const carGain=(r,t)=>CAR_GAIN+(Math.abs(S.lv[r]||0)>=3?1:0)+carRelais(t);
 /* hasard reproductible : graine de la partie, Ressource, cycle */
 function carHasard(r,nc){let h=2166136261;for(const c of S.graine+'|'+r+'|'+nc)h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;
   h^=h>>>15;h=Math.imul(h,2246822507)>>>0;h^=h>>>13;return(h>>>0)/4294967296}
@@ -71,7 +73,7 @@ function caravanes(){initCaravanes();const L=[];
   for(const Z of ZN){const r=Z.id;if(!carEstRES(r)||!carTient(r))continue;const t=carTrajet(r),e=S.car[r];
     if(!t&&!e)continue;
     const pillee=!!(e&&e.arret>=S.nc);
-    L.push({r,cit:t?t[t.length-1]:null,traj:t,n:carGain(r),etat:!t?'coupée':pillee?'pillée':'en route',arret:pillee?e.arret:0,lieu:pillee?e.lieu:null,perdu:pillee?e.perdu||0:0,
+    L.push({r,cit:t?t[t.length-1]:null,traj:t,n:carGain(r,t),relais:carRelais(t),etat:!t?'coupée':pillee?'pillée':'en route',arret:pillee?e.arret:0,lieu:pillee?e.lieu:null,perdu:pillee?e.perdu||0:0,
       par:pillee?e.par:null,...(t?(({risque,lieu,tour})=>({risque,menace:lieu,tour:!!tour}))(carMenace(t)):{risque:0,menace:null,tour:false})})}
   return L}
 const caravaneDe=r=>caravanes().find(c=>c.r===r)||null;
@@ -84,12 +86,14 @@ function piller(r,m,nc){initCaravanes();const c=caravaneDe(r);if(!c||c.etat!=='e
   save();if(typeof hudKey!=='undefined')hudKey='';if(typeof etatHud==='function')etatHud();
   const qui=m.par==='horde'&&ZB[m.qui]?'Les éclaireurs de la horde '+carDe(carCourt(m.qui)):m.par==='rival'&&typeof RIVK!=='undefined'&&RIVK[m.qui]?'Des coupe-jarrets '+(typeof dela==='function'?dela(RIVK[m.qui]):'d\'une maison rivale'):'Des pillards';
   CAR_FILE.push([`Caravane pillée · ${carCourt(r)}`,`${qui} ont pris sa cargaison ${carA(carCourt(lieu))}`,
-    `Elle perd ${c.n} tesselle${c.n>1?'s':''} et s'arrête ${CAR_ARRET} cycles. Allez à la Pierre d'éveil ${carDe(carCourt(lieu))} ou ${carDe(carCourt(r))}, puis « Escorter la caravane » : chassez les pillards, elle repart avec sa cargaison.`]);
+    `Elle perd ${c.n} tesselle${c.n>1?'s':''} et s'arrête ${CAR_ARRET} cycles ; chaque cycle d'arrêt grossit le butin des pillards. Allez à la Pierre d'éveil ${carDe(carCourt(lieu))} ou ${carDe(carCourt(r))}, puis « Escorter la caravane » : chassez les pillards, elle repart et vous rend tout le butin.`]);
   return S.car[r]}
 /* ---------- Le cycle : gains et pillages ---------- */
 function caravanesCycle(nc){initCaravanes();if(typeof nc!=='number')nc=S.nc;let gain=0;
   for(const r in S.car)if(!carTient(r))delete S.car[r];   /* Ressource perdue : sa caravane disparaît */
   for(const c of caravanes()){
+    /* pillée et arrêtée : ce qu'elle aurait rapporté ce cycle s'ajoute au butin des pillards, rendu en entier si l'escorte gagne (provisoire) */
+    if(c.etat==='pillée'&&S.car[c.r]&&S.car[c.r].arret>=nc){S.car[c.r].perdu=(S.car[c.r].perdu||0)+carGain(c.r,carTrajet(c.r));continue}
     if(c.etat!=='en route')continue;
     S.car[c.r]=S.car[c.r]||{arret:-1,lieu:null,perdu:0,par:null};   /* on se souvient de la caravane : coupée, elle restera « arrêtée » */
     if(c.risque>0&&carHasard(c.r,nc)<c.risque){piller(c.r,null,nc);continue}
@@ -130,11 +134,11 @@ if(typeof finCombat==='function'){const _carFin=finCombat;
 /* ---------- Pierre d'éveil ---------- */
 function optionsCaravanes(Z){if(!Z)return[];initCaravanes();const o=[],id=Z.id;
   for(const c of caravanes())if(c.etat==='pillée'&&(c.r===id||c.lieu===id))
-    o.push({l:'Escorter la caravane '+carDe(carCourt(c.r)),ic:'⛟',cls:'p',d:`pillée ${carA(carCourt(c.lieu))} · combat court contre deux pillards · victoire : elle repart et rend ${c.perdu} tesselle${c.perdu>1?'s':''}`,go:()=>escorterCaravane(c.r)});
+    o.push({l:'Escorter la caravane '+carDe(carCourt(c.r)),ic:'⛟',cls:'p',d:`pillée ${carA(carCourt(c.lieu))} · combat court contre deux pillards · victoire : elle repart et rend le butin, ${c.perdu} tesselle${c.perdu>1?'s':''} pour l'instant (+${c.n} par cycle d'arrêt)`,go:()=>escorterCaravane(c.r)});
   if(!carEstRES(id)||!carTient(id))return o;
   const c=caravaneDe(id);
   if(c&&c.etat==='en route')o.push({l:`Caravane vers ${carCourt(c.cit)} · +${c.n} par cycle`,ic:'⛟',off:true,
-    d:`trajet : ${c.traj.map(carCourt).join(' → ')}${c.risque?` · risque de pillage ${Math.round(c.risque*100)} % par cycle${c.tour?' (tour de guet)':''}, ${carA(carCourt(c.menace))}`:' · aucune menace'}`});
+    d:`trajet : ${c.traj.map(carCourt).join(' → ')}${c.relais?` · Loi des Relais +${c.relais}`:''}${c.risque?` · risque de pillage ${Math.round(c.risque*100)} % par cycle${c.tour?' (tour de guet)':''}, ${carA(carCourt(c.menace))}`:' · aucune menace'}`});
   else if(c&&c.etat==='pillée')o.push({l:'Caravane arrêtée · pillée',ic:'⛟',off:true,d:`repart au cycle ${c.arret+1} (cycle actuel ${S.nc}), ou tout de suite si vous l'escortez`});
   else if(c)o.push({l:'Caravane arrêtée · route coupée',ic:'⛟',off:true,d:carPourquoi(id)});
   else if(Math.abs(S.lv[id]||0)>=2)o.push({l:'Pas de caravane',ic:'⛟',off:true,d:carPourquoi(id)+' · une route vers une zone reliée à votre Citadelle lance une caravane : +'+carGain(id)+' tesselle par cycle'});
@@ -152,10 +156,10 @@ function carSur(pts,p){let L=0;const d=[];for(let i=1;i<pts.length;i++){const l=
   return[pts[0][0],pts[0][1],0]}
 function dessinerCaravanes(mc,s,ox,oz,T){if(typeof S==='undefined'||!started)return;const L=caravanes();if(!L.length)return;const ph=carPhase(),pl=.6+.4*Math.sin((T||0)*6);
   for(const c of L){if(!c.traj)continue;const pts=c.traj.map(id=>[(ZB[id].c[0]+ox)*s,(ZB[id].c[1]+oz)*s]);
-    mc.save();mc.strokeStyle='rgba(255,236,190,.35)';mc.lineWidth=1.5;mc.setLineDash([2,4]);mc.beginPath();pts.forEach((p,i)=>i?mc.lineTo(p[0],p[1]):mc.moveTo(p[0],p[1]));mc.stroke();mc.setLineDash([]);
-    if(c.etat==='en route'){const p=carSur(pts,ph);mc.fillStyle='#ffe9a8';mc.strokeStyle='#1a1410';mc.lineWidth=1.5;mc.beginPath();mc.arc(p[0],p[1],4,0,TAU);mc.fill();mc.stroke()}
-    else{const z=ZB[c.lieu]||ZB[c.r],x=(z.c[0]+ox)*s+10,y=(z.c[1]+oz)*s+6;mc.fillStyle=`rgba(255,110,90,${pl})`;mc.strokeStyle='#1a1410';mc.lineWidth=1.5;mc.beginPath();mc.arc(x,y,4.5,0,TAU);mc.fill();mc.stroke();
-      mc.font='bold 11px sans-serif';mc.textAlign='center';mc.textBaseline='middle';mc.fillStyle='#ffd0c4';mc.fillText('✕',x,y-10)}
+    mc.save();mc.strokeStyle='rgba(255,236,190,.7)';mc.lineWidth=2.5;mc.setLineDash([3,4]);   /* (20 nov., testeur) la minicarte est affichée à moitié de sa taille : trait et point plus forts */mc.beginPath();pts.forEach((p,i)=>i?mc.lineTo(p[0],p[1]):mc.moveTo(p[0],p[1]));mc.stroke();mc.setLineDash([]);
+    if(c.etat==='en route'){const p=carSur(pts,ph);mc.fillStyle='#ffe9a8';mc.strokeStyle='#1a1410';mc.lineWidth=2.5;mc.beginPath();mc.arc(p[0],p[1],7,0,TAU);mc.fill();mc.stroke()}
+    else{const z=ZB[c.lieu]||ZB[c.r],x=(z.c[0]+ox)*s+10,y=(z.c[1]+oz)*s+6;mc.fillStyle=`rgba(255,110,90,${pl})`;mc.strokeStyle='#1a1410';mc.lineWidth=2.5;mc.beginPath();mc.arc(x,y,7,0,TAU);mc.fill();mc.stroke();
+      mc.font='bold 16px sans-serif';mc.textAlign='center';mc.textBaseline='middle';mc.fillStyle='#ffd0c4';mc.fillText('✕',x,y-14)}
     mc.restore()}}
 
 /* ---------- 3D : un petit chariot en primitives (72 triangles) qui va et vient d'une Pierre à l'autre, sur les dalles des routes ---------- */

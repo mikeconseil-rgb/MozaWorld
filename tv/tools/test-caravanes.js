@@ -62,6 +62,17 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
     ok('la Pierre propose « Escorter la caravane » en tête',es.pierre,JSON.stringify(es));
     ok('l\'escorte ouvre un combat court contre deux pillards',es.kind==='renc'&&es.car==='RES'&&es.nf===2,JSON.stringify(es));
     ok('victoire : la caravane repart et rend sa cargaison',es.etat==='en route'&&es.rendu===2&&/repart/.test(es.titre),JSON.stringify(es));
+    /* 6 bis. (19 nov., critique) pendant l'arrêt, le butin grossit (gain du cycle × cycles d'arrêt) ; l'escorte le rend en entier */
+    const bu=await p.evaluate(async()=>{MZ.piller('RES');const n=MZ.caravanes().find(c=>c.r==='RES').n;await unCycle();await unCycle();const c=MZ.caravanes().find(c=>c.r==='RES');
+      const perdu=c.perdu,etat=c.etat;MZ.escorter('RES');await new Promise(r=>setTimeout(r,400));const t0=MZ.S.tess;finCombat(true);const rendu=MZ.S.tess-t0;toMonde();return{n,perdu,etat,rendu}});
+    ok('arrêt de 2 cycles : le butin grossit à 3 cargaisons, l\'escorte le rend en entier',bu.etat==='pillée'&&bu.perdu===3*bu.n&&bu.rendu===bu.perdu,JSON.stringify(bu));
+    /* 6 ter. Loi des Relais (lois.js) : +1 par caravane dont le trajet passe dans la juridiction, +2 renforcée */
+    const re2=await p.evaluate(()=>{const S=MZ.S,sv={own:S.own.MAR,act:S.act.MAR,lv:S.lv.MAR};S.own.MAR=S.act.MAR=true;S.lv.MAR=1;
+      const n0=MZ.caravanes().find(c=>c.r==='RES').n;MZ.loiForcer('MAR','relais');const c=MZ.caravanes().find(c=>c.r==='RES');const dans=c.traj.some(z=>aPortee('MAR',2)[z]!==undefined);
+      MZ.loiRenforcer('MAR');const n2=MZ.caravanes().find(c=>c.r==='RES').n;MZ.loiRenforcer('MAR',true);
+      openEveil(ZB.RES);const t=document.getElementById('menu-choix').textContent;toMonde();
+      MZ.loiForcer('MAR',null);S.own.MAR=sv.own;S.act.MAR=sv.act;S.lv.MAR=sv.lv;return{n0,n1:c.n,n2,dans,relais:c.relais,pierre:/Loi des Relais \+1/.test(t)}});
+    ok('Loi des Relais : la caravane qui traverse la juridiction rapporte +1 (+2 renforcée)',re2.dans&&re2.n1===re2.n0+1&&re2.n2===re2.n0+2&&re2.pierre,JSON.stringify(re2));
     const ed=await p.evaluate(async()=>{MZ.piller('RES');const h0=MZ.S.hurt;MZ.escorter('RES');await new Promise(r=>setTimeout(r,400));finCombat(false);const h1=MZ.S.hurt;toMonde();
       const c=MZ.caravanes().find(c=>c.r==='RES');MZ.S.hurt=0;return{h0,h1,etat:c.etat}});
     ok('défaite : une blessure, la caravane reste arrêtée',ed.h1===ed.h0+1&&ed.etat==='pillée',JSON.stringify(ed));
