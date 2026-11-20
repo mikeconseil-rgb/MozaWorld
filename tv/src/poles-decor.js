@@ -102,10 +102,10 @@ for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?
       it.make()}};
   Z.update=lv=>{update0(lv);const an=wneg(lv),ap=wpos(lv);
     /* la végétation du biome : penchée, rabougrie vers −7 ; redressée et plus haute vers +7 */
-    for(const it of Z.props||[]){if(it.k==='rocher'||it.k==='mur'||it.k==='colonne')continue;
+    for(const it of Z.props||[]){if(PRIGIDE.has(it.k))continue;   /* rochers, pics, blocs, séracs… restent droits */
       it.set(o=>{if(an>.2&&o.r<an*.55)return .0001;if(o.rz0===undefined){o.rz0=o.rz;o.rx0=o.rx}o.rz=o.rz0+an*.5*(o.r-.5);o.rx=o.rx0+an*.3*(o.r*7%1-.5);
           return[(1+ap*.35)*(1-an*.25),(1+ap*.7)*(1-an*.45),(1+ap*.35)*(1-an*.25)]},
-        (o,i,c)=>{const b=LIN(PBASE[it.k]||'#ffffff');mix3(c,b,[.12,.1,.09],an*.75);if(ap>0)mix3(c,c,cP,ap*.4);if(it.k==='cristal'){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}
+        (o,i,c)=>{const b=LIN(PBASE[it.k]||'#ffffff');mix3(c,b,[.12,.1,.09],an*.75);if(ap>0)mix3(c,c,cP,ap*.4);if(PLUM.has(it.k)){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}
     for(const it of fams){const w=it.side<0?an:ap;
       for(const o of it.a){o.y=groundZ(Z,o.x,o.z,lv)-(it.repere?.6:.15)}
       it.set(o=>{/* chaque objet a son seuil : plus on s'éloigne de zéro, plus il y en a ; les repères n'apparaissent qu'à partir de ±3 */

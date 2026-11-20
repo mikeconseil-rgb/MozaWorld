@@ -31,7 +31,8 @@ function infoZone(id){const Z=typeof ZB!=='undefined'?ZB[id]:null;if(!Z)return n
   return{id,mod:Z.mod||id,nom:I.nom||id,biome,cult,mana:(typeof ZMANA!=='undefined'&&ZMANA[id])||'Pierre',pm:I.pm,pp:I.pp,lv,L:Math.abs(lv),pole:lv<0?'neg':lv>0?'pos':'zero'}}
 const BIOMES=[['bor','foret'],['fjord','fjord'],['canyon','canyon'],['sable','dunes'],['desert','dunes'],['ruine','ruines'],['oasis','oasis'],['recif','recif'],
   ['cavern','cavernes'],['lande','lande'],['delta','delta'],['steppe','steppe'],['falaise','falaise'],['volcan','volcan'],['iles','iles'],['flottan','iles'],
-  ['mangrove','mangrove'],['glacier','glacier'],['foret','foret'],['marais','mangrove'],['montagne','glacier'],['toundra','steppe'],['jungle','oasis']];
+  ['mangrove','mangrove'],['glacier','glacier'],['foret','foret'],['marais','mangrove'],['montagne','glacier'],['toundra','steppe'],['jungle','oasis'],
+  ['archipel','iles'],['savane','steppe']];
 const bkey=b=>{b=sansAcc(b);for(const [m,k] of BIOMES)if(b.includes(m))return k;return'collines'};
 const CULT=[['slave','slave'],['egypt','egypte'],['nord','nordique'],['zoulou','zoulou'],['ethiop','ethiopie'],['aztec','azteque'],['maya','maya'],
   ['venit','venise'],['inca','inca'],['khmer','khmer'],['chinois','chine'],['byzant','byzance'],['gothi','gothique']];

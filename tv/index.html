@@ -1188,39 +1188,106 @@ ext(Z,{build(){const bs=Z.cs_,G=Z.G,g=[],fl=[];
 /* MozaWorld TV 2.0 : les nouvelles tuiles de la carte agrandie (CARTE_PLUS, généré par tools/carte).
    Une seule recette paramétrée par le biome et le type de mana : relief, couleurs, ciel, végétation,
    et un vrai écart entre les deux pôles (−7 assombri et crevassé, +7 lumineux et soulevé en gradins).
-   Les nouvelles tuiles reprennent l'épreuve, les gardiens et la carte de combat de leur type, à leur nom. */
+   Les nouvelles tuiles reprennent l'épreuve, les gardiens et la carte de combat de leur type, à leur nom.
+   Zones-biomes (19 nov. 2026) : les 24 biomes de la liste des 986 ont chacun leur recette (12 de plus : Volcan, Mangrove,
+   Jungle, Archipel, Haute montagne, Glacier, Forêt de champignons géants, Marais, Désert de sel, Iles flottantes, Savane, Toundra),
+   et chaque zone reçoit une signature tirée de son identifiant et de sa culture (sigZone) : palette décalée, relief à son échelle
+   et à sa forme, mélange et densité d'objets propres, et un repère architectural de sa culture. Aucune passe de rendu en plus. */
 const hexMix=(a,b,t)=>{const A=parseInt(a.slice(1),16),B=parseInt(b.slice(1),16),f=s=>Math.round(lerp((A>>s)&255,(B>>s)&255,t));
   return'#'+((1<<24)|(f(16)<<16)|(f(8)<<8)|f(0)).toString(16).slice(1)};
 const pole5=(c,neg,pos)=>[hexMix(c,neg,.72),hexMix(c,neg,.38),c,hexMix(c,pos,.3),hexMix(c,pos,.58)];
 /* teintes des deux pôles selon le mana de la tuile */
 const PMANA={Feu:['#2e1410','#ffcf7a'],Glace:['#161d2b','#dff3ff'],Eau:['#0f2226','#86f0dc'],Sève:['#241f12','#c4f27a'],Pierre:['#221f1c','#f6e2b4'],Vent:['#221d2b','#eadcff']};
-/* relief : f renvoie la hauteur de base ; props : [sorte, nombre] */
+/* relief : f(u, v, n1, n2, n3, S) renvoie la hauteur de base (u, v tournés selon la signature, S = signature de la zone) ;
+   f peut poser FX.k (0 à 1) : part de la couleur spéciale du biome (fx), qui luit si fxg > 0 (lave, glace bleue des crevasses…).
+   Options : mer (niveau où l'eau s'aplanit), plage (liseré de rivage), neige (altitude des neiges), ech (taille des objets), pr (rayons du replat autour de la Pierre), fn (brume à −7, en multiple de fog ; 2,6 sinon).
+   props : [sorte, nombre] toujours là ; extra : sortes dont la signature en choisit une (ou aucune) ;
+   wn/wc : météo (neige, cendre, spores…). */
+const FX={k:0};
 const BIO={
   'Forêt boréale':{g:'#4a5a3c',g2:'#7a7a62',eau:'#3a5466',top:'#6f8494',hor:'#c4cdd0',sun:'#e8eef2',fog:.0042,wn:.3,wc:'#f4f6f8',
-    f:(u,v,n1,n2)=>(n1-.45)*14+(n2-.5)*2,props:[['pin',190],['rocher',30]]},
+    f:(u,v,n1,n2)=>(n1-.45)*14+(n2-.5)*2,props:[['pin',190],['rocher',30]],extra:[['feuillu',40],['fougere',60],['arbremort',25]]},
   'Fjord':{g:'#55625a',g2:'#8c9690',eau:'#2c4c66',top:'#5f7890',hor:'#b8c8d4',sun:'#dde8f0',fog:.005,wn:.2,wc:'#eef4f8',
-    f:(u,v,n1)=>{const d=Math.abs(v+22*Math.sin(u*.02));return d<26?-3:Math.min(12,(d-26)*.28)+(n1-.5)*5},props:[['pin',90],['rocher',60]]},
+    f:(u,v,n1)=>{const d=Math.abs(v+22*Math.sin(u*.02));return d<26?-3:Math.min(12,(d-26)*.28)+(n1-.5)*5},props:[['pin',90],['rocher',60]],extra:[['pic',18],['buisson',60]]},
   'Canyon':{g:'#b0603a',g2:'#d49a66',eau:'#6a3a28',top:'#7a9ac0',hor:'#f0c8a0',sun:'#ffe0b0',fog:.0026,wn:.08,wc:'#e8b080',
-    f:(u,v,n1,n2,n3)=>{const t=(n1-.38)*26;return(t>0?4*Math.floor(t/4)+4*sst(.75,1,(t/4)%1):t*.3)-(n3<.1?4*sst(.1,.02,n3):0)},props:[['rocher',70],['cactus',22]]},
+    f:(u,v,n1,n2,n3)=>{const t=(n1-.38)*26;return(t>0?4*Math.floor(t/4)+4*sst(.75,1,(t/4)%1):t*.3)-(n3<.1?4*sst(.1,.02,n3):0)},props:[['rocher',70],['cactus',22]],extra:[['pic',20],['buisson',50]]},
   'Désert de sable':{g:'#d6b47a',g2:'#e8cf98',eau:'#b08850',top:'#6e9ad0',hor:'#f4dcb0',sun:'#fff0c8',fog:.0024,wn:.12,wc:'#f0d8a8',
-    f:(u,v,n1)=>3.2*Math.sin(u*.05+n1*7)+(n1-.5)*7,props:[['cactus',30],['rocher',18]]},
+    f:(u,v,n1)=>3.2*Math.sin(u*.05+n1*7)+(n1-.5)*7,props:[['cactus',30],['rocher',18]],extra:[['palmier',14],['acacia',10]]},
   'Oasis':{g:'#cdb07a',g2:'#7ea052',eau:'#3a8a8a',top:'#5f9ad8',hor:'#f2e0b8',sun:'#fff2d0',fog:.0026,wn:.05,wc:'#ffffff',
-    f:(u,v,n1)=>{const r=Math.hypot(u-40,v-30);return r<24?-2.4*sst(24,14,r):2*Math.sin(u*.045+n1*6)+(n1-.5)*5},props:[['palmier',55],['roseau',60],['rocher',10]]},
+    f:(u,v,n1)=>{const r=Math.hypot(u-40,v-30);return r<24?-2.4*sst(24,14,r):2*Math.sin(u*.045+n1*6)+(n1-.5)*5},props:[['palmier',55],['roseau',60],['rocher',10]],extra:[['fougere',40],['acacia',12]]},
   'Cité en ruines':{g:'#8a8270',g2:'#a89c80',eau:'#4a4a40',top:'#7c8a9a',hor:'#d0c8b8',sun:'#f0e4cc',fog:.0036,wn:.15,wc:'#d8d0c0',
-    f:(u,v,n1,n2)=>(n1-.5)*4+(n2-.5)*1.5,props:[['colonne',60],['mur',40],['rocher',20]]},
+    f:(u,v,n1,n2)=>(n1-.5)*4+(n2-.5)*1.5,props:[['colonne',60],['mur',40],['rocher',20]],extra:[['feuillu',25],['arbremort',20]]},
   'Récif':{g:'#d8c8a0',g2:'#4fa0a0',eau:'#2a7a9a',top:'#4f9ad8',hor:'#c8eef0',sun:'#fff8e0',fog:.003,wn:.04,wc:'#ffffff',
-    f:(u,v,n1,n2,n3)=>(n1-.5)*5-(n3<.14?2.6*sst(.14,.04,n3):0),props:[['corail',120],['rocher',30]]},
+    f:(u,v,n1,n2,n3)=>(n1-.5)*5-(n3<.14?2.6*sst(.14,.04,n3):0),props:[['corail',120],['rocher',30]],extra:[['palmier',20],['pic',10]]},
   'Cavernes cristallines':{g:'#4a4458',g2:'#6c6488',eau:'#2a2a48',top:'#2a2a44',hor:'#6a6890',sun:'#c8c0ff',fog:.0065,wn:.25,wc:'#c8d0ff',
-    f:(u,v,n1,n2,n3)=>(1-n3)*7-4+(n1-.5)*6,props:[['cristal',120],['rocher',40]]},
+    f:(u,v,n1,n2,n3)=>(1-n3)*7-4+(n1-.5)*6,props:[['cristal',120],['rocher',40]],extra:[['pic',24],['champilum',50]]},
   'Lande':{g:'#6a5a6a',g2:'#8a7a5a',eau:'#3a4a4a',top:'#6a7484',hor:'#b8b0b0',sun:'#e8dcd0',fog:.005,wn:.35,wc:'#e0e0e8',
-    f:(u,v,n1)=>(n1-.4)*10,props:[['roseau',130],['rocher',40]]},
+    f:(u,v,n1)=>(n1-.4)*10,props:[['roseau',130],['rocher',40]],extra:[['buisson',80],['arbremort',14]]},
   'Steppe':{g:'#a09a5a',g2:'#c4b47a',eau:'#5a6a5a',top:'#6a94c8',hor:'#e4e0c0',sun:'#fff4d8',fog:.0024,wn:.18,wc:'#e8e4d0',
-    f:(u,v,n1)=>(n1-.45)*6,props:[['roseau',150],['rocher',20]]},
+    f:(u,v,n1)=>(n1-.45)*6,props:[['roseau',150],['rocher',20]],extra:[['buisson',60],['feuillu',12]]},
   'Delta fluvial':{g:'#5a7a44',g2:'#8a8a5a',eau:'#3a7a8a',top:'#6a9ac8',hor:'#d8e4d8',sun:'#f8f0d8',fog:.0034,wn:.1,wc:'#ffffff',
-    f:(u,v,n1,n2,n3)=>(n1-.5)*3-(n3<.16?2.2*sst(.16,.05,n3):0),props:[['roseau',110],['feuillu',35]]},
+    f:(u,v,n1,n2,n3)=>(n1-.5)*3-(n3<.16?2.2*sst(.16,.05,n3):0),props:[['roseau',110],['feuillu',35]],extra:[['palmier',16],['paletuvier',20]]},
   'Falaise côtière':{g:'#7a8a5a',g2:'#a8a08a',eau:'#3a6a8a',top:'#6a94c0',hor:'#d0dce4',sun:'#f4f0e4',fog:.0034,wn:.3,wc:'#ffffff',
-    f:(u,v,n1)=>sst(-70,50,u)*10+(n1-.5)*4,props:[['rocher',60],['roseau',70]]}};
-/* formes de végétation et d'objets, partagées par toutes les nouvelles tuiles */
+    f:(u,v,n1)=>sst(-70,50,u)*10+(n1-.5)*4,props:[['rocher',60],['roseau',70]],extra:[['pin',30],['pic',14]]},
+  /* ---- les douze biomes ajoutés (zones-biomes) ---- */
+  /* Volcan : un cône au cratère de lave, ravines rayonnantes et coulées qui luisent, cendre qui tombe */
+  'Volcan':{g:'#2e2826',g2:'#5e524a',eau:'#3a2a24',top:'#5e5250',hor:'#a88068',sun:'#ffc890',fog:.0042,fn:1.4,wn:.32,wc:'#5a5250',fx:'#ff5a14',fxg:1.5,
+    f:(u,v,n1,n2,n3,S)=>{const du=u-S.au,dv=v-S.av,r=Math.hypot(du,dv),R=S.ar,H=40*S.ah,a=Math.atan2(dv,du);
+      const ravine=1-.16*Math.pow(Math.abs(Math.sin(a*6+n1*5)),3)*sst(.25*R,.7*R,r);
+      let h=(n1-.5)*5+(n2-.5)*1.2+H*Math.pow(clamp(1-r/R,0,1),1.35)*ravine;
+      const rc=R*.16;if(r<rc){h-=(rc-r)*1.7;FX.k=sst(rc*.75,rc*.45,r)}                        /* le cratère et son lac de lave */
+      else FX.k=r<R*1.25?sst(.075,.025,n3)*sst(R*1.25,R*.9,r):0;                             /* coulées le long des lignes de bruit */
+      return h},
+    props:[['rocher',70],['fumerolle',26],['pic',22]],extra:[['arbremort',20],['buisson',50]]},
+  /* Mangrove : eau plate et brune, chenaux tressés et lagunes, palétuviers sur leurs racines en arceaux jusque dans l'eau */
+  'Mangrove':{g:'#5a4a32',g2:'#56703a',eau:'#4a6a70',top:'#6a8a88',hor:'#c8d4b8',sun:'#fff0c8',fog:.0044,pr:[12,22],wn:.12,wc:'#e8f0d8',mer:-.5,plage:'#6a5a3a',
+    f:(u,v,n1,n2,n3)=>.7+(n1-.5)*3+(n2-.5)*.6-2.8*sst(.2,.07,n3)-2.6*sst(.45,.37,n1)-2.2*sst(.5,.62,vnoise(u*.02+17,v*.02+4)),
+    props:[['paletuvier',120],['roseau',90]],extra:[['fougere',60],['palmier',20],['arbremort',18]]},
+  /* Jungle : collines raides, ravines où coule l'eau, pitons karstiques drapés de vert, canopée dense et fougères */
+  'Jungle':{g:'#2a4a24',g2:'#4a7230',eau:'#2a5a50',top:'#7a9a8c',hor:'#c8d8c0',sun:'#fff6d8',fog:.0042,pr:[30,72],ech:1.45,wn:.06,wc:'#f0fff0',
+    f:(u,v,n1,n2,n3)=>(n1-.42)*16+(n2-.5)*2.5-7*sst(.12,.03,n3)+26*sst(.56,.64,n1),
+    props:[['feuillu',115],['fougere',110],['palmier',30]],extra:[['champilum',40],['paletuvier',30],['rocher',20]]},
+  /* Archipel : mer turquoise et plate, îlots bordés de sable, aiguilles rocheuses dressées dans l'eau */
+  'Archipel':{g:'#d8c890',g2:'#5a9a4a',eau:'#1f8aa8',top:'#4a9ae0',hor:'#d0f0f4',sun:'#fff8e0',fog:.0026,wn:.04,wc:'#ffffff',mer:-.6,plage:'#efe2b0',
+    f:(u,v,n1,n2)=>(n1-.53)*30+(n2-.5)*2,
+    props:[['palmier',70],['pic',26],['rocher',30]],extra:[['corail',60],['fougere',40],['acacia',14]]},
+  /* Haute montagne : pics et arêtes, neiges éternelles au-dessus de 26 m, pins nains en bas, aiguilles rocheuses */
+  'Haute montagne':{g:'#5f6a4a',g2:'#7a776c',eau:'#3a5468',top:'#5a86c0',hor:'#d0deee',sun:'#fff4e8',fog:.0022,fn:1.7,pr:[40,130],wn:.22,wc:'#ffffff',neige:22,
+    f:(u,v,n1,n2,n3)=>1.5+48*Math.pow(sst(.5,.82,n1),1.4)+8*(1-n3)*sst(.45,.65,n1)+(n2-.5)*3,
+    props:[['pic',40],['rocher',60],['pin',60]],extra:[['buisson',50],['glacon',14]]},
+  /* Glacier : glace ondulée fendue de crevasses bleues parallèles, séracs et aiguilles de glace */
+  'Glacier':{g:'#d6e2ec',g2:'#a8c4dc',eau:'#3a6a9a',top:'#5a8ac8',hor:'#e0eef8',sun:'#ffffff',fog:.003,wn:.3,wc:'#ffffff',fx:'#0f4fa8',fxg:.35,
+    f:(u,v,n1,n2)=>{const t=v/26+.3*Math.sin(u*.012+n1*3),d=Math.abs(t-Math.round(t))*26,seg=sst(.4,.5,n2*.4+n1*.8);
+      const c=sst(4,1.4,d)*seg;FX.k=sst(4.6,2.2,d)*seg;return(n1-.5)*10+2*Math.sin(u*.03)-7*c},
+    props:[['glacon',70],['rocher',24]],extra:[['pic',16],['blocsel',20]]},
+  /* Forêt de champignons géants : chapeaux larges sur pieds pâles, petits champignons qui luisent, mousse violette, spores */
+  'Forêt de champignons géants':{g:'#4a3a58',g2:'#6a7a4a',eau:'#3a3050',top:'#4a4070',hor:'#a898b8',sun:'#ffe8d0',fog:.0058,ech:1.2,wn:.38,wc:'#d8ffb0',
+    f:(u,v,n1,n2)=>(n1-.5)*8+(n2-.5)*1.6+2.4*Math.sin(u*.06+n1*4)*Math.cos(v*.05),
+    props:[['champignon',70],['champilum',80],['fougere',60]],extra:[['arbremort',20],['rocher',30]]},
+  /* Marais : eau noire en flaques et chenaux, cyprès chauves drapés de mousse, roseaux serrés, brume basse */
+  'Marais':{g:'#5a5634',g2:'#6e6a3c',eau:'#24343a',top:'#6a7068',hor:'#9aa088',sun:'#e8e4c0',fog:.0048,pr:[12,22],wn:.14,wc:'#d8e0c8',mer:-.35,plage:'#3a3a26',
+    f:(u,v,n1,n2,n3)=>.5+(n1-.5)*2.4+(n2-.5)*.6-1.8*sst(.42,.54,vnoise(u*.028+3,v*.028+11))-2*sst(.14,.05,n3),
+    props:[['arbremort',80],['roseau',200]],extra:[['buisson',60],['paletuvier',24],['champilum',30]]},
+  /* Désert de sel : plaine blanche craquelée en polygones (sol.js), miroirs d'eau saumâtre, buttes lointaines, blocs de sel */
+  'Désert de sel':{g:'#d6d0c8',g2:'#e8e4de',eau:'#9ab8cc',top:'#5a8ad0',hor:'#eef0f2',sun:'#fffaf0',fog:.0018,wn:.05,wc:'#ffffff',mer:-.12,
+    f:(u,v,n1,n2)=>(n1-.5)*1.6+(n2-.5)*.3-.5*sst(.62,.7,n2)+16*sst(.7,.74,n1),
+    props:[['blocsel',70],['rocher',14]],extra:[['pic',10],['buisson',30]]},
+  /* Iles flottantes : plateaux en gradins séparés par des gouffres, îles suspendues au-dessus du vide */
+  'Iles flottantes':{g:'#4f8a44',g2:'#7a9a5a',eau:'#2a3050',top:'#6a90d8',hor:'#e0e8f8',sun:'#fff4e0',fog:.003,fn:1.8,pr:[30,72],vide:1,wn:.08,wc:'#ffffff',
+    f:(u,v,n1,n2)=>n1>.5?3+4*Math.floor(sst(.5,.72,n1)*3)+(n2-.5)*1.2:-16*sst(.5,.43,n1),
+    props:[['ileflot',22],['feuillu',60],['rocher',30]],extra:[['fougere',50],['pin',30],['champilum',30]]},
+  /* Savane : herbe dorée, acacias en parasol, kopjes de granit arrondis, termitières */
+  'Savane':{g:'#b89a50',g2:'#a08a48',eau:'#5a6a4a',top:'#5a90d0',hor:'#f0dcb0',sun:'#fff0c8',fog:.0024,wn:.1,wc:'#f0e0b8',
+    f:(u,v,n1)=>{const k=vnoise(u*.022+31,v*.022+7);return(n1-.45)*5+12*sst(.74,.9,k)},
+    props:[['acacia',50],['roseau',170],['termitiere',26]],extra:[['rocher',40],['buisson',40],['palmier',10]]},
+  /* Toundra : plaine basse en polygones de gel (sol.js), pingos, mares de dégel, blocs erratiques et buissons ras */
+  'Toundra':{g:'#76704e',g2:'#8a6a4a',eau:'#3a5060',top:'#7088a0',hor:'#d0d8dc',sun:'#f4f0e8',fog:.0034,wn:.26,wc:'#ffffff',mer:-.3,fx:'#e4e8ea',fxg:0,
+    f:(u,v,n1,n2)=>{const p=vnoise(u*.03+5,v*.03+9);FX.k=.85*sst(.6,.7,vnoise(u*.017+40,v*.017+2));   /* plaques de neige tardive */
+      return(n1-.5)*5+(n2-.5)*1+9*sst(.8,.95,p)-1.6*sst(.4,.34,n1)},
+    props:[['buisson',140],['rocher',60]],extra:[['pin',24],['glacon',10],['roseau',60]]}};
+
+/* formes de végétation et d'objets, partagées par toutes les nouvelles tuiles (géométries simples fusionnées, instanciées) */
+const latG=(pts,n)=>new THREE.LatheGeometry(pts.map(p=>new THREE.Vector2(p[0],p[1])),n);
 const PG={
   pin:merge([[new THREE.ConeGeometry(2.6,5.5,7).translate(0,4.6,0),0x2f5a3a],[new THREE.ConeGeometry(1.9,4.4,7).translate(0,7.6,0),0x3a6a44],[cyl(.3,.4,2.2,5,0,1.1,0),0x4a3424]]),
   feuillu:merge([[new THREE.IcosahedronGeometry(2.8,0).scale(1,.9,1).translate(0,5.4,0),0x4f8a3a],[cyl(.3,.45,4,5,0,2,0),0x5a4030]]),
@@ -1231,11 +1298,161 @@ const PG={
   colonne:merge([[cyl(.6,.7,5.5,8,0,2.75,0),0xd8ccb0],[box(1.7,.5,1.7,0,5.6,0),0xc8bca0]]),
   mur:box(6,2.6,1,0,1.3,0),
   corail:new THREE.IcosahedronGeometry(1.1,0).scale(1,1.5,1).translate(0,.8,0),
-  cristal:new THREE.OctahedronGeometry(1,0).scale(.7,2.6,.7).translate(0,2,0)};
-const PBASE={pin:'#ffffff',feuillu:'#ffffff',rocher:'#8a8478',cactus:'#ffffff',palmier:'#ffffff',roseau:'#a49a5a',colonne:'#ffffff',mur:'#b8ac90',corail:'#e07a6a',cristal:'#9fc8ff'};
+  cristal:new THREE.OctahedronGeometry(1,0).scale(.7,2.6,.7).translate(0,2,0),
+  /* zones-biomes : les formes des douze nouveaux biomes */
+  champignon:merge([[cyl(.55,.85,6.4,6,0,3.2,0),0xe8e0cc],[latG([[3.9,0],[3.3,1.1],[2,2.1],[0,2.55]],8).translate(0,6.1,0),0xb04a6a],
+    [new THREE.CircleGeometry(3.85,8).rotateX(PI/2).translate(0,6.1,0),0xf0d8c0]]),
+  champilum:merge([[new THREE.ConeGeometry(.12,1.1,4).translate(0,.55,0)],[new THREE.ConeGeometry(.6,.55,6).translate(0,1.2,0)],
+    [new THREE.ConeGeometry(.42,.4,6).translate(.7,.8,.3)]]),
+  acacia:merge([[cyl(.22,.4,5.4,5,0,0,0).rotateZ(.22).translate(-.55,2.6,0),0x4a3a2a],[cyl(.14,.2,2.6,5,0,0,0).rotateZ(-.6).translate(.5,5,0),0x4a3a2a],
+    [cyl(4.4,3.4,.9,8,.6,6.4,0),0x6a7a34],[cyl(2.6,2,.7,7,-1.4,5.9,.8),0x5a6e2e]]),
+  paletuvier:merge([[new THREE.IcosahedronGeometry(2.6,0).scale(1.2,.75,1.2).translate(0,6.4,0),0x3a6a34],[cyl(.25,.32,3.4,5,0,4.4,0),0x5a4a38],
+    ...[0,1,2,3].map(i=>[new THREE.ConeGeometry(.16,3.8,3,1,true).rotateZ(.62).translate(-1.1,1.5,0).rotateY(i*TAU/4+.3),0x6a5640])]),
+  fougere:merge([0,1,2,3,4,5].map(i=>[new THREE.ConeGeometry(.42,2.8,4).scale(1,1,.25).translate(0,1.4,0).rotateZ(.85+(i%2)*.25).rotateY(i*TAU/6),i%2?0x4a8a3a:0x3a7a30])),
+  glacon:merge([[new THREE.ConeGeometry(1.5,7.5,5).translate(0,3.6,0),0xd8f0ff],[new THREE.ConeGeometry(.9,4.4,5).rotateZ(.3).translate(1.4,2,.4),0xb8dcf8],
+    [new THREE.ConeGeometry(.8,3.6,5).rotateZ(-.35).translate(-1.2,1.6,-.5),0xc8e8ff]]),
+  pic:merge([[new THREE.ConeGeometry(2.8,15,6).translate(0,7.3,0),0x6a6660],[new THREE.ConeGeometry(1.9,9,5).rotateZ(-.12).translate(2,4.4,.6),0x5a5650],
+    [new THREE.DodecahedronGeometry(1.8,0).scale(1,.6,1).translate(-1.6,.5,.8),0x7a746c]]),
+  blocsel:merge([[box(2.4,1.6,2.4,0,.6,0,.3),0xf4f2ee],[box(1.4,1.2,1.4,.9,1.6,.4,.9,.2),0xe8e6e2],[new THREE.ConeGeometry(1.2,1.6,4).translate(-1.4,.8,-.6),0xf8f6f2]]),
+  fumerolle:merge([[new THREE.ConeGeometry(1.8,1.8,7).translate(0,.7,0),0x2a2422],[new THREE.IcosahedronGeometry(.9,0).translate(0,2.6,0),0xc8c4c0],
+    [new THREE.IcosahedronGeometry(1.3,0).translate(.3,4.6,.1),0xb8b4b0],[new THREE.IcosahedronGeometry(1.8,0).translate(.8,7.2,.3),0xa8a4a2],[new THREE.IcosahedronGeometry(2.2,0).translate(1.5,10.4,.5),0x9a9694]]),
+  arbremort:merge([[cyl(.28,1,9,6,0,4.5,0),0x4a4034],[new THREE.ConeGeometry(2.4,1.4,6).translate(.3,8.6,0),0x4a5a34],[new THREE.ConeGeometry(1.8,1.2,6).translate(-.5,6.6,.4),0x4a5a34],
+    [cyl(.05,.12,3,4,1.2,6.8,0).rotateZ(.05),0x6a7a5a],[cyl(.05,.12,2.4,4,-1.4,5.4,.3),0x6a7a5a]]),
+  ileflot:merge([[new THREE.ConeGeometry(7,10,7).rotateX(PI).translate(0,-5,0),0x6a5a48],[new THREE.ConeGeometry(4,6,6).rotateX(PI).translate(1.5,-11,.5),0x5a4c3e],
+    [cyl(7.2,7,1.4,7,0,.7,0),0x5a8a44],[new THREE.ConeGeometry(1.9,4.4,6).translate(-2,3.6,1),0x2f5a3a],[cyl(.2,.3,1.6,5,-2,1.6,1),0x4a3424],
+    [new THREE.DodecahedronGeometry(1.2,0).translate(2.6,1.8,-1.5),0x8a8478],[box(.5,7,.2,6.4,-3,0,0,0,.05),0xd8f0ff]]),
+  termitiere:merge([[new THREE.ConeGeometry(1.5,5,6).translate(0,2.5,0),0xa0603a],[new THREE.ConeGeometry(.8,2.8,5).translate(.9,1.4,.3),0xb06a40],[new THREE.ConeGeometry(.6,1.8,5).translate(-.7,.9,-.5),0x985838]]),
+  buisson:new THREE.IcosahedronGeometry(1,0).scale(1.4,.62,1.4).translate(0,.4,0)};
+const PBASE={pin:'#ffffff',feuillu:'#ffffff',rocher:'#8a8478',cactus:'#ffffff',palmier:'#ffffff',roseau:'#a49a5a',colonne:'#ffffff',mur:'#b8ac90',corail:'#e07a6a',cristal:'#9fc8ff',
+  champignon:'#ffffff',champilum:'#9affc8',acacia:'#ffffff',paletuvier:'#ffffff',fougere:'#ffffff',glacon:'#ffffff',pic:'#ffffff',blocsel:'#ffffff',fumerolle:'#ffffff',
+  arbremort:'#ffffff',ileflot:'#ffffff',termitiere:'#ffffff',buisson:'#7a6a44'};
 const PMAT={vc:M(0xffffff,{vertexColors:true}),plein:M(0xffffff),cristal:new THREE.MeshBasicMaterial({color:0xffffff})};
+/* objets raides (ni vent, ni ploiement vers −7), objets qui luisent, objets posés aussi dans l'eau ou au-dessus du vide */
+const PRIGIDE=new Set(['rocher','mur','colonne','pic','blocsel','glacon','fumerolle','ileflot','termitiere']);
+const PLUM=new Set(['cristal','champilum']),PEAU=new Set(['roseau','corail','paletuvier','pic','ileflot']);
 
-for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B=BIO[d.biome]||BIO['Steppe'],[neg,pos]=PMANA[d.mana]||PMANA.Pierre;
+/* ---------- Signature de zone : un tirage stable par identifiant et culture ---------- */
+const sigHash=s=>{let h=2166136261;for(const ch of String(s))h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;return h};
+const sigAlea=s=>{let a=sigHash(s)||1;return()=>{a=a+0x6D2B79F5>>>0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}};
+/* décalage borné de teinte (degrés), de saturation et de clarté d'une couleur */
+const sigTeinte=(h,dh,ks,kl)=>{const c=new THREE.Color(h),o={};c.getHSL(o);c.setHSL((o.h+dh/360+1)%1,clamp(o.s*ks,0,1),clamp(o.l*kl,0,.97));return'#'+c.getHexString()};
+function sigZone(Z){const d=Z.d,r=sigAlea(Z.id+'|'+(d.culture||'')+'|'+d.biome),B=BIO[d.biome]||BIO['Steppe'];
+  const S={th:r()*TAU,k:.68+r()*.8,ox:r()*900-450,oz:r()*900-450,amp:.75+r()*.6,forme:Math.floor(r()*4),
+    dh:(r()<.5?-1:1)*(7+r()*19),ks:.74+r()*.56,kl:.9+r()*.2,dhc:(r()-.5)*36,kc:.82+r()*.4,fog:.78+r()*.5,el:22+r()*24,
+    taille:.82+r()*.42,clust:r()<.5,ext:Math.floor(r()*((B.extra||[]).length+1)),dens:[0,1,2,3,4].map(()=>.6+r()*.7),r};
+  S.c=Math.cos(S.th);S.s=Math.sin(S.th);S.rot=S.dh*.6;   /* rot : la part du décalage que l'étalonnage et le ciel suivent (styles.js, ciels.js) */
+  /* point d'ancrage d'un grand relief (cône du Volcan), devant la Pierre et dans la tuile ; puis repère de culture, ailleurs */
+  const pose=(r0,r1,a0,a1,m)=>{for(let j=0;j<40;j++){const a=lerp(a0,a1,r()),rr_=lerp(r0,r1,r()),u=-20+Math.cos(a)*rr_,v=Math.sin(a)*rr_;if(Z.inside(u,v,m))return[u,v]}return[40,0]};
+  const [au,av]=pose(125,175,-.75,.75,60);S.ar=Math.min(115,Math.hypot(au+20,av)*.72);S.ah=.85+r()*.35;
+  /* f reçoit (u, v) tournés de th : l'ancre l'est aussi */
+  S.au=au*S.c+av*S.s;S.av=-au*S.s+av*S.c;
+  /* le repère de culture : entre 46 et 64 m de la Pierre, à l'écart des trois repères de pôle (poles-decor.js, à 78 m et 120° d'écart) */
+  for(let j=0;j<60;j++){const a=(r()<.5?-1:1)*(.34+r()*.5),rr_=46+r()*18,   /* de biais : la Pierre ne le cache pas */
+    u=-20+Math.cos(a)*rr_,v=Math.sin(a)*rr_;
+    let ok=Z.inside(u,v,26);for(let i=0;i<3&&ok;i++){const b=i*TAU/3+(Z.i||0)*.7,x=-20+Math.cos(b)*78,y=Math.sin(b)*78;if(Math.hypot(u-x,v-y)<34)ok=false}
+    if(ok||j===59){S.ru=u;S.rv=v;S.ry=r()*TAU;break}}
+  return S}
+/* la forme du relief : on retouche le grand bruit n1 (crêtes, plateaux, contrastes) */
+const sigForme=(n,f)=>f===1?lerp(n,.5+(.24-Math.abs(n-.5))*1.5,.5):f===2?.5+.3*Math.tanh((n-.5)*7):f===3?.5+(n-.5)*Math.abs(n-.5)*6:n;
+
+/* ---------- Repères de culture : quelques familles simples, une silhouette par culture, variée par la signature ---------- */
+const prisme=(w,h,dz)=>{const g=new THREE.CylinderGeometry(1,1,dz,3);g.rotateX(-PI/2);g.scale(w/1.732,h/1.5,1);return g};   /* fronton : triangle de base w, hauteur h */
+const toitCourbe=(r,h,n)=>latG([[r,0],[r*.62,h*.3],[r*.32,h*.68],[.06,h]],n||4).rotateY(PI/4);
+const REPERES={
+  /* pierres levées : cercle (Celte, avec un dolmen) ou enclos en forme de navire (Nordique, pierre runique au centre) */
+  menhirs:(r,v)=>{const P=[],n=v==='navire'?12:8+Math.floor(r()*5),R=10;
+    for(let i=0;i<n;i++){const a=i/n*TAU,x=Math.cos(a)*R*(v==='navire'?1.7:1),z=Math.sin(a)*R*(v==='navire'?.55:1),h=v==='navire'?2.4+3.4*Math.abs(Math.cos(a)):3+r()*3.5;
+      P.push([box(1.2,h,.8,x,h/2-.3,z,-a+PI/2,0,(r()-.5)*.12),0x8a8a80])}
+    if(v==='navire')P.push([box(1.6,5,.6,0,2.2,0),0x6a6660],[box(1.62,.3,.62,0,3.4,0),0xa84a30],[box(1.62,.3,.62,0,2.4,0),0x3a6a9a]);
+    else P.push([box(1,2.8,2.6,-1.8,1.1,0),0x7a7870],[box(1,2.8,2.6,1.8,1.1,0),0x7a7870],[box(5.4,.8,3.6,0,2.8,0,.1,.06),0x6e6c66]);
+    return P},
+  /* arc de triomphe romain, colonnes brisées autour */
+  arche:r=>{const P=[[box(3.4,9.5,3.8,-5.3,4.75,0),0xd8ccb0],[box(3.4,9.5,3.8,5.3,4.75,0),0xd8ccb0],[new THREE.TorusGeometry(3.6,.9,5,10,PI).translate(0,9.5,0).scale(1,1,2.1),0xd0c4a8],
+      [box(14,.6,4.2,0,11.4,0),0xc8bca0],[box(14,3.2,3.8,0,13.2,0),0xd8ccb0],[box(4.2,2.2,2,0,15.9,0),0x5a7a6a],[box(15,.8,4.6,0,.4,0),0xc0b498]];
+    for(let i=0;i<3+Math.floor(r()*3);i++){const a=r()*TAU,d=11+r()*5,h=2+r()*5;P.push([cyl(.6,.66,h,8,Math.cos(a)*d,h/2,Math.sin(a)*d),0xe0d6c0])}return P},
+  /* temple grec : soubassement à trois degrés, péristyle, fronton peint */
+  temple:r=>{const P=[[box(17,.5,11,0,.25,0),0xd8d2c4],[box(16,.5,10,0,.75,0),0xe0dace],[box(15,.5,9,0,1.25,0),0xe8e2d6]],nc=5+Math.floor(r()*2);
+    for(const z of[-3.6,3.6])for(let i=0;i<nc;i++)P.push([cyl(.5,.58,7,8,-6.2+12.4*i/(nc-1),5,z),0xf0ebe0]);
+    P.push([box(15,1.2,9,0,9.1,0),0xe8e2d6],[box(15.2,.35,9.2,0,9.75,0),0x3a6aa8],[prisme(15,2.4,9).translate(0,10.9,0),0xe8e2d6],[box(9,6,5.6,0,4.5,0),0xd8cfbe]);return P},
+  /* pagode : étages à toits courbes ; Japonaise (bois sombre, torii vermillon) ou Chinoise impériale (piliers rouges, tuiles d'or) */
+  pagode:(r,v)=>{const jp=v==='japon',n=3+Math.floor(r()*3),P=[[box(13,1.4,13,0,.7,0),jp?0x8a8478:0xe0d8c8]];let y=1.4,w=8;
+    for(let i=0;i<n;i++){const h=i?2.4:3.2;P.push([box(w,h,w,0,y+h/2,0),jp?0xf0ece0:0xa8302a]);if(jp)P.push([box(w+.1,.35,w+.1,0,y+h-.2,0),0x3a2e28]);
+      y+=h;P.push([cyl(w*.82,w*.82,.25,4,0,y+.05,0).rotateY(PI/4),jp?0x2e2a28:0x8a2a1a],[toitCourbe(w*.85,2.2).translate(0,y,0),jp?0x3a4048:0xd8a830]);y+=1.1;w*=.8}
+    P.push([cyl(.18,.18,4,6,0,y+2,0),0xc8a040],[new THREE.SphereGeometry(.5,6,4).translate(0,y+4.2,0),0xe8c050]);
+    if(jp)P.push([cyl(.45,.5,7,7,10.5,3.5,-3),0xc8402a],[cyl(.45,.5,7,7,10.5,3.5,3),0xc8402a],[box(1,.7,9,10.5,7.2,0,0,0,0),0x2a2220],[box(.7,.5,7.4,10.5,5.8,0),0xc8402a]);
+    else P.push([box(2.4,3,2.4,-9,1.5,-4),0xc8c0b0],[new THREE.ConeGeometry(1.4,1.8,4).rotateY(PI/4).translate(-9,3.9,-4),0xd8a830]);
+    return P},
+  /* pyramide à degrés : aztèque (deux temples au sommet), maya (raide, crête faîtière), ziggourat (brique crue, trois rampes), inca (terrasses, disque d'or) */
+  degres:(r,v)=>{const P=[],c={azteque:[0xb8a888,0xc8b898],maya:[0xc8c0a8,0xa8a090],ziggourat:[0xb08a5a,0x9a7448],inca:[0x8a8478,0x7a746a]}[v];
+    const n=v==='maya'?7:v==='ziggourat'?3:v==='inca'?3:5,W=v==='inca'?20:17,hh=v==='maya'?2.3:v==='ziggourat'?4:v==='inca'?2.2:2.6;let y=0,w=W;
+    for(let i=0;i<n;i++){P.push([box(w,hh,w,0,y+hh/2,0),c[i%2]]);y+=hh;w-=W/(n+1.2)}
+    const H=y,ang=Math.atan2(H,W/2-w/2);P.push([box(3.4,.5,Math.hypot(H,W/2-w/2)+1,0,H/2,(W/2+w/2)/2,0,ang),v==='ziggourat'?0x8a6a40:0xd8d0c0]);
+    if(v==='azteque')P.push([box(3,3.4,3,-1.8,H+1.7,0),0xd8d0c0],[box(3,3.4,3,1.8,H+1.7,0),0xd8d0c0],[prisme(3.4,1.6,3.4).translate(-1.8,H+4.2,0),0xb03a2a],[prisme(3.4,1.6,3.4).translate(1.8,H+4.2,0),0x2a6aa8]);
+    if(v==='maya')P.push([box(w,3,w*.8,0,H+1.5,0),0xd0c8b0],[box(w*.8,4.5,.8,0,H+5.2,-.6),0xb8402a]);
+    if(v==='ziggourat')P.push([box(w*.7,3,w*.7,0,H+1.5,0),0x2a5aa8],[box(w*.72,.4,w*.72,0,H+3.2,0),0xd8b040]);
+    if(v==='inca')P.push([cyl(2.2,2.2,.4,14).rotateX(PI/2).translate(0,H+6.8,0),0xe8b830],[box(1.2,4,1.2,-2.6,H+2,0),0x7a746a],[box(1.2,4,1.2,2.6,H+2,0),0x7a746a],[box(6.6,1,1.4,0,H+4.4,0),0x7a746a]);
+    return P},
+  /* coupole : persane (iwan, dôme turquoise), moghole (bulbe de marbre, quatre minarets), byzantine (dôme de plomb, demi-dômes), andalouse (arc outrepassé, minaret carré) */
+  coupole:(r,v)=>{const P=[],bulbe=(R,y,col)=>[latG([[R,0],[R*1.12,R*.45],[R*.95,R*.95],[R*.5,R*1.4],[.05,R*1.95]],10).translate(0,y,0),col];
+    if(v==='perse'){P.push([box(13,7,11,0,3.5,0),0xd8c090],[box(9,13,3,0,6.5,6),0xd8c090],[box(5,9,.4,0,5.5,7.55),0x1f6a8a],[cyl(4.2,4.2,3,12,0,8.5,0),0x2a8a9a],bulbe(4.4,10,0x2aa0a8));
+      for(const x of[-4,4])P.push([cyl(.7,.8,17,8,x,8.5,7),0xc8b080],[cyl(1,1,.8,8,x,15.5,7),0x2a8a9a])}
+    else if(v==='moghol'){P.push([box(18,1.6,18,0,.8,0),0xe8e0d0],[box(12,8,12,0,5.6,0),0xf2eee6],[cyl(3.8,3.8,2.6,12,0,10.9,0),0xf2eee6],bulbe(4.4,12.2,0xf4f0ea),[new THREE.ConeGeometry(.3,2.4,6).translate(0,22,0),0xd8b040]);
+      for(const[x,z]of[[-8,-8],[8,-8],[-8,8],[8,8]])P.push([cyl(.6,.75,15,8,x,8.5,z),0xece6dc],[latG([[.9,0],[1,.4],[.5,1.2],[.05,1.8]],8).translate(x,16,z),0xf4f0ea])}
+    else if(v==='byzance'){P.push([box(15,8,15,0,4,0),0xb86a48],[cyl(5,5,3,12,0,9.5,0),0xc87a58],[new THREE.SphereGeometry(5.2,12,5,0,TAU,0,PI/2).translate(0,11,0),0x7a8088],[new THREE.ConeGeometry(.2,2,4).translate(0,17.2,0),0xd8b040]);
+      for(const[x,z]of[[-7.5,0],[7.5,0],[0,-7.5],[0,7.5]])P.push([new THREE.SphereGeometry(3,10,4,0,TAU,0,PI/2).translate(x,8,z),0x7a8088])}
+    else{P.push([box(16,4.5,1,0,2.25,-6),0xe8d8b8],[box(1,4.5,12,-7.5,2.25,0),0xe8d8b8],[box(1,4.5,12,7.5,2.25,0),0xe8d8b8],
+      [box(4.4,20,4.4,-4,10,-3),0xd8b888],[box(3,4,3,-4,22,-3),0xe8d8b8],[new THREE.SphereGeometry(1.5,8,4,0,TAU,0,PI/2).translate(-4,24,-3),0x3a8a5a]);
+      for(const x of[-3,1,5])P.push([new THREE.TorusGeometry(1.5,.32,4,10,PI*1.3).rotateZ(-PI*.15).translate(x,3,-5.4),0xc84a3a])}
+    return P.filter(Boolean)},
+  /* Égypte : obélisques à pointe d'or, pylône à deux tours */
+  obelisque:r=>{const P=[];for(const x of[-4,4]){const h=13+r()*4;P.push([cyl(.55,.95,h,4,x,h/2,7).rotateY(0),0xc89a80],[new THREE.ConeGeometry(.78,1.6,4).translate(x,h+.8,7),0xe8c040])}
+    for(const x of[-6,6])P.push([cyl(2.4,4.2,12,4,0,0,0).rotateY(PI/4).scale(1,1,.55).translate(x,6,0),0xd8c08a]);
+    P.push([box(4,8,2.6,0,4,0),0xc8b07a],[box(4.6,.8,3,0,8.4,0),0x2a5a8a],[box(16,.6,6,0,.3,0),0xc8b07a]);return P},
+  /* Éthiopie : stèles d'Aksoum à fausses fenêtres et tête arrondie, hutte au toit de chaume */
+  stele:r=>{const P=[];[[-5,12],[0,17+r()*4],[5,10]].forEach(([x,h])=>{P.push([box(2.2,h,1.2,x,h/2,0),0x8a7a6a],[cyl(1.1,1.1,1.2,10,0,0,0).rotateX(PI/2).translate(x,h,0),0x8a7a6a]);
+      for(let y=3;y<h-1;y+=2.6)P.push([box(2.3,.35,1.3,x,y,0),0x6a5c4e])});
+    P.push([cyl(3,3,2.6,10,-10,1.3,6),0xc8a870],[new THREE.ConeGeometry(3.8,3.2,10).translate(-10,4.2,6),0x9a7a48],[box(11,.5,4,0,.25,0),0x7a6c5e]);return P},
+  /* totems : moaï sur leur ahu (Polynésienne) ou inukshuks de pierres plates (Inuit) */
+  totem:(r,v)=>{const P=[];if(v==='moai'){P.push([box(16,1.6,3.4,0,.8,0),0x6a6460]);const n=4+Math.floor(r()*3);
+      for(let i=0;i<n;i++){const x=-6+12*i/(n-1),s=.85+r()*.3;P.push([box(2*s,4*s,1.4*s,x,1.6+2*s,0),0x5a5450],[box(2.2*s,3.4*s,1.8*s,x,1.6+5.6*s,0),0x5a5450],
+        [box(2.3*s,.5*s,.6*s,x,1.6+6.6*s,.9*s),0x4a4440],[box(.5*s,1.4*s,.5*s,x,1.6+5.6*s,1*s),0x4a4440],[cyl(.9*s,1*s,1*s,8,x,1.6+7.8*s,0),0xa84a3a])}}
+    else{for(const[x,z,s]of[[0,0,1.4],[-8,3,1],[7,-4,.8]]){P.push([box(.9*s,2.4*s,.9*s,x-.9*s,1.2*s,z),0x7a7a78],[box(.9*s,2.4*s,.9*s,x+.9*s,1.2*s,z),0x7a7a78],
+        [box(3.2*s,.9*s,1.2*s,x,2.8*s,z),0x8a8a86],[box(1.4*s,1.6*s,1*s,x,4*s,z),0x6e6e6a],[box(5.4*s,.7*s,.9*s,x,5.1*s,z),0x8a8a86],[box(1*s,1.1*s,1*s,x,6*s,z),0x7a7a78])}}
+    return P},
+  /* huttes : kraal zoulou (huttes en ruche, palissade ronde) ou campement mongol (yourtes, ovoo de pierres aux rubans bleus) */
+  huttes:(r,v)=>{const P=[];if(v==='kraal'){for(let i=0;i<5;i++){const a=i/5*TAU+.3,x=Math.cos(a)*7,z=Math.sin(a)*7,R=2.4+r()*.8;
+        P.push([new THREE.SphereGeometry(R,8,4,0,TAU,0,PI/2).scale(1,1.25,1).translate(x,0,z),0xc8a860])}
+      for(let i=0;i<22;i++){const a=i/22*TAU;P.push([cyl(.14,.16,2.2,4,Math.cos(a)*12,1.1,Math.sin(a)*12),0x6a5038])}
+      P.push([cyl(3.2,3.2,1.2,10,0,.6,0),0x8a6a48])}
+    else{for(const[x,z,R]of[[0,0,4.4],[-9,4,3.4],[8,5,3]]){P.push([cyl(R,R,2.6,12,x,1.3,z),0xece6d8],[new THREE.ConeGeometry(R*1.08,R*.55,12).translate(x,2.6+R*.27,z),0xd8d0c0],
+        [box(1.2,1.8,.3,x,.9,z+R),0xb03a2a],[cyl(.5,.5,.4,8,x,2.6+R*.56,z),0xb03a2a])}
+      P.push([new THREE.ConeGeometry(2.6,4,7).translate(-4,2,-8),0x7a7672],[cyl(.08,.08,6,4,-4,6,-8),0x6a5038],[box(.1,1.4,.8,-4,7.4,-7.5),0x2a6ad8],[box(.1,1.2,.7,-4,6.6,-8.5),0x2a6ad8])}
+    return P},
+  /* flèches : gothique (tour, pinacles, flèche d'ardoise), campanile vénitien (brique, loge blanche, pointe de cuivre vert), église slave (bulbes) */
+  fleche:(r,v)=>{const P=[];
+    if(v==='gothique'){P.push([box(10,6,16,0,3,-2),0x9a968c],[prisme(10,5,16).translate(0,8.4,-2),0x4a4e58],[box(6,16,6,0,8,8),0xa8a498],[new THREE.ConeGeometry(3.4,14,8).translate(0,23,8),0x4a4e58]);
+      for(const[x,z]of[[-3,5],[3,5],[-3,11],[3,11]])P.push([cyl(.4,.5,4,6,x,18,z),0xa8a498],[new THREE.ConeGeometry(.6,2.6,6).translate(x,21.3,z),0x4a4e58]);
+      P.push([new THREE.TorusGeometry(1.6,.3,4,10).translate(0,11,11.05),0x8a2a6a])}
+    else if(v==='campanile'){P.push([box(5,22,5,0,11,0),0xa85a3a],[box(5.4,4,5.4,0,24,0),0xf0ece4],[box(5.6,.6,5.6,0,22.1,0),0xe8e2d8],[new THREE.ConeGeometry(3.7,7,4).rotateY(PI/4).translate(0,29.5,0),0x6a9a88],
+        [new THREE.IcosahedronGeometry(.6,0).translate(0,33.4,0),0xe8c040],[box(12,5,8,-8,2.5,4),0xd8c8a8],[box(12.2,.5,8.2,-8,5.2,4),0xa85a3a]);
+      for(const x of[-12,-8,-4])P.push([new THREE.TorusGeometry(1.2,.25,4,8,PI).translate(x,2.6,8.05),0xf0ece4])}
+    else{P.push([box(8,8,12,0,4,0),0xf0ece4],[prisme(8.4,3,12.4).translate(0,9.4,0),0x3a6a5a],[cyl(1.8,1.8,4,8,0,12,1),0xf0ece4],
+        [onion.clone().scale(1.9,1.9,1.9).translate(0,14,1),0xd8a830],[cyl(.08,.08,2,4,0,19.5,1),0xd8a830],[box(1.6,.12,.12,0,19.6,1),0xd8a830]);
+      for(const[x,z]of[[-3,-4.5],[3,-4.5]])P.push([cyl(.9,.9,2,8,x,9,z),0xf0ece4],[onion.clone().translate(x,10,z),0x2a5ab0])}
+    return P},
+  /* Khmère : terrasse et cinq tours en épi de maïs disposées en quinconce */
+  prang:r=>{const P=[[box(20,1.6,20,0,.8,0),0x8a7c62],[box(15,1.6,15,0,2.4,0),0x9a8a6a]],tour=(x,z,s)=>[latG([[2.4,0],[2.5,2],[2.1,4],[2.2,4.6],[1.6,7],[1.7,7.6],[1,10],[.4,12],[.05,13.4]].map(p=>[p[0]*s,p[1]*s]),8).translate(x,3.2,z),0x9a8a6a];
+    P.push(tour(0,0,1.25));for(const[x,z]of[[-5,-5],[5,-5],[-5,5],[5,5]])P.push(tour(x,z,.8));P.push([box(3,4,1.4,0,5,7.4),0x5a5040]);return P}};
+/* chaque culture : sa famille et sa variante (les cultures inconnues reçoivent une famille par hachage) */
+const CULT_REP={'Celte':['menhirs','cercle'],'Nordique':['menhirs','navire'],'Romaine':['arche'],'Grecque':['temple'],'Japonaise féodale':['pagode','japon'],
+  'Chinoise impériale':['pagode','chine'],'Aztèque':['degres','azteque'],'Maya':['degres','maya'],'Mésopotamienne':['degres','ziggourat'],'Inca':['degres','inca'],
+  'Perse':['coupole','perse'],'Moghole':['coupole','moghol'],'Byzantine':['coupole','byzance'],'Andalouse':['coupole','andalou'],'Égyptienne':['obelisque'],
+  'Éthiopienne':['stele'],'Polynésienne':['totem','moai'],'Inuit':['totem','inukshuk'],'Zouloue':['huttes','kraal'],'Mongole':['huttes','yourtes'],
+  'Gothique':['fleche','gothique'],'Vénitienne':['fleche','campanile'],'Slave':['fleche','bulbes'],'Khmère':['prang']};
+function repereGeo(cult,r){let e=CULT_REP[cult];if(!e){const k=Object.keys(CULT_REP);e=CULT_REP[k[sigHash(cult)%k.length]]}
+  return merge(REPERES[e[0]](r,e[1]))}
+
+for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B0=BIO[d.biome]||BIO['Steppe'],[neg,pos]=PMANA[d.mana]||PMANA.Pierre;
   const forme={Citadelle:'Décagone',Donjon:'Pentagone',Ressource:'Hexagone',Antre:'Papillon','Assemblée':'Losange'}[d.type]||'Tuile';
   const pm=d.pm||'Pénurie',pp=d.pp||'Abondance';
   Z.info={nom:d.nom,sur:`${d.type} · ${forme} · ${d.biome} · Inspiration ${d.culture.toLowerCase()}`,pm,pp,
@@ -1248,36 +1465,71 @@ for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B=BIO[d.biome]||BIO['Steppe'],[neg
     Z.info.nom=F.nom;if(F.recit)Z.info.recit=F.recit;Z.info.conteur=CT[F.conteur]||'';
     if(Array.isArray(F.pal)&&F.pal.length>=5)Z.info.pal=F.pal.slice(0,5);else if(Array.isArray(F.pal)&&F.pal.length>=2)Z.info.pal=[F.pal[0],F.pal[0],F.pal[0],F.pal[1],F.pal[1]]}
   if(d.pret===false)Z.info.sur+=' · pas encore écrite';
+  /* signature : les couleurs du biome décalées (sol, eau, ciel), bornées pour rester crédibles */
+  const S=Z.sig=sigZone(Z),T=(h,k)=>sigTeinte(h,S.dh*(k||1),S.ks,S.kl),C=h=>sigTeinte(h,S.dhc,S.kc,1);
+  const B=Object.assign({},B0,{g:T(B0.g),g2:T(B0.g2,.7),eau:T(B0.eau,.5),top:C(B0.top),hor:C(B0.hor),sun:sigTeinte(B0.sun,S.dhc*.5,1,1)});
   const sky=(c,k)=>pole5(c,hexMix(c,neg,k),hexMix(c,pos,k));
   Z.atm=atmo({top:sky(B.top,.6),hor:sky(B.hor,.6),sun:pole5(B.sun,hexMix(B.sun,neg,.5),pos),hs:pole5(B.top,neg,pos),hg:pole5(B.g,neg,B.g2),
     clc:sky(B.hor,.5),wc:pole5(B.wc,'#5a5050',pos),
-    sunI:[.5,1,1.5],hI:[.7,.8,.85],fog:[B.fog*2.6,B.fog,B.fog*.55],el:[14,34,24],cl:[.95,.5,.25],wn:[Math.min(1,B.wn+.5),B.wn,.12],wv:[3,2,.6],wd:[2,1.5,2],ws:[.3,.26,.22],wI:[.8,1,2.2],
+    sunI:[.5,1,1.5],hI:[.7,.8,.85],fog:[B.fog*S.fog*(B.fn||2.6),B.fog*S.fog,B.fog*S.fog*.55],el:[14,S.el,24],cl:[.95,.5,.25],wn:[Math.min(1,B.wn+.5),B.wn,.12],wv:[3,2,.6],wd:[2,1.5,2],ws:[.3,.26,.22],wI:[.8,1,2.2],
     exp:[.92,1,1.06],bl:[.6,.7,1.1],az:(Z.i*47)%360});
   const gA=ramp(...pole5(B.g,neg,pos)),gB=ramp(...pole5(B.g2,neg,pos)),gW=ramp(...pole5(B.eau,neg,pos)),veine=LIN(pos),fente=LIN(neg);
-  /* la Pierre (et le monument) se trouve à 20 m du centre, côté intérieur : terrain plat autour */
-  const plat=(u,v)=>sst(14,30,Math.hypot(u+20,v));
-  Z.h=(u,v,lv,n1,n2,n3)=>{const an=wneg(lv),ap=wpos(lv);let h=B.f(u,v,n1,n2,n3)*(1+.45*(an+ap));
+  const cFx=B.fx?LIN(B.fx):null,cPl=B.plage?LIN(T(B.plage,.5)):null,cNe=LIN('#eef3f8'),cRoc=LIN('#5a5650');
+  /* la Pierre (et le monument) se trouve à 20 m du centre, côté intérieur : terrain plat autour ; idem sous le repère de culture */
+  const plat=(u,v)=>Math.min(sst(B.pr?B.pr[0]:14,B.pr?B.pr[1]:30,Math.hypot(u+20,v)),sst(13,22,Math.hypot(u-S.ru,v-S.rv)));
+  /* bruits de la zone : le grand bruit lu à l'échelle, l'orientation et le décalage de la signature ; mémorisés pour le sommet courant */
+  let mx=NaN,mz=NaN,mh=0,mfx=0;const nz=[0,0,0];
+  const base=(u,v,x,z)=>{if(x===mx&&z===mz)return mh;
+    const X=(x*S.c-z*S.s)*S.k+S.ox,Y=(x*S.s+z*S.c)*S.k+S.oz;nz[0]=sigForme(N1(X,Y),S.forme);nz[1]=N2(X,Y);nz[2]=N3(X,Y);
+    FX.k=0;mh=B.f(u*S.c+v*S.s,-u*S.s+v*S.c,nz[0],nz[1],nz[2],S)*S.amp;mfx=FX.k;mx=x;mz=z;return mh};
+  const PGU=(u,v)=>{const p=Z.w(u,v);return base(u,v,p[0],p[1])};
+  Z.h=(u,v,lv,n1,n2,n3,x,z)=>{const an=wneg(lv),ap=wpos(lv);if(x===undefined){const p=Z.w(u,v);x=p[0];z=p[1]}
+    let h=base(u,v,x,z)*(1+.45*(an+ap));n1=nz[0];n2=nz[1];n3=nz[2];
+    if(B.mer!==undefined&&h<B.mer)h=B.mer+(h-B.mer)*.04;              /* l'eau s'aplanit */
     h-=an*7*sst(.13,.02,n3)+an*(n2-.5)*4;                       /* pôle négatif : crevasses et sol hérissé */
     h+=ap*6*Math.floor(sst(.5,.78,n1)*3)/3*1.5;                 /* pôle positif : terrasses en gradins */
     return lerp(1,h+1,plat(u,v))};
-  Z.col=(u,v,lv,h,n1,n2,n3,x,z,o)=>{const an=wneg(lv),ap=wpos(lv);gA(lv,o);gB(lv,tc2);mix3(o,o,tc2,sst(.36,.64,n1));
-    if(h<0){gW(lv,tc2);mix3(o,o,tc2,sst(0,-1.5,h))}
+  Z.col=(u,v,lv,h,n1,n2,n3,x,z,o)=>{const an=wneg(lv),ap=wpos(lv),hb=base(u,v,x,z),fx=mfx;n1=nz[0];n3=nz[2];
+    gA(lv,o);gB(lv,tc2);mix3(o,o,tc2,sst(.36,.64,n1));
+    const hr=B.mer!==undefined?lerp(1,hb-B.mer,plat(u,v)):h;   /* profondeur vraie sous une eau aplanie (0 = la surface) */
+    if(cPl&&hr>-.2&&hr<1.4)mix3(o,o,cPl,sst(1.4,.5,hr)*.8*plat(u,v));
+    if(B.neige!==undefined){const k=sst(B.neige-4,B.neige+4,h+(n3-.5)*8);if(k>0){mix3(o,o,cNe,k*(1-an*.5))}}
+    let eau=0;if(hr<0){gW(lv,tc2);eau=sst(0,-1.5,hr);mix3(o,o,tc2,eau);if(B.mer!==undefined){const p=sst(-.5,-7,hr);o[0]*=1-.55*p;o[1]*=1-.4*p;o[2]*=1-.25*p}}
+    let g=0;if(cFx&&fx>0){mix3(o,o,cFx,fx);g=fx*B.fxg*(1-.5*ap);eau*=1-fx}
+    if(B.vide)eau=0;   /* un gouffre n'est pas de l'eau */
     if(an>0)mix3(o,o,fente,an*sst(.16,.04,n3));
-    let g=0;if(ap>0){const k=ap*sst(.08,.01,n3);if(k>0){mix3(o,o,veine,k*.8);g=k*1.6}}
-    return g};
+    if(ap>0){const k=ap*sst(.08,.01,n3);if(k>0){mix3(o,o,veine,k*.8);g=Math.max(g,k*1.6)}}
+    return g>0||eau<=0?g:-.001*eau};   /* lueur négative infime : marque l'eau pour le sol vivant (sol.js), sans rien éteindre */
   Z.grade=(lv,o)=>{const k=clamp(Math.abs(lv)/7,0,1);o.s=lv<0?lerp(1,.55,k):lerp(1,1.15,k);o.c=lerp(1,lv<0?1.12:1.04,k);o.k=0;o.e=1;o.t[0]=o.t[1]=o.t[2]=1;return o};
-  /* végétation : posée au hasard dans la tuile, loin de la Pierre ; elle grandit, se ternit ou s'illumine selon le pôle */
+  /* végétation : un mélange propre à la zone (densités, sorte en plus, bosquets ou semis), loin de la Pierre et du repère ;
+     elle grandit, se ternit ou s'illumine selon le pôle */
   const R=Math.max(...Z.poly.map(p=>{const q=Z.loc(p[0],p[1]);return Math.hypot(q[0],q[1])}));Z.props=[];
-  Z.build=()=>{for(const[k,n]of B.props){const it=inst(PG[k],k==='cristal'?PMAT.cristal:PG[k].attributes.color?PMAT.vc:PMAT.plein);it.k=k;let t=0;
-      const nn=Math.round(n*Math.min(SC*SC,12)/4*.75);   /* 2.6 : zones agrandies, densité plafonnée pour rester fluide */while(it.a.length<nn&&t++<nn*30){const u=rr(-R,R),v=rr(-R,R);if(!Z.inside(u,v,12)||Math.hypot(u+20,v)<32)continue;const p=Z.w(u,v);
-        if(k!=='roseau'&&k!=='corail'&&B.f(u,v,N1(p[0],p[1]),N2(p[0],p[1]),N3(p[0],p[1]))<-.8)continue;
-        const s=rr(.75,1.35);it.add(p[0],0,p[1],s,s,s,rr(0,TAU),k==='mur'||k==='colonne'?rr(-.08,.08):0,0,{u,v});}
-      it.make();Z.props.push(it)}};
-  const cb=LIN('#ffffff'),cBase={};for(const k in PBASE)cBase[k]=LIN(PBASE[k]);
+  const sortes=B0.props.map(([k,n],i)=>[k,n*S.dens[i%5]]),ex=(B0.extra||[])[S.ext];
+  if(ex)sortes[sortes.length-1]=[ex[0],ex[1]*S.dens[4]];   /* la sorte tirée remplace la dernière : autant de séries (d'appels de dessin) qu'avant */
+  const tot0=B0.props.reduce((a,p)=>a+p[1],0),tot=sortes.reduce((a,p)=>a+p[1],0),kc=Math.min(1,tot0*1.05/tot);   /* densité plafonnée comme avant */
+  Z.build=()=>{const cen=[];if(S.clust)for(let j=0;cen.length<8&&j<200;j++){const u=rr(-R,R),v=rr(-R,R);if(Z.inside(u,v,30))cen.push([u,v])}
+    for(const[k,n]of sortes){const it=inst(PG[k],PLUM.has(k)?PMAT.cristal:PG[k].attributes.color?PMAT.vc:PMAT.plein);it.k=k;let t=0;
+      const nn=Math.round(n*kc*Math.min(SC*SC,12)/4*.75);   /* 2.6 : zones agrandies, densité plafonnée pour rester fluide */
+      while(it.a.length<nn&&t++<nn*30){let u,v;
+        if(k==='ileflot'&&rnd()<.5){const a=rr(-.9,.9),q=rr(50,150);u=-20+Math.cos(a)*q;v=Math.sin(a)*q}   /* la moitié des îles devant la Pierre */
+        else if(cen.length&&k!=='ileflot'&&rnd()<.8){const c=cen[Math.floor(rnd()*cen.length)],a=rnd()*TAU,q=Math.pow(rnd(),.7)*46;u=c[0]+Math.cos(a)*q;v=c[1]+Math.sin(a)*q}else{u=rr(-R,R);v=rr(-R,R)}
+        if(!Z.inside(u,v,12)||Math.hypot(u+20,v)<32||Math.hypot(u-S.ru,v-S.rv)<20)continue;const p=Z.w(u,v);
+        if(!PEAU.has(k)&&base(u,v,p[0],p[1])<-.8)continue;
+        if(k==='pic'&&B.mer!==undefined&&rnd()<.5&&base(u,v,p[0],p[1])>-.5)continue;   /* aiguilles : plutôt dans l'eau */
+        const s=rr(.75,1.35)*S.taille*(B.ech||1)*(k==='ileflot'?2:1),i=it.add(p[0],0,p[1],s,s,s,rr(0,TAU),k==='mur'||k==='colonne'?rr(-.08,.08):0,0,{u,v});
+        if(k==='ileflot')it.a[i].dy=rr(8,26);}
+      it.make();if(PRIGIDE.has(k))it.m.userData.vent=1;Z.props.push(it)}
+    /* le repère de culture : une seule pièce instanciée (repérable de loin, écartée hors du champ comme les autres séries) */
+    const rg=repereGeo(d.culture,S.r),p=Z.w(S.ru,S.rv),s=.9+S.r()*.3;
+    Z.repere=inst(rg,PMAT.vc,true);Z.repere.k='repere';Z.repere.add(p[0],0,p[1],s,s,s,S.ry);Z.repere.make();Z.repere.m.userData.vent=1};
+  const cb=LIN('#ffffff'),cBase={};for(const k in PBASE)cBase[k]=LIN(PBASE[k]);const cSom=[.1,.09,.08];
   Z.update=lv=>{const an=wneg(lv),ap=wpos(lv);
     for(const it of Z.props){for(const o of it.a)o.y=groundZ(Z,o.x,o.z,lv)-.2;const b=cBase[it.k];
       it.set((o)=>{const th=o.r;if(an>.2&&th<an*.55)return .0001;return[1+ap*.35,(1+ap*.5)*(1-an*.35),1+ap*.35]},
-        (o,i,c)=>{mix3(c,b,fente,an*.7);if(ap>0)mix3(c,c,veine,ap*.45);if(it.k==='cristal'){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}};
+        (o,i,c)=>{mix3(c,b,fente,an*.7);if(ap>0)mix3(c,c,veine,ap*.45);if(PLUM.has(it.k)){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}
+    /* le repère : terni et penché vers −7, rehaussé de la lumière du pôle vers +7 (il reste debout : c'est le repère) */
+    const rp=Z.repere;if(rp){const o=rp.a[0];o.y=groundZ(Z,o.x,o.z,lv)-.5;o.rz=an*.06;
+      rp.set(()=>[1+ap*.08,1+ap*.12-an*.1,1+ap*.08],(o,i,c)=>{mix3(c,cb,cSom,an*.62);if(ap>0)mix3(c,c,veine,ap*.28)})}};
 })();
 
 /* 2.15 : les tuiles hors de la région chargée ont une fiche légère (nom, pôles) pour que leurs cartes restent lisibles dans le paquet */
@@ -1474,10 +1726,10 @@ for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?
       it.make()}};
   Z.update=lv=>{update0(lv);const an=wneg(lv),ap=wpos(lv);
     /* la végétation du biome : penchée, rabougrie vers −7 ; redressée et plus haute vers +7 */
-    for(const it of Z.props||[]){if(it.k==='rocher'||it.k==='mur'||it.k==='colonne')continue;
+    for(const it of Z.props||[]){if(PRIGIDE.has(it.k))continue;   /* rochers, pics, blocs, séracs… restent droits */
       it.set(o=>{if(an>.2&&o.r<an*.55)return .0001;if(o.rz0===undefined){o.rz0=o.rz;o.rx0=o.rx}o.rz=o.rz0+an*.5*(o.r-.5);o.rx=o.rx0+an*.3*(o.r*7%1-.5);
           return[(1+ap*.35)*(1-an*.25),(1+ap*.7)*(1-an*.45),(1+ap*.35)*(1-an*.25)]},
-        (o,i,c)=>{const b=LIN(PBASE[it.k]||'#ffffff');mix3(c,b,[.12,.1,.09],an*.75);if(ap>0)mix3(c,c,cP,ap*.4);if(it.k==='cristal'){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}
+        (o,i,c)=>{const b=LIN(PBASE[it.k]||'#ffffff');mix3(c,b,[.12,.1,.09],an*.75);if(ap>0)mix3(c,c,cP,ap*.4);if(PLUM.has(it.k)){const e=1+ap*1.6;c[0]*=e;c[1]*=e;c[2]*=e}})}
     for(const it of fams){const w=it.side<0?an:ap;
       for(const o of it.a){o.y=groundZ(Z,o.x,o.z,lv)-(it.repere?.6:.15)}
       it.set(o=>{/* chaque objet a son seuil : plus on s'éloigne de zéro, plus il y en a ; les repères n'apparaissent qu'à partir de ±3 */
@@ -1510,9 +1762,12 @@ for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?
         mosaïque d'hexagones turquoise et nacre (Antre), rosace à 12 branches lapis et argent (Assemblée), losanges blanc et bleu glacier (Marché).
    Couleurs saturées, mêlées à la teinte du mana (jamais au blanc) ; une passe Voronoï 3×3 au plus ; 0 triangle et 0 appel de dessin en plus. */
 (function(){
-/* codes de motif : 0 roche (repli, teinte selon la pente), 1 sable, 2 givre, 3 touffes, 4 dalles, 5 strates, 6 oasis (sable ou touffes selon la couleur) */
+/* codes de motif : 0 roche (repli, teinte selon la pente), 1 sable, 2 givre, 3 touffes, 4 dalles, 5 strates, 6 oasis (sable ou touffes selon la couleur),
+   zones-biomes : 7 croûte de sel en polygones, 8 polygones de gel (toundra), 9 basalte et cendre (volcan), 10 glace striée, bleue dans les pentes (glacier) */
 const MOTIF_BIO={'Désert de sable':1,'Récif':1,'Oasis':6,'Forêt boréale':2,'Fjord':2,'Cavernes cristallines':2,
-  'Steppe':3,'Lande':3,'Delta fluvial':3,'Cité en ruines':4,'Canyon':5,'Falaise côtière':5};
+  'Steppe':3,'Lande':3,'Delta fluvial':3,'Cité en ruines':4,'Canyon':5,'Falaise côtière':5,
+  'Volcan':9,'Mangrove':3,'Jungle':3,'Archipel':1,'Haute montagne':0,'Glacier':10,'Forêt de champignons géants':3,'Marais':3,
+  'Désert de sel':7,'Iles flottantes':3,'Savane':3,'Toundra':8};
 /* les cinq zones d'origine : Berestograd (forêt boréale, givre), Puits des Neuf Édits (volcan, roche), Lucioles (mangrove, touffes) ;
    Givrecloche et Chinampas ont leur propre style de rendu */
 const MOTIF_ORIG={CIT:2,DON:0,ANT:3,MAR:2,RES:3};
@@ -1607,6 +1862,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
  float lv=zd.g*14.-7.,mana=floor(zd.b*255.+.5);
  float ef=smoothstep(.06,.5,vSolEf);                      /* rien au ras des frontières (lecture au plus proche) */
  float mo=ef*(1.-sty*uSolSty);                            /* motif coupé sur Givrecloche et Chinampas quand leur style est actif */
+ /* zones-biomes : l'eau des nouvelles tuiles est marquée par une lueur négative infime (zonesplus.js, Z.col) ; ni motif ni marqueterie dessus */
+ float solEau=clamp(-vGlow*1000.,0.,1.)*ef;mo*=1.-solEau;
  float nPres=1.-smoothstep(18.,45.,dc),nMoy=1.-smoothstep(45.,110.,dc),nLoin=1.-smoothstep(140.,320.,dc);
  vec3 c=diffuseColor.rgb;
  /* deux lectures de bruit servent à tout (quatre canaux chacune) : B8 à l'échelle de ~8 m, B07 à ~0,7 m (seulement de près) */
@@ -1625,7 +1882,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
   float w=0.;   /* poids du sable (1) contre les touffes (3) pour l'oasis */
   if(code>.5&&code<1.5)w=1.;
   if(code>4.5&&code<5.5)w=1.-smoothstep(.1,.3,pente);
-  if(code>5.5)w=smoothstep(.01,-.03,diffuseColor.g-diffuseColor.r*1.02);
+  if(code>5.5&&code<6.5)w=smoothstep(.01,-.03,diffuseColor.g-diffuseColor.r*1.02);
   if(w>.001&&dc<38.){   /* rides de sable asymétriques, courbées par le bruit lent */
    float t=dot(p,vec2(.83,.55))+B8.a*5.;float f=fract(t/1.05);
    float ride=smoothstep(0.,.78,f)*(1.-smoothstep(.78,1.,f));
@@ -1636,7 +1893,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
    if(dc<12.){vec2 ce=floor(p*4.);vec3 vd=(vSolP-cameraPosition)/dc;
     float tw=sH(ce+floor(vd.xz*30.)*7.13),sp=step(.982,tw)*(1.-smoothstep(.06,.2,length(fract(p*4.)-.5)));
     solE+=vec3(.9,.97,1.2)*sp*(.3+fp)*mo*(1.-smoothstep(4.,12.,dc));}}
-  float tu=(code>2.5&&code<3.5)?1.:(code>5.5?1.-w:0.);
+  float tu=(code>2.5&&code<3.5)?1.:(code>5.5&&code<6.5?1.-w:0.);
   if(tu>.001&&dc<60.){   /* touffes sombres et brins */
    vec2 g=p/1.25,id=floor(g),f=fract(g)-.5,o=sH2(id)-.5;float rr=.16+.2*sH(id+3.);
    float dens=smoothstep(.3,.65,B8.b)*.75+.2;
@@ -1649,6 +1906,26 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
    float e=min((.5-abs(f.x))*1.7,(.5-abs(f.y))*1.15);float keep=smoothstep(.32,.46,B8.a);
    float jt=1.-smoothstep(.03,.08+dc*.004,e);
    c*=mix(1.,(.9+.18*sH(id))*(1.-jt*.45*nMoy),keep*mo);}
+  if(code>6.5&&code<8.5&&dc<160.){   /* zones-biomes : polygones (sel : crêtes blanches soulevées ; toundra : rigoles sombres et mouillées) */
+   float sel=step(code,7.5),S=sel>.5?5.2:9.5;vec2 wq=p+(vec2(B8.g,B8.a)-.5)*3.2;vec4 hx=solHex(wq/S);
+   float e=(.5-solHexD(hx.xy))*S,hs=sH(hx.zw),a2=.03+dc*.006,f=1.-smoothstep(45.,160.,dc);
+   float cr=solTrait(e,sel>.5?.16:.22,a2),bd=solTrait(e,sel>.5?.5:.6,a2+.2)-cr;
+   if(sel>.5){c*=1.+(hs-.5)*.07*f*mo;c=mix(c,c*.86,bd*f*mo);c=mix(c,vec3(.9,.9,.88)*max(1.,dot(c,vec3(.333))*1.08),cr*f*mo);}
+   else{c*=1.+(hs-.5)*.14*f*mo;c=mix(c,c*vec3(.55,.58,.6),cr*f*mo*.8);c=mix(c,c*vec3(.86,.92,.8),bd*f*mo*.6);
+    c=mix(c,vec3(.62,.6,.5),step(.86,B07.g)*nPres*mo*.4);}}
+  if(code>8.5&&code<9.5){   /* zones-biomes : basalte cordé dans les pentes, cendre grise et mate sur le plat */
+   vec2 r2=vec2(dot(p,vec2(.6,.8)),dot(p,vec2(-.8,.6)));float cord=sN(vec2(r2.x*.9,r2.y*.12)+B8.g*3.);
+   float pl=1.-smoothstep(.1,.3,pente),ash=smoothstep(.45,.62,B8.b)*pl;
+   c*=mix(1.,.72+.5*cord,(1.-pl)*mo*nMoy);
+   c=mix(c,vec3(dot(c,vec3(.333)))*1.5+vec3(.03),ash*mo*.8);
+   c*=1.+(B07.b-.5)*.25*nPres*mo;}
+  if(code>9.5&&code<10.5){   /* zones-biomes : glace striée par le vent, bleu profond dans les pentes (parois des crevasses), paillettes */
+   float st=sN(vec2(dot(p,vec2(.8,.6))*.08,dot(p,vec2(-.6,.8))*1.1)+B8.r*2.);
+   c*=1.+(st-.5)*.12*mo*nMoy;
+   float bl=smoothstep(.2,.55,pente)*mo;c=mix(c,vec3(.02,.13,.4)*(.7+.6*B07.r),bl*.75);
+   if(dc<12.){vec2 ce=floor(p*4.);vec3 vd=(vSolP-cameraPosition)/dc;
+    float tw=sH(ce+floor(vd.xz*30.)*7.13),sp=step(.985,tw)*(1.-smoothstep(.06,.2,length(fract(p*4.)-.5)));
+    solE+=vec3(.9,.97,1.2)*sp*mo*(1.-smoothstep(4.,12.,dc));}}
  }
  /* (c) motif de pôle, palier après palier, selon la grammaire du type de zone (boucle 2, 19 nov. 2026) */
  if(mo>.001&&nLoin>0.&&abs(lv)>.25){
@@ -1816,6 +2093,13 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
    #endif
   }
  }
+ if(solEau>.001){   /* zones-biomes : l'eau reflète le ciel au ras du regard, rides lentes, surface lisse (reflets du soleil) */
+  vec3 ciel=vec3(.5,.56,.62);
+  #ifdef USE_FOG
+  ciel=fogColor;
+  #endif
+  float fres=pow(1.-abs((vSolP.y-cameraPosition.y)/dc),4.),ride=sin(dot(p,vec2(.71,.7))*2.6+B8.g*12.+B07.g*5.)*.5+.5;
+  c=mix(c,c*.6,solEau);solE+=ciel*(.03+.42*fres)*(.75+.45*ride*nMoy)*solEau*nLoin;solLisse=max(solLisse,solEau*.85);}
  diffuseColor.rgb=c;}
 `;
 const _buildSol=buildTerrain;
@@ -2441,7 +2725,12 @@ const SIG={
   'Cité':{n:['#16243a','#4e5a70','#dca050'],p:['#6080b0','#c8b8a0','#ffd890']}};
 /* ajustement léger par biome (rotation de teinte en degrés) : deux tuiles du même type ne se confondent pas */
 const SIG_BIO={'Forêt boréale':-8,'Fjord':-16,'Canyon':14,'Désert de sable':10,'Oasis':6,'Cité en ruines':0,'Récif':-12,
-  'Cavernes cristallines':-22,'Lande':18,'Steppe':8,'Delta fluvial':-6,'Falaise côtière':-10};
+  'Cavernes cristallines':-22,'Lande':18,'Steppe':8,'Delta fluvial':-6,'Falaise côtière':-10,
+  /* zones-biomes : les douze biomes ajoutés */
+  'Volcan':20,'Mangrove':-4,'Jungle':4,'Archipel':-14,'Haute montagne':-18,'Glacier':-24,'Forêt de champignons géants':26,'Marais':12,
+  'Désert de sel':-2,'Iles flottantes':-20,'Savane':16,'Toundra':-12};
+/* et la part de la signature de chaque zone (zonesplus.js, sigZone) : deux zones du même biome et du même type ne se confondent pas */
+const sigRotZ=Z=>(SIG_BIO[Z.d.biome]||0)+(Z.sig?Z.sig.rot:0);
 const sigLin=h=>{const v=parseInt(h.slice(1),16);return[(v>>16&255)/255,(v>>8&255)/255,(v&255)/255]};
 /* rotation de teinte autour de l'axe gris */
 const sigRot=(c,deg)=>{const a=deg*D2R,co=Math.cos(a),si=Math.sin(a),k=1/3,s3=Math.sqrt(k),m=x=>Math.max(0,Math.min(1,x)),t=(1-co)*k;
@@ -2454,7 +2743,7 @@ function sigOf(Z){if(Z._sig)return Z._sig;let r=Z.plus?null:SIG[Z.id];
   if(Z.id==='ASS152')r=SIG.ASS; /* ASS152 : la recette des Assemblées tenue exactement (prune / braise à −7, lavande / ivoire à +7) */
   if(!r&&Z.plus){const d=Z.d,[ng,ps]=(PMANA[d.mana]||PMANA.Pierre).map(sigLin),w=[1,1,1],
       man={n:[sigMx(ng,[0,0,0],.15),sigMx(ng,ps,.4),sigMx(ps,w,.1)],p:[sigMx(sigMx(ng,ps,.55),[.42,.48,.66],.35),sigMx(ps,w,.3),sigMx(ps,w,.6)]},
-      fam=SIG[d.type],rot=SIG_BIO[d.biome]||0;
+      fam=SIG[d.type],rot=sigRotZ(Z);
     r={};for(const s of['n','p'])r[s]=[0,1,2].map(i=>sigRot(fam?sigMx(sigCv(fam[s][i]),man[s][i],.3):man[s][i],rot))}
   if(!r)r=SIG.MAR;
   return Z._sig={n:r.n.map(sigCv),p:r.p.map(sigCv)}}
@@ -2571,7 +2860,7 @@ const Yl=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
 const atL=(c,l,o)=>{const k=l/Math.max(Yl(c),1e-4);o[0]=c[0]*k;o[1]=c[1]*k;o[2]=c[2]*k;return o};
 const t3=[0,0,0];
 function duoOf(Z){if(Z._duo!==undefined)return Z._duo;let r=Z.id in DUO_ZONE?DUO_ZONE[Z.id]:undefined;
-  if(r===undefined&&Z.plus){r=DUO_MANA[Z.d.mana]||DUO_MANA.Pierre;const rot=(typeof SIG_BIO!=='undefined'&&SIG_BIO[Z.d.biome])||0;
+  if(r===undefined&&Z.plus){r=DUO_MANA[Z.d.mana]||DUO_MANA.Pierre;const rot=typeof sigRotZ!=='undefined'?sigRotZ(Z):0;
     /* deux tuiles du même mana ne se confondent pas : la paire tourne un peu selon le biome (rotation de styles.js) */
     return Z._duo=r.map(h=>{const c=LIN(h);return rot&&typeof sigRot==='function'?sigRot(c,rot*1.5):c})}
   return Z._duo=r?r.map(LIN):null}
@@ -3267,7 +3556,9 @@ const nbSalles=id=>id==='DON'?4:Math.min(4,1+Math.max(1,Math.abs(S.lv[id]||0)));
 /* ---------- Noms des salles, tirés de la zone ---------- */
 const DJ_BIOME={'Forêt boréale':'Galerie des racines gelées','Fjord':'Grotte sous le fjord','Canyon':'Faille rouge','Désert de sable':'Salle des sables mouvants',
   'Oasis':'Citerne de l\'oasis','Cité en ruines':'Nef effondrée','Récif':'Bassin de corail','Cavernes cristallines':'Salle des cristaux','Lande':'Tertre de bruyère',
-  'Steppe':'Silo des vents','Delta fluvial':'Écluse noyée','Falaise côtière':'Corniche des embruns','Volcan':'Puits de lave','Glacier':'Crevasse bleue','Mangrove':'Racines noyées'};
+  'Steppe':'Silo des vents','Delta fluvial':'Écluse noyée','Falaise côtière':'Corniche des embruns','Volcan':'Puits de lave','Glacier':'Crevasse bleue','Mangrove':'Racines noyées',
+  'Jungle':'Temple sous les lianes','Archipel':'Grotte marine','Haute montagne':'Gouffre des cimes','Forêt de champignons géants':'Salle des spores',
+  'Marais':'Tourbière noyée','Désert de sel':'Galerie de sel','Iles flottantes':'Racines suspendues','Savane':'Termitière creuse','Toundra':'Cave du pergélisol'};
 const djDe=n=>/^[AEIOUYÉÈÊÂÎÔaeiouyéèêâîôh]/.test(n)?'d\''+n:'de '+n;
 const djCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
 const djLieu=id=>{const n=djCourt(id),m=n.match(/\bd(?:e |['’])([^']+)$/);return m?m[1]:n.replace(/^(Le|La|Les|L['’]) ?/,'')};
@@ -4253,7 +4544,8 @@ function infoZone(id){const Z=typeof ZB!=='undefined'?ZB[id]:null;if(!Z)return n
   return{id,mod:Z.mod||id,nom:I.nom||id,biome,cult,mana:(typeof ZMANA!=='undefined'&&ZMANA[id])||'Pierre',pm:I.pm,pp:I.pp,lv,L:Math.abs(lv),pole:lv<0?'neg':lv>0?'pos':'zero'}}
 const BIOMES=[['bor','foret'],['fjord','fjord'],['canyon','canyon'],['sable','dunes'],['desert','dunes'],['ruine','ruines'],['oasis','oasis'],['recif','recif'],
   ['cavern','cavernes'],['lande','lande'],['delta','delta'],['steppe','steppe'],['falaise','falaise'],['volcan','volcan'],['iles','iles'],['flottan','iles'],
-  ['mangrove','mangrove'],['glacier','glacier'],['foret','foret'],['marais','mangrove'],['montagne','glacier'],['toundra','steppe'],['jungle','oasis']];
+  ['mangrove','mangrove'],['glacier','glacier'],['foret','foret'],['marais','mangrove'],['montagne','glacier'],['toundra','steppe'],['jungle','oasis'],
+  ['archipel','iles'],['savane','steppe']];
 const bkey=b=>{b=sansAcc(b);for(const [m,k] of BIOMES)if(b.includes(m))return k;return'collines'};
 const CULT=[['slave','slave'],['egypt','egypte'],['nord','nordique'],['zoulou','zoulou'],['ethiop','ethiopie'],['aztec','azteque'],['maya','maya'],
   ['venit','venise'],['inca','inca'],['khmer','khmer'],['chinois','chine'],['byzant','byzance'],['gothi','gothique']];
