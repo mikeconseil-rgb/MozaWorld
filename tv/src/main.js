@@ -224,6 +224,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Qualité d\'image',ic:'◐',d:QUAL().nom,go:()=>{QI=(QI+1)%QUALS.length;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize();openMenu()}},
     ...(typeof openRivaux==='function'?[{l:'Rivaux',ic:'♜',d:'les quatre maisons et leurs menaces',go:()=>openRivaux()}]:[]),
     ...(typeof openLois==='function'?[{l:'Lois du monde',ic:'⚖',d:resumeLois(),go:()=>openLois()}]:[]),
+    ...(typeof optionsPalmares==='function'?optionsPalmares():[]),
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
@@ -265,6 +266,7 @@ function openEveil(Z,f){mode='menu';document.body.classList.add('jeu-ouvert');co
   if(typeof optionsTours==='function')o.push(...optionsTours(Z));
   if(typeof optionsCaravanes==='function'){const c=optionsCaravanes(Z);o.unshift(...c.filter(x=>x.go));o.push(...c.filter(x=>!x.go))}   /* lot 3 : escorter en tête, état de la caravane plus bas (caravanes.js) */
   if(typeof optionsHorde==='function'){const h=optionsHorde(Z);o.unshift(...h.filter(x=>x.go));o.push(...h.filter(x=>!x.go))}   /* l'avant-garde à affronter en tête, comme la défense contre un rival */
+  if(typeof optionsSiege==='function'){const s=optionsSiege(Z);o.unshift(...s.filter(x=>x.go));o.push(...s.filter(x=>!x.go))}   /* lot 3 : Citadelle épique et siège final (siege.js) */
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
     corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
@@ -447,7 +449,7 @@ function camMue(dt){const Z=mue.Z,a=Z.alt,ang=a.yaw+PI+mue.t*.32,R=38+mue.t*2.5,
 const pips=$('h-pips');for(let i=-7;i<=7;i++){const s=document.createElement('span');s.className='pip'+(i===0?' z':'');pips.appendChild(s)}
 function hud(){const Z=curZ;if(!Z)return;const lv=Math.round(Z.lvT),key=Z.id+lv+S.own[Z.id]+S.emp[Z.id];if(key===hudKey)return;hudKey=key;if(typeof bandeau==='function')bandeau();const I=Z.info;
   $('h-sur').textContent=I.sur;$('h-nom').textContent=I.nom;$('h-pm').textContent=I.pm;$('h-pp').textContent=I.pp;$('h-niv').textContent=sgn(lv)||'0';
-  $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':typeof maitreRival==='function'&&maitreRival(Z.id)?maitreRival(Z.id):S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';if(typeof ficheHorde==='function')ficheHorde(Z);
+  $('h-pal').textContent=palTxt(Z,lv);$('h-mai').innerHTML=S.own[Z.id]?'<b>◆ Zone à vous</b>':typeof maitreRival==='function'&&maitreRival(Z.id)?maitreRival(Z.id):S.emp[Z.id]?'Zone sauvage · <b>votre empreinte</b>':'Zone sauvage';if(typeof ficheHorde==='function')ficheHorde(Z);if(typeof ficheSiege==='function')ficheSiege(Z);
   [...pips.children].forEach((s,i)=>{const v=i-7;s.className='pip'+(v===0?' z':'')+(v<0&&lv<=v?' on m':'')+(v>0&&lv>=v?' on p':'')+(v===lv?' cur':'');s.style.color=v<0?'var(--moins)':v>0?'var(--plus)':'var(--laiton)'})}
 function etatHud(){$('h-vies').innerHTML=[0,1,2].map(i=>`<span class="vie${i<S.hurt?' on':''}"></span>`).join('');$('h-deck').textContent=S.deck.length;$('h-mana').textContent=resTot();$('h-sec').textContent=secrets.filter(s=>s.found).length;if(typeof bandeau==='function')bandeau()}
 let invKey='';
@@ -479,6 +481,7 @@ function drawMini(T){const sp=Math.max(X1-X0,Z1-Z0)-100,s=300/sp,ox=sp/2-(X0+X1)
   if(typeof dessinerRoutes==='function')dessinerRoutes(mc,s,ox,oz);
   if(typeof dessinerRivaux==='function')dessinerRivaux(mc,s,ox,oz);
   if(typeof dessinerHordes==='function')dessinerHordes(mc,s,ox,oz,T);
+  if(typeof dessinerSiege==='function')dessinerSiege(mc,s,ox,oz,T);
   if(typeof dessinerTours==='function')dessinerTours(mc,s,ox,oz);
   if(typeof dessinerCaravanes==='function')dessinerCaravanes(mc,s,ox,oz,T);   /* lot 3 : caravanes sur les routes (caravanes.js) */
   const CL=typeof clarte==='function'?clarte():null;
@@ -574,3 +577,4 @@ if(typeof pacteTest==='function')Object.assign(window.MZ,{pacte:pacteTest,rompre
 if(typeof tourTest==='function')Object.assign(window.MZ,{tour:tourTest,tourTombe:id=>tomberTour(id,'Test.'),defenseTours,preavisTours});
 if(typeof caravanesTest==='function')Object.assign(window.MZ,{caravanes:caravanesTest,piller:pillerTest,escorter:escorterCaravane,caravanesCycle});
 if(typeof loisEtat==='function')Object.assign(window.MZ,{lois:loisEtat,loiForcer,loiRenforcer,loisCycle,loisTest:LOIS_TEST});
+if(typeof siegeTest==='function')Object.assign(window.MZ,{siege:siegeTest,siegeVague,citadellesEpiques,palmares:lirePalmares,victoire:()=>{const b=bilanMonde(citadellesEpiques()[0]);ecranVictoire(b,[]);return b}});
