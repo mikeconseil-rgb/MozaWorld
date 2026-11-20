@@ -120,3 +120,14 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 6. **Noms** : la première moitié (le nom de lieu) se compare aussi à noms-pris.txt, et le mot traduit compte, y compris chez le même conteur (Scuola et École).
 7. **Chutes** : « X dit que », ou le témoin dont on rapporte la parole, compte comme une tournure de fin, deux fois au plus par conteur et par lot. Chez C, l'ironie de l'effet inverse ne fait pas plus de 6 récits sur 12.
 8. **La carte des familles s'écrit avant les cartes, et le dernier inscrit relit les avertissements des autres** (bêtes, couples, places) avant de remettre.
+
+## Leçons du critique après le lot 9 (à appliquer dès le lot 10)
+
+1. **Les vocations se comptent par mot et par type, avec trois emplois.** Les gros coups ne comptent que depuis le lot 5 (ou déclarés). Un même type sert trois fois par mot au plus dans le jeu, jamais deux fois chez le même conteur. Chaque emploi prend un crochet, un prix et une famille de bêtes nouveaux pour ce mot, et un mot ne porte qu'une vocation par lot. La pioche des Assemblées suit cette règle. LISTE.md fait ce compte au script **avant** de répartir. S'il manque une vocation à un conteur, elle lui réserve une 4e colonne, jamais une 5e.
+2. **Crochets d'intention ennemie** (`vol`, `elan`, `pietine`, `seul`, `soinEnnemi`) : chacun est le crochet de 8 pôles du lot au plus, 2 par conteur. Un même assemblage prix et crochet d'intention sert dans 3 pôles du lot au plus.
+3. **Deux sortes de prix par pôle** au moins, la seconde sur 2 cartes. Un pôle ne paie pas le même prix sur toutes ses cartes.
+4. **Les plafonds valent pour la carte entière, `si` et réveil compris** : riposte 8, mana 2, dégâts ciblés 20 (hors Donjon, paliers 1 à 6).
+5. **L'écho s'écrit au premier niveau, jamais sous `si`** : le moteur ne voit pas un écho caché et laisse doubler la carte qui le porte.
+6. **Même couple de mots, autre image au ±7** : deux zones du même couple dans un lot ne finissent pas sur la même métamorphose (« tout devient verre ») et ne partagent pas le mot de matière du nom (Vitres, Verre).
+7. **La liste commune nomme la forme réelle du récit et son geste.** Un ostracon, une tablette ou un billet adressés à quelqu'un sont des lettres. Une stèle et une inscription sont un même document. Un geste d'intrigue (monter chercher la glace, souffler la lampe) sert une fois par lot.
+8. **Familles d'animaux : une table commune, à la maille de la famille courante, lue par le script.** On n'identifie pas la famille au nom : la viscache et le cuy sont des rongeurs, le termite n'est pas un coléoptère.
