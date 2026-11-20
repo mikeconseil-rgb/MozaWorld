@@ -30,8 +30,8 @@ function execOp(o,c){const L=c.L,x=c.x,n=v=>Math.max(0,Math.round(val(v,L)*x)),o
     case'riposte':CB.riposte=(CB.riposte||0)+n(o[1]);pop(CB.hero,'riposte '+CB.riposte,'g');break;
     case'echo':CB.echo=true;journal('Écho : la prochaine carte de zone de ce tour comptera double.');break;
     case'recup':{/* jamais une carte qui a elle-même une récupération ; 2 par tour au plus (anti-boucle) */
-      if((CB.nrecup=(CB.nrecup||0)+1)>2)break;const d=CB.defausse;
-      for(let i=d.length-2;i>=0;i--){const kk=d[i],cc=CK[kk];const ops=cc&&cc.ops?cc.ops():[];if(ops.some(o=>o[0]==='recup'))continue;if(CB.main.length<8){const kk2=d.splice(i,1)[0];CB.main.push(kk2);if(CB.gratuitSuivant){CB.gratuit=kk2;CB.gratuitSuivant=0;journal(`« ${CK[kk2].nom()} » revient en main et ne coûte rien ce tour.`)}}break}break}
+      if((CB.nrecup=(CB.nrecup||0)+1)>2){CB.gratuitSuivant=0;break}const d=CB.defausse;
+      for(let i=d.length-2;i>=0;i--){const kk=d[i],cc=CK[kk];const ops=cc&&cc.ops?cc.ops():[];if(ops.some(o=>o[0]==='recup'))continue;if(CB.main.length<8){const kk2=d.splice(i,1)[0];CB.main.push(kk2);if(CB.gratuitSuivant){CB.gratuit=kk2;CB.gratuitSuivant=0;journal(`« ${CK[kk2].nom()} » revient en main et ne coûte rien ce tour.`)}}break}CB.gratuitSuivant=0;break}
     case'mana':{/* mana de combat : il disparaît à la fin du combat */const ty=o[1]==='zone'?ZMANA[c.z]:o[1],q=Math.min(2,Math.max(1,Math.round(val(o[2],L))));
       if(typeof gagner==='function'){gagner(ty,q);(CB.mg=CB.mg||{})[ty]=(CB.mg[ty]||0)+q}break}
     case'boost':CB.mana++;CB.capT++;break;
