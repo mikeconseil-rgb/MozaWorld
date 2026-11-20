@@ -117,24 +117,128 @@ RES:{ciel:['#1f3a3a','#4f7a62','#e7c87a'],sol:'#132017',lune:'#fff1b8',
   loin:`<path d="M0 560 Q200 500 400 540 T800 520 T1200 540 T1600 510 L1600 900 L0 900Z" fill="#2c4a3c"/><path d="M0 620 L1600 620 L1600 640 L0 640Z" fill="#9fd0c0" opacity=".25"/>`,
   proche:`<g stroke="#1b2d1f" stroke-width="5" stroke-linecap="round">${Array.from({length:40},(_,i)=>{const x=i*41,h=90+(i*37%80);return`<path d="M${x} 760 Q${x+8} ${760-h/2} ${x+(i%2?18:-10)} ${760-h}"/>`}).join('')}</g>
    <g fill="#e6c46a" opacity=".55" filter="url(#mz-lueur)">${Array.from({length:14},(_,i)=>`<circle cx="${60+i*113}" cy="${560+(i*71%90)}" r="5"/>`).join('')}</g>`},
-ANT:{ciel:['#05070d','#0d1626','#203047'],sol:'#07090c',lune:'#e2cb62',
-  loin:`<path d="M0 900 L0 300 Q200 140 520 200 Q800 90 1080 200 Q1400 140 1600 300 L1600 900Z" fill="#0b0e14"/><path d="M300 900 Q300 420 800 380 Q1300 420 1300 900Z" fill="#141c2a"/>`,
-  proche:`<g fill="#e2cb62" filter="url(#mz-lueur)">${Array.from({length:40},(_,i)=>`<circle cx="${(i*197)%1600}" cy="${200+(i*131)%460}" r="${2+i%3}" opacity="${.35+(i%5)*.12}"/>`).join('')}</g>
-   <g fill="#06070a">${Array.from({length:9},(_,i)=>`<path d="M${i*190} 0 L${i*190+40} ${90+(i*61%110)} L${i*190+80} 0Z"/>`).join('')}</g>`},
+/* boucle 3 (20 nov.) : l'Antre n'a plus de décor fixe (son dôme bleu, la « planète », est retiré) ; il est composé par decorGenerique,
+   famille « racines » : une mangrove de nuit, tirée de sa signature SIG. */
 MAR:{ciel:['#1b2333','#3e5068','#a9c3d8'],sol:'#1a1f26',lune:'#eaf4ff',
   loin:`<path d="M0 560 L180 420 L300 500 L460 360 L620 480 L800 380 L980 500 L1160 400 L1320 490 L1460 420 L1600 500 L1600 900 L0 900Z" fill="#5d7088"/><path d="M460 360 L420 420 L500 410Z M800 380 L760 440 L840 430Z" fill="#e8f2fb" opacity=".7"/>`,
   proche:`<g fill="#151a21">${[120,420,1060,1360].map(x=>`<path d="M${x} 720 L${x} 560 L${x+70} 520 L${x+140} 560 L${x+140} 720Z"/><path d="M${x-10} 566 L${x+70} 510 L${x+150} 566 L${x+150} 580 L${x-10} 580Z" fill="#2f3c4c"/>`).join('')}
    <path d="M780 300 L780 380" stroke="#151a21" stroke-width="6"/><path d="M740 430 Q740 370 780 370 Q820 370 820 430 L830 446 L730 446Z"/></g>
    <g fill="#fff" opacity=".7">${Array.from({length:60},(_,i)=>`<circle cx="${(i*263)%1600}" cy="${(i*149)%720}" r="${1.5+i%3}"/>`).join('')}</g>`}};
+/* ---------- Boucle 3 (20 nov.) : l'écrin du combat tiré de la zone ----------
+   Retour de la boucle 2 : « le disque jaune derrière le héros fait jeu amateur », « toutes les tuiles nouvelles se battent devant
+   la même planète bleue ». Désormais :
+   - l'astre passe côté ennemis (x 1250, y 140), petit (rayon 28) et voilé (opacité 0,5) ; il glisse avec le niveau de la zone :
+     éclipse cerclée à −7 (le disque noir avance palier après palier), simple disque à 0, halo et anneaux de lumière à +7 ;
+   - une zone sans décor peint (tuiles « plus », Antre, toute zone inconnue) reçoit un décor composé à partir de sa famille
+     (son type) et de sa signature SIG au niveau courant : ciel en ombres / tons moyens / hautes lumières, puis une bande de
+     silhouettes en contre-jour propre à la famille (sapins, arches, racines de mangrove, dunes, flèches), tirée d'une graine
+     liée à la zone (deux tuiles du même type n'ont pas le même horizon) ;
+   - les décors peints (Citadelle, Donjon, Ressource, Marché) gardent leurs couches, leur ciel glisse vers la signature du niveau.
+   Le SVG est construit une fois par combat (clé zone + niveau), sans flou SVG ; la scène 3D n'est pas dessinée pendant un combat. */
+const DEC_FAM={CIT:'sapins','Cité':'sapins',DON:'arches',Donjon:'arches',ANT:'racines',Antre:'racines',RES:'dunes',Ressource:'dunes',
+  MAR:'fleches','Marché':'fleches',ASS:'fleches','Assemblée':'fleches'};
+const decHex=c=>'#'+c.map(x=>Math.round(Math.max(0,Math.min(1,x))*255).toString(16).padStart(2,'0')).join('');
+const decLin=h=>{const v=parseInt(h.slice(1),16);return[(v>>16&255)/255,(v>>8&255)/255,(v&255)/255]};
+const decMx=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t),decSc=(a,s)=>a.map(x=>x*s);
+const decF=x=>Math.round(x*10)/10;
+/* graine liée à la zone : FNV-1a puis mulberry32 */
+function decGraine(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+  return()=>{h=h+0x6D2B79F5|0;let t=h;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+/* signature de la zone au niveau k (−1…+1) : [ombres, tons moyens, hautes lumières] */
+function decSig(Z,k){let s=null;try{if(Z&&typeof sigOf==='function')s=sigOf(Z)}catch(_){}
+  if(!s)return[[.06,.06,.08],[.3,.29,.28],[.86,.78,.6]];const u=(k+1)/2;return[0,1,2].map(i=>decMx(s.n[i],s.p[i],u))}
+
+/* l'astre, côté ennemis : éclipse cerclée vers −7, halo vers +7, saut graduel à chaque palier */
+function decAstre(c,k){const x=1250,y=140,r=28,e=Math.max(0,-k),h=Math.max(0,k),hi=decHex(decMx(c[2],[1,1,1],.15)),sh=decHex(decSc(c[0],.35));
+  let s=`<defs><radialGradient id="mz-astre-h"><stop offset="0" stop-color="${hi}" stop-opacity="${decF(.25+.55*h)}"/><stop offset=".45" stop-color="${hi}" stop-opacity="${decF(.08+.22*h)}"/><stop offset="1" stop-color="${hi}" stop-opacity="0"/></radialGradient></defs>
+   <g opacity=".5"><circle cx="${x}" cy="${y}" r="${decF(r*(1.7+2.8*h-.5*e))}" fill="url(#mz-astre-h)"/><circle cx="${x}" cy="${y}" r="${r}" fill="${hi}"/>`;
+  for(let i=1;i<=Math.round(h*3);i++)s+=`<circle cx="${x}" cy="${y}" r="${decF(r*(1.3+.42*i))}" fill="none" stroke="${hi}" stroke-width="1.1" stroke-opacity="${decF(.75-.18*i)}"/>`;
+  if(e>0){const dx=(1-e)*r*1.25;
+    s+=`<circle cx="${decF(x-dx)}" cy="${decF(y-dx*.3)}" r="${decF(r*1.01)}" fill="${sh}"/><circle cx="${x}" cy="${y}" r="${decF(r*1.06)}" fill="none" stroke="${hi}" stroke-width="${decF(.8+2.4*e)}" stroke-opacity="${decF(.4+.6*e)}"/>`}
+  return s+'</g>'}
+
+/* bandes de silhouettes par famille : base = ligne du sol, ech = échelle (lointain plus petit), R = graine, k = niveau */
+const DEC_SIL={
+sapins(R,base,ech,k){let d='';const n=Math.round(26/ech);
+  for(let i=0;i<n;i++){const x=i*1700/n-50+R()*40,h=(150+R()*190)*ech*(1-Math.max(0,-k)*.25*R()),w=h*.36;
+    for(let t=0;t<3;t++){const y0=base-h*t*.27,ww=w*(1-t*.22);d+=`M${decF(x-ww)} ${decF(y0)}L${decF(x)} ${decF(y0-h*.52)}L${decF(x+ww)} ${decF(y0)}Z`}
+    d+=`M${decF(x-w*.08)} ${base}h${decF(w*.16)}v${decF(-h*.1)}h${decF(-w*.16)}Z`}
+  return d},
+arches(R,base,ech,k){let d='';const w=150*ech,n=Math.ceil(1700/w),e=Math.max(0,-k);
+  for(let i=0;i<n;i++){if(R()<.18)continue;const x0=i*w-40+R()*10,x1=x0+w*.82,xm=(x0+x1)/2,ya=base-(120+R()*170)*ech,t=w*.15,f=w*.5;
+    if(R()<.15+e*.55){/* arche tombée : deux piliers inégaux, sommets brisés */
+      const h1=(base-ya)*(.5+R()*.5),h2=(base-ya)*(.3+R()*.6);
+      d+=`M${decF(x0)} ${base}V${decF(base-h1)}l${decF(t*.4)} ${decF(-t*.5)}l${decF(t*.6)} ${decF(t*.7)}V${base}Z`;
+      d+=`M${decF(x1-t)} ${base}V${decF(base-h2+t*.4)}l${decF(t*.5)} ${decF(-t*.8)}l${decF(t*.5)} ${decF(t*.3)}V${base}Z`;continue}
+    d+=`M${decF(x0)} ${base}V${decF(ya)}C${decF(x0)} ${decF(ya-f*.7)} ${decF(xm-f*.18)} ${decF(ya-f*1.05)} ${decF(xm)} ${decF(ya-f*1.25)}C${decF(xm+f*.18)} ${decF(ya-f*1.05)} ${decF(x1)} ${decF(ya-f*.7)} ${decF(x1)} ${decF(ya)}V${base}Z`;
+    d+=`M${decF(x0+t)} ${base}V${decF(ya+t)}C${decF(x0+t)} ${decF(ya-f*.45)} ${decF(xm-f*.12)} ${decF(ya-f*.78)} ${decF(xm)} ${decF(ya-f*.95)}C${decF(xm+f*.12)} ${decF(ya-f*.78)} ${decF(x1-t)} ${decF(ya-f*.45)} ${decF(x1-t)} ${decF(ya+t)}V${base}Z`}
+  return d},
+dunes(R,base,ech,k){const y=base-120*ech-R()*40*ech,a=(70+R()*70)*ech;let x=-60,d=`M-60 ${base+60}L-60 ${decF(y)}`;
+  while(x<1660){const l=(260+R()*300)*Math.max(.7,ech),cx=x+l*(.6+R()*.25);d+=`Q${decF(cx)} ${decF(y-a*(.5+R()*.9))} ${decF(x+l)} ${decF(y+R()*40*ech)}`;x+=l}
+  return d+`L1660 ${base+60}Z`},
+fleches(R,base,ech,k){let d='';const n=Math.round(11/ech),e=Math.max(0,-k);
+  for(let i=0;i<n;i++){const x=i*1700/n-40+R()*60,w=(26+R()*30)*ech,h=(140+R()*210)*ech,sp=(80+R()*140)*ech,pen=e*(R()-.5)*.5;
+    d+=`M${decF(x)} ${base}V${decF(base-h)}h${decF(w)}V${base}Z`;
+    if(R()<.3)d+=`M${decF(x-w*.1)} ${decF(base-h)}Q${decF(x-w*.1)} ${decF(base-h-w*1.1)} ${decF(x+w/2)} ${decF(base-h-w*1.4)}Q${decF(x+w*1.1)} ${decF(base-h-w*1.1)} ${decF(x+w*1.1)} ${decF(base-h)}Z`;
+    else d+=`M${decF(x-w*.12)} ${decF(base-h)}L${decF(x+w/2+sp*pen)} ${decF(base-h-sp)}L${decF(x+w*1.12)} ${decF(base-h)}Z`}
+  return d}};
+/* mangrove (famille « racines ») : couronnes, troncs, racines-échasses en arceaux posées sur l'eau, racines aériennes */
+function decMangrove(R,eau,ech,k,col){let cour='',tr='',ra='',ae='';const n=Math.round(7/ech),e=Math.max(0,-k);
+  for(let i=0;i<n;i++){const x=(i+.5)*1600/n+(R()-.5)*120,yc=eau-(300+R()*120)*ech;
+    for(let j=0;j<8+Math.round(R()*4);j++){const rx=(34+R()*52)*ech*(1-e*.4),ry=rx*(.45+R()*.25),dx=(R()-.5)*200*ech;cour+=`<ellipse cx="${decF(x+dx)}" cy="${decF(yc+Math.abs(dx)*.25+(R()-.5)*50*ech)}" rx="${decF(rx)}" ry="${decF(ry)}"/>`}
+    const xb=x+(R()-.5)*40*ech,yb=eau-(90+R()*50)*ech;tr+=`M${decF(x)} ${decF(yc)}Q${decF(x+(R()-.5)*50)} ${decF((yc+yb)/2)} ${decF(xb)} ${decF(yb)}`;
+    const nr=5+Math.round(R()*4);
+    for(let j=0;j<nr;j++){const s=j%2?1:-1,py=yb-R()*70*ech,px=xb,ext=(50+R()*110)*ech;
+      ra+=`M${decF(px)} ${decF(py)}Q${decF(px+s*ext*.55)} ${decF(py-(15+R()*35)*ech)} ${decF(px+s*ext)} ${eau}`}
+    for(let j=0;j<4;j++){const ax=x+(R()-.5)*180*ech,ay=yc+12*ech;ae+=`M${decF(ax)} ${decF(ay)}q${decF((R()-.5)*8)} ${decF(30*ech)} 0 ${decF((50+R()*110)*ech*(1+e*.6))}`}}
+  return`<g fill="${col}">${cour}</g><path d="${tr}" stroke="${col}" stroke-width="${decF(12*ech)}" fill="none" stroke-linecap="round"/>
+   <path d="${ra}" stroke="${col}" stroke-width="${decF(4.5*ech)}" fill="none" stroke-linecap="round"/><path d="${ae}" stroke="${col}" stroke-width="${decF(1.4*ech)}" fill="none" stroke-opacity=".8"/>`}
+
+function decorGenerique(Z,z,k){const R=decGraine(z),c=decSig(Z,k),fam=DEC_FAM[Z&&Z.d&&Z.d.type]||DEC_FAM[(Z&&Z.mod)||z.slice(0,3)]||DEC_FAM[z.replace(/\d+$/,'')]||'dunes';
+  const e=Math.max(0,-k),h=Math.max(0,k),[sh,mi,hi]=c;
+  const haut=decHex(decSc(sh,.55)),milieu=decHex(decSc(decMx(sh,mi,.55),.8)),horizon=decHex(decSc(decMx(mi,hi,.32),.9));
+  const loin=decHex(decSc(decMx(sh,mi,.42),.72)),proche=decHex(decMx(decSc(sh,.3),[.02,.02,.03],.4)),brume=decHex(mi),lum=decHex(hi);
+  let s=`<defs><linearGradient id="mz-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${haut}"/><stop offset=".5" stop-color="${milieu}"/><stop offset=".78" stop-color="${horizon}"/></linearGradient>
+   <linearGradient id="mz-brume" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${brume}" stop-opacity="0"/><stop offset=".6" stop-color="${brume}" stop-opacity="${decF(.22+.18*e)}"/><stop offset="1" stop-color="${brume}" stop-opacity="0"/></linearGradient>
+   <linearGradient id="mz-eau" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${decHex(decSc(decMx(mi,hi,.2),.55))}"/><stop offset=".4" stop-color="${decHex(decSc(sh,.5))}"/><stop offset="1" stop-color="${decHex(decSc(sh,.25))}"/></linearGradient>
+   <radialGradient id="mz-aube"><stop offset="0" stop-color="${lum}" stop-opacity="${decF(.32*h)}"/><stop offset="1" stop-color="${lum}" stop-opacity="0"/></radialGradient></defs>
+   <rect width="1600" height="900" fill="url(#mz-ciel)"/>${decAstre(c,k)}`;
+  /* rayons du pôle lumineux : seulement vers +7, de plus en plus marqués */
+  if(h>.2)for(let i=0;i<5;i++){const a=2.1+i*.22+R()*.08,L=1300;s+=`<path d="M1250 140L${decF(1250+Math.cos(a-.035)*L)} ${decF(140+Math.sin(a-.035)*L)}L${decF(1250+Math.cos(a+.035)*L)} ${decF(140+Math.sin(a+.035)*L)}Z" fill="${lum}" opacity="${decF(.015+.035*h)}"/>`}
+  if(fam==='racines'){const eau=640;
+    s+=`<g opacity=".9">${decMangrove(R,eau-40,.55,k,loin)}</g><rect y="${eau-150}" width="1600" height="200" fill="url(#mz-brume)"/>
+     <g id="mz-mangrove">${decMangrove(R,eau,1,k,proche)}</g><rect y="${eau}" width="1600" height="${900-eau}" fill="url(#mz-eau)"/>
+     <use href="#mz-mangrove" transform="translate(0 ${2*eau}) scale(1 -1)" opacity=".22"/>`;
+    for(let i=0;i<22;i++){const y=eau+6+R()*90,x=R()*1600,l=30+R()*140;s+=`<path d="M${decF(x)} ${decF(y)}h${decF(l)}" stroke="${lum}" stroke-opacity="${decF(.08+.14*R()+.1*h)}" stroke-width="1.4"/>`}}
+  else{/* trois plans : lointain, milieu (dans la brume), proche en contre-jour ; les arches se lisent ajourées (evenodd) */
+    const plans=[[585,.45,decHex(decSc(decMx(sh,mi,.6),.8))],[640,.68,loin],[705,1,proche]];
+    /* liseré de lumière sur le plan proche : vers +7 ; les dunes gardent toujours une crête claire ; pas sur les sapins (étages superposés) */
+    const lis=fam==='sapins'?0:fam==='dunes'?.14+.3*h:.32*h;
+    plans.forEach(([b,ech,col],i)=>{s+=`<path d="${DEC_SIL[fam](R,b,ech,k)}" fill="${col}"${fam==='arches'?' fill-rule="evenodd"':''}${i===2&&lis>0?` stroke="${lum}" stroke-opacity="${decF(lis)}" stroke-width="1.2"`:''}/>`;
+      if(i===1)s+=`<rect y="430" width="1600" height="270" fill="url(#mz-brume)"/>`});
+    s+=`<rect y="700" width="1600" height="200" fill="${decHex(decSc(sh,.25))}"/>`}
+  /* écart des pôles : vers −7 un voile d'ombre descend sur tout le décor, vers +7 l'horizon s'embrase doucement */
+  if(e>0)s+=`<rect width="1600" height="900" fill="${decHex(decSc(sh,.25))}" opacity="${decF(.38*e)}"/>`;
+  if(h>0)s+=`<ellipse cx="900" cy="640" rx="900" ry="190" fill="url(#mz-aube)"/>`;
+  /* poussière du niveau : cendres ternes vers −7, lucioles et poussière d'or vers +7 ; l'Antre garde toujours ses lucioles */
+  const nb=Math.round(10+28*Math.abs(k))+(fam==='racines'?18:0),pc=k<0&&fam!=='racines'?decHex(decMx(mi,[.5,.5,.5],.3)):decHex(decMx(hi,[1,.9,.55],fam==='racines'?.45:.15));
+  let p='';for(let i=0;i<nb;i++){const x=R()*1600,y=120+R()*560,r=decF(1.2+R()*(k<0?1.6:2.6));p+=`<circle cx="${decF(x)}" cy="${decF(y)}" r="${r}" opacity="${decF(.25+R()*.55)}"/>`}
+  s+=`<g fill="${pc}">${p}</g>`;
+  return s}
+
 let decorZ='';
-function decorCombat(z){const D=DECOR[z];let el=$('cb-decor');if(!D)return;
-  if(!el){el=document.createElement('div');el.id='cb-decor';$('combat').prepend(el)}
-  if(decorZ===z)return;decorZ=z;const c=D.ciel;
-  el.innerHTML=`<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="mz-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".55" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient>
-   <radialGradient id="mz-vign" cx=".5" cy=".45" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></radialGradient></defs>
-   <rect width="1600" height="900" fill="url(#mz-ciel)"/><circle cx="300" cy="170" r="70" fill="${D.lune}" opacity=".75" filter="url(#mz-flou)"/><circle cx="300" cy="170" r="46" fill="${D.lune}" opacity=".9"/>
-   ${D.loin}${D.proche}<path d="M0 700 Q800 650 1600 700 L1600 900 L0 900Z" fill="${D.sol}"/><ellipse cx="800" cy="700" rx="620" ry="60" fill="#000" opacity=".25"/>
-   <rect width="1600" height="900" fill="url(#mz-girih)" opacity=".5"/><rect width="1600" height="900" fill="url(#mz-vign)"/></svg>`}
+function decorCombat(z){const Z=(typeof ZB!=='undefined'&&ZB[z])||(CB&&CB.Z&&CB.Z.id===z?CB.Z:null),D=Z&&Z.plus?null:DECOR[z];
+  let el=$('cb-decor');if(!el){el=document.createElement('div');el.id='cb-decor';$('combat').prepend(el)}
+  const lv=typeof S!=='undefined'&&S.lv&&S.lv[z]!=null?S.lv[z]:Z&&Z.lv||0,k=Math.max(-1,Math.min(1,lv/7)),cle=z+'|'+lv;
+  if(decorZ===cle)return;decorZ=cle;
+  let corps;
+  if(D){const sg=decSig(Z,k),c=D.ciel.map((h,i)=>decHex(decMx(decLin(h),decSc(sg[i],i?.8:.6),.35)));
+    corps=`<defs><linearGradient id="mz-ciel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".55" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient></defs>
+     <rect width="1600" height="900" fill="url(#mz-ciel)"/>${decAstre([sg[0],sg[1],decMx(decLin(D.lune),sg[2],.3)],k)}${D.loin}${D.proche}
+     <path d="M0 700 Q800 650 1600 700 L1600 900 L0 900Z" fill="${D.sol}"/><ellipse cx="800" cy="700" rx="620" ry="60" fill="#000" opacity=".25"/>`}
+  else corps=decorGenerique(Z,z,k);
+  el.innerHTML=`<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="mz-vign" cx=".5" cy=".45" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></radialGradient></defs>
+   ${corps}<rect width="1600" height="900" fill="url(#mz-girih)" opacity=".5"/><rect width="1600" height="900" fill="url(#mz-vign)"/></svg>`}
 
 /* ---------- Illustrations des cartes : une par sorte de carte (les cartes communes partagent la leur) ---------- */
 const ART={
