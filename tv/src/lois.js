@@ -144,11 +144,14 @@ if(typeof mort==='function'){const _loisMort=mort;mort=function(){if(typeof S!==
 
 /* ---------- chaque cycle : Dîme, Relais (tesselles), Corvées (pièges) ---------- */
 const LOI_STATS={couvrefeu:0,cadastre:0};
-function loisCycle(){initLois();const r={tess:0,corvee:0,lignes:[]};
+/* tesselles que les lois lèveront ce cycle (Dîme, Relais), sans les verser ; aussi pour le prix du pacte (pacte.js) */
+function loisTess(r){initLois();r=r||{tess:0,lignes:[]};
   if(typeof etatRoutes==='function')etatRoutes();
   for(const a of loisActives()){
     if(a.k==='dime'){const c=ZN.filter(Z=>estCIT(Z)&&tient(Z.id)&&a.jur[Z.id]!==undefined).length,t=a.n*(1+c);r.tess+=t;r.lignes.push(`+${t} ◇ de la Dîme ${de_(nomAssL(a.id))}`)}
     if(a.k==='relais'&&S.routes){let c=0;for(const z in S.routes)if(a.jur[z]!==undefined)c+=S.routes[z].length;const t=Math.min(LOI_RELAIS_MAX*a.n,c*a.n);if(t){r.tess+=t;r.lignes.push(`+${t} ◇ des Relais ${de_(nomAssL(a.id))}`)}}}
+  return r}
+function loisCycle(){initLois();const r={tess:0,corvee:0,lignes:[]};loisTess(r);
   if(r.tess&&typeof gagnerTesselles==='function')gagnerTesselles(r.tess,'cycle');
   for(const Z of ZN){if(!estDON(Z)||!tient(Z.id))continue;const n=forceLoi('corvee',Z.id);if(!n)continue;
     const T=typeof piegesTab==='function'?piegesTab(Z.id):Z.id==='DON'&&Array.isArray(S.pieges)?S.pieges:[];let k=0;

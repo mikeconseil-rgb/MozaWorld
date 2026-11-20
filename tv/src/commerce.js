@@ -91,6 +91,7 @@ function openComptoir(Z,f){mode='menu';document.body.classList.add('jeu-ouvert')
     go:()=>{if(acheterRetard(h.src)){sfx('hit');toast('Comptoir · '+nomCourt(Z.id),'La horde '+(typeof de_==='function'?de_(nomCourt(h.src)):'de '+nomCourt(h.src))+' est retardée',`Des guides payés l'égarent : elle arrivera ${RETARD_CYCLES} cycles plus tard sur ${ZB[h.cible].info.nom}.`)}openComptoir(Z,UI.f)}});
   if(!hd.length)o.push({l:'Retarder une horde',ic:'⌛',off:true,d:'aucune horde en marche'});
   o.push({l:`Échanger ${TESS_ECHANGE} tesselles contre 1 ${t}`,ic:'⇄',off:S.tess<TESS_ECHANGE,d:`réserve de ${t} : ${resN(t)}`,go:()=>{if(echangerTess(Z))sfx('hit');openComptoir(Z,UI.f)}});
+  if(typeof optionPacteComptoir==='function')o.push(...optionPacteComptoir(Z));   /* lot 3 : le pacte avec une maison rivale (pacte.js) */
   o.push({l:'Retour à la Pierre',ic:'◆',go:()=>openEveil(Z)});
   const nc=citadellesTenues().length;
   ui('menu',{sur:'Comptoir · '+Z.info.nom,t:'Le Comptoir de la Citadelle',f,
