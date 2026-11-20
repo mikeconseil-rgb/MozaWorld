@@ -1,6 +1,6 @@
 # MozaWorld : règles en vigueur
 
-État au 17 novembre 2026 (soir). Cette page dit **la règle qui s'applique aujourd'hui**, par sujet. Quand une décision change une règle, on corrige cette page le jour même et on ajoute une ligne à `DECISIONS.md`. En cas de désaccord avec un autre document, cette page gagne ; le détail du combat et des cartes est dans `cartes-2.2/regles-avancees.md`.
+État au 20 novembre 2026 (version 2.24 ; page créée le 17 novembre, relue le 20 lors de la deuxième passe de cohérence). Cette page dit **la règle qui s'applique aujourd'hui**, par sujet. Quand une décision change une règle, on corrige cette page le jour même et on ajoute une ligne à `DECISIONS.md`. En cas de désaccord avec un autre document, cette page gagne ; le détail du combat et des cartes est dans `cartes-2.2/regles-avancees.md`.
 
 Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas encore dans le jeu)** = décidé, mais la version jouée ne le fait pas encore.
 
@@ -13,18 +13,19 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 
 ## 2. Les cinq types de tuile
 
-| Forme | Type | Nombre visé sur 986 | Rôle |
-|---|---|---|---|
-| Hexagone allongé | Ressource | 383 | Source du mana ; niveaux 0 à 3, sans pôle ; aucune carte |
-| Nœud papillon | Antre | 246 | Bêtes alliées ; passif de combat propre à chaque Antre et à chaque pôle |
-| Losange | Assemblée | 182 | Siège politique ; cartes de loi ; pouvoir sur la carte du monde **(provisoire)** |
-| Pentagone | Donjon | 130 | Cartes de puissance ; passif résistance et piège ; s'aménage une fois conquis |
-| Décagone | Citadelle | 45 | Capitale ; passif endurance et Garde levée ; commerce : le Comptoir (19 nov., dans le jeu, voir section 6) |
+| Forme | Type | Dans la liste des 986 | Posées dans le monde de 925 | Rôle |
+|---|---|---|---|---|
+| Hexagone allongé | Ressource | 383 | 347 | Source du mana ; niveaux 0 à 3, sans pôle ; aucune carte |
+| Nœud papillon | Antre | 246 | 249 | Bêtes alliées ; passif de combat propre à chaque Antre et à chaque pôle |
+| Losange | Assemblée | 182 | 195 | Siège politique ; cartes de loi ; pouvoir sur la carte du monde **(provisoire)** |
+| Pentagone | Donjon | 130 | 90 | Cartes de puissance ; passif résistance et piège ; s'aménage une fois conquis |
+| Décagone | Citadelle | 45 | 44 | Capitale ; passif endurance et Garde levée ; commerce : le Comptoir (19 nov., dans le jeu, voir section 6) |
 
 - Chaque zone est unique : son histoire, ses deux pôles, ses cartes, son bonus. Les quatre conteurs écrivent, le critique juge le ton.
 - Une zone va de −7 à +7. Les deux pôles ne sont ni le bien ni le mal : ce sont deux évolutions opposées, chacune avec sa grandeur et son prix. L'écart entre −7 et +7 doit être frappant, avec un saut visible à chaque palier (la mue).
-- **Le monde entier est posé (20 nov., choix 1 de l'utilisateur)** : la mosaïque compte aujourd'hui 925 zones (909 tuiles autour des 5 d'origine + 16), avec un pavage Girih exact et sans trou. Le 20 nov., l'utilisateur garde 925 zones et 88 Donjons pour l'instant (choix « 1 a ») : on finit d'écrire les zones avant de retoucher le pavage. Les zones écrites par les conteurs sont jouables ; les autres sont visibles mais scellées (« pas encore écrite ») et arrivent par lots (visé : ~580 jouables le 28 nov., le reste en décembre). Les Ressources restent simples : récit léger, deux images (niveaux 0-1 et 2-3), aucune carte. Au 20 nov. (2.23) : 791 zones jouables ; les 383 Ressources de la liste sont écrites mais la mosaïque n'a que 339 hexagones, donc 36 Ressources écrites attendent une tuile (agrandissement du monde) ; restent à écrire 134 zones à cartes posées.
+- **Le monde entier est posé (20 nov., choix 1 de l'utilisateur)** : la mosaïque compte aujourd'hui 925 zones (909 tuiles autour des 5 d'origine + 16), avec un pavage Girih exact et sans trou. Le 20 nov., l'utilisateur garde 925 zones et 88 Donjons pour l'instant (choix « 1 a ») : on finit d'écrire les zones avant de retoucher le pavage. Les zones écrites par les conteurs sont jouables ; les autres sont visibles mais scellées (« pas encore écrite ») et arrivent par lots (visé : ~580 jouables le 28 nov., le reste en décembre). Les Ressources restent simples : récit léger, deux images (niveaux 0-1 et 2-3), aucune carte. Au 20 nov. (2.23) : 791 zones jouables ; les 383 Ressources de la liste sont écrites mais la mosaïque n'a que 347 hexagones (décompte du 20 nov. dans `tv/src/carte.js` ; le texte disait 339, et le monde compte 90 pentagones de Donjon, pas 88), donc 36 Ressources écrites attendent une tuile (agrandissement du monde) ; restent à écrire 134 zones à cartes posées.
 - **Régions** : seules les zones à moins de 1,7 km de vous sont construites (environ 50). En passant le bord (1,3 km), le jeu sauvegarde et recompose la mosaïque autour de vous (écran « Voyage »). Le territoire de départ est toujours dans la région d'origine.
+  - **Limite connue (constat du 20 nov., deuxième passe de cohérence)** : hordes, maisons rivales, domaines, tours, caravanes, lois, pacte et siège ne regardent que les zones de la région chargée (une cinquantaine), pas les 925 du monde ; les tests automatiques ne voyagent jamais. Le gameplay du monde n'est donc éprouvé que dans la région d'origine **(à trancher : le garder là pour le 28 nov., ou l'étendre au monde entier)**.
 - Chaque biome a sa recette visuelle (24 sur 24 depuis le 20 nov.) et chaque zone sa **signature** (palette, relief, densité des objets, brume, repère de sa culture), tirée de son identifiant.
 - 5 Citadelles épiques donnent chacune une victoire à ±7 **(provisoire)** ; après une victoire, fin de ce monde et nouveau monde **(provisoire)**. Dans le jeu : le **siège final**, voir section 8 (19 nov.).
 
@@ -62,7 +63,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 ## 5. Les cartes
 
 - Départ : **plus de cartes communes** (18 nov.). Le paquet de départ, ce sont les 6 cartes de palier 1 des zones à cartes du territoire de départ, chacune du pôle tiré pour sa zone.
-- **Une seule sorte de carte** : la carte de combat. On en gagne une, distincte, à chaque palier réussi d'une zone (paliers 1 à 6). Au palier 7, la carte change de nature et porte une résonance (Braise, Givre, Sang, Racine, Sceau, Abîme) qui permet les grands combos. La « carte de pouvoir » de la première version (Mineure, Majeure, Ultime) est supprimée **(retrait en cours dans le jeu)**.
+- **Une seule sorte de carte** : la carte de combat. On en gagne une, distincte, à chaque palier réussi d'une zone (paliers 1 à 6). Au palier 7, la carte change de nature et porte une résonance (Braise, Givre, Sang, Racine, Sceau, Abîme) qui permet les grands combos. La « carte de pouvoir » de la première version (Mineure, Majeure, Ultime) est supprimée (retirée du jeu ; vérifié le 20 nov. dans le code).
 - Les cartes diffèrent selon le pôle et viennent toujours de l'histoire de la zone. Chaque carte doit avoir un impact et un crochet de combo.
 - Un secret trouvé donne une carte utilitaire ; le Comptoir d'une Citadelle vend aussi ces cartes de secret, une par cycle au plus (19 nov., section 6). Les combats ne donnent jamais de carte. Les Ressources ne donnent pas de carte (les Gerbes sont retirées, leurs textes gardés pour de futurs atouts).
 - Paquet : 40 cartes au plus. La forge du paquet en Citadelle est gardée pour plus tard.

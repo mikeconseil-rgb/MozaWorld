@@ -11,6 +11,9 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
 | Gameplay du monde, lot 1 : hordes (5 cycles de colère, 3 de marche, cibles 2 à 3 paliers plus faibles), domaines dès 2 tuiles et leurs bonus, défense +2/+1/+2, rivaux (1 chance sur 6 par cycle, préavis 2 cycles, verrou contestable), reprise par l'empreinte en un palier | 19 nov. | Les jouer ; réglages proposés par l'équipe, pas encore tranchés par l'utilisateur |
 | Plateau de combat (3 voies, avant/arrière, cases Girih à effet, Manœuvre, Sentinelle, soutien de l'arrière, plancher de capacité) | 19 nov. | Le jouer sur la Xbox ; notes des testeurs à chaque passe (design/plateau/notes.md) |
+| Gameplay du monde, lot 2 : tours de guet (prix, portée, sans entretien), Comptoir des Citadelles (prix en tesselles, primes après combat, change tesselles contre mana), aménagement de chaque Donjon (2 dispositifs, bonus des voisines), épreuve des rivaux | 19 nov. | Les jouer ; les principes sont décidés, les chiffres sont ceux de l'équipe |
+| Gameplay du monde, lot 3 : caravanes (gains, risques de pillage), lois du catalogue de onze et leurs chiffres, prix des pactes par maison, forces des vagues du siège | 19-20 nov. | Les jouer ; les six réglages posés le 20 nov. sont confirmés (« Oui à tout »), les autres chiffres restent ceux de l'équipe |
+| Monde de 925 zones (347 Ressources, 249 Antres, 195 Assemblées, 90 Donjons, 44 Citadelles posés) au lieu des 986 de la liste | 20 nov. | Décidé « pour l'instant » ; à revoir après le 28 nov. (pavage) |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
 | Minicarte qui tourne avec la caméra, carte du monde sur Vue | 20 nov. | Son avis après un soir de jeu |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
