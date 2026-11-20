@@ -86,3 +86,14 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 6. **Une liste commune des prénoms et des institutions**, comme celle des nombres : aucun prénom deux fois dans un lot, et un mot d'institution (kurultai, conseil) dans une seule zone.
 7. **Tics à surveiller** : la pioche de A en appoint dans 3 pôles au plus ; « au prix de… » chez B une fois ; une recette de récit de C pas deux fois mot pour mot ; chez D, un nombre précis dans 6 récits sur 12 au plus et le compte faux d'un une fois. Une recette d'un lot ne revient pas au lot suivant chez le même conteur.
 8. **Formes du palier 7 : base de 45 à 55, sans tolérance**, et vol de vie compté sur les dégâts des `si` dans la table commune.
+
+## Leçons du critique après le lot 6 (à appliquer dès le lot 7)
+
+1. **Une carte des familles se ferme.** À une heure fixée, avant les cartes, le dernier inscrit sur une famille pleine change la sienne. Un pôle au-delà du plafond est repris par son auteur avant la remise, jamais « laissé au suivant ».
+2. **Quatre cartes à prix au moins sur sept par pôle** (environ deux sur trois), comptées au script, en plus de l'égalité entre les pôles.
+3. **Aucune vocation n'exempte du plafond d'appoint.** La pioche des Assemblées, comme les autres familles, est en appoint (3 ou 4 cartes) dans 3 pôles au plus par conteur.
+4. **Un pôle sans famille principale a une colonne vertébrale** : un crochet sur 4 cartes ou plus, ou un prix que le pôle paie et dont il profite (`prixDefausse` et `defausseAPrix`, `prixPV` et `blesse`, `prixBete` et `bete`). Sinon, il prend une vocation de son type. Pas de mosaïque de quatre appoints.
+5. **Les formes de récit entrent dans la liste commune**, comme les nombres et les prénoms. Chaque forme de document (liste d'interdits, inventaire, almanach, procès-verbal, lettre, règlement, relevé) sert une fois par lot. Le document cité ne dépasse pas 4 récits par conteur, et l'énumération (articles, quarts, lettres, jours) 2 récits dans le lot.
+6. **Les noms se comparent par moitié.** La seconde partie d'un nom (« la Porte des Bannis », « la Citadelle des Ruches ») ne revient pas, même avec un autre lieu. Un préfixe de lieu (Kalten-, Prey) ne sert qu'une fois par lot.
+7. **Tics à surveiller** : le « vous » de C dans 3 récits au plus ; une famille d'animaux (rapaces, singes, cervidés) dans 2 pôles du lot au plus ; un même geste de Ressource (gauler ou battre des branches au-dessus d'une toile) une fois par lot, toutes tables confondues.
+8. **Table commune** : `ennemiSoin` n = 2 n, comme `ennemiGarde`.

@@ -20,7 +20,8 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
   if(pret){
     await p.evaluate(()=>window.MZ.start());await p.waitForTimeout(1500);
     /* un cycle de plus, attendu par les modules (commerce, caravanes) */
-    await p.evaluate(()=>{window.unCycle=async()=>{MZ.S.nc++;await new Promise(r=>setTimeout(r,1250))}});
+    await p.evaluate(()=>{window.unCycle=async()=>{MZ.S.tc=0;MZ.S.nc++;await new Promise(r=>setTimeout(r,1250));   /* 2.19 : on attend que les modules aient traité le cycle (minuteries d'une seconde, parfois en retard) */
+      for(let i=0;i<40&&((MZ.S.carNc||0)<MZ.S.nc||(MZ.S.tessNc||0)<MZ.S.nc);i++)await new Promise(r=>setTimeout(r,100))}});
     /* 1. départ : Ressources au niveau 1, pas de route, pas de caravane */
     const c0=await p.evaluate(()=>MZ.caravanes().length);
     ok('une nouvelle partie n\'a aucune caravane',c0===0,c0);
@@ -91,9 +92,10 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
     ok('une zone de maison rivale voisine du trajet menace la caravane (15 %)',rv.c3&&Math.abs(rv.c3.risque-.15)<1e-9,JSON.stringify(rv.c3));
     /* 9. route coupée : la caravane s'arrête */
     const rc=await p.evaluate(async()=>{MZ.set('RES',1);etatRoutes();const c=MZ.caravanes().find(c=>c.r==='RES');openEveil(ZB.RES);const t=document.getElementById('menu-choix').textContent;toMonde();
-      const t0=MZ.S.tess;const rev=revenuTess()+MZ.caravanes().filter(c=>c.etat==='en route').reduce((a,c)=>a+c.n,0);await unCycle();return{etat:c&&c.etat,pierre:/route coupée/.test(t),d:MZ.S.tess-t0,rev}});
+      const t0=MZ.S.tess,g0=MZ.S.carBilan.gains,autres=MZ.caravanes().filter(c=>c.etat==='en route').reduce((a,c)=>a+c.n,0);const rev=revenuTess()+autres;await unCycle();return{etat:c&&c.etat,pierre:/route coupée/.test(t),d:MZ.S.tess-t0,rev,gainCar:MZ.S.carBilan.gains-g0,autres}});
     ok('route coupée : la caravane est arrêtée',rc.etat==='coupée'&&rc.pierre,JSON.stringify(rc));
-    ok('une caravane coupée ne rapporte rien',rc.d===rc.rev,JSON.stringify(rc));
+    /* 2.19 : on compte les gains des caravanes (celles encore en route seulement), pas toute la bourse : une horde brisée, une maison rivale ou une loi peuvent aussi payer (ou coûter) pendant le cycle */
+    ok('une caravane coupée ne rapporte rien',rc.gainCar===rc.autres,JSON.stringify(rc));
     /* 10. minicarte et chariot 3D */
     const vis=await p.evaluate(async()=>{let err=null;try{drawMini(1.2)}catch(e){err=String(e)}await new Promise(r=>setTimeout(r,400));
       return{err,chariots:Object.keys(CAR3D).length,attendus:MZ.caravanes().filter(c=>c.traj).length}});
