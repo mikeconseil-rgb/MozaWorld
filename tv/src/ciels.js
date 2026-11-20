@@ -100,7 +100,7 @@ const Yl=c=>c[0]*.2126+c[1]*.7152+c[2]*.0722;
 const atL=(c,l,o)=>{const k=l/Math.max(Yl(c),1e-4);o[0]=c[0]*k;o[1]=c[1]*k;o[2]=c[2]*k;return o};
 const t3=[0,0,0];
 function duoOf(Z){if(Z._duo!==undefined)return Z._duo;let r=Z.id in DUO_ZONE?DUO_ZONE[Z.id]:undefined;
-  if(r===undefined&&Z.plus){r=DUO_MANA[Z.d.mana]||DUO_MANA.Pierre;const rot=(typeof SIG_BIO!=='undefined'&&SIG_BIO[Z.d.biome])||0;
+  if(r===undefined&&Z.plus){r=DUO_MANA[Z.d.mana]||DUO_MANA.Pierre;const rot=typeof sigRotZ!=='undefined'?sigRotZ(Z):0;
     /* deux tuiles du même mana ne se confondent pas : la paire tourne un peu selon le biome (rotation de styles.js) */
     return Z._duo=r.map(h=>{const c=LIN(h);return rot&&typeof sigRot==='function'?sigRot(c,rot*1.5):c})}
   return Z._duo=r?r.map(LIN):null}

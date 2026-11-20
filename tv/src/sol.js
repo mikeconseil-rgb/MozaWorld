@@ -21,9 +21,12 @@
         mosaïque d'hexagones turquoise et nacre (Antre), rosace à 12 branches lapis et argent (Assemblée), losanges blanc et bleu glacier (Marché).
    Couleurs saturées, mêlées à la teinte du mana (jamais au blanc) ; une passe Voronoï 3×3 au plus ; 0 triangle et 0 appel de dessin en plus. */
 (function(){
-/* codes de motif : 0 roche (repli, teinte selon la pente), 1 sable, 2 givre, 3 touffes, 4 dalles, 5 strates, 6 oasis (sable ou touffes selon la couleur) */
+/* codes de motif : 0 roche (repli, teinte selon la pente), 1 sable, 2 givre, 3 touffes, 4 dalles, 5 strates, 6 oasis (sable ou touffes selon la couleur),
+   zones-biomes : 7 croûte de sel en polygones, 8 polygones de gel (toundra), 9 basalte et cendre (volcan), 10 glace striée, bleue dans les pentes (glacier) */
 const MOTIF_BIO={'Désert de sable':1,'Récif':1,'Oasis':6,'Forêt boréale':2,'Fjord':2,'Cavernes cristallines':2,
-  'Steppe':3,'Lande':3,'Delta fluvial':3,'Cité en ruines':4,'Canyon':5,'Falaise côtière':5};
+  'Steppe':3,'Lande':3,'Delta fluvial':3,'Cité en ruines':4,'Canyon':5,'Falaise côtière':5,
+  'Volcan':9,'Mangrove':3,'Jungle':3,'Archipel':1,'Haute montagne':0,'Glacier':10,'Forêt de champignons géants':3,'Marais':3,
+  'Désert de sel':7,'Iles flottantes':3,'Savane':3,'Toundra':8};
 /* les cinq zones d'origine : Berestograd (forêt boréale, givre), Puits des Neuf Édits (volcan, roche), Lucioles (mangrove, touffes) ;
    Givrecloche et Chinampas ont leur propre style de rendu */
 const MOTIF_ORIG={CIT:2,DON:0,ANT:3,MAR:2,RES:3};
@@ -118,6 +121,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
  float lv=zd.g*14.-7.,mana=floor(zd.b*255.+.5);
  float ef=smoothstep(.06,.5,vSolEf);                      /* rien au ras des frontières (lecture au plus proche) */
  float mo=ef*(1.-sty*uSolSty);                            /* motif coupé sur Givrecloche et Chinampas quand leur style est actif */
+ /* zones-biomes : l'eau des nouvelles tuiles est marquée par une lueur négative infime (zonesplus.js, Z.col) ; ni motif ni marqueterie dessus */
+ float solEau=clamp(-vGlow*1000.,0.,1.)*ef;mo*=1.-solEau;
  float nPres=1.-smoothstep(18.,45.,dc),nMoy=1.-smoothstep(45.,110.,dc),nLoin=1.-smoothstep(140.,320.,dc);
  vec3 c=diffuseColor.rgb;
  /* deux lectures de bruit servent à tout (quatre canaux chacune) : B8 à l'échelle de ~8 m, B07 à ~0,7 m (seulement de près) */
@@ -136,7 +141,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
   float w=0.;   /* poids du sable (1) contre les touffes (3) pour l'oasis */
   if(code>.5&&code<1.5)w=1.;
   if(code>4.5&&code<5.5)w=1.-smoothstep(.1,.3,pente);
-  if(code>5.5)w=smoothstep(.01,-.03,diffuseColor.g-diffuseColor.r*1.02);
+  if(code>5.5&&code<6.5)w=smoothstep(.01,-.03,diffuseColor.g-diffuseColor.r*1.02);
   if(w>.001&&dc<38.){   /* rides de sable asymétriques, courbées par le bruit lent */
    float t=dot(p,vec2(.83,.55))+B8.a*5.;float f=fract(t/1.05);
    float ride=smoothstep(0.,.78,f)*(1.-smoothstep(.78,1.,f));
@@ -147,7 +152,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
    if(dc<12.){vec2 ce=floor(p*4.);vec3 vd=(vSolP-cameraPosition)/dc;
     float tw=sH(ce+floor(vd.xz*30.)*7.13),sp=step(.982,tw)*(1.-smoothstep(.06,.2,length(fract(p*4.)-.5)));
     solE+=vec3(.9,.97,1.2)*sp*(.3+fp)*mo*(1.-smoothstep(4.,12.,dc));}}
-  float tu=(code>2.5&&code<3.5)?1.:(code>5.5?1.-w:0.);
+  float tu=(code>2.5&&code<3.5)?1.:(code>5.5&&code<6.5?1.-w:0.);
   if(tu>.001&&dc<60.){   /* touffes sombres et brins */
    vec2 g=p/1.25,id=floor(g),f=fract(g)-.5,o=sH2(id)-.5;float rr=.16+.2*sH(id+3.);
    float dens=smoothstep(.3,.65,B8.b)*.75+.2;
@@ -160,6 +165,26 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
    float e=min((.5-abs(f.x))*1.7,(.5-abs(f.y))*1.15);float keep=smoothstep(.32,.46,B8.a);
    float jt=1.-smoothstep(.03,.08+dc*.004,e);
    c*=mix(1.,(.9+.18*sH(id))*(1.-jt*.45*nMoy),keep*mo);}
+  if(code>6.5&&code<8.5&&dc<160.){   /* zones-biomes : polygones (sel : crêtes blanches soulevées ; toundra : rigoles sombres et mouillées) */
+   float sel=step(code,7.5),S=sel>.5?5.2:9.5;vec2 wq=p+(vec2(B8.g,B8.a)-.5)*3.2;vec4 hx=solHex(wq/S);
+   float e=(.5-solHexD(hx.xy))*S,hs=sH(hx.zw),a2=.03+dc*.006,f=1.-smoothstep(45.,160.,dc);
+   float cr=solTrait(e,sel>.5?.16:.22,a2),bd=solTrait(e,sel>.5?.5:.6,a2+.2)-cr;
+   if(sel>.5){c*=1.+(hs-.5)*.07*f*mo;c=mix(c,c*.86,bd*f*mo);c=mix(c,vec3(.9,.9,.88)*max(1.,dot(c,vec3(.333))*1.08),cr*f*mo);}
+   else{c*=1.+(hs-.5)*.14*f*mo;c=mix(c,c*vec3(.55,.58,.6),cr*f*mo*.8);c=mix(c,c*vec3(.86,.92,.8),bd*f*mo*.6);
+    c=mix(c,vec3(.62,.6,.5),step(.86,B07.g)*nPres*mo*.4);}}
+  if(code>8.5&&code<9.5){   /* zones-biomes : basalte cordé dans les pentes, cendre grise et mate sur le plat */
+   vec2 r2=vec2(dot(p,vec2(.6,.8)),dot(p,vec2(-.8,.6)));float cord=sN(vec2(r2.x*.9,r2.y*.12)+B8.g*3.);
+   float pl=1.-smoothstep(.1,.3,pente),ash=smoothstep(.45,.62,B8.b)*pl;
+   c*=mix(1.,.72+.5*cord,(1.-pl)*mo*nMoy);
+   c=mix(c,vec3(dot(c,vec3(.333)))*1.5+vec3(.03),ash*mo*.8);
+   c*=1.+(B07.b-.5)*.25*nPres*mo;}
+  if(code>9.5&&code<10.5){   /* zones-biomes : glace striée par le vent, bleu profond dans les pentes (parois des crevasses), paillettes */
+   float st=sN(vec2(dot(p,vec2(.8,.6))*.08,dot(p,vec2(-.6,.8))*1.1)+B8.r*2.);
+   c*=1.+(st-.5)*.12*mo*nMoy;
+   float bl=smoothstep(.2,.55,pente)*mo;c=mix(c,vec3(.02,.13,.4)*(.7+.6*B07.r),bl*.75);
+   if(dc<12.){vec2 ce=floor(p*4.);vec3 vd=(vSolP-cameraPosition)/dc;
+    float tw=sH(ce+floor(vd.xz*30.)*7.13),sp=step(.985,tw)*(1.-smoothstep(.06,.2,length(fract(p*4.)-.5)));
+    solE+=vec3(.9,.97,1.2)*sp*mo*(1.-smoothstep(4.,12.,dc));}}
  }
  /* (c) motif de pôle, palier après palier, selon la grammaire du type de zone (boucle 2, 19 nov. 2026) */
  if(mo>.001&&nLoin>0.&&abs(lv)>.25){
@@ -327,6 +352,13 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
    #endif
   }
  }
+ if(solEau>.001){   /* zones-biomes : l'eau reflète le ciel au ras du regard, rides lentes, surface lisse (reflets du soleil) */
+  vec3 ciel=vec3(.5,.56,.62);
+  #ifdef USE_FOG
+  ciel=fogColor;
+  #endif
+  float fres=pow(1.-abs((vSolP.y-cameraPosition.y)/dc),4.),ride=sin(dot(p,vec2(.71,.7))*2.6+B8.g*12.+B07.g*5.)*.5+.5;
+  c=mix(c,c*.6,solEau);solE+=ciel*(.03+.42*fres)*(.75+.45*ride*nMoy)*solEau*nLoin;solLisse=max(solLisse,solEau*.85);}
  diffuseColor.rgb=c;}
 `;
 const _buildSol=buildTerrain;

@@ -199,7 +199,12 @@ const SIG={
   'Cité':{n:['#16243a','#4e5a70','#dca050'],p:['#6080b0','#c8b8a0','#ffd890']}};
 /* ajustement léger par biome (rotation de teinte en degrés) : deux tuiles du même type ne se confondent pas */
 const SIG_BIO={'Forêt boréale':-8,'Fjord':-16,'Canyon':14,'Désert de sable':10,'Oasis':6,'Cité en ruines':0,'Récif':-12,
-  'Cavernes cristallines':-22,'Lande':18,'Steppe':8,'Delta fluvial':-6,'Falaise côtière':-10};
+  'Cavernes cristallines':-22,'Lande':18,'Steppe':8,'Delta fluvial':-6,'Falaise côtière':-10,
+  /* zones-biomes : les douze biomes ajoutés */
+  'Volcan':20,'Mangrove':-4,'Jungle':4,'Archipel':-14,'Haute montagne':-18,'Glacier':-24,'Forêt de champignons géants':26,'Marais':12,
+  'Désert de sel':-2,'Iles flottantes':-20,'Savane':16,'Toundra':-12};
+/* et la part de la signature de chaque zone (zonesplus.js, sigZone) : deux zones du même biome et du même type ne se confondent pas */
+const sigRotZ=Z=>(SIG_BIO[Z.d.biome]||0)+(Z.sig?Z.sig.rot:0);
 const sigLin=h=>{const v=parseInt(h.slice(1),16);return[(v>>16&255)/255,(v>>8&255)/255,(v&255)/255]};
 /* rotation de teinte autour de l'axe gris */
 const sigRot=(c,deg)=>{const a=deg*D2R,co=Math.cos(a),si=Math.sin(a),k=1/3,s3=Math.sqrt(k),m=x=>Math.max(0,Math.min(1,x)),t=(1-co)*k;
@@ -212,7 +217,7 @@ function sigOf(Z){if(Z._sig)return Z._sig;let r=Z.plus?null:SIG[Z.id];
   if(Z.id==='ASS152')r=SIG.ASS; /* ASS152 : la recette des Assemblées tenue exactement (prune / braise à −7, lavande / ivoire à +7) */
   if(!r&&Z.plus){const d=Z.d,[ng,ps]=(PMANA[d.mana]||PMANA.Pierre).map(sigLin),w=[1,1,1],
       man={n:[sigMx(ng,[0,0,0],.15),sigMx(ng,ps,.4),sigMx(ps,w,.1)],p:[sigMx(sigMx(ng,ps,.55),[.42,.48,.66],.35),sigMx(ps,w,.3),sigMx(ps,w,.6)]},
-      fam=SIG[d.type],rot=SIG_BIO[d.biome]||0;
+      fam=SIG[d.type],rot=sigRotZ(Z);
     r={};for(const s of['n','p'])r[s]=[0,1,2].map(i=>sigRot(fam?sigMx(sigCv(fam[s][i]),man[s][i],.3):man[s][i],rot))}
   if(!r)r=SIG.MAR;
   return Z._sig={n:r.n.map(sigCv),p:r.p.map(sigCv)}}
