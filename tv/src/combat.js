@@ -144,7 +144,7 @@ function finTour(){CB.busy=true;CB.sel=null;if(typeof atoutsFinTour==='function'
   /* les bêtes frappent d'abord, puis chaque monstre fait ce qu'il a annoncé */
   for(const b of CB.allies)if(b.bete&&b.atk>0)attendre(.45,()=>{if(!CB||b.pv<=0)return;const pl=typeof cibleBete==='function'&&CB.cases,t=pl?cibleBete(b):vivants(CB.foes)[0];if(t){if(pl)piegeVoie('e',t.voie,b);if(b.pv<=0)return;const fb=pl?forceBete(b):b.atk+(aPassif('meute')?1:0);if(pl)journal(`${b.nom} frappe ${t.nom} (${fb}${forceBete(b)<b.atk?', à moitié':''}).`);frappe(t,fb,b);if(aPassif('braise')&&t.pv>0)(t.br=t.br||[]).push([1,2]);finSiFini()}});
   attendre(.35,()=>{if(CB)for(const m of CB.foes)m.g=0;if(typeof effetsCases==='function')effetsCases('e');if(CB)majUnites()});
-  attendre(.3,()=>{if(!CB)return;for(const m of vivants(CB.foes))if(m.br&&m.br.length){let d=0;m.br=m.br.filter(b=>{d+=b[0];return--b[1]>0});if(d){journal(`${m.nom} brûle (${d}).`);frappe(m,d,{nom:'brûlure'})}}finSiFini()});
+  attendre(.3,()=>{if(!CB)return;for(const m of vivants(CB.foes))if(m.br&&m.br.length){let d=0;/* passe 6 (Plateau) : seules les 2 brûlures les plus fortes comptent à chaque tic */const fortes=CB.cases?m.br.slice().sort((p,q)=>q[0]-p[0]).slice(0,2):m.br;m.br=m.br.filter(b=>{if(fortes.indexOf(b)>=0)d+=b[0];return--b[1]>0});if(d){journal(`${m.nom} brûle (${d}).`);frappe(m,d,{nom:'brûlure'})}}finSiFini()});
   for(const m of CB.foes)attendre(.6,()=>{if(!CB||m.pv<=0||vivants(CB.allies).indexOf(CB.hero)<0)return;agir(m);finSiFini()});
   attendre(.5,()=>{if(!CB)return;for(const m of vivants(CB.foes))intention(m);majUnites();debutTour()})}
 function finSiFini(){if(!CB)return false;

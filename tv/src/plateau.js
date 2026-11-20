@@ -168,7 +168,7 @@ function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;
 
 /* ---------- Passe 5 (20 nov.) : renforts, pour que le plateau compte jusqu'au bout ----------
    Éveil : le chef appelle un renfort aux tours 3 et 5, annoncé au tour d'avant, dans la voie qu'il vise.
-   Rencontre et horde : un renfort au tour 3, toujours (passe 6). *
+   Rencontre et horde : un renfort au tour 3, toujours (passe 6). */
 function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.tour,chef=vivants(C.foes).find(m=>m.chef);
   const tours=C.kind==='eveil'&&chef?[3,5]:[3];
   if(tours.indexOf(t+1)>=0){const v=chef&&chef.cv!=null?chef.cv:Math.floor(Math.random()*3);C.renfortVoie=v;journal(`${chef?chef.nom+' appelle':'Un cri appelle'} un renfort : il arrivera au prochain tour, voie ${PL_NOMV[v]}.`)}
