@@ -227,6 +227,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
   ui('menu',{sur:'Pause · version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:''),t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
+    {l:'Carte du monde',ic:'◈',d:'Vue ou C',go:()=>{toMonde();if(typeof ouvrirCarte==='function')ouvrirCarte()}},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Sauvegarder',ic:'▣',d:'20 emplacements',go:()=>openSauver(0)},
     {l:'Charger une partie',ic:'▤',go:openCharger},

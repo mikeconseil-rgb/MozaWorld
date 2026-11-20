@@ -12,9 +12,16 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Gameplay du monde, lot 1 : hordes (5 cycles de colère, 3 de marche, cibles 2 à 3 paliers plus faibles), domaines dès 2 tuiles et leurs bonus, défense +2/+1/+2, rivaux (1 chance sur 6 par cycle, préavis 2 cycles, verrou contestable), reprise par l'empreinte en un palier | 19 nov. | Les jouer ; réglages proposés par l'équipe, pas encore tranchés par l'utilisateur |
 | Plateau de combat (3 voies, avant/arrière, cases Girih à effet, Manœuvre, Sentinelle, soutien de l'arrière, plancher de capacité) | 19 nov. | Le jouer sur la Xbox ; notes des testeurs à chaque passe (design/plateau/notes.md) |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
+| Minicarte qui tourne avec la caméra, carte du monde sur Vue | 20 nov. | Son avis après un soir de jeu |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
+
+## 20 novembre 2026 (minicarte)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Minicarte | « Améliore encore la minimap pour qu'elle soit plus jolie et pratique » : médaillon rond centré sur le héros et zoom à trois crans, plus une carte du monde complète (Vue ou C) d'où l'on voyage | provisoire (présentation choisie par Claude : rotation avec la caméra, couleurs par type) | minicarte carrée de toute la région (2.4) ; Vue = liste de voyage |
 
 ## 20 novembre 2026 (zones en série)
 
