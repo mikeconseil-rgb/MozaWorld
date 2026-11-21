@@ -6,6 +6,14 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.27 : boucle graphique 3 (20 novembre)
+
+Trois améliorations acceptées par le testeur de l'équipe graphique :
+- **Sol** : chaque famille de zone a sa propre écriture de pôle (−7 : craquelure sèche en Citadelle, lave en Donjon, cendres en Ressource, flaques-miroirs en Antre, dalles brisées en Assemblée ; +7 : Girih doré en relief, zellige, fleurs, nacre, mosaïque pleine). Les losanges du Marché sont codés en luminance et se lisent sous le gris.
+- **Météo et lumière par lieu et par pôle** : plus de neige sur la lave (braises en Donjon, lucioles et pollen en Antre, poussière en Assemblée), ombres plus courtes vers +7, neige plus rare vers +7 dans la famille Glace.
+- **Combat et barre du haut** : le décor de combat vient de la zone, le disque jaune derrière le héros et le texte fantôme ont disparu, la barre du haut est allégée.
+- Le banc `tv/tools/boucle.js` mesure maintenant les 8 zones des planches. Une même version varie de ±150 appels d'un passage à l'autre dans le Marché : comparer sur plusieurs passages.
+
 ## Gameplay du monde : pacte et siège essayés ensemble (20 nov., testeur)
 
 `node tv/tools/test-monde.js [dossier]` joue maintenant aussi le pacte et le siège final dans la longue partie : pacte signé depuis la fiche d'une maison, contestation entre maisons et prise, rupture et ses deux contestations ; siège lancé à la Pierre de Berestograd, rechargement, mort (le pacte tombe sans rancune, le siège est levé), siège rejoué jusqu'à la victoire (vague 1 tenue par les murs, vague 2 brisée au combat, vague 3), écran de victoire, palmarès, nouveau monde et vérification de sa remise à zéro ; captures `lot3b-*.png`. Réglages (provisoires) : une Citadelle en siège est à l'abri des maisons rivales (ni contestation ni prise, la contestation en cours tombe) ; 3 cycles entre l'annonce d'une vague et son arrivée ; prix d'un pacte au moins le quart du revenu en tesselles par cycle (Citadelles, caravanes en route, Dîme et Relais), et il suit ce quart ; la troisième vague dépasse d'au moins 1 la défense de la Citadelle à son annonce (une Citadelle bien aménagée, défense 22 à 25, tenait sinon les trois vagues sans combat) ; une vague en marche menace les caravanes qui vont à la Citadelle ; la Loi du Cadastre compte dans les contestations entre maisons. Corrigé : le nouveau monde tire toujours une graine différente (une chance sur 997 de garder l'ancienne, et alors rien n'était remis à zéro, la victoire non plus).
