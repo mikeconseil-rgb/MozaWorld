@@ -156,3 +156,13 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 5. **Registre grand public pour adultes.** Pas de sacrifice humain, de mutilation, de châtiment corporel décrit, ni de coup porté à un enfant ou à un « garçon ». On suggère (les fers, la porte barrée) au lieu de montrer, même quand la culture d'inspiration le ferait.
 6. **Même couple dans le lot : le second inscrit compare les images du ±7, pas seulement les familles.** Deux réserves de rêves ou deux « plus d'ombre » font une même métamorphose.
 7. **Noms : la première moitié se compare aussi à une lettre près** (Salinella, Salinera). Un nombre précis compte aussi dans les ambiances (« trois » dans trois zones de C).
+
+## Leçons du critique après le lot 12 (à appliquer dès le lot 13)
+
+1. **Les places se comptent avant de se répartir.** LISTE.md calcule au script, pour chaque conteur, le couplage maximal de ses pôles avec les familles libres sur ses mots. Elle ne donne que ces places, plus les reprises permises. Ce qui manque devient une vocation ou une colonne (4 au plus), ou une place perdue, déclarée avant les cartes.
+2. **Reprises : 3 au plus par conteur**, chacune un 2e emploi par un autre conteur. Le crochet et le prix principal sont neufs pour le mot entier, pas seulement contre l'origine. On ne reprend jamais son propre crochet sur un mot.
+3. **Même couple dans le lot : on compare le geste du ±7, pas ses objets.** La table qui s'étend, le chant à l'unisson ou la ville sous l'eau font une même métamorphose, quel que soit le décor. Le second inscrit change avant la remise.
+4. **Noms : le mot principal et le mot d'institution se comparent entre conteurs avant la remise, et à noms-pris.txt, pluriel compris.** Ce lot avait deux « Attente », et trois institutions déjà en jeu (Yoriai, Darbar, Popol Na).
+5. **La pioche d'Assemblée compte dans le plafond de la famille pioche** (6 pôles du lot), vocation comprise. Une Assemblée garde 2 cartes de Loi au moins par pôle.
+6. **Bêtes : 40 PV au plus aux paliers 1 à 6, 60 au palier 7.** Le budget compte les PV pour moitié et ne voit pas le mur.
+7. **Chutes : une recette de conteur, une fois par lot.** C'est le cas de la promotion qui éloigne chez A, et de « aujourd'hui » dans la dernière phrase chez C (trois fois au lot).

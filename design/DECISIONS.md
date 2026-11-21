@@ -25,6 +25,16 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 |---|---|---|---|
 | Minicarte | « Améliore encore la minimap pour qu'elle soit plus jolie et pratique » : médaillon rond centré sur le héros et zoom à trois crans, plus une carte du monde complète (Vue ou C) d'où l'on voyage | en vigueur : rotation avec la caméra confirmée par l'utilisateur le 20 nov. (« Oui » à la recommandation de garder la rotation, lecture du coordinateur) ; couleurs par type | minicarte carrée de toute la région (2.4) ; Vue = liste de voyage |
 
+## 20 novembre 2026 (deuxième passe de cohérence, « A partout »)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Gameplay du monde | D'ici le 28 nov., hordes, rivaux, domaines, caravanes, lois, pacte et siège restent dans la région de départ ; un test qui voyage entre régions vérifie que rien ne se perd (`tv/tools/test-voyage.js`) | en vigueur | |
+| Gel | Plus de nouveau système à partir du 23 nov. ; du 23 au 28 on joue, on corrige et on règle. Les zones à écrire et les images des cartes continuent (contenu) | en vigueur | |
+| Provisoires | Dimanche 22 nov., une liste courte des dix réglages qui comptent, à trancher par oui ou non ; les autres sont gardés tels quels jusqu'après le 28 | en vigueur | revue de tous les provisoires un par un |
+| Tests | Les tests du monde tournent tout seuls chaque nuit et à la demande (`.github/workflows/tests-monde.yml`) | en vigueur | tests du monde lancés à la main |
+| Plan | Le plan de travail est réécrit en plan de fin, jour par jour jusqu'au 28 nov. | en vigueur | plan en trois jalons du 17 nov. |
+
 ## 20 novembre 2026 (zones en série)
 
 | Sujet | Décision | Statut | Remplace |
