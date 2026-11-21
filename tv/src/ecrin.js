@@ -2,7 +2,7 @@
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.26';
+const MZ_VERSION='2.27';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -159,4 +159,61 @@ body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
   const sur=document.getElementById('h-sur');
   if(sur){const court=()=>{const t=sur.textContent,p=t.split(' · ');if(p.length<=2)return;sur.title=t;sur.textContent=p[0]+' · '+(p[2]||p[1])};
     new MutationObserver(court).observe(sur,{childList:true,characterData:true,subtree:true});court()}
+})();
+
+/* ---- Boucle 3 (20 nov.) : le combat sans texte superposé ----
+   Défauts signalés depuis la boucle 2 (« ça fait jeu amateur ») :
+   - #cb-aide (rempli par combat.js et observé par manette.js : ni déplacé ni renommé) passait sous la main et se mêlait au texte
+     des cartes. Il devient une pastille posée au-dessus de la main : fond opaque, filet d'or, une seule ligne coupée par une ellipse ;
+     la grille du combat le range entre le plateau et la main (zone « aide » avant la zone « bas »), avec une marge ; la carte choisie
+     grandit depuis sa base au lieu de se soulever, elle ne monte plus sur la pastille.
+   - la main remonte d'environ 30 px : marge du bas de 1,6 u (31 px en 1080p) et, pendant le placement, elle ne descend plus que de 1,2 u
+     au lieu de 4 u (en 720p, le bas des cartes passe de 724 à 696 px : elles ne sont plus coupées).
+   - l'étiquette de case (« Bastion », « Tanière »…) passait sous la jauge de l'unité posée dessus : quand une unité occupe la case,
+     l'étiquette se range sous sa jauge (avec une marge et un z-index), et celle de la case s'efface ; de même, la menace écrite
+     en haut de la case d'avant (« ⚔ 4 → Sentinelle ») passait sous la pastille d'intention de l'unité : elle devient « ⚔ 4 » sur l'unité. */
+(()=>{const st=document.createElement('style');st.id='ecrin-combat';st.textContent=`
+#combat{grid-template-areas:"tete tete tete" "log log log" "allies centre foes" "aide aide aide" "bas bas bas";padding-top:calc(var(--my)*.5);padding-bottom:calc(var(--my)*.6 + var(--u)*1.6)}
+#combat .cb-aide{grid-area:aide;justify-self:center;align-self:end;position:relative;z-index:6;box-sizing:border-box;max-width:min(60ch,92vw);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 0 calc(var(--u)*.95);padding:calc(var(--u)*.34) calc(var(--u)*1.3) calc(var(--u)*.4);
+  border-radius:calc(var(--u)*1.2);background:rgba(10,9,12,.82);border:1px solid rgba(201,164,92,.35);box-shadow:0 6px 18px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,236,190,.06);
+  font-size:calc(var(--u)*.9);line-height:1.4;color:var(--ivoire);letter-spacing:.01em}
+#combat .cb-aide::before{display:none}
+#combat .cb-aide:empty{visibility:hidden}
+#combat.placement #cb-main{transform:translateY(calc(var(--u)*1.2))}
+/* la carte choisie grandit depuis sa base au lieu de se soulever : elle ne monte plus sur la pastille */
+#cb-main .cc.kcarte.f{transform:scale(1.04);transform-origin:50% 100%}
+#cb-main .cc.kcarte.choisie{transform:scale(1.06);transform-origin:50% 100%}
+/* unités du plateau un peu plus compactes (portrait 2,6 u, pastille d'intention mordant sur le portrait) : à trois voies,
+   avec l'étiquette de case sous la jauge, elles tiennent dans leur rangée et ne chevauchent plus la voie voisine */
+#cb-allies .u:not(.hero):not(.garde) .por,#cb-foes .u:not(.chef) .por{width:calc(var(--u)*2.6)!important;height:calc(var(--u)*2.6)!important}
+#cb-allies .u:not(.hero):not(.garde) .int,#cb-foes .u:not(.chef) .int{position:relative;z-index:2;margin-bottom:calc(var(--u)*-.95);padding:.08em .65em .08em .2em;line-height:1.25}
+#cb-allies .u:not(.hero):not(.garde) .int b,#cb-foes .u:not(.chef) .int b{min-width:1.4em;height:1.4em}
+/* étiquette de case et menace de la voie, portées par l'unité qui occupe la case */
+.pcase.occupee .pt,.pcase.occupee .plmenace{display:none}
+/* case vide : son nom au cœur de la forme, loin des pastilles de la voie voisine */
+.pcase:not(.occupee) .pt{top:50%;bottom:auto;translate:0 -50%}
+.pcase:not(.occupee) .plmenace{top:calc(var(--u)*.9)}
+.mz-voie:empty,.mz-menace:empty{display:none}
+.mz-voie{display:block;position:relative;z-index:1;margin-top:calc(var(--u)*.14);padding-top:calc(var(--u)*.12);border-top:1px solid rgba(232,199,127,.2);
+  font-size:calc(var(--u)*.62);font-weight:500;line-height:1.2;letter-spacing:.18em;text-transform:uppercase;text-align:center;color:var(--laiton2);white-space:nowrap}
+#cb-foes .mz-voie{color:#ff9a8a;border-top-color:rgba(226,103,90,.25)}
+.mz-menace{position:absolute;z-index:4;pointer-events:none;white-space:nowrap;border-radius:1em;background:rgba(10,9,12,.82);line-height:1.3;left:calc(var(--u)*-.4);top:calc(var(--u)*1.1);padding:.1em .55em;border:1px solid rgba(255,154,138,.5);font-size:calc(var(--u)*.8);font-weight:700;color:#ff9a8a}
+`;document.head.appendChild(st);
+  /* à chaque dessin des cases (plateau.js) : l'unité posée sur une case typée porte son nom sous sa jauge, la case s'efface ;
+     la menace annoncée sur la case d'avant passe en pastille sur l'unité qui la tient (« ⚔ 4 ») */
+  const surPlateau=u=>u&&u.el&&!u.hero&&!u.garde&&!u.chef&&u.pv>0;
+  const pastille=(u,cls,dans)=>{const h=dans?u.el.querySelector(dans):u.el;if(!h)return document.createElement('span');let e=h.querySelector(':scope>.'+cls);
+    if(!e){e=document.createElement('span');e.className=cls;h.appendChild(e)}return e};
+  function etiquettesVoies(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof terrainDe!=='function')return;const occ=new Set();
+    for(const u of CB.allies.concat(CB.foes)){if(!surPlateau(u)){const e=u&&u.el&&u.el.querySelector('.plaque>.mz-voie');if(e)e.textContent='';continue}
+      const t=terrainDe(u),nom=t&&PL_T[t]?PL_T[t].nom:'',e=pastille(u,'mz-voie','.plaque');if(e.textContent!==nom)e.textContent=nom;
+      occ.add((CB.foes.indexOf(u)>=0?'pc-e':'pc-a')+u.voie+rangDe(u))}
+    for(const d of document.querySelectorAll('#combat .pcase'))d.classList.toggle('occupee',occ.has(d.id))}
+  function menacesSurUnites(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof occupant!=='function')return;const tient=new Map();
+    for(let v=0;v<3;v++){const u=occupant(v,0),b=document.querySelector('#pc-a'+v+'0 .plmenace');
+      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.replace(/ → [^·]*/,'').replace(' au prochain tour','').trim())}
+    for(const u of CB.allies){if(!u.el)continue;const e=u.el.querySelector(':scope>.mz-menace'),t=tient.get(u)||'';if(e){if(e.textContent!==t)e.textContent=t}else if(t)pastille(u,'mz-menace').textContent=t}}
+  if(typeof dessinerCases==='function'){const dc0=dessinerCases;dessinerCases=function(){const r=dc0.apply(this,arguments);try{etiquettesVoies()}catch(_){}return r}}
+  if(typeof badgesMenace==='function'){const bm0=badgesMenace;badgesMenace=function(){const r=bm0.apply(this,arguments);try{menacesSurUnites()}catch(_){}return r}}
 })();

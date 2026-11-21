@@ -69,11 +69,13 @@ const bruitTex=(()=>{const NT=256,NL=64,K=NT/NL,o=new Uint8Array(NT*NT*4);let g=
   t.magFilter=t.minFilter=THREE.LinearFilter;t.generateMipmaps=false;   /* sans mipmaps (moins cher) : le grain fin est déjà fondu par la distance */t.needsUpdate=true;return t})();
 const U={tSol:{value:tex},tSolB:{value:bruitTex},uSolG:{value:new THREE.Vector4(X0,Z0,1/CELL,0)},uSolN:{value:new THREE.Vector2(GW,GH)},
   uSolSty:{value:1},uSolNeg:{value:NEG.map(c=>new THREE.Vector3(c[0],c[1],c[2]))},
-  uSolPos:{value:POS.map(c=>new THREE.Vector3(c[0],c[1],c[2]))}};
+  uSolPos:{value:POS.map(c=>new THREE.Vector3(c[0],c[1],c[2]))},
+  /* boucle 3 (20 nov. 2026) : couleur du zénith (ciel hémisphérique), pour les flaques-miroirs de l'Antre */
+  uSolZen:{value:new THREE.Vector3(.3,.4,.6)}};
 const fin=()=>QI>0?1:0;let finCompile=-1;
 
 const VERT_DEC='attribute float solEf;varying vec3 vSolP;varying float vSolNy,vSolEf;\n';
-const FRAG_DEC=`uniform sampler2D tSol,tSolB;uniform vec4 uSolG;uniform vec2 uSolN;uniform float uSolSty;uniform vec3 uSolNeg[6],uSolPos[6];
+const FRAG_DEC=`uniform sampler2D tSol,tSolB;uniform vec4 uSolG;uniform vec2 uSolN;uniform float uSolSty;uniform vec3 uSolNeg[6],uSolPos[6],uSolZen;
 varying vec3 vSolP;varying float vSolNy,vSolEf;
 float sH(vec2 p){vec3 q=fract(vec3(p.xyx)*.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
 vec2 sH2(vec2 p){vec3 q=fract(vec3(p.xyx)*vec3(.1031,.103,.0973));q+=dot(q,q.yzx+33.33);return fract((q.xx+q.yz)*q.zy);}
@@ -94,14 +96,29 @@ float solVor(vec2 x){vec2 n=floor(x),f=fract(x);float d1=8.,d2=8.;
 float solSeg(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.,1.));}
 /* médaillon Girih : étoile à n branches entrelacée (10 pour la Citadelle, 12 pour l'Assemblée…), couronne et rayons,
    en coordonnées polaires repliées. k = palier (0 à 7), renvoie la distance (m) au trait le plus proche ; « dans » = intérieur de l'étoile */
-float solGirih(vec2 l,float k,float n,out float dans){float r=length(l),a=atan(l.y,l.x),w=6.2831853/n,h=w*.5;
-  a=mod(a,w);a=abs(a-h);vec2 q=r*vec2(cos(a),sin(a)),cs=vec2(cos(h),sin(h));
+float solGirih(vec2 l,float k,float n,out float dans,out vec2 q){float r=length(l),a=atan(l.y,l.x),w=6.2831853/n,h=w*.5;
+  a=mod(a,w);a=abs(a-h);q=r*vec2(cos(a),sin(a));vec2 cs=vec2(cos(h),sin(h));
   vec2 T=vec2(3.,0.),I=1.55*cs;
   float d=solSeg(q,T,I);dans=step(0.,(I.x-T.x)*(q.y-T.y)-(I.y-T.y)*(q.x-T.x));            /* palier 1 : l'étoile */
   if(k>2.5)d=min(min(d,abs(q.x-3.45)),solSeg(q,T,vec2(3.45,.13)));                           /* 3 : le décagone qui la cerne */
   if(k>4.5)d=min(min(d,solSeg(q,2.15*cs,vec2(1.1,0.))),abs(q.x-.62));    /* 5 : étoile intérieure entrelacée, rosace */
   if(k>5.5){d=min(d,q.x>3.45?q.y:1e3);d=min(d,r>3.63?abs(q.x*cs.y-q.y*cs.x):1e3);}   /* 6 : rayons et treillis qui relient les médaillons */
   return d;}
+/* boucle 3 (20 nov. 2026) : briques des écritures de pôle propres à chaque famille (toutes bon marché, sans boucle Voronoï) */
+/* treillis de médaillons en quinconce, 9 × 7,8 m divisés par sc : xy = position locale (à l'échelle 1), zw = cellule */
+vec4 solMed(vec2 p,float sc){vec2 g=p*sc/vec2(9.,7.8);float row=floor(g.y);g.x+=.5*mod(row,2.);return vec4((fract(g)-.5)*vec2(9.,7.8),floor(g));}
+/* dalles en appareil décalé (S en m) : x = distance au joint (m), y = hasard de la dalle, zw = position dans la dalle (−,5 à +,5) */
+vec4 solDal(vec2 p,vec2 S){vec2 q=p/S;q.x+=.5*mod(floor(q.y),2.);vec2 f=fract(q)-.5;
+  return vec4(min((.5-abs(f.x))*S.x,(.5-abs(f.y))*S.y),sH(floor(q)+vec2(3.3,7.1)),f);}
+/* écailles imbriquées (rangées tous les S/2, chaque rangée recouvre celle d'en dessous) :
+   x = distance au centre de l'écaille (0 au centre, 1 au bord), y = hasard de l'écaille, z = distance au bord (m) */
+vec3 solEca(vec2 p,float S){vec2 u=p/S;float r0=floor(2.*u.y+1.);vec3 o=vec3(1.,.5,0.);float pris=0.;
+  for(int i=0;i<3;i++){float r=r0-float(i),ox=.5*mod(r,2.),cx=floor(u.x-ox+.5)+ox;float l=length(vec2(u.x-cx,u.y-r*.5))*2.;
+    if(l<1.&&pris<.5){o=vec3(l,sH(vec2(cx*2.,r)+.37),(1.-l)*S*.5);pris=1.;}}
+  return o;}
+/* losanges en arlequin (S = diagonales en m) : x = distance au bord (m), y = parité (0/1), z = « rayon » du losange (0 au centre, ,5 au bord) */
+vec3 solLos(vec2 p,vec2 S){vec2 a=vec2(p.x/S.x+p.y/S.y,p.x/S.x-p.y/S.y),id=floor(a),f=fract(a)-.5;float m=max(abs(f.x),abs(f.y));
+  return vec3((.5-m)*S.x*S.y/length(S),mod(id.x+id.y,2.),m);}
 /* boucle 2 : pavage hexagonal (rayon inscrit 0,5) : xy = position dans la cellule, zw = centre de la cellule ; et distance « hexagonale » */
 vec4 solHex(vec2 p){vec2 s=vec2(1.,1.7320508),h=s*.5,a=mod(p,s)-h,b=mod(p-h,s)-h;vec2 g=dot(a,a)<dot(b,b)?a:b;return vec4(g,p-g);}
 float solHexD(vec2 g){g=abs(g);return max(g.x,dot(g,vec2(.5,.8660254)));}
@@ -114,7 +131,7 @@ float solBord(float e,float k){return smoothstep(0.,max(.04,.5-.065*k),e);}
 `;
 /* fragment : après color_fragment (diffuseColor contient déjà la couleur du sommet) */
 const FRAG_COL=`
-vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
+vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) qui perturbe la normale (boucle 3) */
 {vec2 p=vSolP.xz;float dc=distance(vSolP,cameraPosition);
  vec2 zuv=(vec2((p.x-uSolG.x)*uSolG.z,(p.y-uSolG.y)*uSolG.z)+.5)/uSolN;vec4 zd=texture2D(tSol,zuv);
  float code=floor(zd.r*255.+.5),sty=step(127.5,code);code-=128.*sty;
@@ -186,170 +203,180 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
     float tw=sH(ce+floor(vd.xz*30.)*7.13),sp=step(.985,tw)*(1.-smoothstep(.06,.2,length(fract(p*4.)-.5)));
     solE+=vec3(.9,.97,1.2)*sp*mo*(1.-smoothstep(4.,12.,dc));}}
  }
- /* (c) motif de pôle, palier après palier, selon la grammaire du type de zone (boucle 2, 19 nov. 2026) */
- if(mo>.001&&nLoin>0.&&abs(lv)>.25){
-  float k=solPal(abs(lv)),gr=floor(zd.a*255.+.5),aa=.02+dc*.004;
+ /* (c) motif de pôle, palier après palier, selon la grammaire du type de zone.
+    Boucle 3 (20 nov. 2026) : une ÉCRITURE propre à chaque famille, aux deux pôles et au niveau 0, identique en Belle et en Fluide
+    (seuls le Voronoï du Donjon et le Girih complet restent réservés à SOL_FIN). La grammaire est constante par zone : pas de divergence.
+    cr = cran (0 à 3) : l'échelle ou la densité du motif saute aux paliers ±2, ±4, ±6, en plus de la couleur qui suit chaque palier.
+    Marché : son écriture passe outre le style gris de Givrecloche ; elle est codée en luminance (claire sur noir à −7, sombre sur blanc à +7). */
+ float gr=floor(zd.a*255.+.5),moP=gr>4.5?ef*(1.-solEau):mo;
+ if(moP>.001&&nLoin>0.){
+  float alv=abs(lv),k=solPal(alv),cr=floor((alv+.1)*.5),aa=.02+dc*.004,nB=1.-smoothstep(22.,60.,dc);   /* nB : relief de près seulement (sinon il scintille) */
   vec3 wv=texture2D(tSolB,p*.001094+vec2(.5,.1)).rgb;   /* dérive du tracé (r, g) et part couverte (b), à ~14 m */
   float zone=smoothstep(.0,.06,(.12+.13*k)*step(.5,k)-wv.b);   /* part couverte : un quart au palier 1, tout au palier 7 */
-  if(lv<0.){
-   vec2 w2=p+wv.rg*3.5;
+  vec2 w2=p+wv.rg*3.5;float Lc=dot(c,vec3(.333)),pl=1.-smoothstep(.3,.6,pente);   /* pl : les motifs à plat s'effacent dans les fortes pentes (sinon étirés) */
+  if(alv<.5){   /* (c0) niveau 0 : chaque famille garde la trace de son écriture, à faible intensité (de près seulement : rien à payer au loin) */
+   if(nMoy<=0.){}
+   else if(gr<.5){   /* Citadelle : quelques médaillons Girih à peine en relief, ton sur ton */
+    vec4 md=solMed(p,1.);float dans;vec2 q;float d=solGirih(md.xy,1.,10.,dans,q),on=step(sH(md.zw+vec2(31.,17.)),.5);
+    solH=.045*(1.-smoothstep(0.,.1,d))*on*nB*moP;c*=1.+.1*solTrait(d,.05,aa)*on*moP;}
+   else if(gr<1.5){   /* Donjon : fêlures sombres, sans lueur */
+    float db=abs(sN2(w2*.2)-.5)*6.5;c*=1.-(.4*solTrait(db,.035,aa)+.1*(1.-smoothstep(.04,.3,db)))*moP;}
+   else if(gr<2.5){   /* Ressource : cailloutis semé en points */
+    vec2 g=w2/.95,id=floor(g),o=(sH2(id)-.5)*.55;float pt=solTrait(length(fract(g)-.5-o)*.95,.07,aa)*step(sH(id+5.),.3)*nMoy;
+    c*=1.+(sH(id+8.)>.5?.25:-.3)*pt*moP;}
+   else if(gr<3.5){   /* Antre : écailles à peine ombrées */
+    vec3 ec=solEca(p,1.7);c*=1.+(.12*ec.x-.06-.18*solTrait(ec.z,.03,aa))*nMoy*moP;solH=.012*ec.x*nB*moP;}
+   else if(gr<4.5){   /* Assemblée : joints de dallage */
+    vec4 dl=solDal(p,vec2(3.4,2.3));c*=1.-(.3*solTrait(dl.x,.035,aa)-(dl.y-.5)*.08)*moP;}
+   else{   /* Marché : treillis de losanges, en luminance */
+    vec3 lo=solLos(p,vec2(3.,5.));c*=1.+(.3*solTrait(lo.x,.045,aa)-.06*lo.y)*moP;}
+  }else if(lv<0.){
    vec3 nc=uSolNeg[0];if(mana>.5)nc=uSolNeg[1];if(mana>1.5)nc=uSolNeg[2];if(mana>2.5)nc=uSolNeg[3];if(mana>3.5)nc=uSolNeg[4];if(mana>4.5)nc=uSolNeg[5];
    float pul=.55+.45*B8.g;
-   #ifndef SOL_FIN
-   float db=abs(sN2(w2*.2)-.5)*6.5+(B07.a-.5)*.1;   /* repli « Fluide » : une courbe de niveau du bruit, une seule lecture, pour toutes les grammaires */
-   #endif
-   if(gr<.5){   /* (c−) Citadelle : glace noire fendue en plaques hexagonales mates, givre blanc dans les joints, sans lueur */
-    #ifdef SOL_FIN
-    vec4 hx=solHex(w2/3.4);float hp=sH(hx.zw),dj=(.5-solHexD(hx.xy))*3.4;
-    vec2 fd=vec2(cos(hp*6.283),sin(hp*6.283));dj=min(dj,abs(dot(hx.xy,fd))*3.4+step(.45,fract(hp*7.3))*9.);   /* une fêlure droite sur une plaque sur deux */
-    #else
-    float hp=B8.b,dj=db;
-    #endif
-    float wj=.02+.016*k,joint=solTrait(dj,wj,aa)*zone,givre=1.-smoothstep(wj,wj+.16+.05*k+aa,dj);givre*=givre*zone;
-    vec3 noire=vec3(.010,.014,.022)*(.7+.8*hp)+nc*.004;
-    c=mix(c,noire*(1.+(B07.g-.5)*.6*nPres),zone*min(1.,.3+.1*k)*mo);
-    c=mix(c,vec3(.6,.68,.78)*(.8+.3*B07.r),max(joint,givre*.55)*mo);}
-   else if(gr>1.5&&gr<2.5){   /* (c−) Ressource : flaques sombres et miroitantes, le ciel s'y reflète au ras du regard (fresnel), aucun trait qui luit */
-    #ifdef SOL_FIN
-    float pz=sN(w2*.085+vec2(3.1,7.7))+(B07.b-.5)*.05;
-    #else
-    float pz=1.-db*.14;
-    #endif
-    /* reprise boucle 2 : moins de flaques et mieux découpées, berge claire, noir d'eau profond, reflet au ton du mana (et non le brouillard brut) */
-    float plat=1.-smoothstep(.1,.28,pente),on=step(.5,k)*plat,sf=.8-.028*k,fl=smoothstep(sf,sf+.006+aa*.03,pz)*on;   /* l'eau ne tient que sur le plat */
-    float berge=smoothstep(sf-.05,sf-.008,pz)*(1.-fl)*on,mouil=smoothstep(sf-.15,sf-.03,pz)*step(.5,k);
-    float frange=fl*(1.-smoothstep(sf+.004,sf+.028+aa*.03,pz));   /* frange de reflet nette, juste à l'intérieur du bord */
-    vec3 ciel=vec3(.42,.46,.52);
-    #ifdef USE_FOG
-    ciel=fogColor;
-    #endif
-    vec3 refl=mix(ciel*.5,nc,.6);
-    float fres=pow(1.-abs((vSolP.y-cameraPosition.y)/dc),5.);
-    float ride=(sin(dot(p,vec2(.71,.7))*5.+B07.g*9.)*.5+.5)*nPres;   /* rides que le vent pousse sur l'eau */
-    c*=1.-mouil*(.12+.02*k)*mo;                             /* terre détrempée, à peine plus sombre : elle reste plus claire que l'eau */
-    c=mix(c,c*1.18+vec3(.05,.052,.055),berge*min(1.,.3+.1*k)*mo);   /* liseré clair de berge (sel, sable lavé) */
-    c=mix(c,vec3(.003,.004,.006),fl*mo);
-    solE+=refl*((.012+.26*fres)*(.45+1.1*ride)+frange*(.3+.04*k))*fl*mo*nLoin;solLisse=fl*mo;
-    if(dc<16.){vec2 ce=floor(p*5.);vec3 vd=(vSolP-cameraPosition)/dc;   /* éclats de lumière en points sur l'eau, comme le givre */
-     float tw=sH(ce+floor(vd.xz*24.)*5.31),sp=step(.975,tw)*(1.-smoothstep(.05,.18,length(fract(p*5.)-.5)));
-     solE+=mix(nc,vec3(1.),.6)*sp*fl*mo*(.6+ride)*(1.-smoothstep(6.,16.,dc));}}
-   else if(gr>2.5&&gr<3.5){   /* (c−) Antre : mycélium phosphorescent, lignes fines et ramifiées tirées d'un bruit à domaine déformé */
-    #ifdef SOL_FIN
-    vec2 q=w2*.16;q+=(texture2D(tSolB,q*.008+vec2(.3,.6)).ba-.5)*2.6;
-    float d1=abs(sN(q)-.5)*4.,d2=abs(sN2(q*2.7+3.)-.5)*1.5;
-    float wm=.016+.006*k,ram=1.-smoothstep(.25,.9+.12*k,d1);   /* les ramifications ne poussent qu'auprès des filaments */
-    float fil=max(solTrait(d1,wm,aa),solTrait(d2,wm*.6,aa)*ram),halo=1.-smoothstep(wm,wm+.35+.03*k,d1);
-    #else
-    float wm=.02+.007*k,fil=solTrait(db,wm,aa),halo=1.-smoothstep(wm,wm+.4,db);
-    #endif
-    fil*=zone;halo*=halo*zone;
-    vec3 ph=mix(vec3(.2,.85,1.6),nc,.25);
-    c=mix(c,vec3(dot(c,vec3(.3,.4,.3)))*vec3(.3,.3,.36),zone*min(1.,.25+.11*k)*mo);   /* sol étouffé, gris de cendre */
-    c=mix(c,ph*.2,fil*mo);
-    solE+=ph*(fil*(.2+.09*k)*pul+halo*.012*k)*mo*nLoin;}
-   else if(gr>3.5&&gr<4.5){   /* (c−) Assemblée : dalles soulevées et fendues en damier, bords qui prennent la lumière, centres assombris */
-    #ifdef SOL_FIN
-    vec2 g=w2/3.6,id=floor(g),f=fract(g)-.5;float hs=sH(id+7.),ch=mod(id.x+id.y,2.);
-    float e=(.5-max(abs(f.x),abs(f.y)))*3.6,dj=min(e,abs(f.x*(hs>.5?1.:-1.)+f.y+(hs-.5)*.4)*2.55+step(.6,sH(id+2.))*9.);
-    #else
-    float e=db,dj=db,ch=step(.5,B8.b),hs=B8.a;
-    #endif
-    float fente=solTrait(dj,.025+.016*k,aa)*zone,rim=1.-smoothstep(0.,.25+.04*k,e),leve=ch*(.55+.45*hs);
-    c*=1.-zone*mo*min(.85,.2+.08*k)*(1.-rim)*(.55+.45*leve);   /* centres assombris */
-    c=mix(c,c*2.2+vec3(.035,.03,.028),rim*leve*zone*mo*min(1.,.3+.1*k));   /* bords soulevés, éclairés */
-    c=mix(c,vec3(.006),fente*mo);
-    solE+=nc*(fente*.04*k*pul+rim*leve*.01*k*zone)*mo*nLoin;}
-   else if(gr>4.5){   /* (c−) Marché : traînées de sel et de suie couchées par le vent, grain sombre, sans lueur */
-    vec2 r2=vec2(dot(w2,vec2(.8,.6)),dot(w2,vec2(-.6,.8)));
-    #ifdef SOL_FIN
-    float sel=sN(vec2(r2.x*.04,r2.y*.5)),suie=sN2(vec2(r2.x*.05,r2.y*.7)+4.);
-    #else
-    float sel=1.-db*.22,suie=B8.b;
-    #endif
-    float ks=.66-.022*k,ms=smoothstep(ks,ks+.07,sel)*zone,mn=smoothstep(ks-.03,ks+.06,suie)*zone;
-    c*=1.-zone*mo*(.15+.06*k)*(1.+(B07.a-.5)*1.6*nPres);
-    c=mix(c,vec3(.008,.007,.006),mn*.9*mo);
-    c=mix(c,vec3(.46,.45,.43)*(.65+.7*B07.r),ms*(1.-mn)*.85*mo);}
-   else{   /* (c−) Donjon : failles de braise en réseau de Voronoï, son identité depuis la boucle 1 */
+   if(gr<.5){   /* (c−) Citadelle : craquelure sèche, petites plaques bombées aux bords retroussés, fentes noires ; aucune lueur, tout est dans la normale */
+    float S=2.4*(1.-.17*cr);zone*=pl;vec2 wq=w2+(B8.ga-.5)*1.6+(texture2D(tSolB,w2*.0078+vec2(.4,.2)).ba-.5)*1.1;   /* deux échelles de dérive : des polygones, pas des alvéoles */vec4 hx=solHex(wq/S);float e=(.5-solHexD(hx.xy))*S,hs=sH(hx.zw);
+    vec2 fd=vec2(cos(hs*6.283),sin(hs*6.283));
+    float e2=abs(dot(hx.xy,fd))*S+step(.3+.2*cr,fract(hs*7.3))*9.;   /* plaques refendues : plus nombreuses à chaque cran */
+    vec4 hy=solHex(wq/(S*.4)+hs*3.);float e3=(.5-solHexD(hy.xy))*S*.4+step(cr,1.5)*9.+step(.5,sH(hy.zw))*9.;   /* craquelure fine dès le palier 4 */
+    float ed=min(e,e2),wc=.022+.007*k;
+    float fis=max(solTrait(ed,wc,aa),solTrait(e3,wc*.55,aa)*.85)*zone;
+    vec3 sec=mix(vec3(Lc),c,.3)*vec3(1.,.96,.9)*(.42+.2*hs-.025*k);
+    c=mix(c,sec*(1.+(B07.g-.5)*.3*nPres),zone*min(1.,.35+.1*k)*moP);
+    c*=1.+.35*(1.-smoothstep(wc,wc+.12,ed))*(1.-fis)*zone*moP;   /* bords retroussés qui prennent la lumière */
+    c=mix(c,vec3(.012,.011,.01),fis*moP);
+    solH=(.1*smoothstep(0.,.14,ed)+.07*(1.-smoothstep(.06,.5,ed))+dot(hx.xy,fd.yx)*.07*S)*zone*nB*moP;}
+   else if(gr<1.5){   /* (c−) Donjon : failles de braise en réseau de Voronoï, son identité depuis la boucle 1 */
     #ifdef SOL_FIN
     float db=solVor(w2/7.5)*7.5+(B07.a-.5)*.1;
+    #else
+    float db=abs(sN2(w2*.2)-.5)*6.5+(B07.a-.5)*.1;   /* repli « Fluide » : une courbe de niveau du bruit, une seule lecture */
     #endif
     float wc=.02+.035*k;
     float coeur=solTrait(db,wc,aa)*zone,bord=(1.-smoothstep(wc,wc+.12+.1*k+aa,db))*zone;
-    c*=1.-bord*(.25+.06*k)*mo;c=mix(c,vec3(.01),coeur*mo);
-    solE+=nc*(coeur*(.2+.1*k)*pul+bord*bord*.012*k)*mo*nLoin;}
+    c*=1.-bord*(.25+.06*k)*moP;c=mix(c,vec3(.01),coeur*moP);
+    solE+=nc*(coeur*(.2+.1*k)*pul+bord*bord*.012*k)*moP*nLoin;}
+   else if(gr<2.5){   /* (c−) Ressource : cendres grises semées en points, quelques-uns couvent encore (faible bruit émissif) */
+    vec3 cen=vec3(.2,.195,.19)*(.7+.6*B8.g)*(1.+(B07.r-.5)*.4*nPres);
+    c=mix(c,mix(vec3(Lc*.5),cen,.75),zone*min(1.,.35+.1*k)*moP);
+    float S=.95*(1.-.15*cr);vec2 g=w2/S,id=floor(g),o=(sH2(id)-.5)*.5;float h=sH(id+5.),den=.22+.17*cr+.015*k;
+    float pt=solTrait(length(fract(g)-.5-o)*S,(.045+.018*cr)*(.6+.8*sH(id+3.)),aa)*step(h,den)*zone*nMoy*pl,braise=step(h,den*.2);
+    c=mix(c,braise>.5?vec3(.03,.025,.02):vec3(.6,.58,.55)*(.85+.3*sH(id+2.)),pt*moP);
+    float cv=smoothstep(.58,.8,sN(w2*.3+B8.r*2.));   /* la cendre couve par plaques */
+    solE+=nc*(pt*braise*(.03+.006*k)*(.4+.6*B07.g)+cv*.004*k*zone)*moP*nLoin;}
+   else if(gr<3.5){   /* (c−) Antre : flaques noires en miroir, qui prennent le zénith quand on regarde à ses pieds et l'horizon au ras du sol (fresnel) */
+    float pz=sN(w2*.085+vec2(3.1,7.7))+(B07.b-.5)*.04*nPres;
+    float plat=1.-smoothstep(.12,.3,pente),sf=.66-.03*k-.04*cr,fl=smoothstep(sf,sf+.006+aa*.03,pz)*plat;   /* plus de flaques à chaque palier, un saut à chaque cran */
+    float berge=smoothstep(sf-.06,sf-.005,pz)*(1.-fl)*plat,frange=fl*(1.-smoothstep(sf+.004,sf+.03+aa*.03,pz));
+    vec3 hor=vec3(.42,.46,.52);
+    #ifdef USE_FOG
+    hor=fogColor;
+    #endif
+    float fres=pow(1.-abs((vSolP.y-cameraPosition.y)/dc),3.);
+    vec3 refl=mix(uSolZen*.8,hor,fres);
+    float ride=(sin(dot(p,vec2(.71,.7))*5.+B07.g*9.)*.5+.5)*nPres;
+    c=mix(c,c*vec3(.3,.31,.34),min(1.,.3+.1*k)*moP);   /* boue noire, détrempée */
+    c=mix(c,c*2.2+vec3(.02),berge*.5*moP);
+    c=mix(c,vec3(.002,.002,.003),fl*moP);
+    solE+=(refl*(.05+.6*fres)*(.75+.5*ride)+mix(refl,vec3(1.),.3)*frange*.25)*fl*moP*nLoin;solLisse=fl*moP;
+    if(dc<16.){vec2 ce=floor(p*5.);vec3 vd=(vSolP-cameraPosition)/dc;   /* éclats de lumière sur l'eau noire */
+     float tw=sH(ce+floor(vd.xz*24.)*5.31),sp=step(.975,tw)*(1.-smoothstep(.05,.18,length(fract(p*5.)-.5)));
+     solE+=mix(nc,vec3(1.),.6)*sp*fl*moP*(.5+ride)*(1.-smoothstep(6.,16.,dc));}}
+   else if(gr<4.5){   /* (c−) Assemblée : terre craquelée en grandes dalles brisées, basculées, terre rouge dans les joints larges */
+    vec2 S=vec2(3.6,2.4)*(1.-.15*cr);zone*=pl;vec4 dl=solDal(p+wv.rg*.8,S);float hs=dl.y;vec2 l=dl.zw*S;
+    vec2 fd=normalize(vec2(hs-.5,.7));float sd=dot(l,vec2(fd.y,-fd.x))+(hs-.5)*.5;
+    float e2=abs(sd)+step(.7-.15*cr,fract(hs*5.1))*9.;   /* dalles refendues, plus nombreuses à chaque cran */
+    float e=min(dl.x,e2),cote=step(0.,sd);
+    float man=step(fract(hs*13.7+cote*.37),.05+.06*cr);   /* dalles arrachées : la terre affleure */
+    float gap=.03+.01*k,jt=1.-smoothstep(gap,gap+aa+.02,e);
+    vec3 dal=mix(vec3(.36,.3,.25),c,.25)*(.65+.6*fract(hs*3.7+cote*.5))*(1.+(B07.g-.5)*.25*nPres);   /* terre sèche ocre-gris, chaque dalle son ton */
+    vec3 terre=vec3(.07,.026,.015)*(.6+.7*B07.g);   /* terre brûlée, sombre : la dalle reste plus claire que le joint */
+    c=mix(c,dal,zone*min(1.,.4+.1*k)*moP);
+    c*=1.+.15*(1.-smoothstep(gap,gap+.2,e))*(1.-jt)*zone*moP;   /* arêtes vives éclairées */
+    c=mix(c,terre,max(jt,man*.85)*zone*moP);
+    vec2 tl=sH2(vec2(hs*91.,hs*37.+cote))-.5;
+    solH=(dot(l,tl)*.12+.05*smoothstep(0.,gap+.05,e))*(1.-man)*zone*nB*moP;
+    solE+=nc*jt*zone*.002*k*pul*moP*nLoin;}
+   else{   /* (c−) Marché : treillis de losanges à la craie (L ≈ ,78) sur un sol d'encre (≈ ,15) ; le losange intérieur vient au palier 4 */
+    vec2 S=vec2(3.,5.)*(1.-.16*cr);vec3 lo=solLos(w2*.15+p*.85,S);float f=S.x*S.y/length(S);
+    float mot=max(solTrait(lo.x,.05+.008*k,aa),k>3.5?solTrait(abs(lo.z-.25)*f,.035,aa):0.);
+    mot=max(mot,k>5.5?solTrait(lo.z*f,.12,aa):0.);   /* palier 6 : un point au cœur */
+    float i=min(1.,.25+.11*k)*moP*pl;
+    c=mix(c,vec3(.035)*(.8+.4*B8.r),i);
+    c=mix(c,vec3(.6),mot*i);solE+=vec3(.42)*mot*i*nLoin;}
   }else{
    vec3 mp=uSolPos[0];if(mana>.5)mp=uSolPos[1];if(mana>1.5)mp=uSolPos[2];if(mana>2.5)mp=uSolPos[3];if(mana>3.5)mp=uSolPos[4];if(mana>4.5)mp=uSolPos[5];
-   /* deux couleurs saturées par grammaire (trait ou première pièce, fond ou seconde pièce), et l'ordre de l'étoile du repli */
-   vec3 cA=vec3(.95,.7,.3),cB=vec3(.3,.6,.62);float n=10.;
-   if(gr>.5&&gr<1.5){cA=vec3(0.,.08,.5);cB=vec3(.5,.55,.66);n=8.;}       /* Donjon : cobalt et blanc */
-   if(gr>1.5&&gr<2.5){cA=vec3(.01,.22,.11);cB=vec3(.2,.62,.4);n=6.;}     /* Ressource : jade */
-   if(gr>2.5&&gr<3.5){cA=vec3(0.,.48,.72);cB=vec3(.92,.78,.9);n=6.;}      /* Antre : turquoise et nacre */
-   if(gr>3.5&&gr<4.5){cA=vec3(.78,.8,.88);cB=vec3(.04,.08,.55);n=12.;}    /* Assemblée : argent sur lapis */
-   if(gr>4.5){cA=vec3(.2,.55,.95);cB=vec3(.82,.88,.93);n=4.;}             /* Marché : bleu glacier et blanc */
-   float mt=(gr>.5&&gr<1.5)?.05:(gr>2.5&&gr<3.5?.08:.18);   /* reprise : le cobalt et la turquoise se protègent du mana */
-   cA=mix(cA,mp*max(cA.r,max(cA.g,cA.b)),mt);cB=mix(cB,mp*max(cB.r,max(cB.g,cB.b)),mt);   /* teinte du mana, jamais le blanc */
-   float gi=1.;
-   #ifdef SOL_FIN
-   gi=(gr<.5||gr>3.5&&gr<4.5)?1.:0.;   /* Citadelle et Assemblée : médaillons ; les autres : marqueteries pleines */
-   #endif
-   if(gi>.5){   /* (c+) médaillons Girih en quinconce, de plus en plus nombreux et ouvragés (10 branches or, ou 12 branches argent sur lapis) */
-    vec2 g=p/vec2(9.,7.8);float row=floor(g.y);g.x+=.5*mod(row,2.);vec2 id=floor(g),l=(fract(g)-.5)*vec2(9.,7.8);
-    float on=step(sH(id+vec2(31.,17.)),.16+.12*k)*step(.5,k);
-    float dans;
+   if(gr<.5){   /* (c+) Citadelle : Girih en relief doré, levé par la normale seule (aucun trait de couleur), sur un sol d'ivoire */
+    float sc=1.;vec4 md=solMed(p,sc);float on=step(sH(md.zw+vec2(31.,17.)),.3+.25*cr)*step(.5,k);   /* médaillons plus nombreux à chaque cran (tous au palier 6) */
+    float dans;vec2 q;
     #ifdef SOL_FIN
-    float d=solGirih(l,k,n,dans);
+    float d=solGirih(md.xy,min(k,5.),10.,dans,q)/sc;   /* sans le treillis : en relief seul, il brouillait l'étoile */
     #else
-    float d=solGirih(l,min(k,3.),n,dans);   /* repli « Fluide » : l'étoile et son polygone seulement */
+    float d=solGirih(md.xy,min(k,3.),10.,dans,q)/sc;
     #endif
-    float wl=.02+.006*k,a2=.02+dc*.0035;
-    float tr=solTrait(d,wl,a2)*on,ombre=solTrait(d,wl+.05,a2)*on;
-    float fond=dans*on*(gr>3.5&&gr<4.5?step(1.5,k)*min(.95,.4+.08*k):step(3.5,k)*(k>5.5?.32:.18));
-    c*=1.-(ombre-tr)*.3*mo*nMoy;
-    c=mix(c,cB*(gr>3.5&&gr<4.5?1.:max(.45,dot(c,vec3(.45))*1.2)),fond*mo*nMoy);
-    c=mix(c,cA,tr*mo);solGold=max(tr,fond*.6)*mo;
-    solE+=cA*.95*tr*(.04+.03*k)*mo*nLoin;}
-   #ifdef SOL_FIN
-   else if(gr<1.5){   /* (c+) Donjon : zellige khatam, étoiles blanches à 8 branches sur champ de cobalt, octogone central dès le palier 5 */
+    float wl=.06+.008*k;
+    c=mix(c,mix(c,vec3(Lc),.45)*1.1+vec3(.06,.05,.025),min(1.,.35+.09*k)*moP);
+    float bord=1.-smoothstep(0.,wl*1.8,d);
+    solH=(.07*sqrt(bord)+.02*dans)*on*nB*moP;
+    float dor=solTrait(d,wl,.02+dc*.0035)*on*(1.-nB*.6);   /* au loin, où le relief ne se voit plus, un ton sur ton à peine doré */
+    c*=mix(vec3(1.),vec3(1.06,.98,.8),dor*moP);solGold=max(bord,dans*.4)*on*moP;}
+   else if(gr<1.5){   /* (c+) Donjon : traits Girih fins (repli « Fluide ») ou zellige khatam cobalt et blanc */
+    vec3 cA=mix(vec3(0.,.08,.5),mp*.5,.05),cB=mix(vec3(.5,.55,.66),mp*.66,.05);
+    #ifdef SOL_FIN
     float S=5.2;vec2 id=floor(p/S),l=(fract(p/S)-.5)*S;
     float sa=max(abs(l.x),abs(l.y)),sb=(abs(l.x)+abs(l.y))*.7071,R=1.78,on=solPose((id+.5)*S,k),op=solOp(k)*solBord(S*.5-sa,k);
     float dd=abs(min(sa,sb)-R),ins=step(min(sa,sb),R),oct=step(max(sa,sb),R*.6)*step(4.5,k);
     if(k>2.5)dd=min(dd,S*.5-sa);
     if(k>4.5)dd=min(dd,abs(max(sa,sb)-R*.6));
-    /* reprise : étoiles blanches sur champ de cobalt (le cobalt domine) ; aux bas paliers l'étoile seule, le champ vient à partir du palier 2 */
     vec3 f=mix(cA,cB,ins-oct);
-    c=mix(c,f*(.88+.24*sH(id+3.)),on*mo*op*mix(ins,1.,smoothstep(1.5,4.5,k)));
+    c=mix(c,f*(.88+.24*sH(id+3.)),on*moP*op*mix(ins,1.,smoothstep(1.5,4.5,k)));
     float tr=solTrait(dd,.03+.006*k,aa)*on*solOp(k);
-    c=mix(c,cA*.45,tr*mo);solGold=on*mo*op*.3;
-    solE+=cA*(1.-ins+oct)*on*op*smoothstep(1.5,4.5,k)*.22*mo*nLoin;}   /* un peu de cobalt propre, que la lumière chaude et le voile ne rosissent pas */   /* peu de reflet : le ciel chaud ne rosit plus le cobalt */
-   else if(gr<2.5){   /* (c+) Ressource : terrasses concentriques de jade, plus larges à chaque palier, contremarches dans l'ombre */
-    /* reprise boucle 2 : anneaux pleins alternés jade sombre / jade clair, ombre de contremarche, rayon borné pour rester des cercles */
-    float S=30.;vec4 hx=solHex(p/S);float r=length(hx.xy)*S,hs=sH(hx.zw);
-    float on=step(hs,.3+.1*k)*step(.5,k),Rm=min(13.6,(3.5+1.6*k)*(.85+.2*hs));
-    float pas=2.2,ri=floor(r/pas),fr=fract(r/pas);
-    float dedans=on*(1.-smoothstep(Rm-.3,Rm+.3,r));
-    vec3 f=mix(cA,cB,mix(.5,mod(ri,2.),nMoy));   /* au loin, une teinte moyenne (pas de moiré) */
-    f*=(1.-.6*smoothstep(.7,.98,fr)*nMoy)*(1.+.3*(1.-smoothstep(0.,.14,fr))*nMoy);   /* contremarche dans l'ombre, nez de marche éclairé */
-    c=mix(c,f,dedans*mo*min(1.,.35+.09*k));
-    float tr=solTrait((1.-fr)*pas,.03+.004*k,aa)*dedans;
-    c=mix(c,cA*.2,tr*mo);solGold=dedans*mo*.35;}
-   else if(gr<3.5){   /* (c+) Antre : mosaïque d'hexagones turquoise et nacre (la nacre change avec le regard), joints sombres */
-    float S=1.4;vec4 hx=solHex(p/S);float e=(.5-solHexD(hx.xy))*S,hs=sH(hx.zw),on=solPose(hx.zw*S,k),op=solOp(k)*solBord(e,k);
-    hs=mix(hs,.5,smoothstep(30.,80.,dc));   /* au loin, les pièces se fondent en une teinte moyenne (pas de moiré) */
-    float nac=smoothstep(.6,.64,hs*.55+B8.b*.6);
-    vec3 vd=(vSolP-cameraPosition)/dc;float ir=hs*11.+(vd.x+vd.z)*5.;
-    vec3 nacre=cB*(vec3(1.)+.28*vec3(sin(ir),sin(ir+2.1),sin(ir+4.2)));
-    c=mix(c,mix(cA*(.85+.35*hs),nacre,nac),on*mo*op);
-    float tr=solTrait(e,.034+.006*k,aa)*on*solOp(k);   /* joints sombres et épais */
-    c=mix(c,vec3(.01,.015,.025),tr*mo);solGold=on*mo*op*.85;}
-   else{   /* (c+) Marché : losanges en arlequin blanc et bleu glacier, petit losange inversé au cœur dès le palier 5 */
-    vec2 a=vec2(p.x/2.6+p.y/4.4,p.x/2.6-p.y/4.4),id=floor(a),f=fract(a)-.5;
-    float m=max(abs(f.x),abs(f.y)),e=(.5-m)*2.24,on=solPose(vec2((id.x+id.y+1.)*1.3,(id.x-id.y)*2.2),k),op=solOp(k)*solBord(e,k);
-    float bl=mod(id.x+id.y,2.);if(k>4.5&&m<.17)bl=1.-bl;
-    c=mix(c,mix(cB,cA,bl)*(.9+.2*sH(id)),on*mo*op);
-    float tr=solTrait(min(e,k>4.5?abs(m-.17)*2.24:9.),.025+.005*k,aa)*on*solOp(k);
-    c=mix(c,cA*.35,tr*mo);solGold=on*mo*op*.7;}
-   #endif
+    c=mix(c,cA*.45,tr*moP);solGold=on*moP*op*.3;
+    solE+=cA*(1.-ins+oct)*on*op*smoothstep(1.5,4.5,k)*.22*moP*nLoin;
+    #else
+    vec4 md=solMed(p,1.);float on=step(sH(md.zw+vec2(31.,17.)),.16+.12*k)*step(.5,k),dans;vec2 q;
+    float d=solGirih(md.xy,min(k,3.),8.,dans,q),a2=.02+dc*.0035,wl=.02+.006*k;
+    float tr=solTrait(d,wl,a2)*on,ombre=solTrait(d,wl+.05,a2)*on;
+    c*=1.-(ombre-tr)*.3*moP*nMoy;c=mix(c,cA,tr*moP);solGold=tr*moP;solE+=cA*.95*tr*(.04+.03*k)*moP*nLoin;
+    #endif
+    }
+   else if(gr<2.5){   /* (c+) Ressource : prairie claire semée de fleurs à cinq pétales (crème, soleil, teinte du mana) */
+    c=mix(c,c*1.1+vec3(.025,.04,.0),min(1.,.35+.09*k)*moP);
+    float S=1.25*(1.-.14*cr);vec2 g=w2/S,id=floor(g),v=(fract(g)-.5-(sH2(id+4.)-.5)*.5)*S;
+    float h=sH(id+11.),den=.2+.18*cr+.015*k,on=step(h,den)*zone;
+    float R=(.15+.035*cr)*(.8+.4*sH(id+2.)),r=length(v),a=atan(v.y,v.x)+h*6.283;
+    float pet=clamp(.5+(R*(.4+.6*abs(cos(2.5*a)))-r)/aa,0.,1.)*on*nMoy,coeur=clamp(.5+(R*.24-r)/aa,0.,1.)*on*nMoy;
+    float t=fract(h*7.7);vec3 fc=t<.4?vec3(.95,.9,.8):(t<.75?vec3(.95,.72,.2):mix(mp,vec3(1.),.35));
+    vec3 moy=mix(vec3(.95,.85,.55),mp,.25);c=mix(c,mix(c,moy,.35),den*zone*(1.-nMoy)*moP);   /* au loin, la prairie prend la teinte des fleurs */
+    c=mix(c,fc*(.9+.2*B07.g),pet*moP);c=mix(c,t<.75?vec3(.85,.5,.08):vec3(.98,.9,.5),coeur*moP);}
+   else if(gr<3.5){   /* (c+) Antre : nacre en écailles imbriquées, irisée selon le regard, liseré sombre ; l'écaille se bombe vers son bord */
+    float S=1.7*(1.-.15*cr);vec3 ec=solEca(p+wv.rg*.6,S);float hs=mix(ec.y,.5,smoothstep(30.,80.,dc));
+    vec3 vd=(vSolP-cameraPosition)/dc;float ir=hs*9.+(vd.x+vd.z)*4.+ec.x*2.5;
+    vec3 nac=vec3(.86,.85,.87)*(vec3(1.)+.17*vec3(sin(ir),sin(ir+2.1),sin(ir+4.2)));
+    nac=mix(nac,mp*max(nac.r,max(nac.g,nac.b)),.12)*(.78+.3*ec.x);
+    float i=zone*min(1.,.4+.09*k)*moP,rim=solTrait(ec.z,.022+.004*k,aa)*nMoy;
+    c=mix(c,nac,i);c=mix(c,nac*.4,rim*i);
+    solH=.035*ec.x*ec.x*zone*nB*moP;solGold=i*.8;}
+   else if(gr<4.5){   /* (c+) Assemblée : mosaïque Girih PLEINE à aplats de trois couleurs (terre cuite, sable, vert de cuivre), joints bruns */
+    float sc=1.+.15*cr;vec4 md=solMed(p,sc);float on=step(sH(md.zw+vec2(31.,17.)),.4+.22*cr)*step(.5,k);   /* pleine au cran 3 */
+    float dans;vec2 q;
+    #ifdef SOL_FIN
+    float d=solGirih(md.xy,k,12.,dans,q)/sc;
+    #else
+    float d=solGirih(md.xy,min(k,3.),12.,dans,q)/sc;
+    #endif
+    vec3 c1=vec3(.6,.26,.13),c2=vec3(.88,.79,.6),c3=vec3(.17,.3,.17);
+    float dec=step(q.x,3.45);
+    vec3 f=mix(c3,mix(c2,c1,dans),dec);if(k>4.5&&q.x<.62)f=c3;   /* palier 5 : rosace au cœur de l'étoile */
+    f*=.93+.12*sH(md.zw+floor(q*2.));
+    c=mix(c,f,on*moP*min(1.,.5+.08*k));
+    c=mix(c,vec3(.12,.08,.05),solTrait(d,.03+.004*k,aa)*on*moP);solGold=on*moP*.4;}
+   else{   /* (c+) Marché : losanges sombres (≈ ,25) en arlequin sur un sol clair (≈ ,88), petit losange inversé au cœur dès le palier 5 */
+    vec2 S=vec2(2.6,4.4)*(1.-.16*cr);vec3 lo=solLos(p,S);float f=S.x*S.y/length(S);
+    float bl=lo.y;if(k>4.5&&lo.z<.17)bl=1.-bl;
+    float i=min(1.,.25+.11*k)*moP*pl;
+    c=mix(c,vec3(.8)*(.97+.06*B8.r),i);
+    c=mix(c,vec3(.12),bl*i*(1.-solTrait(lo.x,.03,aa)));
+    c=mix(c,vec3(.45),solTrait(min(lo.x,k>4.5?abs(lo.z-.17)*f:9.),.025,aa)*i);}
   }
  }
  if(solEau>.001){   /* zones-biomes : l'eau reflète le ciel au ras du regard, rides lentes, surface lisse (reflets du soleil) */
@@ -361,6 +388,10 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.;
   c=mix(c,c*.6,solEau);solE+=ciel*(.03+.42*fres)*(.75+.45*ride*nMoy)*solEau*nLoin;solLisse=max(solLisse,solEau*.85);}
  diffuseColor.rgb=c;}
 `;
+/* boucle 3 (20 nov. 2026) : relief du motif de pôle par la normale (comme une carte de relief, mais calculée, sans texture).
+   Les dérivées sont prises hors de toute branche (flot uniforme) ; solH est nul hors des motifs en relief. */
+const FRAG_NRM=`{vec2 dH=vec2(dFdx(solH),dFdy(solH));vec3 sp=-vViewPosition,sx=dFdx(sp),sy=dFdy(sp);
+ if(dot(dH,dH)>1e-12){vec3 R1=cross(sy,normal),R2=cross(normal,sx);float fD=dot(sx,R1);normal=normalize(abs(fD)*normal-sign(fD)*(dH.x*R1+dH.y*R2));}}`;
 const _buildSol=buildTerrain;
 buildTerrain=function(){_buildSol();
   /* fondu près des frontières : un attribut par sommet, interpolé finement (la carte des zones, elle, est lue au plus proche) */
@@ -373,10 +404,12 @@ buildTerrain=function(){_buildSol();
     s.fragmentShader=(finCompile?'#define SOL_FIN\n':'')+FRAG_DEC+s.fragmentShader
       .replace('#include <color_fragment>','#include <color_fragment>\n'+FRAG_COL)
       .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(mix(roughnessFactor,.38,solGold),.06,solLisse);')
+      .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+FRAG_NRM)
       .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=solE;')};
   m.customProgramCacheKey=()=>'sol'+fin();m.needsUpdate=true};
 /* à chaque image : style de zone actif ou non, et recompilation si la qualité passe en Fluide ou en sort */
 const _drawSol=draw;
 draw=function(t){U.uSolSty.value=(typeof STYLE_ON==='undefined'||STYLE_ON)?1:0;
+  if(typeof hemi!=='undefined')U.uSolZen.value.set(hemi.color.r,hemi.color.g,hemi.color.b);
   if(terrain&&finCompile>=0&&fin()!==finCompile){finCompile=fin();terrain.material.needsUpdate=true}_drawSol(t)};
 })();
