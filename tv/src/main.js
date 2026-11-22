@@ -213,7 +213,10 @@ const regionOrigine=()=>dReg([0,0])<1;
 function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw];if(apres!=='neuf')save();
   if(typeof rechargeAutorisee==='function'&&!rechargeAutorisee()){if(typeof libererGPU==='function')libererGPU();arretBoucle('voyage');return}   /* 22 nov. : pas de boucle de voyages */
   try{localStorage.setItem('mz-region',JSON.stringify([Math.round(c[0]),Math.round(c[1])]));localStorage.setItem('mz-apres',apres||'jeu')}catch(_){}
-  const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}setTimeout(()=>location.reload(),60)}
+  const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}
+  /* 22 nov. (« manque de mémoire graphique » après un voyage, Xbox) : on rend la carte graphique AVANT de recharger, et on laisse
+     une seconde à Edge pour la libérer vraiment ; sinon la nouvelle région ne trouve pas de contexte WebGL au démarrage. */
+  setTimeout(()=>{if(typeof libererGPU==='function')libererGPU();setTimeout(()=>location.reload(),1000)},60)}
 function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');return}
   if(neuf){for(const id in S.lv)if(!ZB[id])delete S.lv[id];for(const id of ZONES_DEP)if(!ZB[id])S.lv[id]=0;for(const k of['own','emp','rest','act'])for(const id in S[k]||{})if(!ZB[id])delete S[k][id]}
   if(neuf){const g0=S.graine;do S.graine=Math.floor(Math.random()*997)+1;while(S.graine===g0);   /* 20 nov. : une graine neuve, pour que chaque module oublie l'ancien monde */NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;

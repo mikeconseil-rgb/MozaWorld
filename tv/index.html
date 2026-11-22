@@ -437,9 +437,9 @@ const canvas=document.getElementById('vue');
    (jusqu'à 4 fois, de plus en plus long), puis la qualité est baissée pour la séance. */
 /* 22 nov. soir (« l'écran de chargement boucle sur Voyage ») : garde ferme contre les rechargements en chaîne. Tout
    rechargement automatique (voyage, contexte perdu, nouvel essai de la carte graphique) passe par rechargeAutorisee() :
-   au plus 4 en 2 minutes. Au-delà, plus de rechargement : un message clair reste à l'écran, la qualité est baissée. */
+   au plus 6 en 2 minutes. Au-delà, plus de rechargement : un message clair reste à l'écran, la qualité est baissée. */
 function rechargeAutorisee(){let L=[];try{L=JSON.parse(sessionStorage.getItem('mz-recharges')||'[]')}catch(_){}const n=Date.now();L=L.filter(t=>n-t<120000);
-  if(L.length>=4)return false;L.push(n);try{sessionStorage.setItem('mz-recharges',JSON.stringify(L))}catch(_){}return true}
+  if(L.length>=6)return false;L.push(n);try{sessionStorage.setItem('mz-recharges',JSON.stringify(L))}catch(_){}return true}
 function arretBoucle(pourquoi){try{sessionStorage.removeItem('mz-recharges');sessionStorage.removeItem('mz-gl-essai');
     const q=+localStorage.getItem('mz-tv-q2');if(!(q>=0)||q>1)localStorage.setItem('mz-tv-q2','1')}catch(_){}
   const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on');const b=vo.querySelector('b'),sp=vo.querySelector('span');
@@ -449,10 +449,10 @@ function arretBoucle(pourquoi){try{sessionStorage.removeItem('mz-recharges');ses
 let GL_ESSAIS=0;try{GL_ESSAIS=+sessionStorage.getItem('mz-gl-essai')||0}catch(_){}
 const renderer=(()=>{try{const r=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
     try{sessionStorage.removeItem('mz-gl-essai')}catch(_){}return r}
-  catch(e){if(GL_ESSAIS<3&&rechargeAutorisee()){try{sessionStorage.setItem('mz-gl-essai',String(GL_ESSAIS+1))}catch(_){}
-      const v=document.getElementById('seuil-ver');if(v)v.textContent='La carte graphique se libère… nouvel essai ('+(GL_ESSAIS+1)+' sur 3)';
+  catch(e){if(GL_ESSAIS<4&&rechargeAutorisee()){try{sessionStorage.setItem('mz-gl-essai',String(GL_ESSAIS+1))}catch(_){}
+      const v=document.getElementById('seuil-ver');if(v)v.textContent='La carte graphique se libère… nouvel essai ('+(GL_ESSAIS+1)+' sur 4)';
       const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on')}
-      setTimeout(()=>location.reload(),1500*(GL_ESSAIS+1));throw new Error('Nouvel essai de la carte graphique')}
+      setTimeout(()=>location.reload(),2500*(GL_ESSAIS+1));   /* 2,5 s, 5 s, 7,5 s, 10 s : Edge sur Xbox met du temps à rendre la mémoire */throw new Error('Nouvel essai de la carte graphique')}
     arretBoucle('la carte graphique refuse de démarrer');throw new Error('Nouvel essai de la carte graphique : arrêt')}})();
 /* Version télé : on rend l'image à une largeur fixe (QUAL.w) puis la télé l'agrandit. Trois réglages, ajustés seuls si l'image saccade. */
 const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4},{nom:'Splendide',w:1920,sh:2048,ms:4}];
@@ -6398,7 +6398,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.41';
+const MZ_VERSION='2.41.1';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -8253,7 +8253,10 @@ const regionOrigine=()=>dReg([0,0])<1;
 function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw];if(apres!=='neuf')save();
   if(typeof rechargeAutorisee==='function'&&!rechargeAutorisee()){if(typeof libererGPU==='function')libererGPU();arretBoucle('voyage');return}   /* 22 nov. : pas de boucle de voyages */
   try{localStorage.setItem('mz-region',JSON.stringify([Math.round(c[0]),Math.round(c[1])]));localStorage.setItem('mz-apres',apres||'jeu')}catch(_){}
-  const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}setTimeout(()=>location.reload(),60)}
+  const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}
+  /* 22 nov. (« manque de mémoire graphique » après un voyage, Xbox) : on rend la carte graphique AVANT de recharger, et on laisse
+     une seconde à Edge pour la libérer vraiment ; sinon la nouvelle région ne trouve pas de contexte WebGL au démarrage. */
+  setTimeout(()=>{if(typeof libererGPU==='function')libererGPU();setTimeout(()=>location.reload(),1000)},60)}
 function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');return}
   if(neuf){for(const id in S.lv)if(!ZB[id])delete S.lv[id];for(const id of ZONES_DEP)if(!ZB[id])S.lv[id]=0;for(const k of['own','emp','rest','act'])for(const id in S[k]||{})if(!ZB[id])delete S[k][id]}
   if(neuf){const g0=S.graine;do S.graine=Math.floor(Math.random()*997)+1;while(S.graine===g0);   /* 20 nov. : une graine neuve, pour que chaque module oublie l'ancien monde */NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
@@ -9463,7 +9466,8 @@ function libererGPU(){if(memLibere)return;memLibere=true;
   try{renderer.render=()=>{};renderer.setRenderTarget=()=>{};renderer.compile=()=>{}}catch(_){}
   try{scene.traverse(o=>{if(o.geometry)o.geometry.dispose();const m=o.material;if(m)for(const x of[].concat(m)){for(const k in x)if(x[k]&&x[k].isTexture)x[k].dispose();x.dispose()}})}catch(_){}
   try{for(const r of[rtS,rtA,rtB,rtC,rtD,rtE])if(r)r.dispose();if(sun.shadow.map)sun.shadow.map.dispose()}catch(_){}
-  try{renderer.renderLists.dispose();renderer.dispose();renderer.forceContextLoss()}catch(_){}}
+  try{renderer.renderLists.dispose();renderer.dispose();renderer.forceContextLoss()}catch(_){}
+  try{canvas.width=canvas.height=1}catch(_){}}   /* le tampon d'image du canevas aussi (22 nov.) */
 addEventListener('pagehide',libererGPU);
 addEventListener('pageshow',e=>{if(e.persisted){if(rechargeAutorisee())location.reload();else arretBoucle('retour en arrière')}});   /* page rendue par le cache « retour » : sa carte graphique a été rendue, on recharge */addEventListener('beforeunload',libererGPU);
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(memLibere)return;pouls();memLibere=true;
@@ -9907,6 +9911,9 @@ const bo=document.querySelector('#menu .boite');if(bo){let g=7331;const a=()=>(g
 (function(){
 const FORCE=/[?&]tactile=1/.test(location.search);
 if(window.Android)return;
+/* 2.41.1 : rien du tout sur Xbox (Edge peut y signaler des « touchers » venus de la manette) */
+if(/xbox/i.test(navigator.userAgent)&&!FORCE)return;
+function manetteBranchee(){try{return[...(navigator.getGamepads?navigator.getGamepads():[])].some(g=>g&&g.connected)}catch(_){return false}}
 let actif=false,racine=null,stick=null,lab={},orient=null;
 
 const css=document.createElement('style');css.textContent=`
@@ -9987,7 +9994,7 @@ function appuyer(id,d){
   MZpad.btn(id,d)}
 function estInteractif(t){return t&&t.closest&&t.closest('.choix .opt, #cb-main .cc, #combat .unite, #combat [class*="u-"], #combat .foe')}
 function bas(e){if(e.pointerType==='mouse'&&!FORCE)return;
-  if(!actif){if(e.pointerType!=='touch'&&!FORCE)return;monter()}
+  if(!actif){if((e.pointerType!=='touch'||manetteBranchee())&&!FORCE)return;monter()}
   const s=sceauSous(e.target);
   if(s){e.preventDefault();const id=idDe(s);s.classList.add('on');doigts.set(e.pointerId,{k:'btn',id,el:s});appuyer(id,true);return}
   if(estInteractif(e.target)||e.target.closest&&e.target.closest('.choix')){doigts.set(e.pointerId,{k:'tap',x:e.clientX,y:e.clientY,t:e.target});return}

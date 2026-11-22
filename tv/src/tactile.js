@@ -14,6 +14,9 @@
 (function(){
 const FORCE=/[?&]tactile=1/.test(location.search);
 if(window.Android)return;
+/* 2.41.1 : rien du tout sur Xbox (Edge peut y signaler des « touchers » venus de la manette) */
+if(/xbox/i.test(navigator.userAgent)&&!FORCE)return;
+function manetteBranchee(){try{return[...(navigator.getGamepads?navigator.getGamepads():[])].some(g=>g&&g.connected)}catch(_){return false}}
 let actif=false,racine=null,stick=null,lab={},orient=null;
 
 const css=document.createElement('style');css.textContent=`
@@ -94,7 +97,7 @@ function appuyer(id,d){
   MZpad.btn(id,d)}
 function estInteractif(t){return t&&t.closest&&t.closest('.choix .opt, #cb-main .cc, #combat .unite, #combat [class*="u-"], #combat .foe')}
 function bas(e){if(e.pointerType==='mouse'&&!FORCE)return;
-  if(!actif){if(e.pointerType!=='touch'&&!FORCE)return;monter()}
+  if(!actif){if((e.pointerType!=='touch'||manetteBranchee())&&!FORCE)return;monter()}
   const s=sceauSous(e.target);
   if(s){e.preventDefault();const id=idDe(s);s.classList.add('on');doigts.set(e.pointerId,{k:'btn',id,el:s});appuyer(id,true);return}
   if(estInteractif(e.target)||e.target.closest&&e.target.closest('.choix')){doigts.set(e.pointerId,{k:'tap',x:e.clientX,y:e.clientY,t:e.target});return}
