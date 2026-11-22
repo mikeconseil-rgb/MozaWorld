@@ -6,6 +6,25 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.38 : boucle graphique 4 (22 novembre)
+
+Deux améliorations acceptées par le testeur de l'équipe graphique (la troisième, la marqueterie des sols, est refusée et reprise à la boucle 5) :
+- **Le niveau 0 devient un lieu** : chaque zone a sa troisième ancre de couleur et son heure du jour au niveau 0 (Citadelle ambrée, DON045 à l'heure bleue, RES374 en brume jade, ASS152 en canyon brique, ANT120 en oasis). Les pôles ±7 sont inchangés (vérifié sur les 52 zones).
+- **Combat et interface** : plateau en vraies tesselles au lieu de la nappe vichy, boutons en sceaux, la carte choisie garde sa peinture, « Fin du tour » lisible, écran d'exploration allégé.
+
+## Boucle 4, artisan 3 : combat et interface classieux (22 novembre, `src/carnet-combat.js`, `cartes-visuel.js`, `epure.js`, `fluidite.js`)
+On garde la mosaïque collée et la cire rouge demandées le 21 novembre ; seules l'échelle, le contraste et la finition changent.
+- Cases du Plateau en tesselles fines (opus vermiculatum) au lieu d'un quadrillage de nappe vichy : joints de 1 px couleur mortier chaud au pas de .72u, filet clair d'1 px, seconde grille décalée très légère, liseré intérieur assombri puis filet d'or.
+- « Fin du tour » : sceau de cire mate assourdie (#7a2a22, deux tons, sans reflet), plus petit (5,6u), libellé en petites capitales laiton dans un anneau gravé. « Manœuvre » : anneau de laiton sur fond d'encre, sans boule verte. Le sceau du titre passe à la même cire mate, étoile laiton.
+- Cartes : corps du texte à 13 px au moins à 720p ; dans la main, règle en trois lignes avec ellipse (le détail à l'inspection). La carte choisie n'est plus serrée à 78 % à tort (le cadre dépassait toujours de quelques pixels) ; quand son texte déborde, c'est l'illustration qui rétrécit.
+- Exploration épurée : l'aide tient sur une ligne et s'efface après 12 s sans entrée (45 s au plus), RB ou Tab la rappelle ; la plaque de nom sous la minicarte se retire tant que la fiche de zone est affichée (le nom n'apparaît qu'une fois) ; la minicarte perd son flou d'arrière-plan (un rectangle terne, et du travail en moins pour la Xbox).
+- Flocons du premier plan plafonnés à 10 px (au lieu de 18) : plus de taches sur l'objectif. Mesures (triangles, appels) inchangées.
+- Reprise du 22 novembre (boucle 4 bis, après le testeur) : la carte choisie ne s'écrase plus. Ordre des recours quand son texte déborde : la citation s'efface, la carte grandit vers le haut de 0,9u (la place libre sous la ligne d'aide), puis l'illustration cède un peu mais jamais sous 4,4u (plus de 80 % de ses 5,4u), enfin la dernière ligne se fond (8 à 10 lignes à 13 px). Plateau : deux grilles légères penchées de 4 et 3 degrés, la grille décalée à .10, et des tesselles de tons inégaux (petit motif SVG de 7 × 5 tesselles au pas des joints, sans filtre) : la case ne se lit plus comme du papier millimétré. Libellé « Fin du tour » plus clair (#f6dc9c), plus gras et cerné d'ombre, lisible de loin.
+## Boucle graphique 4, amélioration 1 : le zéro devient un lieu (22 novembre, `src/styles.js`, `src/ciels.js`)
+- Au niveau 0, chaque zone a sa troisième ancre de couleur (z : ombres, tons moyens, hautes lumières) et son heure du jour : Berestograd en fin d'après-midi ambrée (soleil à 16°), la Taïga de Kobor (DON045) à l'heure bleue (9°, brouillard bleu-violet), la Taïga de Chika (RES374) dans une brume jade (26°), le Canyon de Fjorhel (ASS152) en brique sous un soleil de midi (62°), l'Oasis de Maulu (ANT120) en turquoise et vert (40°). Familles : Donjon garance et ocre, Ressource sarcelle et laiton, Antre vert bouteille et or terne, Assemblée rose cendré et sable ; Marché inchangé.
+- Chaque palier glisse d'un septième de l'ancre 0 vers celle du pôle (couleurs, élévation du soleil, brouillard) ; les pôles ±7 ne changent pas. Le split-toning vaut 0,4 à 0 (0,7 à ±7, comme avant) ; Givrecloche reste en noir et blanc, Chinampas en manga. Le duo dominante / complémentaire du ciel est présent à 35 % dès le niveau 0 et s'efface vers −7.
+- Uniquement des réglages : aucune passe, aucune lecture de texture, aucun appel de dessin en plus.
+
 ## Version 2.33 : interface « Carnet sombre », étape 3, le menu pause (22 novembre, `src/carnet-menu.js`)
 - Le menu pause et ses sous-menus (paquet, grimoire, sauvegardes, rivaux, lois…) s'écrivent sur une page de carnet : parchemin déchiré aux coins brûlés, titre gothique, sceau de cire, options à l'encre, notes à la main ; l'option choisie est entourée à l'encre rouge.
 - Mêmes options, même ordre, mêmes commandes. Les cartes à jouer gardent leurs cadres. Aucune image, aucun filtre.

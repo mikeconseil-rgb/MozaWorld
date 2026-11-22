@@ -2720,7 +2720,7 @@ if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty))
   vec3 Y=vec3(.299,.587,.114);float L=dot(c,Y);
   float ws=1.-smoothstep(0.,.42,L),wh=smoothstep(mix(.45,.62,sN),.95,L) /* à −7, seules les vraies lumières prennent la couleur haute */,wm=max(0.,1.-ws-wh);
   vec3 T=sigSh*ws+sigMi*wm+sigHi*wh,tn=min(T/max(dot(T,Y),.02),vec3(2.)),sh=min(sigSh/max(dot(sigSh,Y),.01),vec3(2.4));
-  c=mix(c,c*tn,(.28+.42*sG)*fo); /* split-toning : la teinte change, la luminance reste */
+  c=mix(c,c*tn,(.4+.3*sG)*fo); /* split-toning : la teinte change, la luminance reste. Boucle 4 (22 nov.) : .4 au niveau 0 (le zéro a sa couleur), .7 à ±7 comme avant */
   /* −7 : les ombres se relèvent (les formes du sol se lisent), le plancher prend la couleur d'ombre de la zone */
   c=mix(c,pow(max(c,0.),vec3(.62)),sN*fo*(1.-smoothstep(0.,.3,L)));
   vec3 fl=sh*mix(.012,.06,sN)*fo;c=fl+c*(1.-fl);
@@ -2802,19 +2802,25 @@ function styleBorder(id){const Z=ZB[id],Q=CIT;let best=null;
    et la vignette. Mise à jour une fois par image, depuis la zone de la caméra (aucun test de zone par pixel). */
 const SIG={
   /* zones d'origine */
-  CIT:{n:['#14203a','#4a5672','#d8964a'],p:['#5a78a8','#c4b49c','#ffd68a']}, /* Berestograd : ardoise / ambre */
+  CIT:{n:['#14203a','#4a5672','#d8964a'],p:['#5a78a8','#c4b49c','#ffd68a'],z:['#2a2030','#8a6a4c','#ffc27a']}, /* Berestograd : ardoise / ambre ; 0 : ambre de fin d'après-midi, ombres indigo */
   DON:{n:['#2c0a16','#6a2a30','#e8c8a0'],p:['#9a5a6a','#e8c4ac','#fff4dc']}, /* Donjon : bordeaux / crème */
   ANT:{n:['#03201c','#24584c','#a8e6c8'],p:['#3a7a8c','#a4d6cc','#f0fff4']}, /* Antre : vert abysse / écume */
   MAR:{n:['#12141c','#6a6c76','#e6e8f0'],p:['#949aaa','#d8dade','#fafbff']}, /* Givrecloche : neutre froid (noir et blanc) */
   RES:{n:['#22140e','#5a5048','#f2dca8'],p:['#4a6a9a','#a8d0c0','#fff8e8']}, /* Chinampas : terre / jade (manga) */
-  ASS:{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8']}, /* Assemblée : prune / braise, lavande / ivoire */
+  ASS:{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8'],z:['#3a2430','#a8847e','#f4dcbc']}, /* Assemblée : prune / braise, lavande / ivoire ; 0 : rose cendré et sable */
   /* familles des types des nouvelles tuiles (même parti pris que la zone d'origine du type, sans être identiques) */
-  Ressource:{n:['#022630','#1a6a72','#b4f0e0'],p:['#3a8aa8','#86dccc','#d0fff0']}, /* sarcelle / menthe : à l'opposé des Donjons */
-  Donjon:{n:['#3a0812','#7a2a22','#f4b878'],p:['#a85a78','#f0a898','#ffc8b0']},    /* bordeaux / or rose */
-  Antre:{n:['#161a04','#56561e','#e6cc7a'],p:['#4a8a6a','#d6e6a0','#fffbe0']},     /* olive / chartreuse */
-  'Assemblée':{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8']},
+  Ressource:{n:['#022630','#1a6a72','#b4f0e0'],p:['#3a8aa8','#86dccc','#d0fff0'],z:['#0e3036','#3a8a86','#e8d49a']}, /* sarcelle / menthe : à l'opposé des Donjons ; 0 : sarcelle et laiton */
+  Donjon:{n:['#3a0812','#7a2a22','#f4b878'],p:['#a85a78','#f0a898','#ffc8b0'],z:['#3a1418','#a0703a','#f8d8a0']},    /* bordeaux / or rose ; 0 : ombres garance, tons moyens ocre */
+  Antre:{n:['#161a04','#56561e','#e6cc7a'],p:['#4a8a6a','#d6e6a0','#fffbe0'],z:['#0e2a1a','#3e6a44','#d8c27a']},     /* olive / chartreuse ; 0 : vert bouteille et or terne */
+  'Assemblée':{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8'],z:['#3a2430','#a8847e','#f4dcbc']},
   'Marché':{n:['#10161e','#5a6470','#e0e6ee'],p:['#8a9ab0','#d6dce2','#fbfcff']},
   'Cité':{n:['#16243a','#4e5a70','#dca050'],p:['#6080b0','#c8b8a0','#ffd890']}};
+/* boucle 4 (22 nov. 2026) : le zéro devient un lieu. Ancre z (équilibre) propre à quelques tuiles « plus » qui se ressemblaient
+   (trois taïgas grises, deux sables crème) ; elle prime sur le z de famille et n'est pas tournée. */
+const SIG_Z0={DON045:['#1a1838','#5a5a8a','#c8c0ff'], /* heure bleue */
+  RES374:['#16302a','#6a9a88','#e8f4e0'],                  /* brume jade */
+  ASS152:['#3a1410','#a85a3c','#ffc08a'],                  /* canyon brique */
+  ANT120:['#0a2a2a','#3a8a78','#c8f0c0']};                 /* oasis turquoise et vert */
 /* ajustement léger par biome (rotation de teinte en degrés) : deux tuiles du même type ne se confondent pas */
 const SIG_BIO={'Forêt boréale':-8,'Fjord':-16,'Canyon':14,'Désert de sable':10,'Oasis':6,'Cité en ruines':0,'Récif':-12,
   'Cavernes cristallines':-22,'Lande':18,'Steppe':8,'Delta fluvial':-6,'Falaise côtière':-10,
@@ -2836,16 +2842,21 @@ function sigOf(Z){if(Z._sig)return Z._sig;let r=Z.plus?null:SIG[Z.id];
   if(!r&&Z.plus){const d=Z.d,[ng,ps]=(PMANA[d.mana]||PMANA.Pierre).map(sigLin),w=[1,1,1],
       man={n:[sigMx(ng,[0,0,0],.15),sigMx(ng,ps,.4),sigMx(ps,w,.1)],p:[sigMx(sigMx(ng,ps,.55),[.42,.48,.66],.35),sigMx(ps,w,.3),sigMx(ps,w,.6)]},
       fam=SIG[d.type],rot=sigRotZ(Z);
-    r={};for(const s of['n','p'])r[s]=[0,1,2].map(i=>sigRot(fam?sigMx(sigCv(fam[s][i]),man[s][i],.3):man[s][i],rot))}
+    r={};for(const s of['n','p'])r[s]=[0,1,2].map(i=>sigRot(fam?sigMx(sigCv(fam[s][i]),man[s][i],.3):man[s][i],rot));
+    /* boucle 4 (22 nov.) : z de famille mêlé au milieu du mana, tourné de sigRot×1,5 (deux tuiles du même type s'écartent plus à 0) */
+    if(fam&&fam.z)r.z=[0,1,2].map(i=>sigRot(sigMx(sigCv(fam.z[i]),sigMx(man.n[i],man.p[i],.5),.3),rot*1.5))}
   if(!r)r=SIG.MAR;
-  return Z._sig={n:r.n.map(sigCv),p:r.p.map(sigCv)}}
+  const n=r.n.map(sigCv),p=r.p.map(sigCv),z0=SIG_Z0[Z.id]||r.z;
+  /* sans z : la moyenne des deux pôles (comportement d'avant la boucle 4 au niveau 0) */
+  return Z._sig={n,p,z:z0?z0.map(sigCv):n.map((c,i)=>sigMx(c,p[i],.5))}}
 const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0};
 const _drawSig=draw;
 draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCur.t)/1000):0;sigCur.t=now;
   const Z=zoneAt(camera.position.x,camera.position.z);let f=1-Math.exp(-dt*1.6); /* fondu ~2 s, comme skM/skR */
-  if(Z){const S=sigOf(Z),k=clamp((Z.lv||0)/7,-1,1),u=(k+1)/2;
+  if(Z){const S=sigOf(Z),k=clamp((Z.lv||0)/7,-1,1),u=Math.abs(k),B=k<0?S.n:S.p;
     if(!sigCur.on)f=1; /* première image dans une zone : on part directement de ses couleurs */
-    for(const [n,i] of [['sh',0],['mi',1],['hi',2]]){const a=S.n[i],b=S.p[i],c=sigCur[n];for(let j=0;j<3;j++)c[j]=lerp(c[j],lerp(a[j],b[j],u),f)}
+    /* boucle 4 (22 nov.) : z → pôle, un septième par palier (au lieu de n → p) ; ±7 inchangés */
+    for(const [n,i] of [['sh',0],['mi',1],['hi',2]]){const a=S.z[i],b=B[i],c=sigCur[n];for(let j=0;j<3;j++)c[j]=lerp(c[j],lerp(a[j],b[j],u),f)}
     sigCur.k=lerp(sigCur.k,k,f)}
   sigCur.on=lerp(sigCur.on,Z&&STYLE_ON?1:0,f);
   const U=mFinal.uniforms;U.sigSh.value.set(sigCur.sh[0],sigCur.sh[1],sigCur.sh[2]);U.sigMi.value.set(sigCur.mi[0],sigCur.mi[1],sigCur.mi[2]);
@@ -3001,6 +3012,20 @@ const OMBRE_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',RES:'Vent'}; /* MAR : noir et 
 function ombreNeg(Z){if(Z._ombN!==undefined)return Z._ombN;const m=Z.plus?Z.d.mana:OMBRE_ORIG[Z.id];
   const P=typeof PMANA!=='undefined'&&m&&(PMANA[m]||PMANA.Pierre);return Z._ombN=P?LIN(P[0]):null}
 const m3=[0,0,0];let addCur=-1;
+/* ---------- Boucle 4 (22 nov. 2026) : le zéro devient un lieu ----------
+   Constat : à 0, CIT, DON045 et RES374 partageaient la même taïga grise sous un soleil à 35°, ASS152 et ANT120 le même sable crème.
+   HEURE0 donne au palier 0 une heure du jour propre : élévation du soleil (el), couleur du soleil (sun), horizon et donc
+   brouillard (hor, que stepAtmo recopie dans scene.fog), facteur de brouillard (fk), d'intensité du soleil (sI), sol du ciel (hg).
+   Chaque palier glisse d'un septième vers les ancres des pôles, qui ne changent pas. Aucun objet, aucune passe en plus. */
+const HEURE0={CIT:{el:16,sun:'#ffc27a',hor:'#e8b07a',sI:1.5},             /* fin d'après-midi ambrée (soleil bas : un peu plus fort, sinon le sol s'éteint) */
+  DON045:{el:9,sun:'#b4a8ff',hor:'#6c66b4',fk:1.3},                       /* heure bleue */
+  RES374:{el:26,sun:'#e4fff0',hor:'#9cc8b0',hg:'#3c8a6c',fk:1.7,sI:.75},   /* brume jade */
+  ASS152:{el:62,sun:'#ffa070',hor:'#e8885a'},                             /* canyon brique sous un soleil de midi */
+  ANT120:{el:40,hor:'#a6dccf',hg:'#3c7a3a'}};                             /* oasis turquoise, ombres vertes */
+for(const id in HEURE0)for(const n of['sun','hor','hg'])if(HEURE0[id][n])HEURE0[id][n]=LIN(HEURE0[id][n]);
+/* ancre z de styles.js (espace écran) ramenée en linéaire pour le ciel : [ombres, tons moyens] */
+function ancreZ(Z){if(Z._ancZ!==undefined)return Z._ancZ;if(Z.id==='MAR'||typeof sigOf!=='function')return Z._ancZ=null;
+  const z=sigOf(Z).z;return Z._ancZ=z?[0,1].map(i=>z[i].map(x=>Math.pow(x,2.2))):null}
 function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=famille(Z),F=METEO[f],a=F.z,b=L<0?F.n:F.p;
   /* 1. météo : un septième par palier entre l'ancre 0 et celle du pôle */
   o.wn=Math.min(1,lerp(a[0],b[0],k));o.wv=lerp(a[1],b[1],k);o.wd=lerp(a[2],b[2],k);o.ws=lerp(a[3],b[3],k);o.wI=lerp(a[4],b[4],k);
@@ -3008,15 +3033,21 @@ function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=
   const add=(L===0?a:b)[6];if(add)o.wI=Math.min(o.wI,1.2);
   /* le mélange ne change qu'au changement (famille ou pôle) et seulement pour l'atmosphère réelle (AT) */
   if(o===AT&&add!==addCur){addCur=add;weather.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending}
-  /* 2. soleil par paliers nets ; dans la bande du milieu, on garde un peu de l'élévation propre à la zone */
-  if(L<=-4){const r=(L+7)/3,e0=Math.max(o.el,8);o.el=lerp(8,12,r);
+  /* 2. soleil : boucle 4 (22 nov.), élévation propre au palier 0 (HEURE0, sinon S.el de sigZone pour les tuiles « plus »),
+     puis un septième par palier vers 8° (−7) ou 65° (+7) ; remplace l'écrasement à 35° de la bande −3…+3 */
+  const H=HEURE0[Z.id],w=1-k,el0=H?H.el:Z.sig&&Z.sig.el?Z.sig.el:35+clamp((o.el-35)*.25,-5,5),eA=o.el;
+  o.el=lerp(el0,L<0?8:65,k);
+  if(H){if(H.sun)mix3(o.sun,o.sun,atL(H.sun,Yl(o.sun),m3),.85*w);
+    if(H.hor)mix3(o.hor,o.hor,H.hor,.75*w);
+    if(H.hg)mix3(o.hg,o.hg,atL(H.hg,Math.max(Yl(o.hg),.03),m3),.6*w);
+    if(H.fk)o.fog*=lerp(H.fk,1,k);if(H.sI)o.sunI*=lerp(H.sI,1,k)}
+  if(L<=-4){const r=(L+7)/3,e0=Math.max(eA,8);
     /* soleil rasant : un sol plat reçoit sin(él) de la lumière ; on rend au sol ce que l'abaissement lui retire, et un peu plus,
        (au plus 2,4, jamais moins qu'avant) et on baisse un peu le ciel diffus, sinon les ombres longues ne se lisent pas */
     o.sunI=Math.max(o.sunI,Math.min(1.6*o.sunI*Math.sin(e0*D2R)/Math.sin(o.el*D2R),2.4));o.hI*=lerp(.55,.8,r)}
-  else if(L>=4){const r=(L-4)/3;o.el=lerp(55,65,r);
+  else if(L>=4){const r=(L-4)/3;
     /* soleil haut : le sol reçoit presque tout ; on plafonne pour ne pas brûler les sols clairs (neige, dalles de +7) */
     o.sunI=Math.min(o.sunI,lerp(1.35,1.15,r))}
-  else o.el=35+clamp((o.el-35)*.25,-5,5);
   if(modeOf(Z)===3)o.el=Math.min(o.el,17); /* exception Pierre (boucle 2) : grand soleil bas, ombres longues */
   o.el=Math.max(o.el,8);                   /* jamais sous 8° : la boîte d'ombre de fluidite.js déborderait */
   /* 3. sol du ciel hémisphérique : teinte d'ombre du pôle, luminance gardée (au moins .02 pour que la teinte se lise) */
@@ -3024,27 +3055,34 @@ function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=
   return o}
 for(const Z of ZN){const a0=Z.atm;if(typeof a0!=='function')continue;
   Z.atm=(lv,o)=>{a0(lv,o);signer(Z,lv,o);
-    if(!(lv>0))return o;
+    /* boucle 4 (22 nov.) : zénith et sol du ciel teintés par l'ancre z de styles.js au palier 0 (mélange .3), puis un septième par palier */
+    const kA=clamp(Math.abs(lv||0)/7,0,1),zA=ancreZ(Z);
+    if(zA&&kA<1){mix3(o.top,o.top,atL(zA[1],Yl(o.top),t3),.3*(1-kA));mix3(o.hg,o.hg,atL(zA[0],Math.max(Yl(o.hg),.03),t3),.3*(1-kA))}
+    if(!(lv>0)){const D=duoOf(Z);if(D)duo(o,D[0],D[1],.35*(1-kA),0);return o} /* négatif : le duo descend de 35 % (0) à rien (−7) */
     const k=clamp(lv/7,0,1),kc=Math.min(1,k*2.5); /* plafonds atteints dès le palier 3 */
     o.exp=capTo(o.exp,lerp(1,EXP7[Z.id]||1,k),kc);o.bl=capTo(o.bl,lerp(.8,bl7(Z),k),kc);
     if(Z.plus)o.sunI=capTo(o.sunI,1.25,k); /* le soleil colore, il n'éclaircit plus */
     o.wI=Math.min(o.wI,1.2); /* boucle 3 : la table de météo pose wI ; plafond 1,2 sous le bloom */
     o.fog*=lerp(1,.75,k); /* zone sereine : on voit loin */
     const D=duoOf(Z);
-    if(D){const dom=D[0],com=D[1],h=o.hor;
-      /* horizon : glisse vers la teinte du pôle, saturé ×1,4, luminance ramenée à .55 au plus */
-      const L0=Yl(h);mix3(h,h,atL(dom,L0,t3),.6*k);const L=Yl(h),s=1+.4*k;
-      for(let j=0;j<3;j++)h[j]=Math.max(0,L+(h[j]-L)*s);const L2=Yl(h),cap=lerp(1,.55,k);if(L2>cap){const f=cap/L2;h[0]*=f;h[1]*=f;h[2]*=f}
-      /* zénith et ombres (ciel hémisphérique) : la complémentaire, à luminance gardée */
-      mix3(o.top,o.top,atL(com,Yl(o.top),t3),.5*k);mix3(o.hs,o.hs,atL(com,Yl(o.hs),t3),.22*k);
-      /* sol du ciel hémisphérique, soleil et nuages : la dominante */
-      /* boucle 3 : le sol du ciel hémisphérique garde la dominante (lumière renvoyée par le sol), puis prend la teinte
-         d'ombre du pôle (la complémentaire) pour un tiers : les ombres de +7 ne sont plus du même ton que le soleil */
-      mix3(o.hg,o.hg,atL(dom,Math.max(Yl(o.hg),.05),t3),.7*k);mix3(o.hg,o.hg,atL(com,Yl(o.hg),t3),.35*k);
-      mix3(o.sun,o.sun,atL(dom,Yl(o.sun),t3),.4*k);
-      mix3(o.clc,o.clc,atL(dom,Yl(o.clc),t3),.3*k);}
+    /* boucle 4 : la couleur du duo part de 35 % au palier 0 (lerp(.35, 1, k)) ; saturation et plafond de l'horizon suivent k */
+    if(D)duo(o,D[0],D[1],lerp(.35,1,k),k);
     /* le brouillard prend toujours A.hor dans stepAtmo : il se fond exactement dans l'horizon du ciel */
     return o}}
+
+/* duo dominante / complémentaire, force q (couleur) ; kc pilote la saturation et le plafond de l'horizon (0 : ni l'un ni l'autre).
+   Avec q = k et kc = k : exactement le calcul des boucles 2 et 3 (le pôle +7 ne change pas). */
+function duo(o,dom,com,q,kc){const h=o.hor;
+  /* horizon : glisse vers la teinte du pôle, saturé ×1,4, luminance ramenée à .55 au plus */
+  const L0=Yl(h);mix3(h,h,atL(dom,L0,t3),.6*q);const L=Yl(h),s=1+.4*kc;
+  for(let j=0;j<3;j++)h[j]=Math.max(0,L+(h[j]-L)*s);const L2=Yl(h),cap=lerp(1,.55,kc);if(L2>cap){const f=cap/L2;h[0]*=f;h[1]*=f;h[2]*=f}
+  /* zénith et ombres (ciel hémisphérique) : la complémentaire, à luminance gardée */
+  mix3(o.top,o.top,atL(com,Yl(o.top),t3),.5*q);mix3(o.hs,o.hs,atL(com,Yl(o.hs),t3),.22*q);
+  /* boucle 3 : le sol du ciel hémisphérique garde la dominante (lumière renvoyée par le sol), puis prend la teinte
+     d'ombre du pôle (la complémentaire) pour un tiers : les ombres de +7 ne sont plus du même ton que le soleil */
+  mix3(o.hg,o.hg,atL(dom,Math.max(Yl(o.hg),.05),t3),.7*q);mix3(o.hg,o.hg,atL(com,Yl(o.hg),t3),.35*q);
+  mix3(o.sun,o.sun,atL(dom,Yl(o.sun),t3),.4*q);
+  mix3(o.clc,o.clc,atL(dom,Yl(o.clc),t3),.3*q)}
 
 /* --- lissage des uniforms du ciel à chaque image, comme sigCur dans styles.js (fondu ~2 s) --- */
 const cur={w:[0,0,0,0,0],p:0,s:0,t:0,on:false};
@@ -6298,6 +6336,20 @@ const css=document.createElement('style');css.textContent=`
 @keyframes k3d{from{rotate:y -7deg}to{rotate:y 7deg}}
 @keyframes kreflet{0%{left:-60%;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:115%;opacity:0}}
 @media (prefers-reduced-motion:reduce){#cb-main .cc.kcarte.z.f,.boite .cc.kcarte.z{animation:none}.kvitre::after{display:none}}
+/* ---- Boucle 4 (22 novembre 2026) : texte des cartes lisible à la télé ----
+   Corps du texte à 13 px au moins à 720p. Cartes non choisies : la règle tient en trois lignes et se termine par une
+   ellipse (plus de fondu) ; le détail complet reste à l'inspection (carte choisie, agrandie). */
+#cb-main .cc.kcarte:not(.f) .ct{font-size:max(13px,calc(var(--u)*.84));line-height:1.22;text-overflow:ellipsis}
+#cb-main .cc.kcarte:not(.f) .ct.deborde{-webkit-mask-image:none;mask-image:none}
+#cb-main .cc.kcarte.f .ct{font-size:max(13px,calc(var(--u)*.86*var(--kf,1)))}
+/* carte choisie : quand ajuster() serre le texte (--kf < 1), l'illustration rétrécit un peu, jamais sous 4,4u (plus de 80 %
+   de ses 5,4u) : la peinture reste grande. Boucle 4 bis (22 nov.) : avant, elle pouvait tomber à 3,2u et s'écraser.
+   La citation s'efface d'abord ; si le texte déborde encore, la carte grandit vers le haut (classe « haute », +0,9u, la
+   place libre entre la main et la ligne d'aide), puis la peinture cède un peu, enfin la dernière ligne se fond
+   (8 à 10 lignes à 13 px). */
+#cb-main .cc.kcarte.f .art{height:max(calc(var(--u)*4.4),calc(var(--u)*(5.4 - (1 - var(--kf,1))*8)))}
+#cb-main .cc.kcarte.f.haute{height:calc(var(--u)*21.9)}
+#cb-main .cc.kcarte.f.haute .ct,#cb-main .cc.kcarte.f.serre .ct{line-height:1.2}
 `;document.head.appendChild(css);
 
 /* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)
@@ -6305,12 +6357,17 @@ const css=document.createElement('style');css.textContent=`
    Les cartes non choisies ne reçoivent que le fondu, et seulement si leur texte dépasse trois lignes.
    Une seule mesure par carte et par main distribuée : le résultat est gardé tant que la main ne change pas. */
 const deborde=t=>t.scrollHeight>t.clientHeight+1;
-function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false;const trop=()=>deborde(t)||deborde(el);
-  el.style.removeProperty('--kf');el.classList.remove('serre');t.classList.remove('deborde');
-  for(let i=0;i<6&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
+/* boucle 4 (22 nov.) : seul le texte est mesuré. La carte elle-même dépasse toujours de quelques pixels (ornements du cadre),
+   ce qui faisait serrer chaque carte choisie au maximum (texte à 78 %, citation cachée) même quand tout tenait. */
+/* boucle 4 bis (22 nov.) : ordre des recours. D'abord la citation s'efface, puis la carte grandit vers le haut (la peinture
+   garde ses 5,4u) ; puis la police descend (plancher 13 px) avec un peu de peinture (plancher 4,4u) ; enfin le fondu. */
+function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false,haute=false;const trop=()=>deborde(t);
+  el.style.removeProperty('--kf');el.classList.remove('serre','haute');t.classList.remove('deborde');
   if(trop()&&el.querySelector('.kamb')){serre=true;el.classList.add('serre')}
-  const fondu=deborde(t);t.classList.toggle('deborde',fondu);return{k,serre,fondu}}
-function appliquer(el,r){const t=el.querySelector('.ct');if(r.k<1)el.style.setProperty('--kf',r.k.toFixed(3));el.classList.toggle('serre',!!r.serre);if(t)t.classList.toggle('deborde',!!r.fondu)}
+  if(trop()){haute=true;el.classList.add('haute')}
+  for(let i=0;i<4&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
+  const fondu=deborde(t);t.classList.toggle('deborde',fondu);return{k,serre,haute,fondu}}
+function appliquer(el,r){const t=el.querySelector('.ct');if(r.k<1)el.style.setProperty('--kf',r.k.toFixed(3));el.classList.toggle('serre',!!r.serre);el.classList.toggle('haute',!!r.haute);if(t)t.classList.toggle('deborde',!!r.fondu)}
 window.ajuster=ajuster;
 const AJ={main:'',m:new Map()},hm=document.getElementById('cb-main');
 if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return;
@@ -6324,7 +6381,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.37';
+const MZ_VERSION='2.38';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -6909,9 +6966,11 @@ function rendreMiettes(){const K=MIET.cach;for(let i=0;i<K.length;i++)K[i].visib
 const _drawMiet=draw;
 draw=function(t){try{_drawMiet(t)}finally{MIET.arme=false;rendreMiettes()}};
 /* (d) flocons : taille plafonnée à 18 px, fondu entre 1,5 et 5 m devant la caméra (plus de gros disques flous) */
+/* boucle 4 (22 nov.) : plafond abaissé à 10 px (les disques de 15 à 18 px faisaient des taches sur l'objectif) ;
+   l'opacité reste multipliée par vPres. */
 if(typeof weather!=='undefined'&&weather&&weather.material){const wm=weather.material,_obc=wm.onBeforeCompile;
   wm.onBeforeCompile=function(s,r){if(_obc)_obc.call(this,s,r);
-    s.vertexShader='varying float vPres;\n'+s.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=min(gl_PointSize,18.);vPres=smoothstep(1.5,5.,-mvPosition.z);');
+    s.vertexShader='varying float vPres;\n'+s.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=min(gl_PointSize,10.);vPres=smoothstep(1.5,5.,-mvPosition.z);');
     s.fragmentShader='varying float vPres;\n'+s.fragmentShader.replace('#include <fog_fragment>','#include <fog_fragment>\ngl_FragColor.a*=vPres;')};
   wm.customProgramCacheKey=()=>'meteo-b2';wm.needsUpdate=true}
 /* MozaWorld TV 2.1 : le Grimoire (demande du 17 nov. : « ajoute un menu dans le jeu pour y mettre le grimoire »).
@@ -8762,23 +8821,39 @@ body.epure .hud.jauge{scale:.88;transform-origin:50% 100%}
 .mz-bascule{position:fixed;left:50%;top:calc(var(--u)*5.2);translate:-50% 0;z-index:40;pointer-events:none;font-size:calc(var(--u)*1.05);letter-spacing:.18em;text-transform:uppercase;
   color:var(--laiton2,#e8c77f);background:rgba(13,12,15,.72);border:1px solid rgba(201,164,92,.45);padding:calc(var(--u)*.45) calc(var(--u)*1.4);opacity:0;transition:opacity .5s}
 .mz-bascule.vu{opacity:1}
+/* boucle 4 (22 nov.) : en mode épuré, l'aide tient sur une ligne ; la plaque de nom sous la minicarte se retire
+   tant que la fiche de zone (en haut à gauche) est affichée, pour que le nom n'apparaisse qu'une fois. */
+.hud.aide .aide-une{display:none}
+body.epure .hud.aide>div:not(.aide-une){display:none}
+body.epure .hud.aide .aide-une{display:block;white-space:nowrap;font-size:.86em;letter-spacing:.02em}
+body.epure .hud.aide{padding-top:calc(var(--u)*.55);padding-bottom:calc(var(--u)*.55)}
+/* la minicarte n'a plus de fond : son flou d'arrière-plan (hérité de .cadre) ne dessinait qu'un rectangle terne, et coûtait */
+.hud.carte.mc2{backdrop-filter:none;-webkit-backdrop-filter:none}
+.hud.carte .mc-nom{transition:opacity .6s ease}
+body:not(.epure) .hud.carte .mc-nom,body.epure.zone-neuve .hud.carte .mc-nom{opacity:0}
 @media (prefers-reduced-motion:reduce){.toast.vu .t1,.toast.vu .t2,.toast.vu .t3{animation:none}}
 `;document.head.appendChild(st);
 
 let epure=true;try{epure=localStorage.getItem('mz-epure')!=='0'}catch(_){}
 const B=document.body;B.classList.toggle('epure',epure);
 const note=document.createElement('div');note.className='mz-bascule';B.appendChild(note);let noteT=null;
-function basculer(){epure=!epure;B.classList.toggle('epure',epure);try{localStorage.setItem('mz-epure',epure?'1':'0')}catch(_){}
+/* boucle 4 (22 nov.) : l'aide s'efface après 12 s sans entrée (ou 45 s de jeu au plus) ; RB ou Tab la fait revenir */
+let calme=0,joue=0;const entree=()=>{calme=0};
+function basculer(){epure=!epure;calme=0;joue=0;B.classList.remove('aide-vue');B.classList.toggle('epure',epure);try{localStorage.setItem('mz-epure',epure?'1':'0')}catch(_){}
   note.textContent=epure?'Interface épurée · RB pour tout afficher':'Interface complète · RB pour épurer';note.classList.add('vu');
   clearTimeout(noteT);noteT=setTimeout(()=>note.classList.remove('vu'),2200);if(typeof tick==='function')try{tick()}catch(_){}}
-window.addEventListener('keydown',e=>{if((e.key==='Tab'||e.key==='h'||e.key==='H')&&typeof mode!=='undefined'&&mode==='monde'){e.preventDefault();basculer()}});
-const pb0=padBouton;padBouton=function(n){if(n==='rb'&&typeof mode!=='undefined'&&mode==='monde'){basculer();return}return pb0.apply(this,arguments)};
+window.addEventListener('keydown',e=>{entree();if((e.key==='Tab'||e.key==='h'||e.key==='H')&&typeof mode!=='undefined'&&mode==='monde'){e.preventDefault();basculer()}});
+const pb0=padBouton;padBouton=function(n){entree();if(n==='rb'&&typeof mode!=='undefined'&&mode==='monde'){basculer();return}return pb0.apply(this,arguments)};
+/* boucle 4 (22 nov.) : l'aide d'une ligne, ajoutée en tête de chaque panneau d'aide (clavier/télécommande et manette) */
+for(const a of document.querySelectorAll('.hud.aide')){const d=document.createElement('div');d.className='aide-une';
+  d.innerHTML=a.classList.contains('aide-pad')?'<i>stick G</i> marcher · <i>stick D</i> tourner · <span class="bt a">A</span> agir · <span class="bt">RB</span> plus':'<i>▲▼</i> marcher · <i>◀▶</i> tourner · <i>OK</i> agir · <i>Tab</i> plus';
+  a.insertBefore(d,a.firstChild)}
 
-/* la fiche de zone reste 9 s à l'entrée d'une zone ; l'aide reste la première minute de jeu */
-let zv=null,zT=null,joue=0;
+/* la fiche de zone reste 9 s à l'entrée d'une zone ; l'aide d'une ligne s'efface après 12 s de calme (boucle 4, 22 nov.) */
+let zv=null,zT=null;window.addEventListener('pointerdown',entree);
 setInterval(()=>{if(typeof curZ==='undefined')return;
   if(curZ&&curZ!==zv){zv=curZ;B.classList.add('zone-neuve');clearTimeout(zT);zT=setTimeout(()=>B.classList.remove('zone-neuve'),9000)}
-  if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;if(joue>=60)B.classList.add('aide-vue')}},500);
+  if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;calme+=.5;if(calme>=12||joue>=45)B.classList.add('aide-vue')}},500);
 })();
 /* MozaWorld 2.8 : le monde bouge (18 novembre, idée 5 de l'évaluation graphique, choisie par l'utilisateur).
    1. Le vent : la végétation et tout ce qui est haut et mince ploie doucement (déformation dans le shader, aucun calcul par objet).
@@ -9442,8 +9517,27 @@ let essais=0;const tard=setInterval(()=>{const n=q('.hud.carte .mc-nom'),x=q('#x
    Les cadres des cartes à jouer (cartes-visuel.js) ne sont pas touchés. ?carnet=0 rend l'ancien écran. */
 (function(){
 if(!document.body.classList.contains('carnet'))return;
+/* boucle 4 bis (22 nov.) : tons inégaux des tesselles. Un petit motif SVG de 7 × 5 tesselles (tirage fixe), chacune un peu
+   plus claire ou plus sombre, posé au pas exact des joints (.72u) : la case vibre comme une vraie mosaïque, sans bandes
+   régulières. Une image vectorielle sans filtre, rastérisée une fois : rien à recalculer à chaque image. */
+const TONS=(()=>{let g=97;const r=()=>(g=(g*16807)%2147483647)/2147483647;let s='';
+  for(let y=0;y<5;y++)for(let x=0;x<7;x++){const v=r(),c=v<.5?'#0c0705':'#fff2d8',o=(v<.5?(.5-v)*.26:(v-.5)*.18).toFixed(3);
+    s+=`<rect x='${x}' y='${y}' width='1' height='1' fill='${c}' fill-opacity='${o}'/>`}
+  return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='7' height='5' viewBox='0 0 7 5' preserveAspectRatio='none' shape-rendering='crispEdges'>${s}</svg>`)}") 0 0/calc(var(--u)*5.04) calc(var(--u)*3.6)`})();
 const st=document.createElement('style');st.textContent=`
-#combat{--cw:calc(var(--u)*9);--ch:calc(var(--u)*6.3);--ck:calc(var(--u)*1.25);--cj:3px;column-gap:0!important;grid-template-columns:1fr var(--cw) 1fr!important}
+#combat{--cw:calc(var(--u)*9);--ch:calc(var(--u)*6.3);--ck:calc(var(--u)*1.25);--cj:3px;
+  /* boucle 4 (22 nov.) : opus vermiculatum au lieu de nappe vichy. Joints de 1 px couleur mortier chaud au pas de .72u,
+     plus une seconde grille décalée (pas de 1,7u, très légère) qui casse la régularité du quadrillage. */
+  --tess:repeating-linear-gradient(90deg,rgba(40,28,18,.22) 0 1px,rgba(255,236,200,.045) 1px 2px,transparent 2px calc(var(--u)*.72)),
+   repeating-linear-gradient(0deg,rgba(40,28,18,.22) 0 1px,rgba(255,236,200,.045) 1px 2px,transparent 2px calc(var(--u)*.72)),
+   repeating-linear-gradient(90deg,transparent 0 calc(var(--u)*.43),rgba(40,28,18,.10) calc(var(--u)*.43) calc(var(--u)*.43 + 1px),transparent calc(var(--u)*.43 + 1px) calc(var(--u)*1.7)),
+   repeating-linear-gradient(0deg,transparent 0 calc(var(--u)*.97),rgba(40,28,18,.10) calc(var(--u)*.97) calc(var(--u)*.97 + 1px),transparent calc(var(--u)*.97 + 1px) calc(var(--u)*1.7)),
+   /* boucle 4 bis (22 nov.) : deux grilles légères penchées de 4 et 3 degrés, puis les tons inégaux des tesselles (TONS),
+      pour que la case ne se lise plus comme du papier millimétré */
+   repeating-linear-gradient(94deg,transparent 0 calc(var(--u)*.61),rgba(40,28,18,.09) calc(var(--u)*.61) calc(var(--u)*.61 + 1px),transparent calc(var(--u)*.61 + 1px) calc(var(--u)*1.13)),
+   repeating-linear-gradient(-3deg,transparent 0 calc(var(--u)*.88),rgba(40,28,18,.08) calc(var(--u)*.88) calc(var(--u)*.88 + 1px),transparent calc(var(--u)*.88 + 1px) calc(var(--u)*1.31)),
+   ${TONS};
+  column-gap:0!important;grid-template-columns:1fr var(--cw) 1fr!important}
 /* le décor de la zone reste, assombri comme à la bougie */
 #combat::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,rgba(8,5,3,.38) 30%,rgba(8,5,3,.8) 100%)}
 #combat>*:not(#cb-decor){position:relative;z-index:1}
@@ -9455,8 +9549,9 @@ const st=document.createElement('style');st.textContent=`
   background:repeating-linear-gradient(2deg,rgba(255,255,255,.10) 0 3px,transparent 3px 9px,rgba(0,0,0,.2) 9px 12px,transparent 12px 21px),linear-gradient(95deg,#2a1838,#4a2a5e 30%,#6d4a86 55%,#4a2a5e 80%,#2a1838);
   clip-path:polygon(0 38%,2% 16%,7% 22%,12% 6%,24% 12%,38% 2%,52% 9%,66% 0,80% 8%,92% 3%,97% 20%,100% 34%,98% 62%,100% 80%,94% 92%,84% 86%,70% 98%,55% 90%,40% 100%,26% 91%,13% 97%,5% 84%,1% 70%)}
 #combat #cb-t::after{content:"✶";position:absolute;left:calc(var(--u)*-2.4);top:-.1em;width:calc(var(--u)*2.8);height:calc(var(--u)*2.8);border-radius:46% 54% 50% 50%/52% 47% 53% 48%;
-  display:grid;place-items:center;font:600 calc(var(--u)*1.6)/1 var(--c-fell);color:#5e0f0a;text-shadow:1px 1px 0 rgba(255,150,130,.45);transform:rotate(-14deg);
-  background:radial-gradient(circle at 36% 30%,#e0584a,var(--c-cire) 46%,#6d130d 100%);box-shadow:inset 0 0 0 calc(var(--u)*.28) rgba(109,19,13,.55),2px 3px 0 rgba(0,0,0,.7)}
+  display:grid;place-items:center;font:600 calc(var(--u)*1.6)/1 var(--c-fell);color:#d9b56a;text-shadow:0 1px 0 rgba(20,6,4,.8);transform:rotate(-14deg);
+  /* boucle 4 (22 nov.) : même cire mate que les boutons du bas, sans reflet blanc */
+  background:radial-gradient(circle at 50% 46%,#8e352b 0 38%,#7a2a22 52%,#5c1d17 100%);box-shadow:inset 0 0 0 calc(var(--u)*.24) #6a231c,inset 0 0 0 calc(var(--u)*.24 + 1px) rgba(201,164,92,.4),2px 3px 0 rgba(0,0,0,.7)}
 #combat #cb-log{font-family:var(--c-main);font-style:normal;font-weight:600;font-size:calc(var(--u)*1.45);color:var(--c-os);text-shadow:2px 2px 0 #000}
 
 /* ── le champ de bataille : un damier de mosaïque, tuiles collées ── */
@@ -9470,8 +9565,10 @@ const st=document.createElement('style');st.textContent=`
 #combat .pcase::before,#combat .pcase::after{content:"";position:absolute;z-index:-1;pointer-events:none}
 #combat .pcase::before{inset:0;background:#0b0807}
 #combat .pcase::after{inset:var(--cj);
-  background:repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
-   radial-gradient(ellipse at 50% 50%,var(--tu2),var(--tu) 78%)}
+  background:var(--tess),
+   radial-gradient(ellipse at 50% 50%,var(--tu2),var(--tu) 78%);
+  /* boucle 4 (22 nov.) : liseré intérieur, la couleur de la case assombrie, puis un filet d'or */
+  box-shadow:inset 0 0 0 calc(var(--u)*.24) rgba(12,8,5,.34),inset 0 0 0 calc(var(--u)*.24 + 1px) rgba(214,178,104,.35)}
 /* nœud papillon (bords rentrants) */
 #combat .pcase::before,#combat .pcase::after{clip-path:polygon(0 0,100% 0,calc(100% - var(--ck)) 50%,100% 100%,0 100%,var(--ck) 50%)}
 /* hexagone (pointes sortantes), une case sur deux en damier */
@@ -9496,11 +9593,11 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-centre::before{inset:0 calc(var(--ck)*-1);background:#0b0807}
 #combat #cb-centre::after{inset:var(--cj) calc(var(--cj) - var(--ck));
   background:linear-gradient(#0b0807,#0b0807) 0 33.333%/100% var(--cj) no-repeat,linear-gradient(#0b0807,#0b0807) 0 66.667%/100% var(--cj) no-repeat,
-   repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
+   var(--tess),
    linear-gradient(180deg,#1d1a18 0 33.333%,transparent 33.333% 66.667%,#1d1a18 66.667%),
    radial-gradient(ellipse at 50% 50%,#5d8a3c,#35561f 75%)}
 #combat #cb-centre[data-k="cennemi"]::after{background:linear-gradient(#0b0807,#0b0807) 0 33.333%/100% var(--cj) no-repeat,linear-gradient(#0b0807,#0b0807) 0 66.667%/100% var(--cj) no-repeat,
-   repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
+   var(--tess),
    linear-gradient(180deg,#1d1a18 0 33.333%,transparent 33.333% 66.667%,#1d1a18 66.667%),
    radial-gradient(ellipse at 50% 50%,#a2402f,#5e1c14 75%)}
 #combat #cb-centre svg{width:calc(var(--u)*5.2)!important;height:calc(var(--u)*5.2)!important;position:absolute;left:50%;top:50%;translate:-50% -50%}
@@ -9534,13 +9631,24 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-piles span{font-family:var(--c-fell)!important}#combat #cb-piles b{font-family:var(--c-num)!important}
 #combat #cb-mana.c-papier::before,#combat #cb-mana.c-papier::after,#combat #cb-piles.c-papier::before,#combat #cb-piles.c-papier::after{display:none!important}
 #combat #cb-aide{font-family:var(--c-fell);background:var(--c-encre)!important;border:2px solid var(--c-papier2)!important;border-radius:0!important;color:var(--c-os)!important;backdrop-filter:none!important;transform:rotate(-.4deg)}
-#combat #cb-main .cc.fin:not(.man){border-radius:47% 53% 50% 50%/52% 48% 52% 48%!important;border:0!important;background:radial-gradient(circle at 36% 30%,#e0584a,var(--c-cire) 46%,#6d130d 100%)!important;
-  box-shadow:inset 0 0 0 calc(var(--u)*.45) rgba(109,19,13,.55),3px 4px 0 rgba(0,0,0,.7)!important;backdrop-filter:none!important}
-#combat #cb-main .cc.fin:not(.man) .cn{font-family:var(--c-goth);color:#fff3da!important;text-shadow:2px 2px 0 #5e0f0a!important;text-transform:uppercase}
-#combat #cb-main .cc.fin.f:not(.man){box-shadow:inset 0 0 0 calc(var(--u)*.45) rgba(109,19,13,.55),0 0 0 4px #fff3c8,3px 4px 0 4px rgba(0,0,0,.7)!important}
-#combat #cb-main .cc.fin.man{border-radius:50%!important;border:0!important;background:radial-gradient(circle at 36% 30%,#6fae4f,#3d7a2c 55%,#234c18)!important;box-shadow:inset 0 0 0 calc(var(--u)*.3) rgba(20,50,14,.55),3px 4px 0 rgba(0,0,0,.7)!important;backdrop-filter:none!important}
-#combat #cb-main .cc.fin.man .cn{font-family:var(--c-goth);color:#fff3da!important;text-shadow:2px 2px 0 #1c3a12!important}
-#combat #cb-main .cc.fin.man.f{box-shadow:inset 0 0 0 calc(var(--u)*.3) rgba(20,50,14,.55),0 0 0 4px #fff3c8!important}
+/* boucle 4 (22 nov.) : les deux boutons deviennent des sceaux mats, de la famille du sceau du titre.
+   Fin du tour : cire rouge assourdie en deux tons, sans reflet blanc, plus petite (5,6u au lieu de 7,6u),
+   libellé en petites capitales laiton dans un anneau gravé. Manœuvre : anneau de laiton sur un fond d'encre. */
+#combat #cb-main .cc.fin{width:calc(var(--u)*5.6);height:calc(var(--u)*5.6);padding:calc(var(--u)*.55)}
+#combat #cb-main .cc.fin:not(.man){border-radius:47% 53% 50% 50%/52% 48% 52% 48%!important;border:0!important;
+  background:radial-gradient(circle at 50% 46%,#86332a 0 38%,#7a2a22 52%,#5c1d17 100%)!important;
+  box-shadow:inset 0 0 0 calc(var(--u)*.42) #6a231c,inset 0 0 0 calc(var(--u)*.42 + 1px) rgba(30,8,6,.75),inset 0 0 0 calc(var(--u)*.42 + 2px) rgba(201,164,92,.42),
+    inset 0 calc(var(--u)*-.18) calc(var(--u)*.3) rgba(30,8,6,.35),2px 3px 0 rgba(0,0,0,.65)!important;backdrop-filter:none!important}
+/* boucle 4 bis (22 nov.) : libellé plus clair et plus gras, lisible de loin à la télé sur la cire assourdie */
+#combat #cb-main .cc.fin .cn{font-family:var(--c-fell);font-variant:small-caps;text-transform:lowercase;font-size:calc(var(--u)*1.12);font-weight:700;letter-spacing:.07em;line-height:.98;
+  color:#f6dc9c!important;text-shadow:0 1px 0 rgba(20,6,4,.95),0 0 3px rgba(30,8,6,.9),0 0 1px rgba(30,8,6,1)!important}
+#combat #cb-main .cc.fin.f:not(.man){box-shadow:inset 0 0 0 calc(var(--u)*.42) #6a231c,inset 0 0 0 calc(var(--u)*.42 + 1px) rgba(30,8,6,.75),inset 0 0 0 calc(var(--u)*.42 + 2px) rgba(232,199,127,.7),
+    0 0 0 2px #17100a,0 0 0 4px #d9b56a,3px 5px 0 3px rgba(0,0,0,.6)!important}
+#combat #cb-main .cc.fin.man{border-radius:50%!important;border:0!important;background:radial-gradient(circle at 50% 45%,#221a14,#120d0a 72%)!important;
+  box-shadow:inset 0 0 0 2px #b8924e,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(201,164,92,.45),2px 3px 0 rgba(0,0,0,.65)!important;backdrop-filter:none!important}
+#combat #cb-main .cc.fin.man{width:calc(var(--u)*5);height:calc(var(--u)*5);transform:none}#combat #cb-main .cc.fin.man.f{transform:scale(1.08)}
+#combat #cb-main .cc.fin.man .cn{font-size:calc(var(--u)*.84);letter-spacing:.02em;color:#e8c983!important;text-shadow:0 1px 0 #000!important}
+#combat #cb-main .cc.fin.man.f{box-shadow:inset 0 0 0 2px #e8c77f,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(232,199,127,.7),0 0 0 2px #17100a,0 0 0 4px #d9b56a!important}
 `;document.head.appendChild(st);
 /* papier déchiré pour les deux panneaux du bas (même tirage que carnet.js : classe c-papier + clip-path) */
 function dech(el,n,ay,ax){if(!el)return;el.classList.add('c-papier');let g=el.id.length*7919+17;const a=()=>(g=(g*1664525+1013904223)>>>0)/4294967296,p=[];
