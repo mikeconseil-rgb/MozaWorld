@@ -288,6 +288,7 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
     return c&&{traj:c.traj&&c.traj.join(),etat:c.etat,n:c.n,risque:c.risque,bilan:Object.assign({},S.carBilan)}});
   ok('lot 3 : caravane ouverte (Ressource au niveau 2, route vers la Citadelle)',!!cv&&cv.traj==='RES,CIT'&&cv.etat==='en route',JSON.stringify(cv));
   await p.evaluate(()=>MZ.cycle());await p.waitForTimeout(1300);
+  await p.waitForFunction(()=>MZ.S.carNc>=MZ.S.nc,null,{timeout:5000}).catch(()=>{});   /* 22 nov. : boucle d'une seconde, machine chargée */
   const cv1=await p.evaluate(()=>({b:Object.assign({},MZ.S.carBilan),c:MZ.caravanes().find(c=>c.r==='RES')}));
   ok('lot 3 : un cycle, la caravane rapporte (ou se fait piller)',!!cv&&(cv1.b.gains-cv.bilan.gains===cv.n||cv1.b.pillages>cv.bilan.pillages),JSON.stringify(cv1));
   await monde();
@@ -328,7 +329,7 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
     return{t:document.getElementById('menu-t').textContent,opts:UI.opts.map(o=>o.l)}});
   ok('lot 3 : menu Pause → « Lois du monde », Corvées renforcée',!!lm&&lm.t==='Lois du monde'&&lm.opts.some(o=>/Loi des Corvées · renforcée/.test(o))&&lm.opts.includes('Lois endormies'),JSON.stringify(lm&&lm.opts));
   await p.waitForTimeout(400);await p.screenshot({path:path.join(dossier,'lot3-lois-du-monde.png')});
-  const ld=await p.evaluate(()=>{const i=UI.opts.findIndex(o=>/Corvées/.test(o.l));if(i<0)return{t:'',txt:''};UI.opts[i].go();return{t:document.getElementById('menu-t').textContent,txt:document.getElementById('menu-corps').textContent}});
+  const ld=await p.evaluate(()=>{const i=UI.opts.findIndex(o=>/Corvées/.test(o.l)&&/Pama/.test(o.d||''));   /* 22 nov. : Balpak (Cendre) peut aussi avoir les Corvées en vigueur */if(i<0)return{t:'',txt:''};UI.opts[i].go();return{t:document.getElementById('menu-t').textContent,txt:document.getElementById('menu-corps').textContent}});
   ok('lot 3 : détail de Pama, loi écrite et loi du catalogue',/Pama/.test(ld.t)&&/Corvées/.test(ld.txt)&&/Greniers/.test(ld.txt),ld.txt.slice(0,240));
   await p.waitForTimeout(300);await p.screenshot({path:path.join(dossier,'lot3-lois-pama.png')});
   await monde();
@@ -470,6 +471,8 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
   await coherent3b('siège lancé');
   /* 15e. rechargement : pacte et siège reprennent à l'identique */
   const cle3b='JSON.stringify({pacte:MZ.S.pacte,siege:MZ.S.siege,lv:MZ.S.lv.CIT,tess:MZ.S.tess,c:MZ.S.riv.c})';
+  /* 22 nov. : attendre que le pacte ait traité le dernier cycle (boucle d'une seconde), sinon il le traite après le rechargement */
+  await p.waitForFunction(()=>!MZ.S.pacte||MZ.S.pacte.nc>=MZ.S.nc,null,{timeout:5000}).catch(()=>{});
   await p.evaluate(()=>save());const av3=await p.evaluate(cle3b);
   await p.reload();await p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function',null,{timeout:30000});
   await p.evaluate(()=>startGame(false));await p.waitForTimeout(1500);

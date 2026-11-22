@@ -35,6 +35,8 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
   const h=await p.evaluate(sans=>{for(let i=0;i<3;i++)MZ.cycle();if(sans)return{sans:true};const h=MZ.horde();return h&&{src:h.src,cible:h.cible}},!!process.env.SANS_HORDE);
   ok('une horde est en marche avant le voyage',!!h,JSON.stringify(h));
   await p.evaluate(()=>{if(typeof toMonde==='function'&&MZ.mode!=='monde')toMonde();MZ.pause()});
+  /* 22 nov. : attendre que le commerce ait payé le dernier cycle (boucle d'une seconde), sinon les tesselles bougent pendant le voyage */
+  await p.waitForFunction(()=>typeof MZ.S.tessNc!=='number'||MZ.S.tessNc>=MZ.S.nc,null,{timeout:5000}).catch(()=>{});
   const a=await etat();
   ok('région d\'origine : territoire de départ entier',a.own.length>=12&&a.ownIci===a.own.length,a.own.length+' zones à vous, '+a.zones+' zones chargées');
   /* 2. voyage vers une zone écrite à plus de 3 km de l'origine */
