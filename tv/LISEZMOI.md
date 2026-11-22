@@ -6,6 +6,11 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Boucle graphique 4, amélioration 1 : le zéro devient un lieu (22 novembre, `src/styles.js`, `src/ciels.js`)
+- Au niveau 0, chaque zone a sa troisième ancre de couleur (z : ombres, tons moyens, hautes lumières) et son heure du jour : Berestograd en fin d'après-midi ambrée (soleil à 16°), la Taïga de Kobor (DON045) à l'heure bleue (9°, brouillard bleu-violet), la Taïga de Chika (RES374) dans une brume jade (26°), le Canyon de Fjorhel (ASS152) en brique sous un soleil de midi (62°), l'Oasis de Maulu (ANT120) en turquoise et vert (40°). Familles : Donjon garance et ocre, Ressource sarcelle et laiton, Antre vert bouteille et or terne, Assemblée rose cendré et sable ; Marché inchangé.
+- Chaque palier glisse d'un septième de l'ancre 0 vers celle du pôle (couleurs, élévation du soleil, brouillard) ; les pôles ±7 ne changent pas. Le split-toning vaut 0,4 à 0 (0,7 à ±7, comme avant) ; Givrecloche reste en noir et blanc, Chinampas en manga. Le duo dominante / complémentaire du ciel est présent à 35 % dès le niveau 0 et s'efface vers −7.
+- Uniquement des réglages : aucune passe, aucune lecture de texture, aucun appel de dessin en plus.
+
 ## Version 2.33 : interface « Carnet sombre », étape 3, le menu pause (22 novembre, `src/carnet-menu.js`)
 - Le menu pause et ses sous-menus (paquet, grimoire, sauvegardes, rivaux, lois…) s'écrivent sur une page de carnet : parchemin déchiré aux coins brûlés, titre gothique, sceau de cire, options à l'encre, notes à la main ; l'option choisie est entourée à l'encre rouge.
 - Mêmes options, même ordre, mêmes commandes. Les cartes à jouer gardent leurs cadres. Aucune image, aucun filtre.

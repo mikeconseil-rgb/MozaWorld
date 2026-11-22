@@ -149,6 +149,20 @@ const OMBRE_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',RES:'Vent'}; /* MAR : noir et 
 function ombreNeg(Z){if(Z._ombN!==undefined)return Z._ombN;const m=Z.plus?Z.d.mana:OMBRE_ORIG[Z.id];
   const P=typeof PMANA!=='undefined'&&m&&(PMANA[m]||PMANA.Pierre);return Z._ombN=P?LIN(P[0]):null}
 const m3=[0,0,0];let addCur=-1;
+/* ---------- Boucle 4 (22 nov. 2026) : le zéro devient un lieu ----------
+   Constat : à 0, CIT, DON045 et RES374 partageaient la même taïga grise sous un soleil à 35°, ASS152 et ANT120 le même sable crème.
+   HEURE0 donne au palier 0 une heure du jour propre : élévation du soleil (el), couleur du soleil (sun), horizon et donc
+   brouillard (hor, que stepAtmo recopie dans scene.fog), facteur de brouillard (fk), d'intensité du soleil (sI), sol du ciel (hg).
+   Chaque palier glisse d'un septième vers les ancres des pôles, qui ne changent pas. Aucun objet, aucune passe en plus. */
+const HEURE0={CIT:{el:16,sun:'#ffc27a',hor:'#e8b07a',sI:1.5},             /* fin d'après-midi ambrée (soleil bas : un peu plus fort, sinon le sol s'éteint) */
+  DON045:{el:9,sun:'#b4a8ff',hor:'#6c66b4',fk:1.3},                       /* heure bleue */
+  RES374:{el:26,sun:'#e4fff0',hor:'#9cc8b0',hg:'#3c8a6c',fk:1.7,sI:.75},   /* brume jade */
+  ASS152:{el:62,sun:'#ffa070',hor:'#e8885a'},                             /* canyon brique sous un soleil de midi */
+  ANT120:{el:40,hor:'#a6dccf',hg:'#3c7a3a'}};                             /* oasis turquoise, ombres vertes */
+for(const id in HEURE0)for(const n of['sun','hor','hg'])if(HEURE0[id][n])HEURE0[id][n]=LIN(HEURE0[id][n]);
+/* ancre z de styles.js (espace écran) ramenée en linéaire pour le ciel : [ombres, tons moyens] */
+function ancreZ(Z){if(Z._ancZ!==undefined)return Z._ancZ;if(Z.id==='MAR'||typeof sigOf!=='function')return Z._ancZ=null;
+  const z=sigOf(Z).z;return Z._ancZ=z?[0,1].map(i=>z[i].map(x=>Math.pow(x,2.2))):null}
 function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=famille(Z),F=METEO[f],a=F.z,b=L<0?F.n:F.p;
   /* 1. météo : un septième par palier entre l'ancre 0 et celle du pôle */
   o.wn=Math.min(1,lerp(a[0],b[0],k));o.wv=lerp(a[1],b[1],k);o.wd=lerp(a[2],b[2],k);o.ws=lerp(a[3],b[3],k);o.wI=lerp(a[4],b[4],k);
@@ -156,15 +170,21 @@ function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=
   const add=(L===0?a:b)[6];if(add)o.wI=Math.min(o.wI,1.2);
   /* le mélange ne change qu'au changement (famille ou pôle) et seulement pour l'atmosphère réelle (AT) */
   if(o===AT&&add!==addCur){addCur=add;weather.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending}
-  /* 2. soleil par paliers nets ; dans la bande du milieu, on garde un peu de l'élévation propre à la zone */
-  if(L<=-4){const r=(L+7)/3,e0=Math.max(o.el,8);o.el=lerp(8,12,r);
+  /* 2. soleil : boucle 4 (22 nov.), élévation propre au palier 0 (HEURE0, sinon S.el de sigZone pour les tuiles « plus »),
+     puis un septième par palier vers 8° (−7) ou 65° (+7) ; remplace l'écrasement à 35° de la bande −3…+3 */
+  const H=HEURE0[Z.id],w=1-k,el0=H?H.el:Z.sig&&Z.sig.el?Z.sig.el:35+clamp((o.el-35)*.25,-5,5),eA=o.el;
+  o.el=lerp(el0,L<0?8:65,k);
+  if(H){if(H.sun)mix3(o.sun,o.sun,atL(H.sun,Yl(o.sun),m3),.85*w);
+    if(H.hor)mix3(o.hor,o.hor,H.hor,.75*w);
+    if(H.hg)mix3(o.hg,o.hg,atL(H.hg,Math.max(Yl(o.hg),.03),m3),.6*w);
+    if(H.fk)o.fog*=lerp(H.fk,1,k);if(H.sI)o.sunI*=lerp(H.sI,1,k)}
+  if(L<=-4){const r=(L+7)/3,e0=Math.max(eA,8);
     /* soleil rasant : un sol plat reçoit sin(él) de la lumière ; on rend au sol ce que l'abaissement lui retire, et un peu plus,
        (au plus 2,4, jamais moins qu'avant) et on baisse un peu le ciel diffus, sinon les ombres longues ne se lisent pas */
     o.sunI=Math.max(o.sunI,Math.min(1.6*o.sunI*Math.sin(e0*D2R)/Math.sin(o.el*D2R),2.4));o.hI*=lerp(.55,.8,r)}
-  else if(L>=4){const r=(L-4)/3;o.el=lerp(55,65,r);
+  else if(L>=4){const r=(L-4)/3;
     /* soleil haut : le sol reçoit presque tout ; on plafonne pour ne pas brûler les sols clairs (neige, dalles de +7) */
     o.sunI=Math.min(o.sunI,lerp(1.35,1.15,r))}
-  else o.el=35+clamp((o.el-35)*.25,-5,5);
   if(modeOf(Z)===3)o.el=Math.min(o.el,17); /* exception Pierre (boucle 2) : grand soleil bas, ombres longues */
   o.el=Math.max(o.el,8);                   /* jamais sous 8° : la boîte d'ombre de fluidite.js déborderait */
   /* 3. sol du ciel hémisphérique : teinte d'ombre du pôle, luminance gardée (au moins .02 pour que la teinte se lise) */
@@ -172,27 +192,34 @@ function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=
   return o}
 for(const Z of ZN){const a0=Z.atm;if(typeof a0!=='function')continue;
   Z.atm=(lv,o)=>{a0(lv,o);signer(Z,lv,o);
-    if(!(lv>0))return o;
+    /* boucle 4 (22 nov.) : zénith et sol du ciel teintés par l'ancre z de styles.js au palier 0 (mélange .3), puis un septième par palier */
+    const kA=clamp(Math.abs(lv||0)/7,0,1),zA=ancreZ(Z);
+    if(zA&&kA<1){mix3(o.top,o.top,atL(zA[1],Yl(o.top),t3),.3*(1-kA));mix3(o.hg,o.hg,atL(zA[0],Math.max(Yl(o.hg),.03),t3),.3*(1-kA))}
+    if(!(lv>0)){const D=duoOf(Z);if(D)duo(o,D[0],D[1],.35*(1-kA),0);return o} /* négatif : le duo descend de 35 % (0) à rien (−7) */
     const k=clamp(lv/7,0,1),kc=Math.min(1,k*2.5); /* plafonds atteints dès le palier 3 */
     o.exp=capTo(o.exp,lerp(1,EXP7[Z.id]||1,k),kc);o.bl=capTo(o.bl,lerp(.8,bl7(Z),k),kc);
     if(Z.plus)o.sunI=capTo(o.sunI,1.25,k); /* le soleil colore, il n'éclaircit plus */
     o.wI=Math.min(o.wI,1.2); /* boucle 3 : la table de météo pose wI ; plafond 1,2 sous le bloom */
     o.fog*=lerp(1,.75,k); /* zone sereine : on voit loin */
     const D=duoOf(Z);
-    if(D){const dom=D[0],com=D[1],h=o.hor;
-      /* horizon : glisse vers la teinte du pôle, saturé ×1,4, luminance ramenée à .55 au plus */
-      const L0=Yl(h);mix3(h,h,atL(dom,L0,t3),.6*k);const L=Yl(h),s=1+.4*k;
-      for(let j=0;j<3;j++)h[j]=Math.max(0,L+(h[j]-L)*s);const L2=Yl(h),cap=lerp(1,.55,k);if(L2>cap){const f=cap/L2;h[0]*=f;h[1]*=f;h[2]*=f}
-      /* zénith et ombres (ciel hémisphérique) : la complémentaire, à luminance gardée */
-      mix3(o.top,o.top,atL(com,Yl(o.top),t3),.5*k);mix3(o.hs,o.hs,atL(com,Yl(o.hs),t3),.22*k);
-      /* sol du ciel hémisphérique, soleil et nuages : la dominante */
-      /* boucle 3 : le sol du ciel hémisphérique garde la dominante (lumière renvoyée par le sol), puis prend la teinte
-         d'ombre du pôle (la complémentaire) pour un tiers : les ombres de +7 ne sont plus du même ton que le soleil */
-      mix3(o.hg,o.hg,atL(dom,Math.max(Yl(o.hg),.05),t3),.7*k);mix3(o.hg,o.hg,atL(com,Yl(o.hg),t3),.35*k);
-      mix3(o.sun,o.sun,atL(dom,Yl(o.sun),t3),.4*k);
-      mix3(o.clc,o.clc,atL(dom,Yl(o.clc),t3),.3*k);}
+    /* boucle 4 : la couleur du duo part de 35 % au palier 0 (lerp(.35, 1, k)) ; saturation et plafond de l'horizon suivent k */
+    if(D)duo(o,D[0],D[1],lerp(.35,1,k),k);
     /* le brouillard prend toujours A.hor dans stepAtmo : il se fond exactement dans l'horizon du ciel */
     return o}}
+
+/* duo dominante / complémentaire, force q (couleur) ; kc pilote la saturation et le plafond de l'horizon (0 : ni l'un ni l'autre).
+   Avec q = k et kc = k : exactement le calcul des boucles 2 et 3 (le pôle +7 ne change pas). */
+function duo(o,dom,com,q,kc){const h=o.hor;
+  /* horizon : glisse vers la teinte du pôle, saturé ×1,4, luminance ramenée à .55 au plus */
+  const L0=Yl(h);mix3(h,h,atL(dom,L0,t3),.6*q);const L=Yl(h),s=1+.4*kc;
+  for(let j=0;j<3;j++)h[j]=Math.max(0,L+(h[j]-L)*s);const L2=Yl(h),cap=lerp(1,.55,kc);if(L2>cap){const f=cap/L2;h[0]*=f;h[1]*=f;h[2]*=f}
+  /* zénith et ombres (ciel hémisphérique) : la complémentaire, à luminance gardée */
+  mix3(o.top,o.top,atL(com,Yl(o.top),t3),.5*q);mix3(o.hs,o.hs,atL(com,Yl(o.hs),t3),.22*q);
+  /* boucle 3 : le sol du ciel hémisphérique garde la dominante (lumière renvoyée par le sol), puis prend la teinte
+     d'ombre du pôle (la complémentaire) pour un tiers : les ombres de +7 ne sont plus du même ton que le soleil */
+  mix3(o.hg,o.hg,atL(dom,Math.max(Yl(o.hg),.05),t3),.7*q);mix3(o.hg,o.hg,atL(com,Yl(o.hg),t3),.35*q);
+  mix3(o.sun,o.sun,atL(dom,Yl(o.sun),t3),.4*q);
+  mix3(o.clc,o.clc,atL(dom,Yl(o.clc),t3),.3*q)}
 
 /* --- lissage des uniforms du ciel à chaque image, comme sigCur dans styles.js (fondu ~2 s) --- */
 const cur={w:[0,0,0,0,0],p:0,s:0,t:0,on:false};
