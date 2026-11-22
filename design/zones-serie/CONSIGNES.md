@@ -166,3 +166,24 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 5. **La pioche d'Assemblée compte dans le plafond de la famille pioche** (6 pôles du lot), vocation comprise. Une Assemblée garde 2 cartes de Loi au moins par pôle.
 6. **Bêtes : 40 PV au plus aux paliers 1 à 6, 60 au palier 7.** Le budget compte les PV pour moitié et ne voit pas le mur.
 7. **Chutes : une recette de conteur, une fois par lot.** C'est le cas de la promotion qui éloigne chez A, et de « aujourd'hui » dans la dernière phrase chez C (trois fois au lot).
+
+## Bilan du critique après le lot 13 (fin de la série)
+
+**Ce qui a marché**
+- **La voix des quatre conteurs a tenu treize lots.** A a gardé ses chutes sèches, B ses objets, C son ironie, D son étrangeté. Les meilleurs récits du dernier lot valent ceux du premier, et aucune zone n'est sous 70 aux lots 12 et 13.
+- **Le validateur commun a rendu les règles mécaniques sûres.** Aucune erreur de moteur aux lots 12 et 13 :
+  - plus aucune condition inconnue, rendue vraie ou rendue fausse par la carte ;
+  - plus aucun écho caché, plus aucun plafond franchi par un réveil.
+- **Le comptage des places avant l'écriture** (leçon 1 du lot 12) a fermé la série proprement. Il n'y a eu ni reprise de trop ni dernier inscrit sacrifié, et les places perdues ont été annoncées avant les cartes.
+- **Le registre grand public est acquis.** Les conteurs suggèrent d'eux-mêmes au lieu de montrer, et il n'y avait rien à réécrire au lot 13.
+
+**Ce qui reste fragile**
+- **La variété s'use plus vite que les règles.** Au dernier lot, les couples de colonne, les prix principaux et les familles libres de plusieurs mots étaient épuisés. Les règles ont tenu, mais en acceptant des 3es pôles et des prix déjà payés.
+- **Les doublons d'image et d'intrigue entre conteurs** restent le défaut le plus constant : ±7 au même geste, même registre, même inspecteur. Le second inscrit compare ses familles et ses objets, rarement le geste de son intrigue.
+- **Les noms** se heurtent maintenant surtout aux plus de 900 noms déjà en jeu, par préfixe ou à une lettre près. Le contrôle doit rester au script.
+
+**À surveiller en jeu**
+- **Les crochets d'état** (`vulnerable`, `bete`, `brule`, ce dernier nourri par les pièges des Donjons) : vérifier en simulation que les colonnes qui les lisent ne jouent pas leur bonus à chaque carte.
+- **`defausseAPrix` sans défausse dans le pôle** (B Pierre, Lumière, Tempête, et 4 pôles au lot 12) : il ne vaut que dans un paquet qui paie en défausse. À regarder dans les paquets réels.
+- **Les formes ultimes de D à fort dégât ciblé** (jusqu'à 78 avec le réveil) contre le boss du niveau 5 : c'est voulu, mais c'est le sommet du jeu.
+- **Les bêtes de 40 PV aux paliers 5 et 6**, nombreuses au lot 13 : le mur que le budget ne voit pas. Il est plafonné, mais il est à surveiller avec les Antres au palier 6.
