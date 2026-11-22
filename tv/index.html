@@ -3210,7 +3210,8 @@ function finSiFini(){if(!CB)return false;
   if(!vivants(CB.foes).length){CB.q=[];CB.busy=true;attendre(.9,()=>finCombat(true));return true}return false}
 
 /* ---------- Effets ---------- */
-function pop(u,txt,cls){if(!u.el)return;const s=document.createElement('span');s.className='pop '+(cls||'');s.textContent=txt;u.el.appendChild(s);setTimeout(()=>s.remove(),1000)}
+function pop(u,txt,cls){if(!u.el)return;/* interface, passe 5 : les textes flottants d'une même unité se suivent au lieu de s'empiler */const now=performance.now(),d=Math.max(0,(u._popT||0)-now);u._popT=now+d+380;
+  const go=()=>{if(!u.el)return;const s=document.createElement('span');s.className='pop '+(cls||'');s.textContent=txt;u.el.appendChild(s);setTimeout(()=>s.remove(),1000)};d>0?setTimeout(go,Math.min(d,1500)):go()}
 function frappe(u,n,src){if(!u||u.pv<=0)return 0;if(CB&&CB.sr&&u.hero&&src&&CB.foes.indexOf(src)>=0&&n>0){srBlesse(u,n,src);if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}majUnites();return n}if(CB&&n>0&&CB.centre){const ennemi=CB.foes.indexOf(u)>=0;if(ennemi&&CB.centre==='heros'&&(CB.cases?src&&(src.bete||src.hero):(!src||src.bete||src.hero)))n+=2;else if(!ennemi&&CB.centre==='ennemi'&&src&&CB.foes.indexOf(src)>=0)n+=1}if(u.hero&&u.res&&src&&src!==u&&n>0)n=Math.max(1,n-u.res);if(CB&&CB.gris&&!src)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u.vul&&n>0)n+=CB&&CB.cases?Math.min(4,u.vul):u.vul;const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
   pop(u,n>0?'−'+n:'garde',n>0?'deg':'g');if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}
   if(AX&&soundOn)n>0?perc(AX.currentTime,'t',.9):note(AX.currentTime,523,SIN,.2,.07);
@@ -3324,7 +3325,7 @@ function placerNoeud(){if(!CB)return;
   const pose=(u,col,row)=>{if(u.el){u.el.style.gridColumn=col;u.el.style.gridRow=row}};
   if(CB.cases){/* Plateau (19 nov.) : vous, héros (col. 1), Garde (2), arrière (3), avant (4) ; l'ennemi, avant (1), arrière (2), chef (3) ; trois voies en rangées */
     if(typeof dessinerCases==='function')dessinerCases();if(typeof badgesMenace==='function')badgesMenace();
-    {/* interface, passe 4 : la place de la Garde reste tenue quand elle tombe (le plateau ne glisse plus) */const g=gardeU(),h=$('cb-allies');if(g&&g.el&&g.el.offsetWidth)CB.gw=g.el.offsetWidth;let ph=$('pl-garde-place');if(h&&!ph&&CB.gw){ph=document.createElement('div');ph.id='pl-garde-place';h.appendChild(ph)}if(ph){ph.style.gridColumn='2';ph.style.gridRow='1 / 4';ph.style.width=(CB.gw||0)+'px';ph.style.display=g?'none':'block'}}
+    {/* interface, passe 4 : la place de la Garde reste tenue quand elle tombe (le plateau ne glisse plus) */const g=gardeU(),h=$('cb-allies');if(g&&g.el&&g.el.offsetWidth)CB.gw=g.el.offsetWidth;let ph=$('pl-garde-place');if(h&&!ph&&CB.gw){ph=document.createElement('div');ph.id='pl-garde-place';h.appendChild(ph)}if(ph){ph.style.gridColumn='2';ph.style.gridRow='1 / 4';ph.style.width=(CB.gw||0)+'px';ph.style.display=g?'none':'flex'}}
     for(const u of CB.allies){if(u.pv<=0&&!u.hero)continue;if(u.hero)pose(u,'1','1 / 4');else if(u.garde)pose(u,'2','1 / 4');else{pose(u,(u.rang||0)?'3':'4',String((u.voie||0)+1));if(u.el)u.el.classList.toggle('arriere',!!u.rang)}}
     for(const u of CB.foes){if(u.pv<=0)continue;if(u.chef)pose(u,'3',u.cv!=null?String(u.cv+1):'1 / 4');else pose(u,String(rangDe(u)+1),String((u.voie||0)+1))}
     return}
@@ -3336,7 +3337,7 @@ function majUnites(){if(!CB)return;const v=vivants(CB.foes);majCentre();placerNo
     e.querySelector('.bar i').style.width=(100*u.pv/u.max)+'%';e.querySelector('.bar span').textContent=CB.sr&&u.hero?`PV ${u.pv} / ${u.max}${srMalus()?' · capacité −'+Math.min(srMalus(),CB.tour<4?1:99):''}`:u.pv+' / '+u.max;
     const g=e.querySelector('.gd');g.textContent=u.g>0?'⛨ '+u.g:'';
     if(u.garde)e.querySelector('.int').textContent=CB.cases?'⛨ dernier rempart du héros':'⛨ prend les coups, s\'effrite de moitié';else if(u.mur)e.querySelector('.int').textContent='⛨ bloqueur'+(u.atk>0&&CB.cases&&typeof forceBete==='function'?' · ⚔ '+forceBete(u):'')+(u.epine?' · renvoie '+u.epine:'')+(CB.cases&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:'');else if(u.bete)e.querySelector('.int').textContent=CB.cases&&typeof forceBete==='function'?'⚔ '+forceBete(u)+((u.rang||0)?' · arrière':' · avant')+(terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''):'⚔ '+u.atk+' à chaque tour';
-    else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}${u.chef&&CB.cases&&u.cv!=null?' <span class="voie">voie '+PL_NOMV[u.cv]+'</span>':''}${aPassif('lecture')&&u.mv?' · puis '+NOMACT[u.mv[u.mi%u.mv.length]]:''}${CB.cases&&typeof terrainDe==='function'&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''}`:''}
+    else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.a==='c'&&CB.cases&&typeof elanDe==='function'?'<span class="elan">élan : '+elanDe(u)+' au prochain tour</span>':I.t}${u.chef&&CB.cases&&u.cv!=null?' <span class="voie">voie '+PL_NOMV[u.cv]+'</span>':''}${aPassif('lecture')&&u.mv?' · puis '+NOMACT[u.mv[u.mi%u.mv.length]]:''}${CB.cases&&typeof terrainDe==='function'&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''}${CB.cases&&typeof hesiteRaison==='function'&&I.a!=='h'&&hesiteRaison(u)?' · <i class="hab">'+hesiteRaison(u)+'</i>':''}`:''}
     {const vi=!!CB.sel&&u===ordreCibles()[CB.ti];e.classList.toggle('vise',vi);if(vi&&typeof apercuCible==='function')e.dataset.apercu=apercuCible(u)}}
   const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">${resHTML()}</span>`;
   $('cb-piles').innerHTML=`<span>Pioche <b>${CB.pile.length}</b></span><span>Défausse <b>${CB.defausse.length}</b></span><span>Tour <b>${CB.tour}</b></span>${CB.reso&&Object.keys(CB.reso).some(r=>CB.reso[r]>0)?`<span>Résonances <b>${Object.keys(CB.reso).filter(r=>CB.reso[r]>0).map(r=>r+(CB.reso[r]>1?' ×'+CB.reso[r]:'')).join(', ')}</b></span>`:''}`}
@@ -3427,6 +3428,7 @@ function coupPrevu(m){const I=m&&m.int;if(!I||'afbv'.indexOf(I.a)<0)return null;
 function menaces(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes)){const I=m.int;if(!I)continue;if(I.a==='t'){for(let v=0;v<3;v++)t[v]+=I.v+(CB.centre==='ennemi'?1:0);continue}const c=coupPrevu(m);if(c&&!c.vol)t[c.voie]+=c.v}return t}
 const vols=()=>{const t=[0,0,0];if(CB)for(const m of vivants(CB.foes)){const c=coupPrevu(m);if(c&&c.vol)t[c.voie]+=c.v}return t};
 /* élans : la frappe forte arrivera au tour suivant (affichée à part) */
+function elanDe(m){const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;return c?c.v:2*m.atk}
 function elans(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes))if(m.int&&m.int.a==='c'){
   /* passe 8 : le coup qui suit vraiment (bélier ou coup fort), échauffement compris, calculé comme coupPrevu */
   const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;t[voieDe(m)]+=c?c.v:2*m.atk}return t}
@@ -3501,6 +3503,20 @@ const plCss=document.createElement('style');plCss.textContent=`
 .plrenfort:empty{display:none}
 .pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
 #combat .pcase.chefvoie{outline:2px dashed #e2675a;outline-offset:-5px}
+#combat .plelan{display:none!important}
+#combat .u .int .elan{color:#8a1a10!important;font-weight:800}
+#combat .u .int .hab{color:#4a3a2a!important;font-style:normal}
+#combat .plhero,#combat .plrenfort,#combat .plpart{font-family:var(--c-fell,serif)!important;font-style:normal!important;font-size:calc(var(--u)*1.15)!important}
+#combat .plpart{top:auto;bottom:-1.4em;font-size:calc(var(--u)*.9)!important}
+#combat .u.lourd::after{right:-.7em!important;top:45%!important;bottom:auto!important;left:auto!important;width:auto!important;height:auto!important;line-height:1!important;border-radius:.4em!important;padding:.2em .35em!important;font-size:calc(var(--u)*.7)!important}
+#combat #cb-centre .cv{font-size:calc(var(--u)*.95)!important}
+#combat .u.vise::before{left:0;transform:none;white-space:normal;width:max-content;max-width:calc(var(--u)*13);text-align:left}
+#pl-garde-place{visibility:visible!important;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:.55;color:#c9b8a0;font-family:var(--c-fell,serif);font-size:calc(var(--u)*.95);text-align:center}
+#pl-garde-place::before{content:"⛨";font-size:calc(var(--u)*4);line-height:1;filter:grayscale(1)}
+#pl-garde-place::after{content:"Garde tombée"}
+.kkw{position:absolute;z-index:3;right:4%;top:calc(var(--u)*2.6);display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none}
+.kkw b{font-size:calc(var(--u)*.72);line-height:1.2;padding:0 .4em;border-radius:.6em;background:rgba(10,8,6,.88);color:#e8d6a8;border:1px solid rgba(232,199,127,.6);white-space:nowrap}
+.kkw b.kp{background:#7a1a12;color:#fff;border-color:#ff8070}
 #combat .plelan,#combat .plhero,#combat .plrenfort,#combat .plmenace{font-family:var(--c-main,inherit)}
 #combat .plelan{top:auto;bottom:-.2em}
 #combat .plelan,#combat .plhero,#combat .plrenfort{font-size:calc(var(--u)*1)!important;font-style:normal!important;font-weight:800}
@@ -3588,10 +3604,11 @@ function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2)}
   C.foes.push(m);uniteEl(m,'cb-foes');if(m.lourd&&m.el)m.el.classList.add('lourd');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort${m.lourd?' lourd':''} accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort${m.lourd?' lourd':''} : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* interface, passe 4 : aperçu sur la cible visée (PV, et si l'hésitation prendra) */
-function hesitePrevu(m){const t=CB.tour,pl=!!CB.cases;if(pl&&m.hesBloque===t)return false;if(pl&&m.lourd&&m.int&&m.int.a==='c')return false;
-  if((m.chef||pl)&&(m.hesT===t-1||(pl&&m.chef&&m.hesT!=null&&m.hesT!==t&&t-m.hesT<3)))return false;return true}
+function hesiteRaison(m){const t=CB.tour,pl=!!CB.cases;if(pl&&m.lourd&&m.int&&m.int.a==='c')return'inébranlable';if(pl&&m.hesBloque===t)return'habitué';
+  if(pl&&m.chef&&m.hesT!=null&&m.hesT!==t&&t-m.hesT<3)return'chef : de nouveau au tour '+(m.hesT+3);if((m.chef||pl)&&m.hesT===t-1)return'habitué';return''}
+function hesitePrevu(m){return!hesiteRaison(m)}
 function apercuCible(m){let s='◆ cible · PV '+m.pv+'/'+m.max+(m.g>0?' · ⛨ '+m.g:'');const k=CB.main[CB.f],c=k&&CK[k];
-  try{const o=c&&c.ops?JSON.stringify(c.ops()):'';if(o.indexOf('"hesite"')>=0)s+=hesitePrevu(m)?' · hésitera ✓':' · s\'habitue ✗'}catch(_){}return s}
+  try{const o=c&&c.ops?JSON.stringify(c.ops()):'';if(o.indexOf('"hesite"')>=0){const r=hesiteRaison(m),cond=o.indexOf('"si"')>=0&&o.indexOf('"hesite"')>o.indexOf('"si"');s+=r?' · n\'hésitera pas ✗ ('+r+')':cond?' · hésitera si la condition tient':' · hésitera ✓'}}catch(_){}return s}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
@@ -5666,6 +5683,10 @@ window.CARTES_FOND=new Set(["ANT020_m1", "ANT020_m2", "ANT020_m3", "ANT020_m4", 
    Les cartes communes restent sobres. Ce fichier redéfinit artCarte() et carteHTML() d'habillage.js, et ajoute son propre CSS.
    Données lues sur CK[k] si elles existent : ultime, pose, reveille, amb(), secret, zs (fil « Écrire les cartes de chaque pôle »). */
 (function(){
+/* interface du Plateau, passe 5 : mots-clés toujours visibles sur la carte (hésite, prix en PV) */
+function motsCles(t){t=String(t||'').replace(/<[^>]*>/g,'');const k=[];if(/hésit/i.test(t)){const ph=t.split(/[.;]/).find(p=>/hésit/i.test(p))||'';k.push('<b class="kh">'+(/(^|\s)(si|s'il|s’il)\s/i.test(ph)?'hésite ?':'hésite')+'</b>')}
+  const p=t.match(/perd\s+(\d+)\s*PV/i);if(p&&/Prix/i.test(t))k.push('<b class="kp">−'+p[1]+' PV</b>');return k.length?'<div class="kkw">'+k.join('')+'</div>':''}
+
 const VMANA={Feu:['#b5482a','#f0a060','#3a1a12'],Glace:['#6f9bb0','#e4f1f4','#1d2c38'],Eau:['#1f5f8e','#5fd0c8','#0f2340'],
   'Sève':['#4f7f3a','#d9b22e','#1f3a1c'],Pierre:['#7a6450','#c99a5a','#2a2420'],Vent:['#5b7896','#e2d8c0','#28323e']};
 /* accents de pôle par zone [−, +] et culture des zones d'origine (brief de direction artistique) ; les autres zones dérivent leurs accents du mana */
@@ -6034,7 +6055,7 @@ window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
 const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>290?' t5':n>210?' t4':n>140?' t3':n>85?' t2':n>45?' t1':''};
 window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,uid='h'+(uidN++),txt=c.txt(k),lg=longueur(txt);
-  const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`;
+  const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`+motsCles(txt);
   const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">« ${amb} »</div>`:'';const txtR=texteCoupe(txt);
   /* carte de secret */
   if(c.secret||(c.zs&&!z)){const P=c.zs?infoZone(c.zs):null;
@@ -6052,7 +6073,7 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const sorte=(ART[k]&&ART[k].sorte&&P.mod!=='MAR')?ART[k].sorte:SORTE[P.mod]||'';
   const ligne=[P.mana,pw||(res?'Niv. '+nP:'')].filter(Boolean).join(' · ');
   const resH=(c.pose||c.reveille)?`<div class="kresos">${c.pose?glypheR(c.pose,1):''}${c.pose&&c.reveille?'<b></b>':''}${c.reveille?glypheR(c.reveille,0):''}</div>`:'';
-  const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`;
+  const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`+motsCles(txt);
   const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
   return`<div class="${cls}" style="--kb:${V[0]};--kl:${V[1]};--kd:${V[2]};--kcA:${rgba(V[0],.28)};--kcB:${rgba(V[0],.8)};--pc:${coulP}">
    ${cadreCarte(k,V[1],nP,ult)}${angles(k,nP,ult,uid)}${coZ}${crest}<div class="art">${artCarte(k)}<i class="kvitre"></i>${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}

@@ -41,6 +41,16 @@ Même équipe de 4 testeurs, centrée sur ce qu'on voit et ce qu'on comprend à 
 - Bouton Manœuvre sous « Fin du tour », loin du chef.
 - Légende du Centre contenue dans sa case ; ligne de terrain des unités plus discrète.
 
+## Passe 5 (22 nov.)
+
+- Mots-clés toujours visibles sur chaque carte : « hésite » (« hésite ? » sous condition) et « −N PV » en rouge pour un prix payé en PV.
+- Aperçu de cible avec la vraie raison : « n'hésitera pas ✗ (habitué / chef : de nouveau au tour N / inébranlable) », ou « hésitera si la condition tient » ; l'étiquette part du bord gauche de la plaque et passe à la ligne.
+- L'élan s'écrit dans l'intention de l'ennemi (« élan : 16 au prochain tour », en encre rouge) au lieu d'une pastille posée sur la case ; un ennemi qui n'hésitera pas porte sa raison dans son intention.
+- Sceau LOURD sur le bord droit de la plaque, sans rien couvrir.
+- « Garde tombée » : bouclier éteint à la place de la Garde.
+- Alertes (« coups attendus », renfort, « partira ») en romain, plus grandes ; « partira » sous la plaque.
+- Textes flottants d'une même unité qui se suivent au lieu de s'empiler.
+
 ## Notes
 
 | Passe | Fonctionnel | Cartes à échanges | Défense par étages | Tactique généraliste |
@@ -48,3 +58,4 @@ Même équipe de 4 testeurs, centrée sur ce qu'on voit et ce qu'on comprend à 
 | 1 (22 nov.) | 6,5 | 6 | 6,5 | 7 |
 | 2 (22 nov.) | 7,5 | 6,5 | 7,5 | 7,5 |
 | 3 (22 nov.) | 7 | 6,5 | 7,5 | 7,5 |
+| 4 (22 nov.) | — | 7 | 8 | 7,5 |

@@ -68,6 +68,7 @@ function coupPrevu(m){const I=m&&m.int;if(!I||'afbv'.indexOf(I.a)<0)return null;
 function menaces(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes)){const I=m.int;if(!I)continue;if(I.a==='t'){for(let v=0;v<3;v++)t[v]+=I.v+(CB.centre==='ennemi'?1:0);continue}const c=coupPrevu(m);if(c&&!c.vol)t[c.voie]+=c.v}return t}
 const vols=()=>{const t=[0,0,0];if(CB)for(const m of vivants(CB.foes)){const c=coupPrevu(m);if(c&&c.vol)t[c.voie]+=c.v}return t};
 /* élans : la frappe forte arrivera au tour suivant (affichée à part) */
+function elanDe(m){const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;return c?c.v:2*m.atk}
 function elans(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes))if(m.int&&m.int.a==='c'){
   /* passe 8 : le coup qui suit vraiment (bélier ou coup fort), échauffement compris, calculé comme coupPrevu */
   const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;t[voieDe(m)]+=c?c.v:2*m.atk}return t}
@@ -142,6 +143,20 @@ const plCss=document.createElement('style');plCss.textContent=`
 .plrenfort:empty{display:none}
 .pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
 #combat .pcase.chefvoie{outline:2px dashed #e2675a;outline-offset:-5px}
+#combat .plelan{display:none!important}
+#combat .u .int .elan{color:#8a1a10!important;font-weight:800}
+#combat .u .int .hab{color:#4a3a2a!important;font-style:normal}
+#combat .plhero,#combat .plrenfort,#combat .plpart{font-family:var(--c-fell,serif)!important;font-style:normal!important;font-size:calc(var(--u)*1.15)!important}
+#combat .plpart{top:auto;bottom:-1.4em;font-size:calc(var(--u)*.9)!important}
+#combat .u.lourd::after{right:-.7em!important;top:45%!important;bottom:auto!important;left:auto!important;width:auto!important;height:auto!important;line-height:1!important;border-radius:.4em!important;padding:.2em .35em!important;font-size:calc(var(--u)*.7)!important}
+#combat #cb-centre .cv{font-size:calc(var(--u)*.95)!important}
+#combat .u.vise::before{left:0;transform:none;white-space:normal;width:max-content;max-width:calc(var(--u)*13);text-align:left}
+#pl-garde-place{visibility:visible!important;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:.55;color:#c9b8a0;font-family:var(--c-fell,serif);font-size:calc(var(--u)*.95);text-align:center}
+#pl-garde-place::before{content:"⛨";font-size:calc(var(--u)*4);line-height:1;filter:grayscale(1)}
+#pl-garde-place::after{content:"Garde tombée"}
+.kkw{position:absolute;z-index:3;right:4%;top:calc(var(--u)*2.6);display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none}
+.kkw b{font-size:calc(var(--u)*.72);line-height:1.2;padding:0 .4em;border-radius:.6em;background:rgba(10,8,6,.88);color:#e8d6a8;border:1px solid rgba(232,199,127,.6);white-space:nowrap}
+.kkw b.kp{background:#7a1a12;color:#fff;border-color:#ff8070}
 #combat .plelan,#combat .plhero,#combat .plrenfort,#combat .plmenace{font-family:var(--c-main,inherit)}
 #combat .plelan{top:auto;bottom:-.2em}
 #combat .plelan,#combat .plhero,#combat .plrenfort{font-size:calc(var(--u)*1)!important;font-style:normal!important;font-weight:800}
@@ -229,10 +244,11 @@ function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2)}
   C.foes.push(m);uniteEl(m,'cb-foes');if(m.lourd&&m.el)m.el.classList.add('lourd');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort${m.lourd?' lourd':''} accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort${m.lourd?' lourd':''} : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* interface, passe 4 : aperçu sur la cible visée (PV, et si l'hésitation prendra) */
-function hesitePrevu(m){const t=CB.tour,pl=!!CB.cases;if(pl&&m.hesBloque===t)return false;if(pl&&m.lourd&&m.int&&m.int.a==='c')return false;
-  if((m.chef||pl)&&(m.hesT===t-1||(pl&&m.chef&&m.hesT!=null&&m.hesT!==t&&t-m.hesT<3)))return false;return true}
+function hesiteRaison(m){const t=CB.tour,pl=!!CB.cases;if(pl&&m.lourd&&m.int&&m.int.a==='c')return'inébranlable';if(pl&&m.hesBloque===t)return'habitué';
+  if(pl&&m.chef&&m.hesT!=null&&m.hesT!==t&&t-m.hesT<3)return'chef : de nouveau au tour '+(m.hesT+3);if((m.chef||pl)&&m.hesT===t-1)return'habitué';return''}
+function hesitePrevu(m){return!hesiteRaison(m)}
 function apercuCible(m){let s='◆ cible · PV '+m.pv+'/'+m.max+(m.g>0?' · ⛨ '+m.g:'');const k=CB.main[CB.f],c=k&&CK[k];
-  try{const o=c&&c.ops?JSON.stringify(c.ops()):'';if(o.indexOf('"hesite"')>=0)s+=hesitePrevu(m)?' · hésitera ✓':' · s\'habitue ✗'}catch(_){}return s}
+  try{const o=c&&c.ops?JSON.stringify(c.ops()):'';if(o.indexOf('"hesite"')>=0){const r=hesiteRaison(m),cond=o.indexOf('"si"')>=0&&o.indexOf('"hesite"')>o.indexOf('"si"');s+=r?' · n\'hésitera pas ✗ ('+r+')':cond?' · hésitera si la condition tient':' · hésitera ✓'}}catch(_){}return s}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
