@@ -6,6 +6,14 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Boucle 4, artisan 3 : combat et interface classieux (22 novembre, `src/carnet-combat.js`, `cartes-visuel.js`, `epure.js`, `fluidite.js`)
+On garde la mosaïque collée et la cire rouge demandées le 21 novembre ; seules l'échelle, le contraste et la finition changent.
+- Cases du Plateau en tesselles fines (opus vermiculatum) au lieu d'un quadrillage de nappe vichy : joints de 1 px couleur mortier chaud au pas de .72u, filet clair d'1 px, seconde grille décalée très légère, liseré intérieur assombri puis filet d'or.
+- « Fin du tour » : sceau de cire mate assourdie (#7a2a22, deux tons, sans reflet), plus petit (5,6u), libellé en petites capitales laiton dans un anneau gravé. « Manœuvre » : anneau de laiton sur fond d'encre, sans boule verte. Le sceau du titre passe à la même cire mate, étoile laiton.
+- Cartes : corps du texte à 13 px au moins à 720p ; dans la main, règle en trois lignes avec ellipse (le détail à l'inspection). La carte choisie n'est plus serrée à 78 % à tort (le cadre dépassait toujours de quelques pixels) ; quand son texte déborde, c'est l'illustration qui rétrécit.
+- Exploration épurée : l'aide tient sur une ligne et s'efface après 12 s sans entrée (45 s au plus), RB ou Tab la rappelle ; la plaque de nom sous la minicarte se retire tant que la fiche de zone est affichée (le nom n'apparaît qu'une fois) ; la minicarte perd son flou d'arrière-plan (un rectangle terne, et du travail en moins pour la Xbox).
+- Flocons du premier plan plafonnés à 10 px (au lieu de 18) : plus de taches sur l'objectif. Mesures (triangles, appels) inchangées.
+
 ## Version 2.33 : interface « Carnet sombre », étape 3, le menu pause (22 novembre, `src/carnet-menu.js`)
 - Le menu pause et ses sous-menus (paquet, grimoire, sauvegardes, rivaux, lois…) s'écrivent sur une page de carnet : parchemin déchiré aux coins brûlés, titre gothique, sceau de cire, options à l'encre, notes à la main ; l'option choisie est entourée à l'encre rouge.
 - Mêmes options, même ordre, mêmes commandes. Les cartes à jouer gardent leurs cadres. Aucune image, aucun filtre.

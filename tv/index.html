@@ -6148,6 +6148,15 @@ const css=document.createElement('style');css.textContent=`
 @keyframes k3d{from{rotate:y -7deg}to{rotate:y 7deg}}
 @keyframes kreflet{0%{left:-60%;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:115%;opacity:0}}
 @media (prefers-reduced-motion:reduce){#cb-main .cc.kcarte.z.f,.boite .cc.kcarte.z{animation:none}.kvitre::after{display:none}}
+/* ---- Boucle 4 (22 novembre 2026) : texte des cartes lisible à la télé ----
+   Corps du texte à 13 px au moins à 720p. Cartes non choisies : la règle tient en trois lignes et se termine par une
+   ellipse (plus de fondu) ; le détail complet reste à l'inspection (carte choisie, agrandie). */
+#cb-main .cc.kcarte:not(.f) .ct{font-size:max(13px,calc(var(--u)*.84));line-height:1.22;text-overflow:ellipsis}
+#cb-main .cc.kcarte:not(.f) .ct.deborde{-webkit-mask-image:none;mask-image:none}
+#cb-main .cc.kcarte.f .ct{font-size:max(13px,calc(var(--u)*.86*var(--kf,1)))}
+/* carte choisie : quand ajuster() serre le texte (--kf < 1), l'illustration rétrécit aussi, pour que le texte, qui ne descend
+   plus sous 13 px, trouve sa place au lieu de se fondre */
+#cb-main .cc.kcarte.f .art{height:calc(var(--u)*(5.4 - (1 - var(--kf,1))*10))}
 `;document.head.appendChild(css);
 
 /* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)
@@ -6155,7 +6164,9 @@ const css=document.createElement('style');css.textContent=`
    Les cartes non choisies ne reçoivent que le fondu, et seulement si leur texte dépasse trois lignes.
    Une seule mesure par carte et par main distribuée : le résultat est gardé tant que la main ne change pas. */
 const deborde=t=>t.scrollHeight>t.clientHeight+1;
-function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false;const trop=()=>deborde(t)||deborde(el);
+/* boucle 4 (22 nov.) : seul le texte est mesuré. La carte elle-même dépasse toujours de quelques pixels (ornements du cadre),
+   ce qui faisait serrer chaque carte choisie au maximum (texte à 78 %, citation cachée) même quand tout tenait. */
+function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false;const trop=()=>deborde(t);
   el.style.removeProperty('--kf');el.classList.remove('serre');t.classList.remove('deborde');
   for(let i=0;i<6&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
   if(trop()&&el.querySelector('.kamb')){serre=true;el.classList.add('serre')}
@@ -6759,9 +6770,11 @@ function rendreMiettes(){const K=MIET.cach;for(let i=0;i<K.length;i++)K[i].visib
 const _drawMiet=draw;
 draw=function(t){try{_drawMiet(t)}finally{MIET.arme=false;rendreMiettes()}};
 /* (d) flocons : taille plafonnée à 18 px, fondu entre 1,5 et 5 m devant la caméra (plus de gros disques flous) */
+/* boucle 4 (22 nov.) : plafond abaissé à 10 px (les disques de 15 à 18 px faisaient des taches sur l'objectif) ;
+   l'opacité reste multipliée par vPres. */
 if(typeof weather!=='undefined'&&weather&&weather.material){const wm=weather.material,_obc=wm.onBeforeCompile;
   wm.onBeforeCompile=function(s,r){if(_obc)_obc.call(this,s,r);
-    s.vertexShader='varying float vPres;\n'+s.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=min(gl_PointSize,18.);vPres=smoothstep(1.5,5.,-mvPosition.z);');
+    s.vertexShader='varying float vPres;\n'+s.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=min(gl_PointSize,10.);vPres=smoothstep(1.5,5.,-mvPosition.z);');
     s.fragmentShader='varying float vPres;\n'+s.fragmentShader.replace('#include <fog_fragment>','#include <fog_fragment>\ngl_FragColor.a*=vPres;')};
   wm.customProgramCacheKey=()=>'meteo-b2';wm.needsUpdate=true}
 /* MozaWorld TV 2.1 : le Grimoire (demande du 17 nov. : « ajoute un menu dans le jeu pour y mettre le grimoire »).
@@ -8612,23 +8625,39 @@ body.epure .hud.jauge{scale:.88;transform-origin:50% 100%}
 .mz-bascule{position:fixed;left:50%;top:calc(var(--u)*5.2);translate:-50% 0;z-index:40;pointer-events:none;font-size:calc(var(--u)*1.05);letter-spacing:.18em;text-transform:uppercase;
   color:var(--laiton2,#e8c77f);background:rgba(13,12,15,.72);border:1px solid rgba(201,164,92,.45);padding:calc(var(--u)*.45) calc(var(--u)*1.4);opacity:0;transition:opacity .5s}
 .mz-bascule.vu{opacity:1}
+/* boucle 4 (22 nov.) : en mode épuré, l'aide tient sur une ligne ; la plaque de nom sous la minicarte se retire
+   tant que la fiche de zone (en haut à gauche) est affichée, pour que le nom n'apparaisse qu'une fois. */
+.hud.aide .aide-une{display:none}
+body.epure .hud.aide>div:not(.aide-une){display:none}
+body.epure .hud.aide .aide-une{display:block;white-space:nowrap;font-size:.86em;letter-spacing:.02em}
+body.epure .hud.aide{padding-top:calc(var(--u)*.55);padding-bottom:calc(var(--u)*.55)}
+/* la minicarte n'a plus de fond : son flou d'arrière-plan (hérité de .cadre) ne dessinait qu'un rectangle terne, et coûtait */
+.hud.carte.mc2{backdrop-filter:none;-webkit-backdrop-filter:none}
+.hud.carte .mc-nom{transition:opacity .6s ease}
+body:not(.epure) .hud.carte .mc-nom,body.epure.zone-neuve .hud.carte .mc-nom{opacity:0}
 @media (prefers-reduced-motion:reduce){.toast.vu .t1,.toast.vu .t2,.toast.vu .t3{animation:none}}
 `;document.head.appendChild(st);
 
 let epure=true;try{epure=localStorage.getItem('mz-epure')!=='0'}catch(_){}
 const B=document.body;B.classList.toggle('epure',epure);
 const note=document.createElement('div');note.className='mz-bascule';B.appendChild(note);let noteT=null;
-function basculer(){epure=!epure;B.classList.toggle('epure',epure);try{localStorage.setItem('mz-epure',epure?'1':'0')}catch(_){}
+/* boucle 4 (22 nov.) : l'aide s'efface après 12 s sans entrée (ou 45 s de jeu au plus) ; RB ou Tab la fait revenir */
+let calme=0,joue=0;const entree=()=>{calme=0};
+function basculer(){epure=!epure;calme=0;joue=0;B.classList.remove('aide-vue');B.classList.toggle('epure',epure);try{localStorage.setItem('mz-epure',epure?'1':'0')}catch(_){}
   note.textContent=epure?'Interface épurée · RB pour tout afficher':'Interface complète · RB pour épurer';note.classList.add('vu');
   clearTimeout(noteT);noteT=setTimeout(()=>note.classList.remove('vu'),2200);if(typeof tick==='function')try{tick()}catch(_){}}
-window.addEventListener('keydown',e=>{if((e.key==='Tab'||e.key==='h'||e.key==='H')&&typeof mode!=='undefined'&&mode==='monde'){e.preventDefault();basculer()}});
-const pb0=padBouton;padBouton=function(n){if(n==='rb'&&typeof mode!=='undefined'&&mode==='monde'){basculer();return}return pb0.apply(this,arguments)};
+window.addEventListener('keydown',e=>{entree();if((e.key==='Tab'||e.key==='h'||e.key==='H')&&typeof mode!=='undefined'&&mode==='monde'){e.preventDefault();basculer()}});
+const pb0=padBouton;padBouton=function(n){entree();if(n==='rb'&&typeof mode!=='undefined'&&mode==='monde'){basculer();return}return pb0.apply(this,arguments)};
+/* boucle 4 (22 nov.) : l'aide d'une ligne, ajoutée en tête de chaque panneau d'aide (clavier/télécommande et manette) */
+for(const a of document.querySelectorAll('.hud.aide')){const d=document.createElement('div');d.className='aide-une';
+  d.innerHTML=a.classList.contains('aide-pad')?'<i>stick G</i> marcher · <i>stick D</i> tourner · <span class="bt a">A</span> agir · <span class="bt">RB</span> plus':'<i>▲▼</i> marcher · <i>◀▶</i> tourner · <i>OK</i> agir · <i>Tab</i> plus';
+  a.insertBefore(d,a.firstChild)}
 
-/* la fiche de zone reste 9 s à l'entrée d'une zone ; l'aide reste la première minute de jeu */
-let zv=null,zT=null,joue=0;
+/* la fiche de zone reste 9 s à l'entrée d'une zone ; l'aide d'une ligne s'efface après 12 s de calme (boucle 4, 22 nov.) */
+let zv=null,zT=null;window.addEventListener('pointerdown',entree);
 setInterval(()=>{if(typeof curZ==='undefined')return;
   if(curZ&&curZ!==zv){zv=curZ;B.classList.add('zone-neuve');clearTimeout(zT);zT=setTimeout(()=>B.classList.remove('zone-neuve'),9000)}
-  if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;if(joue>=60)B.classList.add('aide-vue')}},500);
+  if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;calme+=.5;if(calme>=12||joue>=45)B.classList.add('aide-vue')}},500);
 })();
 /* MozaWorld 2.8 : le monde bouge (18 novembre, idée 5 de l'évaluation graphique, choisie par l'utilisateur).
    1. Le vent : la végétation et tout ce qui est haut et mince ploie doucement (déformation dans le shader, aucun calcul par objet).
@@ -9293,7 +9322,14 @@ let essais=0;const tard=setInterval(()=>{const n=q('.hud.carte .mc-nom'),x=q('#x
 (function(){
 if(!document.body.classList.contains('carnet'))return;
 const st=document.createElement('style');st.textContent=`
-#combat{--cw:calc(var(--u)*9);--ch:calc(var(--u)*6.3);--ck:calc(var(--u)*1.25);--cj:3px;column-gap:0!important;grid-template-columns:1fr var(--cw) 1fr!important}
+#combat{--cw:calc(var(--u)*9);--ch:calc(var(--u)*6.3);--ck:calc(var(--u)*1.25);--cj:3px;
+  /* boucle 4 (22 nov.) : opus vermiculatum au lieu de nappe vichy. Joints de 1 px couleur mortier chaud au pas de .72u,
+     plus une seconde grille décalée (pas de 1,7u, très légère) qui casse la régularité du quadrillage. */
+  --tess:repeating-linear-gradient(90deg,rgba(40,28,18,.22) 0 1px,rgba(255,236,200,.045) 1px 2px,transparent 2px calc(var(--u)*.72)),
+   repeating-linear-gradient(0deg,rgba(40,28,18,.22) 0 1px,rgba(255,236,200,.045) 1px 2px,transparent 2px calc(var(--u)*.72)),
+   repeating-linear-gradient(90deg,transparent 0 calc(var(--u)*.43),rgba(40,28,18,.07) calc(var(--u)*.43) calc(var(--u)*.43 + 1px),transparent calc(var(--u)*.43 + 1px) calc(var(--u)*1.7)),
+   repeating-linear-gradient(0deg,transparent 0 calc(var(--u)*.97),rgba(40,28,18,.07) calc(var(--u)*.97) calc(var(--u)*.97 + 1px),transparent calc(var(--u)*.97 + 1px) calc(var(--u)*1.7));
+  column-gap:0!important;grid-template-columns:1fr var(--cw) 1fr!important}
 /* le décor de la zone reste, assombri comme à la bougie */
 #combat::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,rgba(8,5,3,.38) 30%,rgba(8,5,3,.8) 100%)}
 #combat>*:not(#cb-decor){position:relative;z-index:1}
@@ -9305,8 +9341,9 @@ const st=document.createElement('style');st.textContent=`
   background:repeating-linear-gradient(2deg,rgba(255,255,255,.10) 0 3px,transparent 3px 9px,rgba(0,0,0,.2) 9px 12px,transparent 12px 21px),linear-gradient(95deg,#2a1838,#4a2a5e 30%,#6d4a86 55%,#4a2a5e 80%,#2a1838);
   clip-path:polygon(0 38%,2% 16%,7% 22%,12% 6%,24% 12%,38% 2%,52% 9%,66% 0,80% 8%,92% 3%,97% 20%,100% 34%,98% 62%,100% 80%,94% 92%,84% 86%,70% 98%,55% 90%,40% 100%,26% 91%,13% 97%,5% 84%,1% 70%)}
 #combat #cb-t::after{content:"✶";position:absolute;left:calc(var(--u)*-2.4);top:-.1em;width:calc(var(--u)*2.8);height:calc(var(--u)*2.8);border-radius:46% 54% 50% 50%/52% 47% 53% 48%;
-  display:grid;place-items:center;font:600 calc(var(--u)*1.6)/1 var(--c-fell);color:#5e0f0a;text-shadow:1px 1px 0 rgba(255,150,130,.45);transform:rotate(-14deg);
-  background:radial-gradient(circle at 36% 30%,#e0584a,var(--c-cire) 46%,#6d130d 100%);box-shadow:inset 0 0 0 calc(var(--u)*.28) rgba(109,19,13,.55),2px 3px 0 rgba(0,0,0,.7)}
+  display:grid;place-items:center;font:600 calc(var(--u)*1.6)/1 var(--c-fell);color:#d9b56a;text-shadow:0 1px 0 rgba(20,6,4,.8);transform:rotate(-14deg);
+  /* boucle 4 (22 nov.) : même cire mate que les boutons du bas, sans reflet blanc */
+  background:radial-gradient(circle at 50% 46%,#8e352b 0 38%,#7a2a22 52%,#5c1d17 100%);box-shadow:inset 0 0 0 calc(var(--u)*.24) #6a231c,inset 0 0 0 calc(var(--u)*.24 + 1px) rgba(201,164,92,.4),2px 3px 0 rgba(0,0,0,.7)}
 #combat #cb-log{font-family:var(--c-main);font-style:normal;font-weight:600;font-size:calc(var(--u)*1.45);color:var(--c-os);text-shadow:2px 2px 0 #000}
 
 /* ── le champ de bataille : un damier de mosaïque, tuiles collées ── */
@@ -9320,8 +9357,10 @@ const st=document.createElement('style');st.textContent=`
 #combat .pcase::before,#combat .pcase::after{content:"";position:absolute;z-index:-1;pointer-events:none}
 #combat .pcase::before{inset:0;background:#0b0807}
 #combat .pcase::after{inset:var(--cj);
-  background:repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
-   radial-gradient(ellipse at 50% 50%,var(--tu2),var(--tu) 78%)}
+  background:var(--tess),
+   radial-gradient(ellipse at 50% 50%,var(--tu2),var(--tu) 78%);
+  /* boucle 4 (22 nov.) : liseré intérieur, la couleur de la case assombrie, puis un filet d'or */
+  box-shadow:inset 0 0 0 calc(var(--u)*.24) rgba(12,8,5,.34),inset 0 0 0 calc(var(--u)*.24 + 1px) rgba(214,178,104,.35)}
 /* nœud papillon (bords rentrants) */
 #combat .pcase::before,#combat .pcase::after{clip-path:polygon(0 0,100% 0,calc(100% - var(--ck)) 50%,100% 100%,0 100%,var(--ck) 50%)}
 /* hexagone (pointes sortantes), une case sur deux en damier */
@@ -9346,11 +9385,11 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-centre::before{inset:0 calc(var(--ck)*-1);background:#0b0807}
 #combat #cb-centre::after{inset:var(--cj) calc(var(--cj) - var(--ck));
   background:linear-gradient(#0b0807,#0b0807) 0 33.333%/100% var(--cj) no-repeat,linear-gradient(#0b0807,#0b0807) 0 66.667%/100% var(--cj) no-repeat,
-   repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
+   var(--tess),
    linear-gradient(180deg,#1d1a18 0 33.333%,transparent 33.333% 66.667%,#1d1a18 66.667%),
    radial-gradient(ellipse at 50% 50%,#5d8a3c,#35561f 75%)}
 #combat #cb-centre[data-k="cennemi"]::after{background:linear-gradient(#0b0807,#0b0807) 0 33.333%/100% var(--cj) no-repeat,linear-gradient(#0b0807,#0b0807) 0 66.667%/100% var(--cj) no-repeat,
-   repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
+   var(--tess),
    linear-gradient(180deg,#1d1a18 0 33.333%,transparent 33.333% 66.667%,#1d1a18 66.667%),
    radial-gradient(ellipse at 50% 50%,#a2402f,#5e1c14 75%)}
 #combat #cb-centre svg{width:calc(var(--u)*5.2)!important;height:calc(var(--u)*5.2)!important;position:absolute;left:50%;top:50%;translate:-50% -50%}
@@ -9384,13 +9423,23 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-piles span{font-family:var(--c-fell)!important}#combat #cb-piles b{font-family:var(--c-num)!important}
 #combat #cb-mana.c-papier::before,#combat #cb-mana.c-papier::after,#combat #cb-piles.c-papier::before,#combat #cb-piles.c-papier::after{display:none!important}
 #combat #cb-aide{font-family:var(--c-fell);background:var(--c-encre)!important;border:2px solid var(--c-papier2)!important;border-radius:0!important;color:var(--c-os)!important;backdrop-filter:none!important;transform:rotate(-.4deg)}
-#combat #cb-main .cc.fin:not(.man){border-radius:47% 53% 50% 50%/52% 48% 52% 48%!important;border:0!important;background:radial-gradient(circle at 36% 30%,#e0584a,var(--c-cire) 46%,#6d130d 100%)!important;
-  box-shadow:inset 0 0 0 calc(var(--u)*.45) rgba(109,19,13,.55),3px 4px 0 rgba(0,0,0,.7)!important;backdrop-filter:none!important}
-#combat #cb-main .cc.fin:not(.man) .cn{font-family:var(--c-goth);color:#fff3da!important;text-shadow:2px 2px 0 #5e0f0a!important;text-transform:uppercase}
-#combat #cb-main .cc.fin.f:not(.man){box-shadow:inset 0 0 0 calc(var(--u)*.45) rgba(109,19,13,.55),0 0 0 4px #fff3c8,3px 4px 0 4px rgba(0,0,0,.7)!important}
-#combat #cb-main .cc.fin.man{border-radius:50%!important;border:0!important;background:radial-gradient(circle at 36% 30%,#6fae4f,#3d7a2c 55%,#234c18)!important;box-shadow:inset 0 0 0 calc(var(--u)*.3) rgba(20,50,14,.55),3px 4px 0 rgba(0,0,0,.7)!important;backdrop-filter:none!important}
-#combat #cb-main .cc.fin.man .cn{font-family:var(--c-goth);color:#fff3da!important;text-shadow:2px 2px 0 #1c3a12!important}
-#combat #cb-main .cc.fin.man.f{box-shadow:inset 0 0 0 calc(var(--u)*.3) rgba(20,50,14,.55),0 0 0 4px #fff3c8!important}
+/* boucle 4 (22 nov.) : les deux boutons deviennent des sceaux mats, de la famille du sceau du titre.
+   Fin du tour : cire rouge assourdie en deux tons, sans reflet blanc, plus petite (5,6u au lieu de 7,6u),
+   libellé en petites capitales laiton dans un anneau gravé. Manœuvre : anneau de laiton sur un fond d'encre. */
+#combat #cb-main .cc.fin{width:calc(var(--u)*5.6);height:calc(var(--u)*5.6);padding:calc(var(--u)*.55)}
+#combat #cb-main .cc.fin:not(.man){border-radius:47% 53% 50% 50%/52% 48% 52% 48%!important;border:0!important;
+  background:radial-gradient(circle at 50% 46%,#86332a 0 38%,#7a2a22 52%,#5c1d17 100%)!important;
+  box-shadow:inset 0 0 0 calc(var(--u)*.42) #6a231c,inset 0 0 0 calc(var(--u)*.42 + 1px) rgba(30,8,6,.75),inset 0 0 0 calc(var(--u)*.42 + 2px) rgba(201,164,92,.42),
+    inset 0 calc(var(--u)*-.18) calc(var(--u)*.3) rgba(30,8,6,.35),2px 3px 0 rgba(0,0,0,.65)!important;backdrop-filter:none!important}
+#combat #cb-main .cc.fin .cn{font-family:var(--c-fell);font-variant:small-caps;text-transform:lowercase;font-size:calc(var(--u)*1.02);letter-spacing:.08em;line-height:1;
+  color:#e4c483!important;text-shadow:0 1px 0 rgba(20,6,4,.85)!important}
+#combat #cb-main .cc.fin.f:not(.man){box-shadow:inset 0 0 0 calc(var(--u)*.42) #6a231c,inset 0 0 0 calc(var(--u)*.42 + 1px) rgba(30,8,6,.75),inset 0 0 0 calc(var(--u)*.42 + 2px) rgba(232,199,127,.7),
+    0 0 0 2px #17100a,0 0 0 4px #d9b56a,3px 5px 0 3px rgba(0,0,0,.6)!important}
+#combat #cb-main .cc.fin.man{border-radius:50%!important;border:0!important;background:radial-gradient(circle at 50% 45%,#221a14,#120d0a 72%)!important;
+  box-shadow:inset 0 0 0 2px #b8924e,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(201,164,92,.45),2px 3px 0 rgba(0,0,0,.65)!important;backdrop-filter:none!important}
+#combat #cb-main .cc.fin.man{width:calc(var(--u)*5);height:calc(var(--u)*5);transform:none}#combat #cb-main .cc.fin.man.f{transform:scale(1.08)}
+#combat #cb-main .cc.fin.man .cn{font-size:calc(var(--u)*.84);letter-spacing:.02em;color:#d4b26e!important;text-shadow:0 1px 0 #000!important}
+#combat #cb-main .cc.fin.man.f{box-shadow:inset 0 0 0 2px #e8c77f,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(232,199,127,.7),0 0 0 2px #17100a,0 0 0 4px #d9b56a!important}
 `;document.head.appendChild(st);
 /* papier déchiré pour les deux panneaux du bas (même tirage que carnet.js : classe c-papier + clip-path) */
 function dech(el,n,ay,ax){if(!el)return;el.classList.add('c-papier');let g=el.id.length*7919+17;const a=()=>(g=(g*1664525+1013904223)>>>0)/4294967296,p=[];

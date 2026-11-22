@@ -598,6 +598,15 @@ const css=document.createElement('style');css.textContent=`
 @keyframes k3d{from{rotate:y -7deg}to{rotate:y 7deg}}
 @keyframes kreflet{0%{left:-60%;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:115%;opacity:0}}
 @media (prefers-reduced-motion:reduce){#cb-main .cc.kcarte.z.f,.boite .cc.kcarte.z{animation:none}.kvitre::after{display:none}}
+/* ---- Boucle 4 (22 novembre 2026) : texte des cartes lisible à la télé ----
+   Corps du texte à 13 px au moins à 720p. Cartes non choisies : la règle tient en trois lignes et se termine par une
+   ellipse (plus de fondu) ; le détail complet reste à l'inspection (carte choisie, agrandie). */
+#cb-main .cc.kcarte:not(.f) .ct{font-size:max(13px,calc(var(--u)*.84));line-height:1.22;text-overflow:ellipsis}
+#cb-main .cc.kcarte:not(.f) .ct.deborde{-webkit-mask-image:none;mask-image:none}
+#cb-main .cc.kcarte.f .ct{font-size:max(13px,calc(var(--u)*.86*var(--kf,1)))}
+/* carte choisie : quand ajuster() serre le texte (--kf < 1), l'illustration rétrécit aussi, pour que le texte, qui ne descend
+   plus sous 13 px, trouve sa place au lieu de se fondre */
+#cb-main .cc.kcarte.f .art{height:calc(var(--u)*(5.4 - (1 - var(--kf,1))*10))}
 `;document.head.appendChild(css);
 
 /* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)
@@ -605,7 +614,9 @@ const css=document.createElement('style');css.textContent=`
    Les cartes non choisies ne reçoivent que le fondu, et seulement si leur texte dépasse trois lignes.
    Une seule mesure par carte et par main distribuée : le résultat est gardé tant que la main ne change pas. */
 const deborde=t=>t.scrollHeight>t.clientHeight+1;
-function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false;const trop=()=>deborde(t)||deborde(el);
+/* boucle 4 (22 nov.) : seul le texte est mesuré. La carte elle-même dépasse toujours de quelques pixels (ornements du cadre),
+   ce qui faisait serrer chaque carte choisie au maximum (texte à 78 %, citation cachée) même quand tout tenait. */
+function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false;const trop=()=>deborde(t);
   el.style.removeProperty('--kf');el.classList.remove('serre');t.classList.remove('deborde');
   for(let i=0;i<6&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
   if(trop()&&el.querySelector('.kamb')){serre=true;el.classList.add('serre')}

@@ -9,7 +9,14 @@
 (function(){
 if(!document.body.classList.contains('carnet'))return;
 const st=document.createElement('style');st.textContent=`
-#combat{--cw:calc(var(--u)*9);--ch:calc(var(--u)*6.3);--ck:calc(var(--u)*1.25);--cj:3px;column-gap:0!important;grid-template-columns:1fr var(--cw) 1fr!important}
+#combat{--cw:calc(var(--u)*9);--ch:calc(var(--u)*6.3);--ck:calc(var(--u)*1.25);--cj:3px;
+  /* boucle 4 (22 nov.) : opus vermiculatum au lieu de nappe vichy. Joints de 1 px couleur mortier chaud au pas de .72u,
+     plus une seconde grille décalée (pas de 1,7u, très légère) qui casse la régularité du quadrillage. */
+  --tess:repeating-linear-gradient(90deg,rgba(40,28,18,.22) 0 1px,rgba(255,236,200,.045) 1px 2px,transparent 2px calc(var(--u)*.72)),
+   repeating-linear-gradient(0deg,rgba(40,28,18,.22) 0 1px,rgba(255,236,200,.045) 1px 2px,transparent 2px calc(var(--u)*.72)),
+   repeating-linear-gradient(90deg,transparent 0 calc(var(--u)*.43),rgba(40,28,18,.07) calc(var(--u)*.43) calc(var(--u)*.43 + 1px),transparent calc(var(--u)*.43 + 1px) calc(var(--u)*1.7)),
+   repeating-linear-gradient(0deg,transparent 0 calc(var(--u)*.97),rgba(40,28,18,.07) calc(var(--u)*.97) calc(var(--u)*.97 + 1px),transparent calc(var(--u)*.97 + 1px) calc(var(--u)*1.7));
+  column-gap:0!important;grid-template-columns:1fr var(--cw) 1fr!important}
 /* le décor de la zone reste, assombri comme à la bougie */
 #combat::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,rgba(8,5,3,.38) 30%,rgba(8,5,3,.8) 100%)}
 #combat>*:not(#cb-decor){position:relative;z-index:1}
@@ -21,8 +28,9 @@ const st=document.createElement('style');st.textContent=`
   background:repeating-linear-gradient(2deg,rgba(255,255,255,.10) 0 3px,transparent 3px 9px,rgba(0,0,0,.2) 9px 12px,transparent 12px 21px),linear-gradient(95deg,#2a1838,#4a2a5e 30%,#6d4a86 55%,#4a2a5e 80%,#2a1838);
   clip-path:polygon(0 38%,2% 16%,7% 22%,12% 6%,24% 12%,38% 2%,52% 9%,66% 0,80% 8%,92% 3%,97% 20%,100% 34%,98% 62%,100% 80%,94% 92%,84% 86%,70% 98%,55% 90%,40% 100%,26% 91%,13% 97%,5% 84%,1% 70%)}
 #combat #cb-t::after{content:"✶";position:absolute;left:calc(var(--u)*-2.4);top:-.1em;width:calc(var(--u)*2.8);height:calc(var(--u)*2.8);border-radius:46% 54% 50% 50%/52% 47% 53% 48%;
-  display:grid;place-items:center;font:600 calc(var(--u)*1.6)/1 var(--c-fell);color:#5e0f0a;text-shadow:1px 1px 0 rgba(255,150,130,.45);transform:rotate(-14deg);
-  background:radial-gradient(circle at 36% 30%,#e0584a,var(--c-cire) 46%,#6d130d 100%);box-shadow:inset 0 0 0 calc(var(--u)*.28) rgba(109,19,13,.55),2px 3px 0 rgba(0,0,0,.7)}
+  display:grid;place-items:center;font:600 calc(var(--u)*1.6)/1 var(--c-fell);color:#d9b56a;text-shadow:0 1px 0 rgba(20,6,4,.8);transform:rotate(-14deg);
+  /* boucle 4 (22 nov.) : même cire mate que les boutons du bas, sans reflet blanc */
+  background:radial-gradient(circle at 50% 46%,#8e352b 0 38%,#7a2a22 52%,#5c1d17 100%);box-shadow:inset 0 0 0 calc(var(--u)*.24) #6a231c,inset 0 0 0 calc(var(--u)*.24 + 1px) rgba(201,164,92,.4),2px 3px 0 rgba(0,0,0,.7)}
 #combat #cb-log{font-family:var(--c-main);font-style:normal;font-weight:600;font-size:calc(var(--u)*1.45);color:var(--c-os);text-shadow:2px 2px 0 #000}
 
 /* ── le champ de bataille : un damier de mosaïque, tuiles collées ── */
@@ -36,8 +44,10 @@ const st=document.createElement('style');st.textContent=`
 #combat .pcase::before,#combat .pcase::after{content:"";position:absolute;z-index:-1;pointer-events:none}
 #combat .pcase::before{inset:0;background:#0b0807}
 #combat .pcase::after{inset:var(--cj);
-  background:repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
-   radial-gradient(ellipse at 50% 50%,var(--tu2),var(--tu) 78%)}
+  background:var(--tess),
+   radial-gradient(ellipse at 50% 50%,var(--tu2),var(--tu) 78%);
+  /* boucle 4 (22 nov.) : liseré intérieur, la couleur de la case assombrie, puis un filet d'or */
+  box-shadow:inset 0 0 0 calc(var(--u)*.24) rgba(12,8,5,.34),inset 0 0 0 calc(var(--u)*.24 + 1px) rgba(214,178,104,.35)}
 /* nœud papillon (bords rentrants) */
 #combat .pcase::before,#combat .pcase::after{clip-path:polygon(0 0,100% 0,calc(100% - var(--ck)) 50%,100% 100%,0 100%,var(--ck) 50%)}
 /* hexagone (pointes sortantes), une case sur deux en damier */
@@ -62,11 +72,11 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-centre::before{inset:0 calc(var(--ck)*-1);background:#0b0807}
 #combat #cb-centre::after{inset:var(--cj) calc(var(--cj) - var(--ck));
   background:linear-gradient(#0b0807,#0b0807) 0 33.333%/100% var(--cj) no-repeat,linear-gradient(#0b0807,#0b0807) 0 66.667%/100% var(--cj) no-repeat,
-   repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
+   var(--tess),
    linear-gradient(180deg,#1d1a18 0 33.333%,transparent 33.333% 66.667%,#1d1a18 66.667%),
    radial-gradient(ellipse at 50% 50%,#5d8a3c,#35561f 75%)}
 #combat #cb-centre[data-k="cennemi"]::after{background:linear-gradient(#0b0807,#0b0807) 0 33.333%/100% var(--cj) no-repeat,linear-gradient(#0b0807,#0b0807) 0 66.667%/100% var(--cj) no-repeat,
-   repeating-linear-gradient(90deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),repeating-linear-gradient(0deg,rgba(8,5,3,.5) 0 2px,transparent 2px calc(var(--u)*1.1)),
+   var(--tess),
    linear-gradient(180deg,#1d1a18 0 33.333%,transparent 33.333% 66.667%,#1d1a18 66.667%),
    radial-gradient(ellipse at 50% 50%,#a2402f,#5e1c14 75%)}
 #combat #cb-centre svg{width:calc(var(--u)*5.2)!important;height:calc(var(--u)*5.2)!important;position:absolute;left:50%;top:50%;translate:-50% -50%}
@@ -100,13 +110,23 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-piles span{font-family:var(--c-fell)!important}#combat #cb-piles b{font-family:var(--c-num)!important}
 #combat #cb-mana.c-papier::before,#combat #cb-mana.c-papier::after,#combat #cb-piles.c-papier::before,#combat #cb-piles.c-papier::after{display:none!important}
 #combat #cb-aide{font-family:var(--c-fell);background:var(--c-encre)!important;border:2px solid var(--c-papier2)!important;border-radius:0!important;color:var(--c-os)!important;backdrop-filter:none!important;transform:rotate(-.4deg)}
-#combat #cb-main .cc.fin:not(.man){border-radius:47% 53% 50% 50%/52% 48% 52% 48%!important;border:0!important;background:radial-gradient(circle at 36% 30%,#e0584a,var(--c-cire) 46%,#6d130d 100%)!important;
-  box-shadow:inset 0 0 0 calc(var(--u)*.45) rgba(109,19,13,.55),3px 4px 0 rgba(0,0,0,.7)!important;backdrop-filter:none!important}
-#combat #cb-main .cc.fin:not(.man) .cn{font-family:var(--c-goth);color:#fff3da!important;text-shadow:2px 2px 0 #5e0f0a!important;text-transform:uppercase}
-#combat #cb-main .cc.fin.f:not(.man){box-shadow:inset 0 0 0 calc(var(--u)*.45) rgba(109,19,13,.55),0 0 0 4px #fff3c8,3px 4px 0 4px rgba(0,0,0,.7)!important}
-#combat #cb-main .cc.fin.man{border-radius:50%!important;border:0!important;background:radial-gradient(circle at 36% 30%,#6fae4f,#3d7a2c 55%,#234c18)!important;box-shadow:inset 0 0 0 calc(var(--u)*.3) rgba(20,50,14,.55),3px 4px 0 rgba(0,0,0,.7)!important;backdrop-filter:none!important}
-#combat #cb-main .cc.fin.man .cn{font-family:var(--c-goth);color:#fff3da!important;text-shadow:2px 2px 0 #1c3a12!important}
-#combat #cb-main .cc.fin.man.f{box-shadow:inset 0 0 0 calc(var(--u)*.3) rgba(20,50,14,.55),0 0 0 4px #fff3c8!important}
+/* boucle 4 (22 nov.) : les deux boutons deviennent des sceaux mats, de la famille du sceau du titre.
+   Fin du tour : cire rouge assourdie en deux tons, sans reflet blanc, plus petite (5,6u au lieu de 7,6u),
+   libellé en petites capitales laiton dans un anneau gravé. Manœuvre : anneau de laiton sur un fond d'encre. */
+#combat #cb-main .cc.fin{width:calc(var(--u)*5.6);height:calc(var(--u)*5.6);padding:calc(var(--u)*.55)}
+#combat #cb-main .cc.fin:not(.man){border-radius:47% 53% 50% 50%/52% 48% 52% 48%!important;border:0!important;
+  background:radial-gradient(circle at 50% 46%,#86332a 0 38%,#7a2a22 52%,#5c1d17 100%)!important;
+  box-shadow:inset 0 0 0 calc(var(--u)*.42) #6a231c,inset 0 0 0 calc(var(--u)*.42 + 1px) rgba(30,8,6,.75),inset 0 0 0 calc(var(--u)*.42 + 2px) rgba(201,164,92,.42),
+    inset 0 calc(var(--u)*-.18) calc(var(--u)*.3) rgba(30,8,6,.35),2px 3px 0 rgba(0,0,0,.65)!important;backdrop-filter:none!important}
+#combat #cb-main .cc.fin .cn{font-family:var(--c-fell);font-variant:small-caps;text-transform:lowercase;font-size:calc(var(--u)*1.02);letter-spacing:.08em;line-height:1;
+  color:#e4c483!important;text-shadow:0 1px 0 rgba(20,6,4,.85)!important}
+#combat #cb-main .cc.fin.f:not(.man){box-shadow:inset 0 0 0 calc(var(--u)*.42) #6a231c,inset 0 0 0 calc(var(--u)*.42 + 1px) rgba(30,8,6,.75),inset 0 0 0 calc(var(--u)*.42 + 2px) rgba(232,199,127,.7),
+    0 0 0 2px #17100a,0 0 0 4px #d9b56a,3px 5px 0 3px rgba(0,0,0,.6)!important}
+#combat #cb-main .cc.fin.man{border-radius:50%!important;border:0!important;background:radial-gradient(circle at 50% 45%,#221a14,#120d0a 72%)!important;
+  box-shadow:inset 0 0 0 2px #b8924e,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(201,164,92,.45),2px 3px 0 rgba(0,0,0,.65)!important;backdrop-filter:none!important}
+#combat #cb-main .cc.fin.man{width:calc(var(--u)*5);height:calc(var(--u)*5);transform:none}#combat #cb-main .cc.fin.man.f{transform:scale(1.08)}
+#combat #cb-main .cc.fin.man .cn{font-size:calc(var(--u)*.84);letter-spacing:.02em;color:#d4b26e!important;text-shadow:0 1px 0 #000!important}
+#combat #cb-main .cc.fin.man.f{box-shadow:inset 0 0 0 2px #e8c77f,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(232,199,127,.7),0 0 0 2px #17100a,0 0 0 4px #d9b56a!important}
 `;document.head.appendChild(st);
 /* papier déchiré pour les deux panneaux du bas (même tirage que carnet.js : classe c-papier + clip-path) */
 function dech(el,n,ay,ax){if(!el)return;el.classList.add('c-papier');let g=el.id.length*7919+17;const a=()=>(g=(g*1664525+1013904223)>>>0)/4294967296,p=[];

@@ -149,8 +149,10 @@ function rendreMiettes(){const K=MIET.cach;for(let i=0;i<K.length;i++)K[i].visib
 const _drawMiet=draw;
 draw=function(t){try{_drawMiet(t)}finally{MIET.arme=false;rendreMiettes()}};
 /* (d) flocons : taille plafonnée à 18 px, fondu entre 1,5 et 5 m devant la caméra (plus de gros disques flous) */
+/* boucle 4 (22 nov.) : plafond abaissé à 10 px (les disques de 15 à 18 px faisaient des taches sur l'objectif) ;
+   l'opacité reste multipliée par vPres. */
 if(typeof weather!=='undefined'&&weather&&weather.material){const wm=weather.material,_obc=wm.onBeforeCompile;
   wm.onBeforeCompile=function(s,r){if(_obc)_obc.call(this,s,r);
-    s.vertexShader='varying float vPres;\n'+s.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=min(gl_PointSize,18.);vPres=smoothstep(1.5,5.,-mvPosition.z);');
+    s.vertexShader='varying float vPres;\n'+s.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=min(gl_PointSize,10.);vPres=smoothstep(1.5,5.,-mvPosition.z);');
     s.fragmentShader='varying float vPres;\n'+s.fragmentShader.replace('#include <fog_fragment>','#include <fog_fragment>\ngl_FragColor.a*=vPres;')};
   wm.customProgramCacheKey=()=>'meteo-b2';wm.needsUpdate=true}
