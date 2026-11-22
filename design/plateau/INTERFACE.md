@@ -22,8 +22,18 @@ Même équipe de 4 testeurs, centrée sur ce qu'on voit et ce qu'on comprend à 
 - Voie du chef : pointillé rouge réparé, voie écrite en rouge vif ; bouton Manœuvre descendu, il ne couvre plus le chef.
 - Noms des cases écrits plus clair.
 
+## Passe 3 (22 nov.)
+
+- Cible choisie au premier plan, avec un halo et l'étiquette « ◆ cible » sous la plaque ; les cibles se parcourent dans l'ordre de l'écran (voie haute à basse, avant puis arrière, le chef dans sa voie) ; « Carte remise en main » au journal après une annulation.
+- « coups attendus » compte aussi ce qui traverse une unité piétinée.
+- La pastille d'élan passe sur la case ennemie de la voie, en haut ; les pastilles sont dans la police du Carnet et passent à la ligne au lieu d'être coupées ; sur une unité, la pastille ne répète pas son nom.
+- Renfort lourd : sceau rouge « LOURD » au lieu d'allonger son nom.
+- Portraits des unités du plateau un peu plus petits (moins de chevauchements) ; légende du Centre plus petite.
+- Correctif : un attaquant tué par une riposte ou des épines ne frappe plus la suite du coup (un chef vaincu pouvait encore tuer le héros).
+
 ## Notes
 
 | Passe | Fonctionnel | Cartes à échanges | Défense par étages | Tactique généraliste |
 |---|---|---|---|---|
 | 1 (22 nov.) | 6,5 | 6 | 6,5 | 7 |
+| 2 (22 nov.) | 7,5 | 6,5 | 7,5 | 7,5 |

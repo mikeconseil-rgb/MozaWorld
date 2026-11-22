@@ -142,6 +142,15 @@ const plCss=document.createElement('style');plCss.textContent=`
 .plrenfort:empty{display:none}
 .pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
 #combat .pcase.chefvoie{outline:2px dashed #e2675a;outline-offset:-5px}
+#combat .plelan,#combat .plhero,#combat .plrenfort,#combat .plmenace{font-family:var(--c-main,inherit)}
+#combat .plelan{top:-.3em;bottom:auto}
+#combat .plmenace{z-index:20;white-space:normal;text-align:center;left:0;right:0;transform:none;margin:0 auto;width:fit-content;max-width:100%}
+#combat .u.vise{z-index:30!important;filter:drop-shadow(0 0 5px #fff3c8) drop-shadow(0 0 12px #e8c77f)}
+#combat .u.vise::before{top:auto;bottom:-1.3em}
+#cb-foes .u:not(.chef) .por,#cb-allies .u:not(.hero):not(.garde) .por{width:calc(var(--u)*3)!important;height:calc(var(--u)*3)!important}
+#combat .u.lourd .plaque{border-color:#a01d12!important;box-shadow:0 0 0 2px #a01d12}
+#combat .u.lourd::after{content:"LOURD";position:absolute;z-index:7;right:-.4em;top:-.2em;font-family:var(--c-goth,inherit);font-size:calc(var(--u)*.75);color:#fff3da;background:#8a1a10;border-radius:50%;padding:.35em .3em;transform:rotate(12deg);box-shadow:0 1px 4px #000}
+#combat #cb-centre .cv{font-size:calc(var(--u)*.7)!important;white-space:nowrap}
 .plhero{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-1.5em;white-space:nowrap;font-size:calc(var(--u)*.9);font-weight:700;color:#ffd9a0;background:rgba(10,8,6,.9);border:1px solid #c9a45c;padding:0 .5em}
 .plhero.mortel{color:#fff;background:#7a1a12;border-color:#ff8070;animation:plvise .6s ease-in-out infinite alternate}
 .plhero:empty{display:none}
@@ -185,13 +194,13 @@ function manInput(a,rep){const C=CB,l=surTerrain();if(!l.length){C.man=null;dess
     journal(`Où mener ${u.nom} ? ▲ ▼ la voie, ◀ ▶ arrière ou avant, OK.`);dessinerMain();majUnites()}}
 const manVise=u=>!!(CB&&CB.man&&surTerrain()[CB.man.i%Math.max(1,surTerrain().length)]===u);
 /* menace par voie, affichée sur la case d'avant de chaque voie */
-function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
-  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];const tri=!tenantVoie(v)&&qui,pi=vivants(CB.foes).some(m=>m.int&&m.int.a==='f'&&voieDe(m)===v),passe=qui&&pi?Math.max(0,th[v]-qui.pv-qui.g):0;
+function badgesMenace(){if(!plActif())return;const th=menaces(),passes=[0,0,0];for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
+  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];const tri=!tenantVoie(v)&&qui,pi=vivants(CB.foes).some(m=>m.int&&m.int.a==='f'&&voieDe(m)===v),passe=qui&&pi?Math.max(0,th[v]-qui.pv-qui.g):0;passes[v]=passe;
   b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]+(tri?' (Tribune)':''):gardeU()?'Garde':'héros')+(passe?' · '+passe+' passent':''):'');
   /* interface, passe 2 : l'élan dans sa propre pastille */
-  let be=d.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';d.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
+  const de=document.getElementById('pc-e'+v+'0')||d;let be=de.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';de.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
   /* interface, passe 2 : total des coups qui iront au héros ce tour, en rouge s'il peut tomber */
-  {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
+  {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v];else dh+=passes[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
    const h=CB.hero.el;if(h){let p=h.querySelector(':scope>.plhero');if(!p){p=document.createElement('span');p.className='plhero';h.appendChild(p)}p.textContent=dh?'coups attendus '+dh:'';p.classList.toggle('mortel',dh>=CB.hero.pv)}}
   for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u));
   /* interface, passe 1 : renfort annoncé sur sa case, voie du chef soulignée */
@@ -209,8 +218,8 @@ function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.t
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7-8 : en rencontre de bas niveau (≤ 2), le renfort a 30 % de PV en moins ; le renfort du tour 5 de l'éveil est lourd (PV ×1,5, inébranlable pendant son élan) ; tous entrent en prenant leur élan, puis frappent fort */
-  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2);m.nom+=' (lourd)'}
-  C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2)}
+  C.foes.push(m);uniteEl(m,'cb-foes');if(m.lourd&&m.el)m.el.classList.add('lourd');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort${m.lourd?' lourd':''} accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort${m.lourd?' lourd':''} : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */

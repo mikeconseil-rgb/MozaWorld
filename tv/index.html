@@ -3192,6 +3192,8 @@ function debutTour(){if(!CB)return;CB.tour++;if(typeof renforts==='function')ren
   pioche(mainMax()+(CB.tour===1&&aPassif('vote')?1:0)-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;CB.man=null;dessinerMain();majUnites();if((CB.tour===1||(CB.aPlacer&&CB.aPlacer.length))&&typeof debutPlacement==='function')debutPlacement()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
+/* interface, passe 3 : sur le Plateau, les cibles se parcourent dans l'ordre de l'écran (voie haute à basse, avant puis arrière, le chef dans sa voie) */
+const ordreCibles=()=>{const v=vivants(CB.foes);return CB.cases&&typeof rangDe==='function'?v.slice().sort((p,q)=>((p.chef?p.cv:p.voie)||0)-((q.chef?q.cv:q.voie)||0)||rangDe(p)-rangDe(q)):v};
 function jouer(i,t){const k=CB.main[i],c=CK[k],g=enGris(k);CB.nJoues=(CB.nJoues||0)+1;const cc0=coutDe(k);if(CB.gratuit===k)CB.gratuit=null;CB.mana-=cc0;if(mtype(k)&&!g&&cc0)payer(mtype(k),cc0);CB.main.splice(i,1);CB.defausse.push(k);
   journal(`Vous jouez « ${c.nom()} »${g?' en mana gris : effet affaibli.':contreX(k)>1?' : contre-pouvoir, effet doublé !':'.'}`);CB.gris=g;CB.enCarte=true;try{c.jeu(k,t)}finally{CB.gris=false;CB.enCarte=false}clack();
   CB.f=Math.min(CB.f,CB.main.length);CB.sel=null;majUnites();dessinerMain();if(!finSiFini()&&typeof debutPlacement==='function')debutPlacement()}
@@ -3247,7 +3249,7 @@ function coupSurTerrain(m,v,opt){if(CB&&CB.cases&&!opt.vol){v+=bonusSource(m);pi
     if(deja.indexOf(t)>=0){const v0=voieDe(m),ch=CB.cases?[occupant(v0,0),occupant(v0,1),gardeU(),CB.hero]:[gardeU(),CB.hero];t=ch.find(u=>u&&u.pv>0&&deja.indexOf(u)<0)||CB.hero}
     deja.push(t);const avant=t.pv+t.g,x=opt.belier&&!t.hero&&(t.garde||t.mur||!CB.cases)?(t.sentinelle?1.5:2):1;
   journal(`${m.nom} ${opt.vol?(t.hero?'passe par-dessus et frappe le héros':'passe par-dessus et frappe '+t.nom):opt.belier&&!t.hero?'enfonce '+t.nom:'frappe '+(t.hero?'le héros':t.nom)} (${Math.round(reste*x)}${CB.cases&&CB.centre==='ennemi'?' +1 du centre':''}).`);
-  frappe(t,Math.round(reste*x),m);if((t.hero||t.garde)&&CB.riposte)frappe(m,CB.riposte,CB.hero);if(t.epine&&m.pv>0)frappe(m,t.epine,t);
+  frappe(t,Math.round(reste*x),m);if((t.hero||t.garde)&&CB.riposte)frappe(m,CB.riposte,CB.hero);if(t.epine&&m.pv>0)frappe(m,t.epine,t);if(m.pv<=0)break;
   /* passe 4 : sur le Plateau, une Garde qui cède laisse passer le reste du coup au héros */
   if((!opt.pietine&&!(t.garde&&CB.cases))||t.hero||t.pv>0)break;reste=Math.ceil((reste*x-avant)/x);if(reste>0)journal(opt.pietine?'Le coup piétine et passe au suivant.':'La Garde cède : le reste du coup passe au héros.')}}
 function intention(m){if(typeof plancherAtk==='function')plancherAtk(m);let a=m.mv[m.mi%m.mv.length],forc=0;m.mi++;if(m.reElan){m.reElan=0;m.mi--;a='c';forc=1}else if(m.forceF){a=m.forceF===2?'b':'f';m.forceF=0;m.mi--;forc=1}else if(CB&&CB.cases&&(CB.tour<1||m.renfort===1)&&(a==='f'||a==='b')){m.forceF=a==='b'?2:1;a='c'}if(m.chef&&CB&&CB.cases&&!(m.int&&m.int.a==='c')&&!forc&&a!=='f')m.cv=m.cv==null?Math.floor(Math.random()*3):(m.cv+1)%3;if(a==='g'&&CB&&CB.cases&&CB.tour>=5)a='a';if(a==='c'&&m.chef&&aPassif('silence')&&!m.silence){m.silence=1;a='a'}const L=Lz(m.z);
@@ -3294,8 +3296,8 @@ function cbInput(a,rep){const C=CB;if(!C)return;
   if(a==='back'&&!rep&&!C.pl&&!C.man){if(C.sel){C.sel=null;dessinerMain();majUnites()}else pauseCombat();return}
   if(C.pl&&!C.busy){plInput(a,rep);return}
   if(C.busy)return;
-  if(C.sel){const v=vivants(C.foes);if(a==='left'||a==='right'){C.ti=(C.ti+(a==='left'?-1:1)+v.length)%v.length;tick();majUnites()}
-    else if(a==='down'){C.sel=null;dessinerMain();majUnites()}
+  if(C.sel){const v=ordreCibles();if(a==='left'||a==='right'){C.ti=(C.ti+(a==='left'?-1:1)+v.length)%v.length;tick();majUnites()}
+    else if(a==='down'){C.sel=null;journal('Carte remise en main.');dessinerMain();majUnites()}
     else if(a==='ok'&&!rep)jouer(C.f,v[C.ti]);return}
   if(C.man&&!C.busy){manInput(a,rep);return}
   const n=C.main.length+1+(typeof manoeuvrePossible==='function'&&manoeuvrePossible()?1:0);
@@ -3304,7 +3306,7 @@ function cbInput(a,rep){const C=CB;if(!C)return;
   else if(a==='up'&&C.f===C.main.length&&C.main.length){C.f=0;tick();dessinerMain()}
   else if(a==='ok'&&!rep){if(C.f===C.main.length){clack();finTour();return}if(C.f===C.main.length+1){debutManoeuvre();return}
     const k=C.main[C.f],c=CK[k];if(!jouable(k)){sfx('miss');journal('Capacité de dépense atteinte ce tour pour « '+c.nom()+' ».');return}
-    if(c.cible){const v=vivants(C.foes);if(v.length>1){C.sel='cible';C.ti=0;dessinerMain();majUnites();journal('Choisissez la cible avec ◀ ▶, puis OK.');return}jouer(C.f,v[0])}
+    if(c.cible){const v=ordreCibles();if(v.length>1){C.sel='cible';C.ti=0;dessinerMain();majUnites();journal('Choisissez la cible avec ◀ ▶, puis OK.');return}jouer(C.f,v[0])}
     else jouer(C.f)}}
 
 /* ---------- Dessin (éléments HTML, mis à jour seulement quand quelque chose change) ---------- */
@@ -3334,7 +3336,7 @@ function majUnites(){if(!CB)return;const v=vivants(CB.foes);majCentre();placerNo
     const g=e.querySelector('.gd');g.textContent=u.g>0?'⛨ '+u.g:'';
     if(u.garde)e.querySelector('.int').textContent=CB.cases?'⛨ dernier rempart du héros':'⛨ prend les coups, s\'effrite de moitié';else if(u.mur)e.querySelector('.int').textContent='⛨ bloqueur'+(u.atk>0&&CB.cases&&typeof forceBete==='function'?' · ⚔ '+forceBete(u):'')+(u.epine?' · renvoie '+u.epine:'')+(CB.cases&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:'');else if(u.bete)e.querySelector('.int').textContent=CB.cases&&typeof forceBete==='function'?'⚔ '+forceBete(u)+((u.rang||0)?' · arrière':' · avant')+(terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''):'⚔ '+u.atk+' à chaque tour';
     else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}${u.chef&&CB.cases&&u.cv!=null?' <span class="voie">voie '+PL_NOMV[u.cv]+'</span>':''}${aPassif('lecture')&&u.mv?' · puis '+NOMACT[u.mv[u.mi%u.mv.length]]:''}${CB.cases&&typeof terrainDe==='function'&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''}`:''}
-    e.classList.toggle('vise',!!CB.sel&&u===v[CB.ti])}
+    e.classList.toggle('vise',!!CB.sel&&u===ordreCibles()[CB.ti])}
   const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">${resHTML()}</span>`;
   $('cb-piles').innerHTML=`<span>Pioche <b>${CB.pile.length}</b></span><span>Défausse <b>${CB.defausse.length}</b></span><span>Tour <b>${CB.tour}</b></span>${CB.reso&&Object.keys(CB.reso).some(r=>CB.reso[r]>0)?`<span>Résonances <b>${Object.keys(CB.reso).filter(r=>CB.reso[r]>0).map(r=>r+(CB.reso[r]>1?' ×'+CB.reso[r]:'')).join(', ')}</b></span>`:''}`}
 function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" style="${z?'--kcA:'+rgba(ZCOL[z],.3)+';--kcB:'+rgba(ZCOL[z],.75):''}"><div class="co" style="${mtype(k)?'background:'+MCOL[mtype(k)]+';color:#111':''}">${coutDe(k)}</div><div class="cn">${c.nom()}</div><div class="ct">${c.txt(k)}</div><div class="cz">${z?TYPE[z].kind+' · '+ZCOURT[z]+' · '+ZMANA[z]:'Commune · tout mana'}</div></div>`}
@@ -3498,6 +3500,15 @@ const plCss=document.createElement('style');plCss.textContent=`
 .plrenfort:empty{display:none}
 .pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
 #combat .pcase.chefvoie{outline:2px dashed #e2675a;outline-offset:-5px}
+#combat .plelan,#combat .plhero,#combat .plrenfort,#combat .plmenace{font-family:var(--c-main,inherit)}
+#combat .plelan{top:-.3em;bottom:auto}
+#combat .plmenace{z-index:20;white-space:normal;text-align:center;left:0;right:0;transform:none;margin:0 auto;width:fit-content;max-width:100%}
+#combat .u.vise{z-index:30!important;filter:drop-shadow(0 0 5px #fff3c8) drop-shadow(0 0 12px #e8c77f)}
+#combat .u.vise::before{top:auto;bottom:-1.3em}
+#cb-foes .u:not(.chef) .por,#cb-allies .u:not(.hero):not(.garde) .por{width:calc(var(--u)*3)!important;height:calc(var(--u)*3)!important}
+#combat .u.lourd .plaque{border-color:#a01d12!important;box-shadow:0 0 0 2px #a01d12}
+#combat .u.lourd::after{content:"LOURD";position:absolute;z-index:7;right:-.4em;top:-.2em;font-family:var(--c-goth,inherit);font-size:calc(var(--u)*.75);color:#fff3da;background:#8a1a10;border-radius:50%;padding:.35em .3em;transform:rotate(12deg);box-shadow:0 1px 4px #000}
+#combat #cb-centre .cv{font-size:calc(var(--u)*.7)!important;white-space:nowrap}
 .plhero{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-1.5em;white-space:nowrap;font-size:calc(var(--u)*.9);font-weight:700;color:#ffd9a0;background:rgba(10,8,6,.9);border:1px solid #c9a45c;padding:0 .5em}
 .plhero.mortel{color:#fff;background:#7a1a12;border-color:#ff8070;animation:plvise .6s ease-in-out infinite alternate}
 .plhero:empty{display:none}
@@ -3541,13 +3552,13 @@ function manInput(a,rep){const C=CB,l=surTerrain();if(!l.length){C.man=null;dess
     journal(`Où mener ${u.nom} ? ▲ ▼ la voie, ◀ ▶ arrière ou avant, OK.`);dessinerMain();majUnites()}}
 const manVise=u=>!!(CB&&CB.man&&surTerrain()[CB.man.i%Math.max(1,surTerrain().length)]===u);
 /* menace par voie, affichée sur la case d'avant de chaque voie */
-function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
-  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];const tri=!tenantVoie(v)&&qui,pi=vivants(CB.foes).some(m=>m.int&&m.int.a==='f'&&voieDe(m)===v),passe=qui&&pi?Math.max(0,th[v]-qui.pv-qui.g):0;
+function badgesMenace(){if(!plActif())return;const th=menaces(),passes=[0,0,0];for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
+  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];const tri=!tenantVoie(v)&&qui,pi=vivants(CB.foes).some(m=>m.int&&m.int.a==='f'&&voieDe(m)===v),passe=qui&&pi?Math.max(0,th[v]-qui.pv-qui.g):0;passes[v]=passe;
   b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]+(tri?' (Tribune)':''):gardeU()?'Garde':'héros')+(passe?' · '+passe+' passent':''):'');
   /* interface, passe 2 : l'élan dans sa propre pastille */
-  let be=d.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';d.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
+  const de=document.getElementById('pc-e'+v+'0')||d;let be=de.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';de.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
   /* interface, passe 2 : total des coups qui iront au héros ce tour, en rouge s'il peut tomber */
-  {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
+  {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v];else dh+=passes[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
    const h=CB.hero.el;if(h){let p=h.querySelector(':scope>.plhero');if(!p){p=document.createElement('span');p.className='plhero';h.appendChild(p)}p.textContent=dh?'coups attendus '+dh:'';p.classList.toggle('mortel',dh>=CB.hero.pv)}}
   for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u));
   /* interface, passe 1 : renfort annoncé sur sa case, voie du chef soulignée */
@@ -3565,8 +3576,8 @@ function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.t
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7-8 : en rencontre de bas niveau (≤ 2), le renfort a 30 % de PV en moins ; le renfort du tour 5 de l'éveil est lourd (PV ×1,5, inébranlable pendant son élan) ; tous entrent en prenant leur élan, puis frappent fort */
-  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2);m.nom+=' (lourd)'}
-  C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2)}
+  C.foes.push(m);uniteEl(m,'cb-foes');if(m.lourd&&m.el)m.el.classList.add('lourd');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort${m.lourd?' lourd':''} accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort${m.lourd?' lourd':''} : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
@@ -6466,7 +6477,7 @@ body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
     for(const d of document.querySelectorAll('#combat .pcase'))d.classList.toggle('occupee',occ.has(d.id))}
   function menacesSurUnites(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof occupant!=='function')return;const tient=new Map();
     for(let v=0;v<3;v++){const u=occupant(v,0),b=document.querySelector('#pc-a'+v+'0 .plmenace');
-      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.trim())}
+      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.replace(' → '+u.nom.split(/[ ']/)[0]+' ',' ').replace(' → '+u.nom.split(/[ ']/)[0]+' ·',' ·').replace(new RegExp(' → '+u.nom.split(/[ ']/)[0]+'$'),'').trim())}
     for(const u of CB.allies){if(!u.el)continue;const e=u.el.querySelector(':scope>.mz-menace'),t=tient.get(u)||'';if(e){if(e.textContent!==t)e.textContent=t}else if(t)pastille(u,'mz-menace').textContent=t}}
   if(typeof dessinerCases==='function'){const dc0=dessinerCases;dessinerCases=function(){const r=dc0.apply(this,arguments);try{etiquettesVoies()}catch(_){}return r}}
   if(typeof badgesMenace==='function'){const bm0=badgesMenace;badgesMenace=function(){const r=bm0.apply(this,arguments);try{menacesSurUnites()}catch(_){}return r}}

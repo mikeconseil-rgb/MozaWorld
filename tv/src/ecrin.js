@@ -212,7 +212,7 @@ body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
     for(const d of document.querySelectorAll('#combat .pcase'))d.classList.toggle('occupee',occ.has(d.id))}
   function menacesSurUnites(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof occupant!=='function')return;const tient=new Map();
     for(let v=0;v<3;v++){const u=occupant(v,0),b=document.querySelector('#pc-a'+v+'0 .plmenace');
-      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.trim())}
+      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.replace(' → '+u.nom.split(/[ ']/)[0]+' ',' ').replace(' → '+u.nom.split(/[ ']/)[0]+' ·',' ·').replace(new RegExp(' → '+u.nom.split(/[ ']/)[0]+'$'),'').trim())}
     for(const u of CB.allies){if(!u.el)continue;const e=u.el.querySelector(':scope>.mz-menace'),t=tient.get(u)||'';if(e){if(e.textContent!==t)e.textContent=t}else if(t)pastille(u,'mz-menace').textContent=t}}
   if(typeof dessinerCases==='function'){const dc0=dessinerCases;dessinerCases=function(){const r=dc0.apply(this,arguments);try{etiquettesVoies()}catch(_){}return r}}
   if(typeof badgesMenace==='function'){const bm0=badgesMenace;badgesMenace=function(){const r=bm0.apply(this,arguments);try{menacesSurUnites()}catch(_){}return r}}
