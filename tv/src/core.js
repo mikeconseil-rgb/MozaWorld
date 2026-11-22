@@ -58,6 +58,8 @@ for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=i
   if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
+/* 2.27.2 : nom et fiche d'une zone, même hors de la région chargée (ZB ne contient que la région) */
+const zI=id=>{let Z=null;try{Z=ZB[id]}catch(_){}Z=Z||ZWB[id];return(Z&&Z.info)||{nom:String(id),sur:"",pm:"Pénurie",pp:"Abondance",pal:["","","","",""]}};
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
@@ -117,6 +119,8 @@ function stairs(Z,x0,z0,y0,x1,z1,y1,w,geoList,hex){const n=Math.max(1,Math.ceil(
   const arr=[];for(let i=0;i<n;i++){const t=(i+.5)/n,x=lerp(x0,x1,t),z=lerp(z0,z1,t),y=lerp(y0,y1,(i+1)/n);
     arr.push(sBox(Z,x,z,len*.5+.25,w*.5,rot,y-.45,y));if(geoList)geoList.push([box(len+.3,.4,w,x,y-.2,z,-rot),hex])}return arr}
 
+/* 21 nov. (plantages) : retirer un objet de la scène ET rendre la mémoire de ses géométries à la carte graphique (les matières sont partagées, on les garde) */
+function liberer(o){if(!o)return;if(o.parent)o.parent.remove(o);o.traverse(m=>{if(m.geometry)m.geometry.dispose()})}
 /* ---------- Secrets ---------- */
 const secrets=[];
 const secGeo=new THREE.OctahedronGeometry(.55),secMat=new THREE.MeshBasicMaterial({color:new THREE.Color(3.2,2.3,.9)});
@@ -127,7 +131,10 @@ function secret(Z,pos,titre,texte,cond){const m=new THREE.Mesh(secGeo,secMat);sc
 const secHalo=points(32,7,{opacity:.8});
 
 /* ---------- Terrain ---------- */
-const CELL=4.2; /* 2.6 : 4,2 m avec les zones agrandies, pour garder à peu près le même nombre de sommets */ /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
+/* 21 nov. (plantages) : sur Xbox (ou ?xbox=1), maille de 5,4 m : 40 % de sommets en moins pour le sol de la région (le plus gros
+   bloc de mémoire de la page, un million de sommets en 4,2 m). Edge sur Xbox manque de mémoire ; le PC garde 4,2 m. */
+const SOL_LEGER=/xbox/i.test(navigator.userAgent)||/[?&](xbox|leger)=1/.test(location.search);
+const CELL=SOL_LEGER?5.4:4.2; /* 2.6 : 4,2 m avec les zones agrandies, pour garder à peu près le même nombre de sommets */ /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
 for(const Z of ZN)if(Z.reg)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
 X0-=64;X1+=64;Z0-=64;Z1+=64;
 const GW=Math.ceil((X1-X0)/CELL)+1,GH=Math.ceil((Z1-Z0)/CELL)+1,GN=GW*GH;

@@ -152,7 +152,7 @@ void main(){vec4 M=texture2D(t,vUv);
     vec3 B=.5*c+.25*(texture2D(t,vUv-dir*.5).rgb+texture2D(t,vUv+dir*.5).rgb);
     float lB=lu(B);if(lB>=mn&&lB<=mx)c=mix(B,c,sty*.8);}
   c+=(fract(sin(dot(vUv*vec2(1920.,1080.)+time,vec2(12.9898,78.233)))*43758.5453)-.5)*gr;gl_FragColor=vec4(c,1.);}`});
-function majFxaa(){const on=QUAL().ms>0&&!!rtS;
+function majFxaa(){const on=(QUAL().ms>0||!!QUAL().fx)&&!!rtS;   /* fx : FXAA gardé sans multiéchantillon (Splendide sur Xbox, 22 nov.) */
   if(rtF&&(!on||rtF.width!==rtS.width||rtF.height!==rtS.height)){rtF.dispose();rtF=null}
   if(on&&!rtF){rtF=new THREE.WebGLRenderTarget(rtS.width,rtS.height,{type:THREE.UnsignedByteType,format:THREE.RGBAFormat,
     minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false});rtF.texture.generateMipmaps=false}
