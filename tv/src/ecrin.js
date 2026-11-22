@@ -2,7 +2,7 @@
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.35';
+const MZ_VERSION='2.36';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -212,7 +212,7 @@ body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
     for(const d of document.querySelectorAll('#combat .pcase'))d.classList.toggle('occupee',occ.has(d.id))}
   function menacesSurUnites(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof occupant!=='function')return;const tient=new Map();
     for(let v=0;v<3;v++){const u=occupant(v,0),b=document.querySelector('#pc-a'+v+'0 .plmenace');
-      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.replace(/ → [^·]*/,'').replace(' au prochain tour','').trim())}
+      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.replace(' → '+u.nom.split(/[ ']/)[0]+' ',' ').replace(' → '+u.nom.split(/[ ']/)[0]+' ·',' ·').replace(new RegExp(' → '+u.nom.split(/[ ']/)[0]+'$'),'').trim())}
     for(const u of CB.allies){if(!u.el)continue;const e=u.el.querySelector(':scope>.mz-menace'),t=tient.get(u)||'';if(e){if(e.textContent!==t)e.textContent=t}else if(t)pastille(u,'mz-menace').textContent=t}}
   if(typeof dessinerCases==='function'){const dc0=dessinerCases;dessinerCases=function(){const r=dc0.apply(this,arguments);try{etiquettesVoies()}catch(_){}return r}}
   if(typeof badgesMenace==='function'){const bm0=badgesMenace;badgesMenace=function(){const r=bm0.apply(this,arguments);try{menacesSurUnites()}catch(_){}return r}}
