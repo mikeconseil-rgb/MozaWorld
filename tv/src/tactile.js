@@ -30,7 +30,7 @@ body.tactile .hud.aide{display:none!important}
 @media (max-height:600px){body.tactile{--u:min(1.25vw,2.5vh)}
   /* combat : cartes un peu plus petites, et une marge à droite pour les sceaux */
   body.tactile.tact-combat{--u:min(1vw,2.05vh)}body.tactile.tact-combat #combat{padding-right:calc(90px + 2vw)!important}}
-#tact{position:fixed;inset:0;z-index:60;pointer-events:none;font-family:"Caveat","Segoe Script",cursive}
+#tact{position:fixed;inset:0 env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px);z-index:60;pointer-events:none;font-family:"Caveat","Segoe Script",cursive}
 #tact .sceau{position:absolute;pointer-events:auto;width:calc(var(--t)*1);height:calc(var(--t)*1);border-radius:50%;display:flex;align-items:center;justify-content:center;
   --t:clamp(42px,11vh,58px);
   background:radial-gradient(circle at 36% 30%,#d0453a,#a3231a 46%,#6d140e 78%,#4a0c08);
@@ -134,7 +134,19 @@ addEventListener('pointerup',haut,{capture:true});
 addEventListener('pointercancel',haut,{capture:true});
 /* pas de menu contextuel ni de loupe sur un appui long */
 addEventListener('contextmenu',e=>{if(actif)e.preventDefault()});
-/* le plein écran (xbox.js) passe aussi en paysage quand Chrome le permet */
+/* 2.42.5 : plein écran sur téléphone. Chrome Android n'accepte le plein écran qu'à la FIN d'un toucher (touchend / pointerup),
+   pas au pointerdown qu'écoute xbox.js : d'où « pas de plein écran » sur le Pixel. On le redemande à chaque toucher tant qu'il manque
+   (après un retour de l'appli, un geste « retour », etc.). Depuis l'écran d'accueil (« Ajouter à l'écran d'accueil »), le manifeste
+   ouvre le jeu directement en plein écran et en paysage. */
+let fsEnCours=false;   /* une seule demande à la fois : une 2e demande pendant la 1re la fait échouer */
+function pleinEcran(){if(!actif||fsEnCours)return;const d=document.documentElement;
+  if(document.fullscreenElement||document.webkitFullscreenElement||matchMedia('(display-mode: fullscreen)').matches)return;
+  if(navigator.userActivation&&!navigator.userActivation.isActive)return;
+  try{const f=d.requestFullscreen||d.webkitRequestFullscreen;if(!f)return;const r=f.call(d,{navigationUI:'hide'});
+    if(r&&r.then){fsEnCours=true;r.then(()=>{fsEnCours=false},()=>{fsEnCours=false})}}catch(_){fsEnCours=false}}
+addEventListener('touchend',pleinEcran,{capture:true,passive:true});
+addEventListener('pointerup',e=>{if(e.pointerType==='touch')pleinEcran()},{capture:true});
+/* le plein écran passe aussi en paysage quand Chrome le permet */
 addEventListener('fullscreenchange',()=>{if(actif&&document.fullscreenElement&&screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})});
 /* si un doigt reste « collé » (notification, changement d'appli), tout est relâché */
 addEventListener('visibilitychange',()=>{if(document.hidden){for(const[id,d]of doigts)haut({pointerId:id,type:'pointercancel'});PAD.lx=PAD.ly=0;PAD.rt=0}});
