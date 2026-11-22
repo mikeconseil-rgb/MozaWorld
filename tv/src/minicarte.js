@@ -102,10 +102,10 @@ drawMini=function(T){if(!cv)return;const mc=cv.getContext('2d'),dt=Math.min(.2,M
   /* tuiles : couleur du type, sombre si sauvage ; joints sombres comme une mosaïque */
   for(const Z of vis){const t=TYPES[typeDe(Z)],own=S.own[Z.id],l=niv(Z),pret=!(Z.d&&Z.d.pret===false);
     tracer(mc,Z,s,ox,oz);
-    mc.fillStyle=own?rgba(t.c,.92,.95):pret?rgba(t.c,.55,.42):rgba(t.c,.3,.3);mc.fill();
+    {const r=roi(Z.id);mc.fillStyle=r?rgba(r.c,.92,pret?1:.8):pret?rgba(t.c,.55,.42):rgba(t.c,.3,.3)}mc.fill();
     if(l){mc.fillStyle=l<0?`rgba(80,140,210,${.05+.035*-l})`:`rgba(240,160,70,${.05+.035*l})`;mc.fill()}
     mc.lineJoin='round';mc.lineWidth=3;mc.strokeStyle='#0b0a0d';mc.stroke()}
-  for(const Z of vis)if(S.own[Z.id]){tracer(mc,Z,s,ox,oz);mc.lineWidth=2.4;mc.strokeStyle='rgba(255,217,138,.95)';mc.stroke()}
+  royaumes(mc,vis,s,ox,oz,3,true);   /* 2.28 : mêmes royaumes que la carte du monde, sans noms ni halo (dessinée à chaque image) */
   if(curZ){tracer(mc,curZ,s,ox,oz);mc.save();mc.shadowColor='rgba(255,255,255,.8)';mc.shadowBlur=10;mc.lineWidth=2.6;mc.strokeStyle='#fff';mc.stroke();mc.restore()}
   /* calques des autres modules (textes gardés droits) */
   const D=ctxDroit(mc,ang);
@@ -210,6 +210,58 @@ function majFiche(){const Z=K.vise;let h='';
     h=`<div class="ty">${t.n}${I.sur&&I.sur.indexOf('·')>0?' · '+I.sur.split('·').slice(1).join('·').trim():''}</div><div class="nm">${I.nom||Z.id}</div><div class="li">${L.join('<br>')}</div>`+
       (curZ&&curZ.id===Z.id?'':`<div class="go">${typeof PAD!=='undefined'&&PAD.on?'<b>A</b>':'<b>Entrée</b>'} voyager ${ZB[Z.id]&&Z.alt?'jusqu\'à sa Pierre':'(la mosaïque se recompose)'}</div>`)}
   if(h!==ficheKey){ficheKey=h;fiche.innerHTML=h}}
+/* ===== 2.28 : la carte enluminée (22 nov., « une carte mosaïque plus belle où chaque royaume est bien dessiné ») =====
+   Le monde sauvage reste une mosaïque sombre et chaotique, gravée de son entrelacs Girih en bronze pâle.
+   Chaque royaume (le vôtre, en or ; chaque maison rivale, à ses couleurs) se lit comme une région nette :
+   tuiles pleines à ses couleurs, entrelacs doré, frontière tracée en rempart double, nom et blason au centre. */
+const MOI={k:'moi',nom:'Votre royaume',bl:'✦',c:[230,198,136],trait:'#ffe3a6'};
+const hex2=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+function roi(id){if(S.own[id])return MOI;const m=typeof maisonDe==='function'?maisonDe(id):null;if(!m)return null;
+  return m._r||(m._r={k:m.k,nom:m.nom,bl:m.bl,c:hex2(m.col),trait:m.col})}
+/* arêtes partagées : calculées une fois pour tout le monde (5 246 arêtes) */
+let AR=null;
+function aretes(){if(AR)return AR;const m=new Map(),cle=p=>Math.round(p[0])+','+Math.round(p[1]);AR=new Map();
+  for(const Z of MONDE()){const n=Z.poly.length,L=[];for(let i=0;i<n;i++){const a=Z.poly[i],b=Z.poly[(i+1)%n],k=[cle(a),cle(b)].sort().join('|'),e={a,b,Z,nb:null};
+    const o=m.get(k);if(o){o.nb=Z;e.nb=o.Z}else m.set(k,e);L.push(e)}AR.set(Z.id,L)}return AR}
+/* entrelacs Girih : des milieux des côtés, des cordes en étoile (décagone {10/3}, pentagone et hexagone {n/2}, losange {4/1}) */
+const PAS={CIT:3,DON:2,RES:2,MAR:1,ANT:2};
+function entrelacs(c,Z,s,ox,oz){const P=Z.poly,n=P.length,k=PAS[typeDe(Z)]||2,M=[];
+  for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n];M.push([((a[0]+b[0])/2+ox)*s,((a[1]+b[1])/2+oz)*s])}
+  if(typeDe(Z)==='ANT'){/* papillon : les milieux se rejoignent par le nœud central */const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;
+    for(const m of M){c.moveTo(m[0],m[1]);c.lineTo(cx+(m[0]-cx)*.18,cy+(m[1]-cy)*.18)}c.moveTo(M[0][0],M[0][1]);for(let i=1;i<=n;i++)c.lineTo(M[i%n][0],M[i%n][1]);return}
+  for(let i=0;i<n;i++){const m=M[i],q=M[(i+k)%n];c.moveTo(m[0],m[1]);c.lineTo(q[0],q[1])}}
+function royaumes(c,vis,s,ox,oz,joint,mini){
+  /* 1. entrelacs : bronze pâle dans le sauvage, or vif (ou couleur de maison éclaircie) dans les royaumes */
+  if(mini||s*350>14*K.dpr){const lw=Math.max(.6,Math.min(2.2,s*3.2));c.lineCap='round';
+    c.beginPath();for(const Z of vis)if(!roi(Z.id))entrelacs(c,Z,s,ox,oz);c.lineWidth=lw;c.strokeStyle='rgba(201,164,92,.2)';c.stroke();
+    const par={};for(const Z of vis){const r=roi(Z.id);if(r)(par[r.k]||(par[r.k]={r,L:[]})).L.push(Z)}
+    for(const k in par){c.beginPath();for(const Z of par[k].L)entrelacs(c,Z,s,ox,oz);c.lineWidth=lw*1.25;c.strokeStyle=k==='moi'?'rgba(255,236,190,.55)':'rgba(255,245,225,.38)';c.stroke()}}
+  /* 2. frontières : chaque arête entre deux maîtres différents, tracée en rempart double */
+  const A=aretes(),F={};
+  for(const Z of vis){const r=roi(Z.id);if(!r)continue;for(const e of A.get(Z.id)||[]){const o=e.nb&&roi(e.nb.id);if(o===r)continue;(F[r.k]||(F[r.k]={r,E:[]})).E.push(e)}}
+  const w=mini?1.6:Math.max(2,Math.min(7,s*9))*K.dpr**.5;c.lineCap='round';c.lineJoin='round';
+  for(const k in F){const {r,E}=F[k];c.beginPath();for(const e of E){c.moveTo((e.a[0]+ox)*s,(e.a[1]+oz)*s);c.lineTo((e.b[0]+ox)*s,(e.b[1]+oz)*s)}
+    c.save();if(!mini){c.shadowColor=k==='moi'?'rgba(255,205,120,.85)':'rgba(0,0,0,.6)';c.shadowBlur=w*(k==='moi'?4:2)}c.lineWidth=w*2.2;c.strokeStyle='rgba(8,6,4,.9)';c.stroke();c.restore();
+    c.lineWidth=w*1.15;c.strokeStyle=k==='moi'?'#e2b65e':r.trait;c.stroke();
+    c.lineWidth=Math.max(.8,w*.28);c.strokeStyle=k==='moi'?'#fff3cf':'rgba(255,255,255,.7)';c.stroke()}
+  /* 3. noms des royaumes : un par région d'un seul tenant (3 tuiles ou plus), au centre */
+  if(mini)return;const vu=new Set();
+  for(const Z of vis){const r=roi(Z.id);if(!r||vu.has(Z.id))continue;const g=[Z];vu.add(Z.id);
+    for(let i=0;i<g.length;i++)for(const e of A.get(g[i].id)||[])if(e.nb&&!vu.has(e.nb.id)&&roi(e.nb.id)===r){vu.add(e.nb.id);g.push(e.nb)}
+    if(g.length<3||s*350>75*K.dpr)continue;   /* de près, les noms des zones prennent le relais */let x=0,y=0;for(const q of g){x+=q.c[0];y+=q.c[1]}x=(x/g.length+ox)*s;y=(y/g.length+oz)*s;
+    const fs=Math.max(10*K.dpr,Math.min(22*K.dpr,Math.sqrt(g.length)*s*110));
+    c.save();c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';
+    c.font=`${Math.round(fs*1.5)}px Georgia,serif`;c.lineWidth=fs*.3;c.strokeStyle='rgba(8,6,4,.85)';c.strokeText(r.bl,x,y-fs*1.15);c.fillStyle=r.trait;c.fillText(r.bl,x,y-fs*1.15);
+    c.font=`600 ${Math.round(fs)}px Georgia,serif`;const t=r.nom.toUpperCase().split('').join(String.fromCharCode(8202));
+    c.lineWidth=fs*.32;c.strokeStyle='rgba(8,6,4,.88)';c.strokeText(t,x,y);c.fillStyle=r.k==='moi'?'#ffe8b0':'#f4ead6';c.fillText(t,x,y);
+    const tw=c.measureText(t).width/2+fs*.6;c.strokeStyle=r.trait;c.lineWidth=Math.max(1,fs*.07);c.beginPath();c.moveTo(x-tw,y+fs*.75);c.lineTo(x+tw,y+fs*.75);c.stroke();
+    c.restore()}}
+/* cadre enluminé autour de la carte : double filet d'or, rosaces Girih aux coins */
+function cadre(c,w,h){const d=K.dpr,m=14*d;c.save();c.strokeStyle='rgba(201,164,92,.75)';c.lineWidth=2*d;c.strokeRect(m,m,w-2*m,h-2*m);
+  c.strokeStyle='rgba(201,164,92,.35)';c.lineWidth=1*d;c.strokeRect(m+6*d,m+6*d,w-2*m-12*d,h-2*m-12*d);
+  for(const [x,y] of [[m,m],[w-m,m],[m,h-m],[w-m,h-m]]){c.beginPath();for(let i=0;i<=10;i++){const a=i*TAU/10*3-PI/2,r=14*d;i?c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r):c.moveTo(x+Math.cos(a)*r,y+Math.sin(a)*r)}
+    c.fillStyle='#0b0a0d';c.fill();c.strokeStyle='#d9b468';c.lineWidth=1.5*d;c.stroke()}
+  c.restore()}
 function dessinerCarte(T){const c=mcv.getContext('2d'),w=mcv.width,h=mcv.height,s=w/K.w,ox=-K.x+w/2/s,oz=-K.z+h/2/s,pulse=.6+.4*Math.sin(T*4);
   c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,w,h);
   const xa=K.x-w/2/s-600,xb=K.x+w/2/s+600,za=K.z-h/2/s-600,zb=K.z+h/2/s+600,vis=[];
@@ -217,9 +269,10 @@ function dessinerCarte(T){const c=mcv.getContext('2d'),w=mcv.width,h=mcv.height,
   const joint=Math.max(1,Math.min(4,s*7));
   for(const Z of vis){const t=TYPES[typeDe(Z)],own=S.own[Z.id],l=niv(Z),pret=!(Z.d&&Z.d.pret===false);tracer(c,Z,s,ox,oz);
     if(K.col){const k=Math.abs(l)/7;c.fillStyle=l<0?`rgba(${Math.round(60+20*k)},${Math.round(110+40*k)},${Math.round(150+70*k)},${.35+.55*k})`:l>0?`rgba(${Math.round(160+80*k)},${Math.round(110+60*k)},${Math.round(60+10*k)},${.35+.55*k})`:'rgba(120,112,100,.35)'}
-    else c.fillStyle=own?rgba(t.c,.95):pret?rgba(t.c,.62,.5):rgba(t.c,.35,.32);
-    c.fill();c.lineJoin='round';c.lineWidth=joint;c.strokeStyle='#08070a';c.stroke()}
-  for(const Z of vis)if(S.own[Z.id]){tracer(c,Z,s,ox,oz);c.lineWidth=Math.max(1.5,joint*.8);c.strokeStyle='rgba(255,217,138,.95)';c.stroke()}
+    else{const r=roi(Z.id);c.fillStyle=r?rgba(r.c,.9,(pret?1:.8)*(.86+.14*((Z.c[0]*7+Z.c[1]*13)%5)/4)):rgba(t.c,pret?.55:.32,pret?.34:.24)}
+    c.fill();c.lineJoin='round';c.lineWidth=joint;c.strokeStyle=K.col?'#08070a':roi(Z.id)?'rgba(20,14,8,.55)':'#0a090c';c.stroke()}
+  if(!K.col)royaumes(c,vis,s,ox,oz,joint);
+  else for(const Z of vis)if(S.own[Z.id]){tracer(c,Z,s,ox,oz);c.lineWidth=Math.max(1.5,joint*.8);c.strokeStyle='rgba(255,217,138,.95)';c.stroke()}
   for(const f of['dessinerRoutes','dessinerRivaux','dessinerHordes','dessinerSiege','dessinerTours','dessinerCaravanes'])
     if(typeof window[f]==='function')try{window[f](c,s,ox,oz,T)}catch(_){}
   const ir=Math.max(3,Math.min(16*K.dpr,s*40));
@@ -240,7 +293,7 @@ function dessinerCarte(T){const c=mcv.getContext('2d'),w=mcv.width,h=mcv.height,
   /* échelle */
   const m=[100,250,500,1000,2000,5000,10000].find(v=>v*s>110*K.dpr)||10000,ex=Math.min(innerWidth,innerHeight*1.78)*.046*K.dpr,ey=h*.2;
   c.strokeStyle=OR;c.lineWidth=2*K.dpr;c.beginPath();c.moveTo(ex,ey-5*K.dpr);c.lineTo(ex,ey);c.lineTo(ex+m*s,ey);c.lineTo(ex+m*s,ey-5*K.dpr);c.stroke();
-  c.font=`${Math.round(13*K.dpr)}px sans-serif`;c.fillStyle=OR;c.textAlign='center';c.textBaseline='bottom';c.fillText(m>=1000?(m/1000)+' km':m+' m',ex+m*s/2,ey-6*K.dpr)}
+  c.font=`${Math.round(13*K.dpr)}px sans-serif`;c.fillStyle=OR;c.textAlign='center';c.textBaseline='bottom';c.fillText(m>=1000?(m/1000)+' km':m+' m',ex+m*s/2,ey-6*K.dpr);cadre(c,w,h)}
 let kt=0;
 function boucleCarte(t){requestAnimationFrame(boucleCarte);if(!K.ouverte){kt=t;return}const dt=Math.min(.1,(t-kt)/1000||0);kt=t;
   if(mode!=='carte'){fermerCarte();return}
