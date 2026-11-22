@@ -32,6 +32,17 @@ Demande de l'utilisateur (22 nov.) : les 3 voies du Plateau font « comme un Mob
 
 - **Limite :** 5 créatures au plus sur le champ.
 
+## Passe 2 (22 nov.)
+
+Retour de l'utilisateur : « C'est difficile de jouer. Le champ de batailles devrait zoomer, être plus grand. Facile à voir les bêtes se déplacer. De plus le visuel des bêtes est moche à mourir. »
+- Le champ est plus grand. Il zoome presque en plein écran quand on déplace ses créatures et pendant le tour ennemi ; les cartes se rangent alors.
+- Les pions grandissent avec le zoom.
+- Chaque pion suit son chemin tuile par tuile, et le chemin reste tracé un instant : en jaune pour vous, en rouge pour l'ennemi. L'ennemi frappe une fois arrivé.
+- Les portraits sont peints (`tv/img/creatures/`, par `tools/images-cartes/generer-creatures.py`, Pollinations, gratuit) :
+  - une image par monstre de zone ;
+  - une image par archétype (oiseau, félin, canidé…) pour les quelque 2 000 bêtes des cartes ;
+  - une image pour le héros, la Garde et la Sentinelle.
+
 ## Pistes non tranchées
 
 - Construire soi-même le champ en posant des tuiles avant le combat : l'utilisateur hésite, à faire essayer dans l'Arène.
