@@ -21,9 +21,25 @@ const lvDe=Z=>S.lv[Z.id]||0;
 
 /* ---------- état : la quête du palier où se trouve la zone, et l'étape atteinte ---------- */
 function queteDe(Z){const D=Q(Z);if(!D)return null;return D.quetes[String(lvDe(Z))]||null}
-function etat(Z){const st=ST(),lv=lvDe(Z),q=queteDe(Z);let e=st[Z.id];if(!e||e.lv!==lv||(q&&!q.noeuds[e.n])){e=st[Z.id]={lv,n:q?q.debut:''}}return e}
+/* Relecture du critique (22 nov.) : quand on REDESCEND vers 0 (on s'est ravisé), la quête ne rejoue pas la scène déjà vécue :
+   elle part de « debutRetour » (un nœud, ou {"-":nœud,"+":nœud} à 0 selon le pôle d'où l'on revient), et les PNJ absents
+   peuvent différer (« absentsRetour »), ou selon la trace d'entrée (« absentsSi », prioritaire). */
+/* Tour 3 (critique 2) : « debutSi » {trace: nœud} choisit l'entrée selon le DERNIER choix final fait dans la zone (celui qui vient
+   de faire bouger le palier), avant debutRetour et debut. Ainsi, remonter après un retour ne rejoue pas une scène déjà défaite. */
+function depart(q,de,lv,der){if(der&&q.debutSi&&q.debutSi[der]&&q.noeuds[q.debutSi[der]])return{n:q.debutSi[der],si:der,retour:de!=null&&Math.abs(de)>Math.abs(lv)?(de<0?'-':'+'):0};
+  return depart0(q,de,lv)}
+function depart0(q,de,lv){if(de==null||Math.abs(de)<=Math.abs(lv)||!q.debutRetour)return{n:q.debut,retour:0};
+  const sens=de<0?'-':'+',r=typeof q.debutRetour==='string'?(Math.sign(de)===Math.sign(lv)?q.debutRetour:null):q.debutRetour[sens];
+  return r&&q.noeuds[r]?{n:r,retour:sens}:{n:q.debut,retour:0}}
+function etat(Z){const st=ST(),lv=lvDe(Z),q=queteDe(Z);let e=st[Z.id];
+  if(!e||e.lv!==lv||(q&&!q.noeuds[e.n])){const de=e&&e.lv!==lv?e.lv:(e?e.de:null),der=S.queteDer&&S.queteDer[Z.id]||null,d=q?depart(q,de,lv,der):{n:'',retour:0};e=st[Z.id]={lv,n:d.n,retour:d.retour,si:d.si||null,de}}return e}
+/* tour 4 (critique) : le résumé suit le point d'entrée (resumeSi par trace, resumeRetour, sinon resume) */
+function resumeDe(Z){const q=queteDe(Z);if(!q)return'';const e=etat(Z);
+  if(e.si&&q.resumeSi&&q.resumeSi[e.si])return q.resumeSi[e.si];
+  if(e.retour&&q.resumeRetour)return typeof q.resumeRetour==='string'?q.resumeRetour:(q.resumeRetour[e.retour]||q.resume);
+  return q.resume}
 function etape(Z){const q=queteDe(Z);if(!q)return null;return q.noeuds[etat(Z).n]||null}
-const present=id=>{if(!ZQ)return true;const q=queteDe(ZQ);return !(q&&q.absents&&q.absents.indexOf(id)>=0)};
+const present=id=>{if(!ZQ)return true;const q=queteDe(ZQ);if(!q)return true;const e=etat(ZQ),A=e.si&&q.absentsSi&&q.absentsSi[e.si]?q.absentsSi[e.si]:e.retour&&q.absentsRetour?(Array.isArray(q.absentsRetour)?q.absentsRetour:q.absentsRetour[e.retour]||q.absents):q.absents;return !(A&&A.indexOf(id)>=0)};
 const traceA=t=>!!(S.memoire&&S.memoire[t]);
 function avecTraces(o){let t=o.txt||'';if(o.txtTrace)for(const k of Object.keys(o.txtTrace))if(traceA(k))t+='\n\n'+o.txtTrace[k];
 return t}
@@ -95,7 +111,7 @@ function noeud(Z,et,sur,titre){const q=queteDe(Z),lv=lvDe(Z),tete=`<p class="pet
     ui('menu',{sur,t:titre,corps:tete+para(avecTraces(et)),back:toMonde,
       opts:[...et.fin.map(r=>({l:r.l,ic:r.vers>lv?'▲':'▼',cls:r.vers>lv?'p':'m',off:r0>0,
         d:r0>0?'la zone se repose encore '+fmt(r0):`palier ${sgn(r.vers)||'0'}${r.epreuve==='combat'?' · combat':''} · prix : ${r.cache?'?':r.prix}`,go:()=>choisir(Z,et,r)})),
-        {l:'Réfléchir encore',ic:'◆',d:'rien n\'est décidé',go:toMonde}]});return}
+        {l:et.refus||'Réfléchir encore',ic:'◆',d:et.refus?'vous restez à ce palier':'rien n\'est décidé',go:toMonde}]});return}
   if(et.combat){ui('menu',{sur,t:titre,corps:tete+para(avecTraces(et))+`<p class="petit">${esc(et.combat)}</p>`,back:toMonde,
       opts:[{l:'Combattre',ic:'⚔',cls:'p',go:()=>{QC={Z,n:etat(Z).n};startCombat(Z,'quete')}},{l:'Plus tard',ic:'◆',go:toMonde}]});return}
   const reps=(et.rep&&et.rep.length?et.rep:[{l:'Continuer'}]);
@@ -129,6 +145,7 @@ window.finQueteFin=function(C){const Z=C.Z,v=QF&&QF.Z===Z?QF.vers:null;QF=null;i
 const tenir0=typeof tenirParole==='function'?tenirParole:null;
 window.suitesParole=function(Z){const pa=S.parole&&S.parole[Z.id];if(!pa||!pa.suite)return;const s=pa.suite;
   if(s.trace&&typeof poserTrace==='function')poserTrace(Z,s.trace);
+  S.queteDer=S.queteDer||{};S.queteDer[Z.id]=s.trace||null;
   if(s.apres)S.queteApres=S.queteApres||{},S.queteApres[Z.id]=s.apres};
 
 /* ---------- la Pierre d'éveil : elle rappelle la quête au lieu de proposer les paliers ---------- */
@@ -138,7 +155,7 @@ window.optionsQuete=function(Z,diff,off){const pa=typeof paroleEnCours==='functi
   return[{l:'Quête : '+q.t,ic:'✎',off:true,d:consigne(Z,et)}]};
 window.corpsQuete=function(Z){const q=queteDe(Z),D=Q(Z),pa=typeof paroleEnCours==='function'?paroleEnCours(Z):null;
   const ap=S.queteApres&&S.queteApres[Z.id]?`<p><i>${esc(S.queteApres[Z.id])}</i></p>`:'';
-  return ap+(q?`<p class="petit" style="color:var(--laiton2)">Quête · ${esc(q.t)}</p><p>${esc(q.resume)}</p>`:'')+
+  return ap+(q?`<p class="petit" style="color:var(--laiton2)">Quête · ${esc(q.t)}</p><p>${esc(resumeDe(Z))}</p>`:'')+
     `<p class="petit">${esc(D.regle||'Ici, ce sont vos quêtes qui font bouger la zone : parlez aux habitants (A devant eux). Chaque quête finit par un choix entre les deux pôles ; il fait monter ou descendre la zone d\'un palier (parfois après un combat).')}</p>`+
     (pa?`<p class="petit">Vous avez donné votre parole : « ${esc(pa.l)} ». Il reste à réussir l'épreuve.</p>`:'')};
 window.queteZone=Z=>!!Q(Z);

@@ -82,7 +82,7 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
     const hm=await p.evaluate(()=>{const S=MZ.S;const h=MZ.horde('DON024','RES');const c=MZ.caravanes().find(c=>c.r==='RES');return{h:!!h,cible:h&&h.cible,risque:c.risque,menace:c.menace}});
     ok('une horde qui vise une zone du trajet pille la caravane à coup sûr (22 nov.)',hm.h&&hm.cible==='RES'&&Math.abs(hm.risque-1)<1e-9&&hm.menace==='RES',JSON.stringify(hm));
     const tr=await p.evaluate(()=>{MZ.tour('RES');const c=MZ.caravanes().find(c=>c.r==='RES');return{risque:c.risque,tour:c.tour}});
-    ok('une tour de guet sur la zone menacée divise le risque par deux',Math.abs(tr.risque-.5)<1e-9&&tr.tour,JSON.stringify(tr));
+    ok('une tour de guet ne sauve pas du pillage automatique (22 nov.)',Math.abs(tr.risque-1)<1e-9&&tr.tour,JSON.stringify(tr));
     const nat=await p.evaluate(async()=>{let n=0;for(let i=0;i<40;i++){const c=MZ.caravanes().find(c=>c.r==='RES');if(c.etat==='pillée'){return{n:i,par:MZ.S.car.RES.par,lieu:c.lieu}}
       MZ.S.hordes.DON024&&(MZ.S.hordes.DON024.arrive=MZ.S.nc+99);await unCycle()}return{n:-1}});
     ok('sous la menace, la caravane finit par être pillée par la horde',nat.n>=0&&nat.par==='horde'&&nat.lieu==='RES',JSON.stringify(nat));

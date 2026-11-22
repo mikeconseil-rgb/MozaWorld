@@ -70,7 +70,7 @@ function carMenace(t){let m={risque:0,lieu:null,par:null,qui:null};if(!t)return 
     if(!base){const V=VOISINES[z]||[],hp=hordes.find(h=>h&&ZB[h.src]&&(V.indexOf(h.cible)>=0||V.indexOf(h.src)>=0||h.src===z));if(hp){base=CAR_RISQUE.horde;par='horde';qui=hp.src}}
     if(!base){const v=(VOISINES[z]||[]).find(v=>rivaux[v]&&!S.own[v]);if(v){base=CAR_RISQUE.rival;par='rival';qui=rivaux[v]}}
     if(!base)continue;
-    const tour=typeof defenseTours==='function'&&(defenseTours(z)||{}).bonus>0,k=base*(tour?CAR_TOUR:1);
+    const tour=typeof defenseTours==='function'&&(defenseTours(z)||{}).bonus>0,k=base*(tour&&base<1?CAR_TOUR:1);   /* 22 nov. : la tour ne sauve pas du cas automatique */
     if(k>m.risque)m={risque:k,lieu:z,par,qui,tour}}
   return m}
 /* les caravanes du moment, une par Ressource tenue qui en a une (en route ou arrêtée) */
