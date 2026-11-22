@@ -179,8 +179,8 @@ function commandes(){const pad=typeof PAD!=='undefined'&&PAD.on;
 function ouvrirCarte(){if(typeof mode==='undefined'||mode!=='monde'||!started)return;
   P.auto=0;mode='carte';K.ouverte=true;K.x=P.x;K.z=P.z;K.fx=K.fz=0;K.sale=true;K.w=Math.min(K.w,9000);
   document.body.classList.add('jeu-ouvert');ov.classList.add('on');legende();commandes();taille();K.vise=null;majFiche()}
-function fermerCarte(){if(!K.ouverte)return;K.ouverte=false;ov.classList.remove('on');if(mode==='carte'){mode='monde';document.body.classList.remove('jeu-ouvert')}}
-function taille(){const d=Math.min(2,window.devicePixelRatio||1);K.dpr=d;mcv.width=Math.round(innerWidth*d);mcv.height=Math.round(innerHeight*d);K.sale=true}
+function fermerCarte(){if(!K.ouverte)return;K.ouverte=false;ov.classList.remove('on');mcv.width=mcv.height=1;   /* 2.30.4 : rend la mémoire de l'image tant que la carte est fermée */if(mode==='carte'){mode='monde';document.body.classList.remove('jeu-ouvert')}}
+function taille(){const d=1;   /* 2.30.4 : image de la carte plafonnée à la taille de l'écran (dpr 2 = 4 fois la mémoire, plantage au dézoom sur Xbox) */K.dpr=d;mcv.width=Math.round(innerWidth*d);mcv.height=Math.round(innerHeight*d);K.sale=true}
 addEventListener('resize',()=>{if(K.ouverte)taille()});
 function zoneSous(x,z){for(const Z of MONDE()){const p=Z.poly;let ok=false;
   if(Math.abs(Z.c[0]-x)>1400||Math.abs(Z.c[1]-z)>1400)continue;if(inPoly(p,x,z))return Z}return null}
@@ -232,7 +232,7 @@ function entrelacs(c,Z,s,ox,oz){const P=Z.poly,n=P.length,k=PAS[typeDe(Z)]||2,M=
   for(let i=0;i<n;i++){const m=M[i],q=M[(i+k)%n];c.moveTo(m[0],m[1]);c.lineTo(q[0],q[1])}}
 function royaumes(c,vis,s,ox,oz,joint,mini){
   /* 1. entrelacs : bronze pâle dans le sauvage, or vif (ou couleur de maison éclaircie) dans les royaumes */
-  if(mini||s*350>14*K.dpr){const lw=Math.max(.6,Math.min(2.2,s*3.2));c.lineCap='round';
+  if(mini||s*350>40){const lw=Math.max(.6,Math.min(2.2,s*3.2));c.lineCap='round';
     c.beginPath();for(const Z of vis)if(!roi(Z.id))entrelacs(c,Z,s,ox,oz);c.lineWidth=lw;c.strokeStyle='rgba(201,164,92,.2)';c.stroke();
     const par={};for(const Z of vis){const r=roi(Z.id);if(r)(par[r.k]||(par[r.k]={r,L:[]})).L.push(Z)}
     for(const k in par){c.beginPath();for(const Z of par[k].L)entrelacs(c,Z,s,ox,oz);c.lineWidth=lw*1.25;c.strokeStyle=k==='moi'?'rgba(255,236,190,.55)':'rgba(255,245,225,.38)';c.stroke()}}
@@ -241,7 +241,8 @@ function royaumes(c,vis,s,ox,oz,joint,mini){
   for(const Z of vis){const r=roi(Z.id);if(!r)continue;for(const e of A.get(Z.id)||[]){const o=e.nb&&roi(e.nb.id);if(o===r)continue;(F[r.k]||(F[r.k]={r,E:[]})).E.push(e)}}
   const w=mini?1.6:Math.max(2,Math.min(7,s*9))*K.dpr**.5;c.lineCap='round';c.lineJoin='round';
   for(const k in F){const {r,E}=F[k];c.beginPath();for(const e of E){c.moveTo((e.a[0]+ox)*s,(e.a[1]+oz)*s);c.lineTo((e.b[0]+ox)*s,(e.b[1]+oz)*s)}
-    c.save();if(!mini){c.shadowColor=k==='moi'?'rgba(255,205,120,.85)':'rgba(0,0,0,.6)';c.shadowBlur=w*(k==='moi'?4:2)}c.lineWidth=w*2.2;c.strokeStyle='rgba(8,6,4,.9)';c.stroke();c.restore();
+    if(!mini&&k==='moi'){c.lineWidth=w*4.5;c.strokeStyle='rgba(255,205,120,.16)';c.stroke()}   /* halo : un trait large et pâle, pas de shadowBlur (trop lourd pour Edge sur Xbox) */
+    c.lineWidth=w*2.2;c.strokeStyle='rgba(8,6,4,.9)';c.stroke();
     c.lineWidth=w*1.15;c.strokeStyle=k==='moi'?'#e2b65e':r.trait;c.stroke();
     c.lineWidth=Math.max(.8,w*.28);c.strokeStyle=k==='moi'?'#fff3cf':'rgba(255,255,255,.7)';c.stroke()}
   /* 3. noms des royaumes : un par région d'un seul tenant (3 tuiles ou plus), au centre */
@@ -281,7 +282,7 @@ function dessinerCarte(T){const c=mcv.getContext('2d'),w=mcv.width,h=mcv.height,
     if(s*350>75*K.dpr){c.font=`600 ${Math.round(13*K.dpr)}px Georgia,serif`;c.textAlign='center';c.textBaseline='top';c.lineWidth=3*K.dpr;c.strokeStyle='rgba(8,7,10,.85)';
       const n=nomCourt(Z);c.strokeText(n,x,y+ir+4*K.dpr);c.fillStyle=own?'#ffe3a6':'rgba(239,231,214,.85)';c.fillText(n,x,y+ir+4*K.dpr);
       const tx=sgn(l)||'0';c.font=`700 ${Math.round(12*K.dpr)}px sans-serif`;c.strokeText(tx,x,y+ir+20*K.dpr);c.fillStyle=l<0?MINUS:l>0?PLUS:'#d8cdb4';c.fillText(tx,x,y+ir+20*K.dpr)}}
-  if(K.vise){tracer(c,K.vise,s,ox,oz);c.save();c.shadowColor='rgba(255,255,255,.9)';c.shadowBlur=14*K.dpr;c.lineWidth=2.5*K.dpr;c.strokeStyle='#fff';c.stroke();c.restore()}
+  if(K.vise){tracer(c,K.vise,s,ox,oz);c.save();c.lineWidth=2.5*K.dpr;c.strokeStyle='#fff';c.stroke();c.restore()}
   /* héros */
   const hx=(P.x+ox)*s,hy=(P.z+oz)*s,f=P.face!=null?P.face:P.yaw;
   c.save();c.translate(hx,hy);c.beginPath();c.arc(0,0,(16+5*pulse)*K.dpr,0,TAU);c.strokeStyle=`rgba(255,255,255,${.5*pulse})`;c.lineWidth=2*K.dpr;c.stroke();
@@ -307,7 +308,7 @@ function boucleCarte(t){requestAnimationFrame(boucleCarte);if(!K.ouverte){kt=t;r
     if(zoom)K.w=clamp(K.w*Math.exp(zoom*dt*1.6),1200,Math.max(B.x1-B.x0,B.z1-B.z0)*1.15);K.sale=true}
   const Z=zoneSous(K.x,K.z);if(Z!==K.vise){K.vise=Z;K.sale=true;majFiche()}
   /* redessin : quand la vue change, et quelques fois par seconde pour les pulsations */
-  K.acc=(K.acc||0)+dt;if(K.sale||K.acc>.12){K.acc=0;K.sale=false;dessinerCarte(t/1000)}}
+  K.acc=(K.acc||0)+dt;if((K.sale&&K.acc>.05)||K.acc>.25){K.acc=0;K.sale=false;dessinerCarte(t/1000)}}   /* 2.30.4 : 20 images/s au plus pendant un zoom, 4 au repos */
 requestAnimationFrame(boucleCarte);
 
 /* ================= 3. Entrées ================= */
@@ -335,6 +336,8 @@ addEventListener('keydown',e=>{if(typeof mode==='undefined')return;const k=e.key
   else if(e.code==='KeyY'&&!e.repeat){K.x=P.x;K.z=P.z;K.sale=true}});
 addEventListener('keyup',e=>{const k=e.key;if(k==='+'||k==='='||k==='-'||k==='PageUp'||k==='PageDown'||/Numpad(Add|Subtract)|Key[EQ]/.test(e.code))K.zk=0});
 
+/* 2.30.4 : la 3D ne se dessine plus derrière la carte plein écran (elle s'ajoutait au dessin de la carte sur la Xbox) */
+if(typeof draw==='function'){const draw0=draw;draw=function(){if(K.ouverte)return;return draw0.apply(this,arguments)}}
 window.ouvrirCarte=ouvrirCarte;window.fermerCarte=fermerCarte;
 if(window.MZ)Object.assign(window.MZ,{carte:ouvrirCarte,fermerCarte,carteEtat:()=>({ouverte:K.ouverte,x:K.x,z:K.z,w:K.w,vise:K.vise&&K.vise.id,col:K.col}),
   carteVise:(id)=>{const Z=MONDE().find(q=>q.id===id);if(Z){K.x=Z.c[0];K.z=Z.c[1];K.sale=true}return!!Z},carteZoom:w=>{K.w=w;K.sale=true},miniZoom:i=>{zi=i;zr=ZOOMS[i].r}});

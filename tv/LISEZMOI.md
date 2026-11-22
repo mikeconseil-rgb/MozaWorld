@@ -6,6 +6,13 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.30.4 : carte du monde allégée (22 novembre, `src/minicarte.js`)
+Symptôme rapporté : plantage en dézoomant la carte du monde sur la Xbox.
+- La 3D ne se dessine plus derrière la carte ouverte (elle continuait à chaque image, en plus de la carte).
+- L'image de la carte est plafonnée à la taille de l'écran (avant : jusqu'à 2 fois en largeur et en hauteur, soit 4 fois la mémoire) et rendue quand la carte se ferme.
+- Plus d'ombres floues (shadowBlur) : le halo de votre royaume est un trait large et pâle.
+- Entrelacs Girih seulement de près ; au plus 20 images par seconde pendant un zoom, 4 au repos.
+
 ## Version 2.30 : la carte enluminée, royaumes bien délimités (22 novembre, `src/minicarte.js`)
 Demande : « une carte mosaïque plus belle où chaque royaume est bien dessiné, des zones bien délimitées dans le chaos d'une mosaïque aléatoire ».
 - Le sauvage devient une mosaïque sombre, gravée d'entrelacs Girih en bronze pâle (cordes en étoile entre les milieux des côtés : décagone {10/3}, pentagone et hexagone {n/2}, losange {4/1}, papillon noué au centre).
