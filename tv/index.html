@@ -10290,6 +10290,20 @@ if(window.MZ_ARENE)(function(){
       const st=document.createElement('style');st.textContent='body.arene #hud,body.arene #minicarte{visibility:hidden}';document.head.appendChild(st);document.body.classList.add('arene');
       menu(0)},900)},300));
 })();
+/* MozaWorld : un bestiaire par zone (22 nov. 2026).
+   Retour de l'utilisateur : « les affiches des bêtes ne représentent pas le lore de la zone ». Avant, les 47 nouvelles zones
+   prêtaient les trois créatures de leur type (un col persan se battait contre un « Pillard des sapins »). Chaque zone a
+   maintenant trois créatures tirées de son histoire, avec leur portrait peint (img/bestiaire/<ZONE>-<i>.webp, outils :
+   tools/images-cartes/bestiaire.json et generer-bestiaire.py). Les forces et les gestes restent ceux du type (même rang :
+   0 et 1 les créatures, 2 le chef) ; seuls le nom et le portrait changent. Les cinq zones d'origine gardent leurs noms. */
+const BESTIAIRE={"CIT":["Pillard des sapins","Archère d'écorce","Voïvode sans mémoire"],"DON":["Gardien d'édit","Larve de lave","Scribe-tyran"],"RES":["Glaneur hagard","Anguille des canaux","Mère des Gerbes"],"ANT":["Luciole ardente","Crabe-racine","Reine-luciole"],"MAR":["Colporteur givré","Mâtin de cloche","Prévôt de la Foire"],"DON045":["Gardien de Kobor","Glouton des mélèzes","Chamane-tyran de Kobor"],"DON024":["Gardien des rames","Crabe des glaces","Jarl des Rames"],"ASS152":["Tribun du canyon","Lézard des corniches","Doyen de Fjorhel"]};
+(function(){
+  /* les zones « plus » partageaient le tableau MON de leur type : chacune reçoit le sien, renommé */
+  if(typeof MON!=='undefined')for(const id in BESTIAIRE){const zw=typeof ZWB!=='undefined'&&ZWB[id],base=MON[id]||(zw&&MON[zw.mod]);if(!base)continue;
+    MON[id]=base.map((m,i)=>Object.assign({},m,{nom:BESTIAIRE[id][i]||m.nom}))}
+})();
+/* portrait du bestiaire d'une unité ennemie : zone + rang, retrouvé par son nom */
+function bestiaireImg(u){if(!u||!u.z)return null;const L=BESTIAIRE[u.z];if(!L)return null;const i=L.indexOf(u.nom);return i<0?null:u.z+'-'+i}
 /* MozaWorld : portraits peints et animés dans le combat (22 nov. 2026).
    Retour de l'utilisateur après le combat à la Foire : « les persos sont trop moches. Fait de quoi qui est un peu animé ».
    Les silhouettes en vecteurs du combat principal sont remplacées par les portraits peints de l'Arène (img/creatures/, 256 px,
@@ -10304,12 +10318,12 @@ if(window.MZ_ARENE)(function(){
 const st=document.createElement('style');st.textContent=`
 #combat .u .por.mzp{display:flex;align-items:flex-end;justify-content:center}
 #combat .u .por.mzp>svg{display:none!important}
-.mzp-m{position:relative;width:92%;aspect-ratio:1;margin:0 auto 4%;border-radius:50%;overflow:hidden;contain:paint;
+.mzp-m{position:relative;width:92%;aspect-ratio:1;margin:0 auto 4%;border-radius:50%;overflow:hidden;
   border:calc(var(--u)*.22) solid var(--mzc,#c9a45c);box-shadow:0 calc(var(--u)*.5) calc(var(--u)*.9) rgba(0,0,0,.75),inset 0 0 calc(var(--u)*.9) rgba(0,0,0,.85);
-  background:#14110f;animation:mzpRespire 3.6s ease-in-out infinite;animation-delay:var(--rd,0s);transform-origin:50% 100%}
+  background:#14110f;transform-origin:50% 100%}
 .u.hero .mzp-m{border-radius:48% 48% 14% 14%/40% 40% 10% 10%;width:86%;aspect-ratio:.86}
 .u.chef .mzp-m{border-width:calc(var(--u)*.32)}
-.mzp-m img{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;display:block;animation:mzpToile 11s ease-in-out infinite alternate;animation-delay:var(--rd,0s)}
+.mzp-m img{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;display:block}
 .mzp-m::before{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 calc(var(--u)*.12) rgba(255,236,190,.35);pointer-events:none;z-index:2}
 .mzp-m i{position:absolute;inset:0;opacity:0;pointer-events:none;z-index:3;border-radius:inherit}
 .mzp-m i.v{background:radial-gradient(circle at 50% 45%,rgba(255,60,40,.0),rgba(220,30,20,.75))}
@@ -10329,6 +10343,9 @@ const st=document.createElement('style');st.textContent=`
 #cb-allies .u:not(.hero):not(.garde):has(.mzp) .gd,#cb-foes .u:not(.chef):has(.mzp) .gd{grid-area:gd}
 #cb-allies .u:not(.hero):not(.garde):has(.mzp) .un,#cb-foes .u:not(.chef):has(.mzp) .un{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:calc(var(--u)*.74)!important;line-height:1.05!important;max-width:none!important}
 #cb-allies .u:not(.hero):not(.garde) .mzp-m,#cb-foes .u:not(.chef) .mzp-m{width:100%;margin:0}
+/* 22 nov., plantages et ralentissements sur la Xbox : plus aucune animation permanente dans le combat (médaillons, toiles,
+   dérive du décor plein écran) ; seuls restent les gestes brefs (attaque, coup, soin, mort) */
+#cb-decor svg{animation:none!important}
 @media (prefers-reduced-motion:reduce){.mzp-m,.mzp-m img{animation:none!important}}
 `;document.head.appendChild(st);
 
@@ -10342,7 +10359,8 @@ function peindre(u){const e=u&&u.el;if(!e||e.dataset.mzp||window.TAC_ON)return;c
   im.onload=()=>{if(!e.isConnected&&!document.body.contains(e))return;const m=document.createElement('div');m.className='mzp-m';
     m.style.setProperty('--mzc',ami?'#c9a45c':'#b8402e');
     m.appendChild(im);const v=document.createElement('i');m.appendChild(v);p.classList.add('mzp');p.appendChild(m)};
-  im.src='img/creatures/'+encodeURIComponent(SANS(k))+'.webp'}
+  const bi=typeof bestiaireImg==='function'?bestiaireImg(u):null,crea='img/creatures/'+encodeURIComponent(SANS(k))+'.webp';
+  if(bi){im.onerror=()=>{im.onerror=null;im.src=crea};im.src='img/bestiaire/'+bi+'.webp'}else im.src=crea}
 
 /* un voile bref sur le médaillon : v (coup), s (soin), a (attaque) */
 function voile(u,k,dur){if(!ANIM||!u||!u.el)return;const m=u.el.querySelector('.mzp-m');if(!m)return;const v=m.querySelector('i');v.className=k;
@@ -10377,13 +10395,13 @@ const st=document.createElement('style');st.textContent=`
 #cb-main .cc.kcarte .art{height:47%!important;max-height:none!important;overflow:hidden;border-bottom:none!important}
 #cb-main .cc.kcarte .kpeint,#cb-main .cc.kcarte .kpeint img{height:100%!important}
 #cb-main .cc.kcarte .kpeint img{width:100%;object-fit:cover;transform-origin:50% 40%}
-#cb-main .cc.kcarte.f .kpeint img,#cb-main .cc.kcarte.choisie .kpeint img{animation:krToile 9s ease-in-out infinite alternate}
+
 @keyframes krToile{from{transform:scale(1.04) translate(-1.5%,1%)}to{transform:scale(1.12) translate(1.5%,-1.5%)}}
 #cb-main .cc.kcarte .art::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
   background:linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(10,6,4,.55));box-shadow:inset 0 0 calc(var(--u)*.8) rgba(0,0,0,.7)}
 #cb-main .cc.kcarte .art::before{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;z-index:3;pointer-events:none;opacity:0;
   background:linear-gradient(100deg,transparent,rgba(255,240,200,.45),transparent)}
-#cb-main .cc.kcarte.f .art::before{animation:krReflet 4.5s ease-in-out infinite}
+
 @keyframes krReflet{0%,55%{transform:translateX(0);opacity:0}62%{opacity:1}85%,100%{transform:translateX(420%);opacity:0}}
 #cb-main .cc.kcarte .kband{display:none}
 #cb-main .cc.kcarte .cn{position:relative;z-index:4;margin:calc(var(--u)*-1.1) 6% 0!important;padding:.12em .35em!important;min-height:0!important;

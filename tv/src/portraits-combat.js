@@ -12,12 +12,12 @@
 const st=document.createElement('style');st.textContent=`
 #combat .u .por.mzp{display:flex;align-items:flex-end;justify-content:center}
 #combat .u .por.mzp>svg{display:none!important}
-.mzp-m{position:relative;width:92%;aspect-ratio:1;margin:0 auto 4%;border-radius:50%;overflow:hidden;contain:paint;
+.mzp-m{position:relative;width:92%;aspect-ratio:1;margin:0 auto 4%;border-radius:50%;overflow:hidden;
   border:calc(var(--u)*.22) solid var(--mzc,#c9a45c);box-shadow:0 calc(var(--u)*.5) calc(var(--u)*.9) rgba(0,0,0,.75),inset 0 0 calc(var(--u)*.9) rgba(0,0,0,.85);
-  background:#14110f;animation:mzpRespire 3.6s ease-in-out infinite;animation-delay:var(--rd,0s);transform-origin:50% 100%}
+  background:#14110f;transform-origin:50% 100%}
 .u.hero .mzp-m{border-radius:48% 48% 14% 14%/40% 40% 10% 10%;width:86%;aspect-ratio:.86}
 .u.chef .mzp-m{border-width:calc(var(--u)*.32)}
-.mzp-m img{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;display:block;animation:mzpToile 11s ease-in-out infinite alternate;animation-delay:var(--rd,0s)}
+.mzp-m img{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;display:block}
 .mzp-m::before{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 calc(var(--u)*.12) rgba(255,236,190,.35);pointer-events:none;z-index:2}
 .mzp-m i{position:absolute;inset:0;opacity:0;pointer-events:none;z-index:3;border-radius:inherit}
 .mzp-m i.v{background:radial-gradient(circle at 50% 45%,rgba(255,60,40,.0),rgba(220,30,20,.75))}
@@ -37,6 +37,9 @@ const st=document.createElement('style');st.textContent=`
 #cb-allies .u:not(.hero):not(.garde):has(.mzp) .gd,#cb-foes .u:not(.chef):has(.mzp) .gd{grid-area:gd}
 #cb-allies .u:not(.hero):not(.garde):has(.mzp) .un,#cb-foes .u:not(.chef):has(.mzp) .un{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:calc(var(--u)*.74)!important;line-height:1.05!important;max-width:none!important}
 #cb-allies .u:not(.hero):not(.garde) .mzp-m,#cb-foes .u:not(.chef) .mzp-m{width:100%;margin:0}
+/* 22 nov., plantages et ralentissements sur la Xbox : plus aucune animation permanente dans le combat (médaillons, toiles,
+   dérive du décor plein écran) ; seuls restent les gestes brefs (attaque, coup, soin, mort) */
+#cb-decor svg{animation:none!important}
 @media (prefers-reduced-motion:reduce){.mzp-m,.mzp-m img{animation:none!important}}
 `;document.head.appendChild(st);
 
@@ -50,7 +53,8 @@ function peindre(u){const e=u&&u.el;if(!e||e.dataset.mzp||window.TAC_ON)return;c
   im.onload=()=>{if(!e.isConnected&&!document.body.contains(e))return;const m=document.createElement('div');m.className='mzp-m';
     m.style.setProperty('--mzc',ami?'#c9a45c':'#b8402e');
     m.appendChild(im);const v=document.createElement('i');m.appendChild(v);p.classList.add('mzp');p.appendChild(m)};
-  im.src='img/creatures/'+encodeURIComponent(SANS(k))+'.webp'}
+  const bi=typeof bestiaireImg==='function'?bestiaireImg(u):null,crea='img/creatures/'+encodeURIComponent(SANS(k))+'.webp';
+  if(bi){im.onerror=()=>{im.onerror=null;im.src=crea};im.src='img/bestiaire/'+bi+'.webp'}else im.src=crea}
 
 /* un voile bref sur le médaillon : v (coup), s (soin), a (attaque) */
 function voile(u,k,dur){if(!ANIM||!u||!u.el)return;const m=u.el.querySelector('.mzp-m');if(!m)return;const v=m.querySelector('i');v.className=k;
