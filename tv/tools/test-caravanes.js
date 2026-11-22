@@ -80,16 +80,16 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
     await p.evaluate(async()=>{for(let i=0;i<3;i++)await unCycle()});
     /* 7. menace : une horde en marche vers une zone du trajet ; une tour de guet divise le risque par deux */
     const hm=await p.evaluate(()=>{const S=MZ.S;const h=MZ.horde('DON024','RES');const c=MZ.caravanes().find(c=>c.r==='RES');return{h:!!h,cible:h&&h.cible,risque:c.risque,menace:c.menace}});
-    ok('une horde qui vise une zone du trajet menace la caravane (30 %)',hm.h&&hm.cible==='RES'&&Math.abs(hm.risque-.3)<1e-9&&hm.menace==='RES',JSON.stringify(hm));
+    ok('une horde qui vise une zone du trajet pille la caravane à coup sûr (22 nov.)',hm.h&&hm.cible==='RES'&&Math.abs(hm.risque-1)<1e-9&&hm.menace==='RES',JSON.stringify(hm));
     const tr=await p.evaluate(()=>{MZ.tour('RES');const c=MZ.caravanes().find(c=>c.r==='RES');return{risque:c.risque,tour:c.tour}});
-    ok('une tour de guet sur la zone menacée divise le risque par deux',Math.abs(tr.risque-.15)<1e-9&&tr.tour,JSON.stringify(tr));
+    ok('une tour de guet ne sauve pas du pillage automatique (22 nov.)',Math.abs(tr.risque-1)<1e-9&&tr.tour,JSON.stringify(tr));
     const nat=await p.evaluate(async()=>{let n=0;for(let i=0;i<40;i++){const c=MZ.caravanes().find(c=>c.r==='RES');if(c.etat==='pillée'){return{n:i,par:MZ.S.car.RES.par,lieu:c.lieu}}
       MZ.S.hordes.DON024&&(MZ.S.hordes.DON024.arrive=MZ.S.nc+99);await unCycle()}return{n:-1}});
     ok('sous la menace, la caravane finit par être pillée par la horde',nat.n>=0&&nat.par==='horde'&&nat.lieu==='RES',JSON.stringify(nat));
     /* 8. rival voisin du trajet */
     const rv=await p.evaluate(()=>{delete MZ.S.hordes.DON024;MZ.S.car.RES.arret=-1;const R=MZ.S.riv||(MZ.rival&&riv(),MZ.S.riv);R.z.ASS012='gri';
       const c=MZ.caravanes().find(c=>c.r==='RES122'),c2=MZ.caravanes().find(c=>c.r==='RES');MZ.set('RES122',2);MZ.S.routes.RES122=['CIT'];const c3=MZ.caravanes().find(c=>c.r==='RES122');delete R.z.ASS012;return{c3,c2r:c2.risque}});
-    ok('une zone de maison rivale voisine du trajet menace la caravane (15 %)',rv.c3&&Math.abs(rv.c3.risque-.15)<1e-9,JSON.stringify(rv.c3));
+    ok('une zone de maison rivale voisine du trajet menace la caravane (25 %, 22 nov.)',rv.c3&&Math.abs(rv.c3.risque-.25)<1e-9,JSON.stringify(rv.c3));
     /* 9. route coupée : la caravane s'arrête */
     const rc=await p.evaluate(async()=>{MZ.set('RES',1);etatRoutes();const c=MZ.caravanes().find(c=>c.r==='RES');openEveil(ZB.RES);const t=document.getElementById('menu-choix').textContent;toMonde();
       const t0=MZ.S.tess,g0=MZ.S.carBilan.gains,avant=MZ.caravanes().filter(c=>c.r!=='RES'),enRoute=avant.filter(c=>c.etat==='en route');const rev=revenuTess()+enRoute.reduce((a,c)=>a+c.n,0);await unCycle();

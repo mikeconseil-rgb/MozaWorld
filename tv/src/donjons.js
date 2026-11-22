@@ -110,8 +110,6 @@ function openAmenager(id,f){initDonjons();const Z=ZB[id];if(!Z||!tient(id))retur
   const o=T.map((x,i)=>{const P_=x&&PIEGES[x.k];
     if(i>=n)return{l:`${N[i]} : scellée`,ic:'⛓',off:true,d:`s'ouvre au palier ±${i}${P_?' · '+P_.nom+' attend, sans jouer':''}`};
     return{l:`${N[i]} : ${P_?P_.nom:'vide'}`,ic:P_?'⛬':'○',d:P_?`${P_.m} · force ${P_.force}${S.ent===2?' · '+x.u+' assaut(s)':''}${x.dort?' · endormi':''} · OK changer`:'OK poser un piège',go:()=>changerPiegeDJ(id,i)}});
-  o.push({l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom+' · pour tous vos Donjons',go:()=>{S.ent=(S.ent+1)%3;
-    for(const x of S.pieges||[])if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}initDonjons();save();openAmenager(id,UI.f)}});
   if(id==='DON')o.push({l:'Provoquer un assaut maintenant (test)',ic:'⚔',go:()=>{closeUI();mode='monde';S.dernierAssaut=S.nc;assaut([])}});
   o.push({l:'Retour à la Pierre',ic:'◆',go:()=>openEveil(Z)});
   const vois=voisinesDefendues(id),cat=dispositifs().map(k=>PIEGES[k].nom).join(', ');

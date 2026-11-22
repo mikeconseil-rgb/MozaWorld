@@ -3710,7 +3710,8 @@ const ENTRETIEN=[
 function initEco(){
   if(!S.res||typeof S.res!=='object')S.res=RESERVE_DEPART();
   if(!Array.isArray(S.pieges)||S.pieges.length!==4)S.pieges=[null,null,null,null];
-  if(typeof S.ent!=='number')S.ent=0;
+  /* 22 nov. (utilisateur) : un seul rythme d'entretien, « À chaque cycle » ; le choix est retiré des menus, une ancienne partie y revient */
+  if(typeof S.ent!=='number'||!S.entUnique){if(S.ent!==0)for(const x of S.pieges||[])if(x)x.dort=false;S.ent=0;S.entUnique=1}   /* une fois par partie ; les tests peuvent encore changer S.ent */
   if(typeof S.tc!=='number')S.tc=0;
   if(typeof S.nc!=='number')S.nc=0;
   if(!S.assauts)S.assauts={ok:0,ko:0};
@@ -3768,7 +3769,6 @@ setInterval(()=>{if(started&&mode==='monde'&&ecoRapport.length)montrerRapport()}
 /* ---------- Aménager le Donjon ---------- */
 function openDonjon(f){mode='menu';document.body.classList.add('jeu-ouvert');
   const o=S.pieges.map((x,i)=>{const P_=x&&PIEGES[x.k];return{l:`${SALLES[i]} : ${P_?P_.nom:'vide'}`,ic:P_?'⛬':'○',d:P_?`${P_.m} · force ${P_.force}${S.ent===2?' · '+x.u+' assaut(s)':''}${x.dort?' · endormi':''} · OK changer`:'OK poser un piège',go:()=>changerPiege(i)}});
-  o.push({l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openDonjon(UI.f)}});
   o.push({l:'Provoquer un assaut maintenant (test)',ic:'⚔',go:()=>{closeUI();mode='monde';S.dernierAssaut=S.nc;assaut([])}});
   o.push({l:'Retour',ic:'◆',go:toMonde});
   const prochain=Math.max(0,(S.dernierAssaut+(typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES)-S.nc-1)*CYCLE+(CYCLE-S.tc));
@@ -3803,7 +3803,7 @@ const ASSEMBLEES={
   MAR:  {nom:'Givrecloche',loi:l=>l<0?'Brume : vos zones voisines sont cachées aux hordes (le Donjon voisin n\'est pas assailli)':'Clarté : vous voyez le niveau et les secrets des zones jusqu\'à 2 tuiles',
          renf:l=>l<0?'la Brume cache aussi vos zones à 2 tuiles':'la Clarté porte à 3 tuiles'},
   ASS006:{nom:'Lande de Cezo',loi:()=>'Loi des péages : chaque route ouverte rapporte +1 mana par cycle',renf:()=>'chaque route rapporte 2 mana'},
-  ASS012:{nom:'Balpak',loi:()=>'Loi du brûlis : le repos des Pierres d\'éveil voisines est divisé par deux',renf:()=>'le repos est divisé par quatre'},
+  ASS012:{nom:'Balpak',loi:()=>'Loi du brûlis : le repos des Pierres d\'éveil voisines est divisé par deux'+(REPOS?'':' (sans effet pendant la bêta : plus de repos)'),renf:()=>'le repos est divisé par quatre'},
   ASS150:{nom:'Delta de Pama',loi:()=>'Greniers : les invasions vers vos zones arrivent deux fois plus tard',renf:()=>'elles arrivent trois fois plus tard'},
   ASS152:{nom:'Canyon de Fjorhel',loi:l=>l<0?'Silence : deux fois moins de rencontres dans votre territoire':'Chant : plus de rencontres, chacune gagnée donne 1 mana de plus',
           renf:l=>l<0?'trois fois moins de rencontres':'chaque rencontre gagnée donne 2 mana de plus'},
@@ -4139,8 +4139,6 @@ function openAmenager(id,f){initDonjons();const Z=ZB[id];if(!Z||!tient(id))retur
   const o=T.map((x,i)=>{const P_=x&&PIEGES[x.k];
     if(i>=n)return{l:`${N[i]} : scellée`,ic:'⛓',off:true,d:`s'ouvre au palier ±${i}${P_?' · '+P_.nom+' attend, sans jouer':''}`};
     return{l:`${N[i]} : ${P_?P_.nom:'vide'}`,ic:P_?'⛬':'○',d:P_?`${P_.m} · force ${P_.force}${S.ent===2?' · '+x.u+' assaut(s)':''}${x.dort?' · endormi':''} · OK changer`:'OK poser un piège',go:()=>changerPiegeDJ(id,i)}});
-  o.push({l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom+' · pour tous vos Donjons',go:()=>{S.ent=(S.ent+1)%3;
-    for(const x of S.pieges||[])if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}initDonjons();save();openAmenager(id,UI.f)}});
   if(id==='DON')o.push({l:'Provoquer un assaut maintenant (test)',ic:'⚔',go:()=>{closeUI();mode='monde';S.dernierAssaut=S.nc;assaut([])}});
   o.push({l:'Retour à la Pierre',ic:'◆',go:()=>openEveil(Z)});
   const vois=voisinesDefendues(id),cat=dispositifs().map(k=>PIEGES[k].nom).join(', ');
@@ -4559,9 +4557,9 @@ function hordeTest(src,cible){initHordes();
    - Empreinte (complément) : une ancienne zone à vous, redevenue sauvage, se reprend aussi en réussissant un seul palier.
    État : S.riv = {z:{id:maison}, c:{r,id,du,de}|null, t:{maison:{id,de,du}} (tentatives, une par maison), nc, vu:{maison:nb d'actions}}. */
 const RIV_TOUS=6;      /* une maison agit en moyenne une fois tous les 6 cycles (provisoire) */
-const RIV_DELAI=2;     /* une contestation est annoncée 2 cycles avant l'épreuve (provisoire) */
+const RIV_DELAI=3;     /* une contestation est annoncée 3 cycles avant l'épreuve : le délai pour intervenir (22 nov., était 2) */
 const RIV_GRACE=10;    /* aucune maison n'agit avant le 10e cycle d'une partie (provisoire) */
-const RIV_CHANCE=.55;  /* chance de réussite d'une maison si vous ne défendez pas (provisoire) */
+const RIV_CHANCE=1;    /* sans défense, la maison réussit (22 nov., utilisateur : « elle réussit 100 mais un délai pour intervenir » ; était .55) ; seules les protections du lieu la freinent */
 const RIV_PROT=.1;     /* chaque point de protection (defenseMonde(id).bonus) retire 10 % (provisoire) */
 const RIV_TENTE=2;    /* une tentative de prise est annoncée 2 cycles avant l'épreuve (provisoire) */
 const RIV_EPREUVE=[.75,.6,.4,.25];   /* chance de réussir l'épreuve d'une zone sauvage : |palier| 0-1, 2-3, 4-5, 6-7 (provisoire) */
@@ -4649,7 +4647,7 @@ function prendre(r,Z,muet){const R=riv(),id=Z.id,avait=!!S.emp[id];
   if(started&&!muet)toast(`${r.bl} ${r.nom}`,`prend ${Z.info.nom}`,avait?'Votre empreinte sur cette zone s\'efface. Vous pourrez la reprendre en battant ses gardiens, plus coriaces.':'Vous pourrez la reprendre en battant ses gardiens à la Pierre d\'éveil ; ils seront plus coriaces.');
   return{sorte:'prise',r:r.k,id}}
 function contester(r,Z){const R=riv();R.c={r:r.k,id:Z.id,de:R.nc,du:R.nc+RIV_DELAI};R.vu[r.k]=(R.vu[r.k]||0)+1;save();
-  if(started)toast(`${r.bl} ${r.nom} conteste ${Z.info.nom}`,`dans ${RIV_DELAI} cycles`,`Allez à sa Pierre d'éveil avant l'échéance et battez le champion de la maison, sinon la zone risque de perdre un palier.`);
+  if(started){const ch=Math.round(chanceRival(Z.id)*100);toast(`${r.bl} ${r.nom} conteste ${Z.info.nom}`,`dans ${RIV_DELAI} cycles (${fmt(RIV_DELAI*(typeof CYCLE==='number'?CYCLE:60))})`,`Vous avez ce délai pour intervenir : allez à sa Pierre d'éveil et battez le champion de la maison. Sans défense, la zone perd un palier${ch<100?` (${ch} fois sur 100, grâce aux protections du lieu)`:''}.`)}
   return{sorte:'conteste',r:r.k,id:Z.id}}
 
 /* ---------- échéance d'une contestation ---------- */
@@ -4659,7 +4657,7 @@ function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const
   else{const ch=chanceRival(c.id),ok=gagne===undefined?Math.random()<ch:!!gagne,lv=S.lv[c.id]||0;
     if(ok&&lv!==0){const n=lv-Math.sign(lv);S.lv[c.id]=n;Z.lvT=n;S.rest[c.id]=now()+(typeof reposZone==='function'?reposZone(c.id):REPOS);
       if(typeof etatRoutes==='function')etatRoutes();
-      toast(`${r.bl} ${r.nom} réussit l'épreuve`,`${Z.info.nom} recule au palier ${sgn(n)||'0'}`,`La zone reste à vous, mais elle se repose ${fmt(typeof reposZone==='function'?reposZone(c.id):REPOS)} avant de pouvoir évoluer.`);res={fin:'baisse',lv:n}}
+      toast(`${r.bl} ${r.nom} réussit l'épreuve`,`${Z.info.nom} recule au palier ${sgn(n)||'0'}`,(r=>r?`La zone reste à vous, mais elle se repose ${fmt(r)} avant de pouvoir évoluer.`:'La zone reste à vous : vous pouvez la faire remonter tout de suite.')(typeof reposZone==='function'?reposZone(c.id):REPOS));res={fin:'baisse',lv:n}}
     else{toast(`${r.bl} ${r.nom} échoue`,`${Z.info.nom} tient bon`,`Votre zone garde son palier (la maison avait ${Math.round(ch*100)} chances sur 100).`);res={fin:'tient'}}}
   save();etatHud();if(typeof hudKey!=='undefined')hudKey='';return res}
 
@@ -4739,7 +4737,7 @@ function menaceDe(r){const R=riv(),l=[];const tk=R.t[r.k]&&tentativeSur(R.t[r.k]
   return l.length?l.join(' ; '):'aucune menace annoncée'}
 function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv();
   ui('menu',{sur:'Pause · les maisons rivales',t:'Rivaux',f:typeof f==='number'?f:0,
-    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une annonce qu'elle tentera l'épreuve d'une zone sauvage pour la prendre (activez la zone avant elle, ou allez défier ses gens à la Pierre), ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour la baisser d'un palier. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, verrouillée par votre Citadelle (la Citadelle et ses voisines) ne peut pas être prise ; une zone bornée, au cœur du royaume ou au repos ne peut pas être contestée.</p>`,
+    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une annonce qu'elle tentera l'épreuve d'une zone sauvage pour la prendre (activez la zone avant elle, ou allez défier ses gens à la Pierre), ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour la baisser d'un palier. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, verrouillée par votre Citadelle (la Citadelle et ses voisines) ne peut pas être prise ; une zone bornée, au cœur du royaume${REPOS?' ou au repos':''} ne peut pas être contestée.</p>`,
     back:openMenu,opts:[...RIVAUX.map((r,i)=>{const z=zonesMaison(r.k);
       return{l:`${r.nom} · ${z.length} zone${z.length>1?'s':''}`,ic:`<span style="color:${r.col}">${r.bl}</span>`,d:menaceDe(r),go:()=>openMaison(r,i)}}),{l:'Retour',ic:'◆',go:()=>openMenu()}]})}
 function openMaison(r,i){const z=zonesMaison(r.k),R=riv(),cz=R.c&&R.c.r===r.k?ZB[R.c.id]:null,tz=R.t[r.k]&&tentativeSur(R.t[r.k].id)===r.k?ZB[R.t[r.k].id]:null;
@@ -5038,7 +5036,9 @@ function tourTest(id){initTours();id=id||(curZ&&TOUR_TYPES[tourType(curZ.id)]&&S
    État : S.car = {idRessource: {arret, lieu, perdu, par, qui}} (les caravanes déjà parties, pour les dire « arrêtées » si la route est coupée), S.carNc, S.carG, S.carV,
    S.carBilan = {gains, pillages, escortes}. Tous les chiffres sont provisoires. */
 const CAR_GAIN=1;                         /* tesselles par cycle et par caravane, +1 si la Ressource est au niveau 3 (provisoire) */
-const CAR_RISQUE={horde:.3,rival:.15};    /* chance de pillage par cycle (provisoire) */
+/* chance de pillage par cycle. 22 nov. (utilisateur, « 8 ok ») : pillage sûr quand une horde vise une zone du trajet, 50 % quand une horde
+   est près du trajet (sa source ou sa cible voisine d'une zone du trajet), 25 % près d'une maison rivale ; était 30 % et 15 %. */
+const CAR_RISQUE={cible:1,horde:.5,rival:.25};
 const CAR_TOUR=.5;                        /* une tour de guet sur la zone menacée multiplie le risque par .5 (provisoire) */
 const CAR_ARRET=2;                        /* cycles d'arrêt après un pillage (provisoire) */
 
@@ -5085,12 +5085,13 @@ function carMenace(t){let m={risque:0,lieu:null,par:null,qui:null};if(!t)return 
   const hordes=S.hordes&&typeof S.hordes==='object'?Object.values(S.hordes):[];
   const rivaux=S.riv&&S.riv.z?S.riv.z:{};
   for(const z of t){let base=0,par=null,qui=null;
-    const h=hordes.find(h=>h&&h.cible===z&&ZB[h.src]);if(h){base=CAR_RISQUE.horde;par='horde';qui=h.src}
-    /* 20 nov. (testeur, provisoire) : une vague du siège final marche sur la Citadelle ; elle menace les caravanes comme une horde */
-    if(!base&&S.siege&&S.siege.cit===z&&ZB[S.siege.src]){base=CAR_RISQUE.horde;par='horde';qui=S.siege.src}
+    const h=hordes.find(h=>h&&h.cible===z&&ZB[h.src]);if(h){base=CAR_RISQUE.cible;par='horde';qui=h.src}
+    /* 20 nov. : une vague du siège final marche sur la Citadelle ; elle menace les caravanes comme une horde qui vise le trajet */
+    if(!base&&S.siege&&S.siege.cit===z&&ZB[S.siege.src]){base=CAR_RISQUE.cible;par='horde';qui=S.siege.src}
+    if(!base){const V=VOISINES[z]||[],hp=hordes.find(h=>h&&ZB[h.src]&&(V.indexOf(h.cible)>=0||V.indexOf(h.src)>=0||h.src===z));if(hp){base=CAR_RISQUE.horde;par='horde';qui=hp.src}}
     if(!base){const v=(VOISINES[z]||[]).find(v=>rivaux[v]&&!S.own[v]);if(v){base=CAR_RISQUE.rival;par='rival';qui=rivaux[v]}}
     if(!base)continue;
-    const tour=typeof defenseTours==='function'&&(defenseTours(z)||{}).bonus>0,k=base*(tour?CAR_TOUR:1);
+    const tour=typeof defenseTours==='function'&&(defenseTours(z)||{}).bonus>0,k=base*(tour&&base<1?CAR_TOUR:1);   /* 22 nov. : la tour ne sauve pas du cas automatique */
     if(k>m.risque)m={risque:k,lieu:z,par,qui,tour}}
   return m}
 /* les caravanes du moment, une par Ressource tenue qui en a une (en route ou arrêtée) */
@@ -8036,7 +8037,8 @@ const $=id=>document.getElementById(id);
 const IDS=ZN.map(Z=>Z.id);   /* 2.0 : les cinq zones d'origine et les tuiles de la carte agrandie */
 const MODZ=id=>{const Z=ZN.find(q=>q.id===id);return Z&&Z.mod||id};
 const ZB=Object.fromEntries(ZN.map(Z=>[Z.id,Z]));
-const REPOS=40;            /* secondes de repos d'une zone après un éveil (le « délai » du jeu complet, raccourci ici) */
+const REPOS=0;             /* 22 nov. (utilisateur, bêta) : plus de repos, on enchaîne les montées d'une même zone ; était 40. */
+const REPOS_JEU=40;        /* ancien repos d'une zone après un éveil, en secondes, gardé pour après la bêta (inutilisé) */
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
 
@@ -8267,7 +8269,6 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Charger une partie',ic:'▤',go:openCharger},
     {l:'Grimoire des cartes',ic:'✦',d:'toutes les cartes, pôle par pôle',go:()=>openGrimoire(0)},
     {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+resTot()+' mana',go:openCombatPaquet},
-    {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
     {l:'Blessures (prototype)',ic:'✚',d:S.sr===false?'Points de vie':'Façon Shadowrun : L, M, S, D',go:()=>{S.sr=S.sr===false;save();openMenu(UI.f)}},
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
     {l:'Musique',ic:'♪',d:(soundOn?'activée':'coupée')+(typeof musiqueTitre==='function'&&curZ?' · '+musiqueTitre(curZ):''),go:()=>{toggleSound();openMenu()}},
@@ -8289,7 +8290,7 @@ function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',c
 <p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter (deux fois : double saut) ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
 <p class="petit">Votre territoire de départ (12 zones) est à vous dès le début, au niveau 1 ; votre paquet, ce sont leurs cartes de palier 1. Ensuite, activez chaque nouvelle zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; sans assez de ce mana, elle se joue en mana gris, affaiblie. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure. Chaque palier gagné ajoute à votre paquet la carte de combat de la zone (sauf les Ressources). Posséder la zone qui en contre une autre facilite son épreuve.</p>
-<p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
+<p class="petit">${REPOS?`Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. `:'Pendant la bêta, une zone peut monter plusieurs paliers de suite, sans repos. '}Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 
 /* ---------- Éveil d'une zone ---------- */
@@ -8330,7 +8331,7 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 /* ---------- Mue : le bond d'un palier, caméra qui tourne autour de la Pierre ---------- */
 let mue=null;
 function startMue(Z,lv){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
-  const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${typeof reposZone==='function'?reposZone(Z.id):REPOS} secondes avant le prochain bond.</p>`;
+  const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. ${(r=>r?`Elle se repose ${r} secondes avant le prochain bond.`:'Vous pouvez enchaîner le palier suivant.')(typeof reposZone==='function'?reposZone(Z.id):REPOS)}</p>`;
   const sc=!rs&&Z._sansCarte;Z._sansCarte=false;
   ui('menu',{sur:rs?'Mue · Ressource':sc?'Mue · vous vous êtes ravisé':'Mue · nouvelle carte',t:I.nom,corps:sc?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)||'0'}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La zone revient d'un palier vers l'autre pôle. Se raviser ne donne pas de carte, mais le monde s'en souviendra.</p>${fin}</div></div>`:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});mode='menu'}};

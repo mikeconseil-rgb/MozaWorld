@@ -41,7 +41,8 @@ const ENTRETIEN=[
 function initEco(){
   if(!S.res||typeof S.res!=='object')S.res=RESERVE_DEPART();
   if(!Array.isArray(S.pieges)||S.pieges.length!==4)S.pieges=[null,null,null,null];
-  if(typeof S.ent!=='number')S.ent=0;
+  /* 22 nov. (utilisateur) : un seul rythme d'entretien, « À chaque cycle » ; le choix est retiré des menus, une ancienne partie y revient */
+  if(typeof S.ent!=='number'||!S.entUnique){if(S.ent!==0)for(const x of S.pieges||[])if(x)x.dort=false;S.ent=0;S.entUnique=1}   /* une fois par partie ; les tests peuvent encore changer S.ent */
   if(typeof S.tc!=='number')S.tc=0;
   if(typeof S.nc!=='number')S.nc=0;
   if(!S.assauts)S.assauts={ok:0,ko:0};
@@ -99,7 +100,6 @@ setInterval(()=>{if(started&&mode==='monde'&&ecoRapport.length)montrerRapport()}
 /* ---------- Aménager le Donjon ---------- */
 function openDonjon(f){mode='menu';document.body.classList.add('jeu-ouvert');
   const o=S.pieges.map((x,i)=>{const P_=x&&PIEGES[x.k];return{l:`${SALLES[i]} : ${P_?P_.nom:'vide'}`,ic:P_?'⛬':'○',d:P_?`${P_.m} · force ${P_.force}${S.ent===2?' · '+x.u+' assaut(s)':''}${x.dort?' · endormi':''} · OK changer`:'OK poser un piège',go:()=>changerPiege(i)}});
-  o.push({l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openDonjon(UI.f)}});
   o.push({l:'Provoquer un assaut maintenant (test)',ic:'⚔',go:()=>{closeUI();mode='monde';S.dernierAssaut=S.nc;assaut([])}});
   o.push({l:'Retour',ic:'◆',go:toMonde});
   const prochain=Math.max(0,(S.dernierAssaut+(typeof cyclesAssaut==='function'?cyclesAssaut():ASSAUT_CYCLES)-S.nc-1)*CYCLE+(CYCLE-S.tc));

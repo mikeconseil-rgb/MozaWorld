@@ -8,7 +8,7 @@ const ASSEMBLEES={
   MAR:  {nom:'Givrecloche',loi:l=>l<0?'Brume : vos zones voisines sont cachées aux hordes (le Donjon voisin n\'est pas assailli)':'Clarté : vous voyez le niveau et les secrets des zones jusqu\'à 2 tuiles',
          renf:l=>l<0?'la Brume cache aussi vos zones à 2 tuiles':'la Clarté porte à 3 tuiles'},
   ASS006:{nom:'Lande de Cezo',loi:()=>'Loi des péages : chaque route ouverte rapporte +1 mana par cycle',renf:()=>'chaque route rapporte 2 mana'},
-  ASS012:{nom:'Balpak',loi:()=>'Loi du brûlis : le repos des Pierres d\'éveil voisines est divisé par deux',renf:()=>'le repos est divisé par quatre'},
+  ASS012:{nom:'Balpak',loi:()=>'Loi du brûlis : le repos des Pierres d\'éveil voisines est divisé par deux'+(REPOS?'':' (sans effet pendant la bêta : plus de repos)'),renf:()=>'le repos est divisé par quatre'},
   ASS150:{nom:'Delta de Pama',loi:()=>'Greniers : les invasions vers vos zones arrivent deux fois plus tard',renf:()=>'elles arrivent trois fois plus tard'},
   ASS152:{nom:'Canyon de Fjorhel',loi:l=>l<0?'Silence : deux fois moins de rencontres dans votre territoire':'Chant : plus de rencontres, chacune gagnée donne 1 mana de plus',
           renf:l=>l<0?'trois fois moins de rencontres':'chaque rencontre gagnée donne 2 mana de plus'},
