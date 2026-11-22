@@ -2,15 +2,55 @@
 {
 "id": "ASS-183",
 "type": "Assemblée",
-"biome": "Lande",
+"biome": "Forêt boréale",
+"mana": "Glace",
+"culture": "Polynésienne",
+"pole_moins7": "Tyrannie",
+"pole_plus7": "Liberté",
+"en_plus": 1
+},
+{
+"id": "ASS-184",
+"type": "Assemblée",
+"biome": "Marais",
+"mana": "Sève",
+"culture": "Nordique",
+"pole_moins7": "Glace",
+"pole_plus7": "Feu",
+"en_plus": 1
+},
+{
+"id": "ASS-185",
+"type": "Assemblée",
+"biome": "Iles flottantes",
 "mana": "Vent",
-"culture": "Aztèque",
+"culture": "Japonaise féodale",
+"pole_moins7": "Cauchemar",
+"pole_plus7": "Rêve",
+"en_plus": 1
+},
+{
+"id": "ASS-186",
+"type": "Assemblée",
+"biome": "Mangrove",
+"mana": "Eau",
+"culture": "Nordique",
+"pole_moins7": "Silence",
+"pole_plus7": "Chant",
+"en_plus": 1
+},
+{
+"id": "ASS-187",
+"type": "Assemblée",
+"biome": "Jungle",
+"mana": "Sève",
+"culture": "Polynésienne",
 "pole_moins7": "Cendre",
 "pole_plus7": "Floraison",
 "en_plus": 1
 },
 {
-"id": "ASS-184",
+"id": "ASS-188",
 "type": "Assemblée",
 "biome": "Désert de sel",
 "mana": "Pierre",
@@ -20,27 +60,57 @@
 "en_plus": 1
 },
 {
-"id": "ASS-185",
+"id": "ASS-189",
 "type": "Assemblée",
-"biome": "Iles flottantes",
-"mana": "Vent",
-"culture": "Japonaise féodale",
+"biome": "Cavernes cristallines",
+"mana": "Pierre",
+"culture": "Romaine",
+"pole_moins7": "Silence",
+"pole_plus7": "Chant",
+"en_plus": 1
+},
+{
+"id": "ASS-190",
+"type": "Assemblée",
+"biome": "Toundra",
+"mana": "Glace",
+"culture": "Slave",
+"pole_moins7": "Nuit",
+"pole_plus7": "Aurore",
+"en_plus": 1
+},
+{
+"id": "ASS-191",
+"type": "Assemblée",
+"biome": "Marais",
+"mana": "Sève",
+"culture": "Vénitienne",
 "pole_moins7": "Tempête",
 "pole_plus7": "Calme",
 "en_plus": 1
 },
 {
-"id": "ASS-186",
+"id": "ASS-192",
 "type": "Assemblée",
-"biome": "Savane",
-"mana": "Feu",
-"culture": "Polynésienne",
-"pole_moins7": "Poison",
-"pole_plus7": "Nectar",
+"biome": "Marais",
+"mana": "Sève",
+"culture": "Slave",
+"pole_moins7": "Folie",
+"pole_plus7": "Raison",
 "en_plus": 1
 },
 {
-"id": "ASS-187",
+"id": "ASS-193",
+"type": "Assemblée",
+"biome": "Mangrove",
+"mana": "Eau",
+"culture": "Khmère",
+"pole_moins7": "Fer",
+"pole_plus7": "Bois",
+"en_plus": 1
+},
+{
+"id": "ASS-194",
 "type": "Assemblée",
 "biome": "Glacier",
 "mana": "Glace",
@@ -50,83 +120,13 @@
 "en_plus": 1
 },
 {
-"id": "ASS-188",
-"type": "Assemblée",
-"biome": "Savane",
-"mana": "Feu",
-"culture": "Slave",
-"pole_moins7": "Oubli",
-"pole_plus7": "Mémoire",
-"en_plus": 1
-},
-{
-"id": "ASS-189",
+"id": "ASS-195",
 "type": "Assemblée",
 "biome": "Glacier",
 "mana": "Glace",
-"culture": "Byzantine",
-"pole_moins7": "Oubli",
-"pole_plus7": "Mémoire",
-"en_plus": 1
-},
-{
-"id": "ASS-190",
-"type": "Assemblée",
-"biome": "Marais",
-"mana": "Sève",
-"culture": "Grecque",
-"pole_moins7": "Poison",
-"pole_plus7": "Nectar",
-"en_plus": 1
-},
-{
-"id": "ASS-191",
-"type": "Assemblée",
-"biome": "Cité en ruines",
-"mana": "Pierre",
-"culture": "Mongole",
-"pole_moins7": "Pierre",
-"pole_plus7": "Cristal",
-"en_plus": 1
-},
-{
-"id": "ASS-192",
-"type": "Assemblée",
-"biome": "Oasis",
-"mana": "Sève",
-"culture": "Vénitienne",
-"pole_moins7": "Chaos",
-"pole_plus7": "Ordre",
-"en_plus": 1
-},
-{
-"id": "ASS-193",
-"type": "Assemblée",
-"biome": "Savane",
-"mana": "Feu",
-"culture": "Celte",
-"pole_moins7": "Cendre",
-"pole_plus7": "Floraison",
-"en_plus": 1
-},
-{
-"id": "ASS-194",
-"type": "Assemblée",
-"biome": "Canyon",
-"mana": "Feu",
-"culture": "Mongole",
-"pole_moins7": "Exil",
-"pole_plus7": "Foyer",
-"en_plus": 1
-},
-{
-"id": "ASS-195",
-"type": "Assemblée",
-"biome": "Fjord",
-"mana": "Glace",
-"culture": "Mongole",
-"pole_moins7": "Mort",
-"pole_plus7": "Vie",
+"culture": "Zouloue",
+"pole_moins7": "Ombre",
+"pole_plus7": "Lumière",
 "en_plus": 1
 },
 {
@@ -135,28 +135,28 @@
 "biome": "Savane",
 "mana": "Feu",
 "culture": "Slave",
-"pole_moins7": "Folie",
-"pole_plus7": "Raison",
+"pole_moins7": "Oubli",
+"pole_plus7": "Mémoire",
 "en_plus": 1
 },
 {
 "id": "ANT-248",
 "type": "Antre",
-"biome": "Savane",
-"mana": "Feu",
-"culture": "Inca",
-"pole_moins7": "Folie",
-"pole_plus7": "Raison",
+"biome": "Oasis",
+"mana": "Sève",
+"culture": "Inuit",
+"pole_moins7": "Oubli",
+"pole_plus7": "Mémoire",
 "en_plus": 1
 },
 {
 "id": "ANT-249",
 "type": "Antre",
-"biome": "Toundra",
+"biome": "Fjord",
 "mana": "Glace",
-"culture": "Slave",
-"pole_moins7": "Pourriture",
-"pole_plus7": "Croissance",
+"culture": "Celte",
+"pole_moins7": "Vide",
+"pole_plus7": "Étoiles",
 "en_plus": 1
 }
 ]
