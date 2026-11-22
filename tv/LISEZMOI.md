@@ -6,6 +6,13 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Combat : cartes relookées (22 novembre, `src/cartes-relook.js`)
+
+Retour de l'utilisateur : « les cartes aussi auraient besoin d'un relooking semblable » (aux médaillons peints).
+- La peinture prend la moitié de la carte au lieu d'un bandeau ; sur la carte désignée, elle dérive lentement et un reflet la balaie (une seule carte animée à la fois, pour la mémoire de la Xbox).
+- Le nom passe sur un ruban de parchemin à l'encre qui mord sur la peinture ; le texte est à l'encre sur un cartouche de parchemin.
+- CSS seulement : cadres, coins de mana et blasons de `cartes-visuel.js` gardés, aucune image nouvelle.
+
 ## Combat : portraits peints et animés (22 novembre, `src/portraits-combat.js`)
 
 Retour de l'utilisateur après le combat à la Foire : « les persos sont trop moches. Fait de quoi qui est un peu animé ».
