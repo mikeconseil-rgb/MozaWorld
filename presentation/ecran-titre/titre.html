@@ -3,6 +3,11 @@
 @font-face{font-family:Fell;src:url(node_modules/@fontsource/im-fell-english/files/im-fell-english-latin-400-normal.woff2)}
 @font-face{font-family:Fell;font-style:italic;src:url(node_modules/@fontsource/im-fell-english/files/im-fell-english-latin-400-italic.woff2)}
 @font-face{font-family:Cav;src:url(node_modules/@fontsource/caveat/files/caveat-latin-700-normal.woff2)}
+@font-face{font-family:Fred;src:url(node_modules/@fontsource/fredericka-the-great/files/fredericka-the-great-latin-400-normal.woff2)}
+@font-face{font-family:Grif;src:url(node_modules/@fontsource/griffy/files/griffy-latin-400-normal.woff2)}
+@font-face{font-family:Lond;src:url(node_modules/@fontsource/londrina-solid/files/londrina-solid-latin-900-normal.woff2)}
+@font-face{font-family:Amat;src:url(node_modules/@fontsource/amatic-sc/files/amatic-sc-latin-700-normal.woff2)}
+@font-face{font-family:Myst;src:url(node_modules/@fontsource/mystery-quest/files/mystery-quest-latin-400-normal.woff2)}
 :root{--encre:#0f0b08;--papier:#b59d6c;--papier2:#8a7249;--os:#e6d6b0;--cire:#8f1d14;--bougie:#e09a34}
 html,body{margin:0;background:#000}
 #s{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--encre)}
@@ -34,7 +39,7 @@ h2{margin:14px 0 0;font:italic 400 76px/1 Fell;color:var(--bougie);text-shadow:4
 <div class="btn"><span class="sceau">A</span>Entrer dans les royaumes</div>
 <div class="main">appuyez sur A</div></div></div>
 <script>
-window.pret=(async()=>{const im=new Image();im.src='src.png';await im.decode();const W=1920,H=1080,k=document.getElementById('k'),g=k.getContext('2d');
+window.pret=(async()=>{const q=new URLSearchParams(location.search),h=document.querySelector('h1');if(q.get('f')){h.style.fontFamily=q.get('f');h.style.fontWeight=q.get('w')||400;h.style.fontSize=q.get('s')+'px';h.style.letterSpacing=q.get('ls')||'0';h.style.webkitTextStroke=(q.get('st')||7)+'px #0f0b08'}const im=new Image();im.src='src.png';await im.decode();const W=1920,H=1080,k=document.getElementById('k'),g=k.getContext('2d');
 g.filter='sepia(.6) saturate(.55) contrast(1.25) brightness(.5)';g.drawImage(im,-40,-60,W+80,H+45);g.filter='none';
 const t=document.createElement('canvas');t.width=W;t.height=H;const tg=t.getContext('2d');tg.filter='blur(1.4px)';tg.drawImage(im,-40,-60,W+80,H+45);
 const d=tg.getImageData(0,0,W,H).data,L=new Float32Array(W*H);for(let i=0;i<W*H;i++)L[i]=.3*d[i*4]+.59*d[i*4+1]+.11*d[i*4+2];
