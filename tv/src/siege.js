@@ -17,14 +17,15 @@ const SIEGE_BUTIN=3;            /* mana du type de la Citadelle quand le héros 
 const PALMARES_CLE='mz-palmares-1';
 
 function hashSiege(t){let h=2166136261;for(const c of String(t))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h}
-let epiquesCache={g:null,l:[]};
-function citadellesEpiques(){const g=S.graine||0;if(epiquesCache.g===g&&epiquesCache.l.length)return epiquesCache.l;
-  /* 20 nov. : tirées une fois pour tout le monde (ZW), plus selon la région chargée. Berestograd, Citadelle de la région de départ,
-     en est toujours une, puisque le siège ne se joue que dans cette région d'ici le 28 (provisoire) ; les autres sont tirées par la graine. */
+let epiquesCache={g:null,l:[]},EPIQUES_TEST=null;   /* tests seulement (MZ.epiquesForcer) : liste imposée, jamais sauvegardée */
+function citadellesEpiques(){if(EPIQUES_TEST)return EPIQUES_TEST;const g=S.graine||0;if(epiquesCache.g===g&&epiquesCache.l.length)return epiquesCache.l;
+  /* Tirées une fois pour tout le monde (ZW, par la graine), plus selon la région chargée (20 nov.).
+     22 nov. (utilisateur, « Berestograd hors des épiques ») : Berestograd, Citadelle de départ, reste au jeu contre le monde sauvage et n'est jamais épique ;
+     les 5 épiques sont tirées parmi les autres Citadelles de la carte. */
   const W=typeof ZW!=='undefined'?ZW:ZN,cits=W.filter(Z=>estCIT(Z)&&Z.id!=='CIT').map(Z=>Z.id);
-  const reste=SIEGE_EPIQUES-1,tir=cits.length<=reste?cits:cits.slice().sort((a,b)=>hashSiege(a+'#'+g)-hashSiege(b+'#'+g)).slice(0,reste);
-  const l=(W.some(Z=>Z.id==='CIT')?['CIT']:[]).concat(tir);
+  const l=cits.length<=SIEGE_EPIQUES?cits:cits.slice().sort((a,b)=>hashSiege(a+'#'+g)-hashSiege(b+'#'+g)).slice(0,SIEGE_EPIQUES);
   epiquesCache={g,l};return l}
+function epiquesForcer(l){EPIQUES_TEST=l&&l.length?l.slice():null;return citadellesEpiques()}
 const estEpique=id=>!!ZB[id]&&citadellesEpiques().indexOf(id)>=0;
 const courtS=id=>zI(id).nom.split(',')[0];
 const cyclesS=n=>n+' cycle'+(n>1?'s':'');
