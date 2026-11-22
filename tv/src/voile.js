@@ -29,8 +29,9 @@ function voileRepare(){VOILE.etape++;
   /* 2. ensuite, on refait les images de rendu (cibles, profondeur, ombres) */
   if(VOILE.etape===2)try{resize()}catch(_){}
   /* 3. en dernier recours, on recharge la région, une fois par 10 minutes au plus */
-  if(VOILE.etape>=3){let t=0;try{t=+localStorage.getItem('mz-voile-rech')||0}catch(_){}
-    if(Date.now()-t>6e5&&typeof voyagerRegion==='function'&&typeof REGION!=='undefined'){try{localStorage.setItem('mz-voile-rech',String(Date.now()))}catch(_){}voyagerRegion(REGION.c,'jeu')}}}
+  /* 22 nov. : jamais dans la première minute après un chargement, et seulement si la limite a pu être enregistrée (sinon pas de rechargement : aucune boucle possible) */
+  if(VOILE.etape>=3&&performance.now()>60000){let t=0,ok=false;try{t=+localStorage.getItem('mz-voile-rech')||0}catch(_){}
+    if(Date.now()-t>6e5&&typeof voyagerRegion==='function'&&typeof REGION!=='undefined'){try{localStorage.setItem('mz-voile-rech',String(Date.now()));ok=localStorage.getItem('mz-voile-rech')===String(Date.now())||+localStorage.getItem('mz-voile-rech')>t}catch(_){}if(ok)voyagerRegion(REGION.c,'jeu')}}}
 const _drawVoile=draw;
 draw=function(t){_drawVoile(t);
   if(!started||mode!=='monde'||(typeof memLibere!=='undefined'&&memLibere))return;const now=performance.now();if(now-VOILE.t<2000)return;VOILE.t=now;
