@@ -19,6 +19,14 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
 
+## 22 novembre 2026 (Kobor : PNJ et quêtes)
+
+| Sujet | Décision | Statut | Version |
+|---|---|---|---|
+| Taïga de Kobor (zone pilote) | « Ce n'est qu'un habillage… Des PNJ et un système de quête à l'intérieur de la zone. Ce sera le résultat des quêtes qui déterminera l'évolution de la zone. Quêtes adultes, choix cornéliens. L'histoire est un charabia : refais-la. » Deux historiens (grands hommes) et un philosophe (cas moral), puis les quatre auteurs ; boucle critique + historien | en vigueur, Kobor seulement (pas généralisé sans accord) | 2.40 |
+| Lecture validée (« 1 oui 2 oui ») | 1. Seule Kobor change, les autres zones gardent leurs scènes ; 2. on garde taïga, Glace, pôles Mensonge / Vérité, histoire réécrite de zéro | en vigueur | 2.40 |
+| Forme des quêtes (« 3. ») | « L'épreuve devrait être un combat de cartes ou un choix de dialogue. Un arbre complexe de 3 à 8 étapes qui amène à la fin aux deux choix d'évolution de la zone. » Plus de mini-jeu d'épreuve à Kobor | en vigueur | 2.40 |
+
 ## 22 novembre 2026 (téléphone)
 
 | Sujet | Décision | Statut | Version |

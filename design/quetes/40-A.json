@@ -1,0 +1,428 @@
+{
+ "quetes": {
+  "0": {
+   "t": "Le coupable volontaire",
+   "resume": "Le Coffre est vide : les 400 zibelines du tribut ont disparu. Enquête, puis dis à l'inspecteur Gleb qui est coupable.",
+   "absents": [
+    "borislav"
+   ],
+   "debut": "a",
+   "noeuds": {
+    "a": {
+     "qui": "gleb",
+     "txt": "Gleb, inspecteur du trésor : « Quatre cents zibelines. Le tribut du voïévode. Le Coffre est vide. Un trappeur, Bogdan, s'accuse de les avoir vendues. C'est commode. Trop commode. Je veux un coupable avant le dégel, sinon tout Kobor paiera. Toi, tu n'es pas d'ici. On te parlera. Enquête. »",
+     "rep": [
+      {
+       "l": "Je vais parler à Bogdan",
+       "va": "b"
+      },
+      {
+       "l": "Je vais voir le Coffre",
+       "va": "c",
+       "trace": "vu_coffre"
+      }
+     ]
+    },
+    "b": {
+     "qui": "bogdan",
+     "txt": "Bogdan, trappeur : « J'ai vendu les peaux. À un marchand de passage. Il est reparti. Écris-le, et laisse-moi partir aux mines. Ne cherche pas plus loin. Il n'y a rien à trouver plus loin. »",
+     "rep": [
+      {
+       "l": "Montre-moi où tu les as vendues",
+       "va": "d"
+      },
+      {
+       "l": "Ta femme dira la même chose ?",
+       "va": "e"
+      }
+     ]
+    },
+    "c": {
+     "lieu": "pierre",
+     "txt": "Devant la Pierre d'éveil, la porte du Coffre est ouverte. Les crochets sont nus. Sur la neige, des traces de traîneau partent vers le sud. Et, bien en vue sur le chemin, un papier plié : un reçu. « Grain de seigle, quarante sacs. Payé en zibelines. Signé : Vera. » La cheffe du hameau.",
+     "rep": [
+      {
+       "l": "Suivre les traces vers le sud",
+       "va": "f",
+       "trace": "recu"
+      },
+      {
+       "l": "Interroger le gardien du Coffre",
+       "va": "g",
+       "trace": "recu"
+      }
+     ]
+    },
+    "d": {
+     "lieu": "belvedere",
+     "txt": "Bogdan te mène au belvédère. « C'est ici. Le marchand attendait là. » Il hésite sur le jour, puis sur l'heure. Derrière vous, des loups maigres sortent des mélèzes. L'hiver a été dur pour eux aussi.",
+     "combat": "Des loups affamés vous cernent au belvédère.",
+     "gagne": "h",
+     "apres": "Bogdan reprend son souffle. « Personne n'est venu ici, d'accord ? J'ai menti sur l'endroit. Pas sur le reste. » Il ment encore. Mais pour qui ?",
+     "trace": "doute_bogdan"
+    },
+    "e": {
+     "qui": "oustina",
+     "txt": "Oustina, au séchoir : « Mon mari, un voleur ? Il était ici avec moi, cette nuit-là. Il ment pour quelqu'un. Il lui doit tout, à cette personne. » Elle serre les lèvres. « Si tu dis son nom, le hameau perd sa tête. Si tu ne dis rien, je perds mon mari. »",
+     "rep": [
+      {
+       "l": "Je comprends",
+       "va": "h",
+       "trace": "parle_oustina"
+      }
+     ]
+    },
+    "f": {
+     "qui": "ilya",
+     "txt": "Les traces finissent au camp, devant la barge prise dans la glace d'Ilya, marchand de grain du sud. « Oui, j'ai pris les peaux. Vera me les a données contre quarante sacs. Sans ce grain, ils mouraient de faim. J'ai tout noté dans mon carnet. Le carnet, je ne le montre à personne. »",
+     "rep": [
+      {
+       "l": "Retourner voir Gleb",
+       "va": "h",
+       "trace": "vu_ilya"
+      }
+     ]
+    },
+    "g": {
+     "qui": "matvei",
+     "txt": "Le vieux Matveï, gardien du Coffre : « Ce reçu ? Il n'y était pas hier soir. J'ai fait ma ronde. Quelqu'un l'a posé là pour toi. » Il regarde la porte. « Il y a quarante ans, on a menti à un inspecteur, ici même. Je ne dirai pas comment ça a fini. Choisis bien à qui tu parles. »",
+     "rep": [
+      {
+       "l": "Retourner voir Gleb",
+       "va": "h",
+       "trace": "recu_pose"
+      }
+     ]
+    },
+    "h": {
+     "qui": "gleb",
+     "final": true,
+     "txt": "Gleb : « Alors ? Qui a vidé le Coffre ? Bogdan dit que c'est lui. S'il ment, dis-le. S'il dit vrai, il part aux mines et l'affaire est close. Je ne te demande pas de mentir. Je te demande ce qui s'est passé. »",
+     "txtTrace": {
+      "recu_pose": "Tu remarques qu'il ne demande pas d'où vient le reçu.",
+      "parle_oustina": "Tu revois le visage d'Oustina."
+     },
+     "fin": [
+      {
+       "vers": -1,
+       "l": "C'est Bogdan, il a vendu les peaux",
+       "prix": "Bogdan part aux mines. Vera garde le hameau et son grain.",
+       "epreuve": "dialogue",
+       "trace": "bogdan_mines",
+       "resultat": "Gleb écrit le nom de Bogdan sans lever les yeux. Le soir, le hameau mange, et personne ne parle de lui."
+      },
+      {
+       "vers": 1,
+       "l": "C'est Vera, elle a vendu au marchand",
+       "prix": "Vera est enfermée au Coffre. Le grain est saisi.",
+       "epreuve": "combat",
+       "combat": "Les trappeurs barrent la Pierre d'éveil pour qu'on ne prenne pas Vera.",
+       "trace": "vera_designee",
+       "resultat": "Vera entre seule dans le Coffre, la tête haute. Les hommes de Gleb chargent le grain sur leurs traîneaux."
+      }
+     ]
+    }
+   }
+  },
+  "1": {
+   "t": "Le grain saisi",
+   "resume": "Vera est au Coffre, le grain est saisi et Kobor a faim. Le hameau veut reprendre le grain de nuit : à toi de dire ce qu'il doit faire.",
+   "absents": [
+    "vera",
+    "borislav"
+   ],
+   "debut": "a",
+   "noeuds": {
+    "a": {
+     "qui": "bogdan",
+     "txt": "Bogdan : « Ils me crachent dessus. J'ai menti pour Vera, et ça n'a servi à rien. Maintenant elle est sous la glace et le grain est sous garde. Les vieux ne passeront pas février. Ce soir, les hommes veulent forcer le grenier. Ils attendent ton avis. Tu as parlé une fois. Parle encore. »",
+     "rep": [
+      {
+       "l": "Je vais parler à Vera",
+       "va": "b"
+      },
+      {
+       "l": "Où est gardé le grain ?",
+       "va": "c"
+      }
+     ]
+    },
+    "b": {
+     "lieu": "pierre",
+     "txt": "Par la grille du Coffre, la voix de Vera : « Ne les laisse pas voler ce grain. Ma plainte au tsar est partie. Si Kobor vole encore, elle ne vaudra plus rien. On dira : des voleurs qui accusent. » Un silence. « Et dis à Bogdan que je ne lui en veux pas. Il ne me croira pas. »",
+     "rep": [
+      {
+       "l": "Et la faim, Vera ?",
+       "va": "d"
+      },
+      {
+       "l": "Je leur dirai",
+       "va": "f",
+       "trace": "message_vera"
+      }
+     ]
+    },
+    "c": {
+     "qui": "gleb",
+     "txt": "Devant le grenier, Gleb compte les sacs. « Ce grain est la preuve de la vente. Il part au convoi. » Tu lui parles des vieux. Il hausse les épaules. « Une part pourrait rester. Si Vera retire sa plainte. Va le lui dire. Ou ne lui dis pas. Ce sera ta faute, pas la mienne. »",
+     "rep": [
+      {
+       "l": "Je n'ai rien entendu",
+       "va": "e",
+       "trace": "offre_gleb"
+      },
+      {
+       "l": "Je cherche une autre réserve",
+       "va": "d"
+      }
+     ]
+    },
+    "d": {
+     "qui": "oustina",
+     "txt": "Oustina, au séchoir, pèse chaque poignée de farine. « Une autre réserve ? Il n'y en a pas. » Elle a répondu trop vite. « Mon mari a menti pour la cheffe. Il est libre, et on le traite de lâche. Qu'on reprenne ce grain. Au moins, ce mensonge-là nourrira quelqu'un. »",
+     "rep": [
+      {
+       "l": "Rejoindre les hommes au camp",
+       "va": "f",
+       "trace": "oustina_cache"
+      }
+     ]
+    },
+    "e": {
+     "qui": "ilya",
+     "txt": "Ilya, le marchand, regarde partir son grain. « Je l'ai vendu, on me le reprend, et on ne me rend pas les peaux. J'ai perdu deux fois. » Il baisse la voix. « Si le hameau le reprend cette nuit, je n'aurai rien vu. Je n'aime pas les inspecteurs. Celui-là encore moins. »",
+     "rep": [
+      {
+       "l": "Rejoindre les hommes au camp",
+       "va": "f"
+      }
+     ]
+    },
+    "f": {
+     "qui": "bogdan",
+     "final": true,
+     "txt": "Au camp, les trappeurs attendent, haches à la ceinture. Bogdan : « Alors ? On reprend notre grain cette nuit, et on jure qu'il a pourri ? Ou on laisse partir le convoi, et on serre la ceinture ? »",
+     "txtTrace": {
+      "message_vera": "Tu n'as pas encore répété les mots de Vera.",
+      "offre_gleb": "Tu penses à l'offre de Gleb. Tu n'en dis rien."
+     },
+     "fin": [
+      {
+       "vers": 2,
+       "l": "Le grain part. Vera a vendu le tribut",
+       "prix": "Kobor se rationne tout l'hiver. Bogdan, qui avait menti, est méprisé de tous.",
+       "epreuve": "dialogue",
+       "trace": "convoi_parti",
+       "resultat": "Le convoi part à l'aube. Le soir, chaque famille reçoit une louche, et personne ne s'assoit près de Bogdan."
+      },
+      {
+       "vers": 0,
+       "l": "Reprendre le grain cette nuit",
+       "prix": "Le hameau mange, mais il ment au trésor. La plainte de Vera perd son poids.",
+       "epreuve": "combat",
+       "combat": "Les gardes de Gleb défendent le grenier.",
+       "trace": "grain_repris",
+       "resultat": "Les sacs disparaissent dans les caches du hameau. Au matin, Gleb écrit : « grain avarié, détruit », et sourit."
+      }
+     ]
+    }
+   }
+  },
+  "2": {
+   "t": "Le témoin",
+   "resume": "Gleb exige que Bogdan témoigne contre Vera au procès. Aide Bogdan à décider : parler contre celle qui l'a sauvé, ou se taire et tout perdre.",
+   "absents": [
+    "vera",
+    "borislav"
+   ],
+   "debut": "a",
+   "noeuds": {
+    "a": {
+     "qui": "gleb",
+     "txt": "Gleb : « Bogdan a menti au trésor. Un faux aveu, ça se paie. Mais je suis généreux. Qu'il témoigne contre Vera au procès, et j'oublie. Sinon, je lui retire son permis de chasse. Plus de pièges, plus de peaux, plus de pain. Va le lui dire. Il t'écoute, toi. »",
+     "rep": [
+      {
+       "l": "Je vais parler à Bogdan",
+       "va": "b"
+      },
+      {
+       "l": "Vera a déjà avoué. Pourquoi lui ?",
+       "va": "c"
+      }
+     ]
+    },
+    "b": {
+     "qui": "bogdan",
+     "txt": "Bogdan : « Témoigner contre elle ? Elle a payé ma dette l'an passé. Sans elle, je serais aux mines depuis longtemps. » Il serre son couteau à dépecer. « Et ce n'est pas tout. Je sais des choses sur Gleb. Mais un trappeur contre un inspecteur, qui me croira ? »",
+     "rep": [
+      {
+       "l": "Qu'en pense Oustina ?",
+       "va": "d"
+      },
+      {
+       "l": "Quelles choses, sur Gleb ?",
+       "va": "e"
+      }
+     ]
+    },
+    "c": {
+     "lieu": "pierre",
+     "txt": "Par la grille du Coffre, Vera : « Il ne veut pas mon aveu. Il veut qu'un des miens me désigne. Après ça, Kobor ne me suivra plus, et ma plainte mourra avec moi. » Elle tousse dans le froid. « Mais si Bogdan se tait pour moi, il perd tout. Je ne veux pas de ça non plus. »",
+     "rep": [
+      {
+       "l": "Que cache Gleb ?",
+       "va": "e"
+      },
+      {
+       "l": "Je vais voir Oustina",
+       "va": "d"
+      }
+     ]
+    },
+    "d": {
+     "qui": "oustina",
+     "txt": "Oustina : « S'il témoigne, on mangera. S'il se tait, on vivra des restes des autres. Et des restes, cet hiver, il n'y en a pas. » Elle regarde son mari, au loin. « Il a déjà menti une fois pour elle. Qu'il dise la vérité, une fois, pour nous. »",
+     "rep": [
+      {
+       "l": "Aller au cercle de pierres",
+       "va": "f"
+      }
+     ]
+    },
+    "e": {
+     "lieu": "belvedere",
+     "txt": "Au belvédère, les hommes de Gleb comptent les peaux saisies au dernier convoi. Ils en mettent une de côté, puis neuf dans le sac, puis une de côté. Ils te voient.",
+     "combat": "Les hommes de Gleb veulent te faire taire au belvédère.",
+     "gagne": "f",
+     "apres": "Sur la neige, une peau tombée de leur tas. Une encoche au couteau sur le cuir : la marque de Gleb. Une peau sur dix. Il faudrait une preuve écrite.",
+     "trace": "encoche"
+    },
+    "f": {
+     "qui": "bogdan",
+     "final": true,
+     "txt": "Au cercle de pierres, Gleb ouvre l'audience préliminaire. Bogdan se tourne vers toi. « Je fais quoi ? Je dis ce que Vera a fait ? Ou je me tais, et je perds mon permis ? »",
+     "txtTrace": {
+      "encoche": "Tu as encore la peau à l'encoche dans ton sac."
+     },
+     "fin": [
+      {
+       "vers": 3,
+       "l": "Témoigne. Dis tout ce que tu sais",
+       "prix": "Bogdan désigne celle qui l'a sauvé. Vera ne lui pardonnera pas.",
+       "epreuve": "dialogue",
+       "trace": "bogdan_temoin",
+       "resultat": "Bogdan raconte la vente, mot pour mot. Puis il ajoute : « Et les hommes de Gleb gardent une peau sur dix. » Gleb n'écrit pas cette phrase."
+      },
+      {
+       "vers": 1,
+       "l": "Tais-toi. Ne la trahis pas",
+       "prix": "Bogdan perd son permis de chasse. Sa famille vivra de la charité.",
+       "epreuve": "combat",
+       "combat": "Les hommes de Gleb viennent saisir les pièges de Bogdan.",
+       "trace": "bogdan_muet",
+       "resultat": "Bogdan ne dit rien. On emporte ses pièges, et Oustina ne lui adresse plus la parole."
+      }
+     ]
+    }
+   }
+  },
+  "3": {
+   "t": "Le carnet d'Ilya",
+   "resume": "Le carnet du marchand Ilya prouve que Gleb vole une peau sur dix. Mais il prouve aussi qu'Ilya les rachetait. Porte-le au procès, ou brûle-le.",
+   "absents": [
+    "vera",
+    "borislav"
+   ],
+   "debut": "a",
+   "noeuds": {
+    "a": {
+     "qui": "ilya",
+     "txt": "Ilya : « Mon carnet ? Il pendrait Gleb, oui. Une peau sur dix, revendue à moi, en douce, depuis cinq hivers. Il me pendrait aussi. Je savais d'où elles venaient. » Il regarde sa barge prise dans la glace. « C'est tout ce que j'ai. Si le trésor apprend le recel, il la prend. »",
+     "txtTrace": {
+      "encoche": "Tu lui montres la peau à l'encoche. Il pâlit."
+     },
+     "rep": [
+      {
+       "l": "Gleb sait que tu as ce carnet ?",
+       "va": "b"
+      },
+      {
+       "l": "Montre-moi ta barge",
+       "va": "c"
+      }
+     ]
+    },
+    "b": {
+     "qui": "gleb",
+     "txt": "Gleb t'attend près du feu. « Tu parles beaucoup au marchand. C'est un receleur, tu sais. » Il sourit. « Apporte-moi son carnet. Je le brûlerai moi-même, et j'oublierai le faux aveu de Bogdan. Tout le monde y gagne. Sauf Vera. Mais Vera a vendu le tribut. »",
+     "rep": [
+      {
+       "l": "Demander conseil à Matveï",
+       "va": "d",
+       "trace": "offre_carnet"
+      },
+      {
+       "l": "Demander à Vera",
+       "va": "e",
+       "trace": "offre_carnet"
+      }
+     ]
+    },
+    "c": {
+     "lieu": "camp",
+     "txt": "La barge d'Ilya dort dans la glace, au bord du camp. Une lanterne bouge à bord. Deux hommes de Gleb versent de l'huile sur le pont. Ils veulent brûler le carnet avec le bateau.",
+     "combat": "Les hommes de Gleb veulent incendier la barge d'Ilya.",
+     "gagne": "e",
+     "apres": "Le feu est éteint. Ilya tremble, son carnet contre la poitrine. « Ils m'auraient brûlé avec. » Il te regarde autrement."
+    },
+    "d": {
+     "qui": "matvei",
+     "txt": "Le vieux Matveï : « Un carnet, ça se brûle. On l'a fait il y a quarante ans, avec le registre d'un inspecteur. Puis on a fait pire, et le Coffre s'en souvient. » Il frotte ses mains gelées. « Si tu brûles celui-là, Kobor recommence. Si tu le portes, quelqu'un d'innocent paiera aussi. »",
+     "rep": [
+      {
+       "l": "Retourner voir Ilya",
+       "va": "f"
+      }
+     ]
+    },
+    "e": {
+     "lieu": "pierre",
+     "txt": "Par la grille, Vera : « Si ce carnet arrive au procès, ma plainte devient vraie. Gleb tombe. Le voïévode tremble. » Elle se tait un moment. « Mais Ilya nous a vendu le grain à crédit, quand personne d'autre ne venait. Ne le traite pas comme un voleur. Même s'il en est un. »",
+     "rep": [
+      {
+       "l": "Retourner voir Ilya",
+       "va": "f"
+      }
+     ]
+    },
+    "f": {
+     "qui": "ilya",
+     "final": true,
+     "txt": "Ilya te tend le carnet. « Le voilà. Tu le portes au cercle de pierres, et je perds ma barge, mon commerce, tout. Ou tu le jettes au feu, et on n'en parle plus. C'est toi qui choisis. Moi, je n'en ai plus la force. »",
+     "txtTrace": {
+      "offre_carnet": "Gleb attend ta réponse, lui aussi."
+     },
+     "fin": [
+      {
+       "vers": 4,
+       "l": "Porter le carnet au procès",
+       "prix": "Ilya perd sa barge : le trésor la saisit pour recel.",
+       "epreuve": "combat",
+       "combat": "Les hommes de Gleb gardent le chemin du cercle de pierres.",
+       "trace": "carnet_porte",
+       "resultat": "Le carnet est lu à voix haute au cercle de pierres. Gleb ne sourit plus. Ilya regarde le trésor clouer des scellés sur sa barge."
+      },
+      {
+       "vers": 2,
+       "l": "Jeter le carnet au feu",
+       "prix": "Ilya garde sa barge. Gleb reste intouchable, et Vera sera jugée seule.",
+       "epreuve": "dialogue",
+       "trace": "carnet_brule",
+       "resultat": "Les pages se tordent dans le feu. Ilya pleure de soulagement, et Gleb, de loin, lève son gobelet vers toi."
+      }
+     ]
+    }
+   }
+  }
+ }
+}

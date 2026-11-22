@@ -175,7 +175,7 @@ function act(a,rep){
     /* marche automatique : ▲ deux fois de suite, le héros avance seul (◀ ▶ pour diriger, ▼ ou OK pour s'arrêter) */
     if(a==='up'){const t=performance.now();if(t-lastUp<450)P.auto=1;lastUp=t}
     if(a==='down'&&P.auto){P.auto=0;held.down=0}
-    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else if(window.MZinscr&&MZinscr.proche())MZinscr.lire(MZinscr.proche(),0);else sauter()}
+    if(a==='ok'){if(P.auto)P.auto=0;else if(nearAlt())openEveil(curZ);else if(window.MZquetes&&MZquetes.proche())MZquetes.parler(MZquetes.proche());else if(window.MZinscr&&MZinscr.proche())MZinscr.lire(MZinscr.proche(),0);else sauter()}
     if(a==='back'){P.auto=0;openMenu()}return}
   if(mode==='epreuve'){if(a==='back'&&!rep){pauseEpreuve();return}if(E&&E.input)E.input(a,rep);return}
   if(mode==='mue'){if(a==='ok'&&!rep&&mue.t>2.5)mue.t=99}
@@ -268,7 +268,7 @@ function openEveil(Z,f){if(Z.d&&Z.d.pret===false){toast(Z.info.nom,'Zone pas enc
     o.push({l:'Éveil verrouillé',ic:'▲',off:true,d:'activez d\'abord la zone'})}
   else{
   if(res&&lv<3)o.push({l:`Niveau ${lv+1} sur 3`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
-  const osc=!res&&typeof optionsScene==='function'?optionsScene(Z,diff,r>0):null;  /* 18 nov. : zone à scénario, la scène remplace les paliers */
+  const osc=!res&&typeof queteZone==='function'&&queteZone(Z)?optionsQuete(Z,diff,r>0):!res&&typeof optionsScene==='function'?optionsScene(Z,diff,r>0):null;  /* 18 nov. : zone à scénario, la scène remplace les paliers */
   if(osc)o.push(...osc);
   else{if(!res&&lv<cap)o.push({l:`Palier ${sgn(lv+1)} · ${lv+1>0?I.pp:'vers '+I.pp}`,ic:'▲',cls:'p',off:r>0,d:diff(lv+1),go:()=>startEpreuve(Z,lv+1)});
   if(!res&&lv>-cap)o.push({l:`Palier ${sgn(lv-1)} · ${lv-1<0?I.pm:'vers '+I.pm}`,ic:'▼',cls:'m',off:r>0,d:diff(lv-1),go:()=>startEpreuve(Z,lv-1)})}
@@ -287,7 +287,7 @@ function openEveil(Z,f){if(Z.d&&Z.d.pret===false){toast(Z.info.nom,'Zone pas enc
   if(typeof optionsSiege==='function'){const s=optionsSiege(Z);o.unshift(...s.filter(x=>x.go));o.push(...s.filter(x=>!x.go))}   /* lot 3 : Citadelle épique et siège final (siege.js) */
   o.push({l:'Partir',ic:'◆',go:toMonde});
   ui('menu',{sur:`Pierre d'éveil · ${T.kind}`,t:I.nom,f,
-    corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
+    corps:!S.act[Z.id]&&verrouLoin(Z)?`<p><b>Zone scellée.</b> Ses gardiens sont hors de portée tant que votre royaume n'est pas établi : prenez d'abord les ${ZONES_DEP.length} zones de votre territoire de départ (${departPris()} prises) et bâtissez un paquet d'au moins ${PAQUET_ROYAUME} cartes (${S.deck.length} pour l'instant). Récompense future : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof queteZone==='function'&&queteZone(Z)?corpsQuete(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]&&typeof sceneDe==='function'&&sceneDe(Z)?corpsScene(Z)+`<p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:S.act[Z.id]?`<p><b>${T.ep}.</b> ${T.txt}</p><p class="petit">Pouvoir de la zone : ${RECO[Z.id]}</p>`:`<p><b>Zone à activer.</b> Battez les gardiens de la Pierre au tour par tour pour prendre la zone. Récompense : ${RECO[Z.id]}</p>`,
     corps2:`<p class="petit">Niveau actuel ${sgn(lv)||'0'} · ${S.own[Z.id]?'zone à vous':emp?'zone sauvage, votre empreinte la rend plus facile à reprendre':'zone sauvage'}${r>0?` · <b style="color:var(--laiton2)">la zone se repose encore ${fmt(r)}</b>`:''}</p>`,
     back:toMonde,opts:o});$('menu-corps').innerHTML+=UI.corps2}
 /* Repérage : la zone montre brièvement ses deux paliers voisins, puis revient */
@@ -320,11 +320,13 @@ function startEpreuve(Z,target){const pw=contrePar(Z).pw;
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
 function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
-  if(ok){const de=S.lv[Z.id]||0,carte=typeof sceneDonneCarte!=='function'||sceneDonneCarte(Z,de,target);if(typeof tenirParole==='function')tenirParole(Z);S.lv[Z.id]=target;Z._sansCarte=!carte;S.own[Z.id]=true;S.act[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(carte&&S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
+  if(ok){palierReussi(Z,target)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
     save();ui('menu',{sur:'Échec',t:'La zone résiste',corps:`<p>${Z.info.nom} reste au palier ${sgn(S.lv[Z.id])||'0'}. Vous êtes blessé (${S.hurt} sur 3). Une réussite soigne une blessure.</p>`,back:toMonde,
       opts:[{l:'Réessayer',ic:'▲',go:()=>openEveil(Z)},{l:'Repartir explorer',ic:'◆',go:toMonde}]});mode='menu'}}
+/* 22 nov. : la réussite d'un palier, partagée par l'épreuve et par le combat qui clôt une quête (quetes.js) */
+function palierReussi(Z,target){const de=S.lv[Z.id]||0,carte=typeof sceneDonneCarte!=='function'||sceneDonneCarte(Z,de,target);if(typeof suitesParole==='function')suitesParole(Z);if(typeof tenirParole==='function')tenirParole(Z);S.lv[Z.id]=target;Z._sansCarte=!carte;S.own[Z.id]=true;S.act[Z.id]=true;S.emp[Z.id]=false;S.rest[Z.id]=now()+(typeof reposZone==='function'?reposZone(Z.id):REPOS);S.hurt=Math.max(0,S.hurt-1);if(carte&&S.deck.length<PAQUET_MAX&&(Z.mod||Z.id)!=='RES')S.deck.push(typeof clePalier==='function'?clePalier(Z,target):Z.id);/* 17 nov. : les Ressources ne donnent pas de carte (mana et atouts par les routes) */save();etatHud();hudKey='';startMue(Z,target)}
 function mort(){for(const id of Object.keys(S.own)){if(S.own[id]){S.own[id]=false;S.emp[id]=true}S.act[id]=false}
   donnerDepart();CULL.dirty=true;terrainAll();   /* 18 nov. : l'héritier repart comme une nouvelle partie, territoire de départ au niveau 1, pôles retirés au hasard */
   S.cards=[];S.hurt=0;S.lives=(S.lives||1)+1;save();etatHud();hudKey='';

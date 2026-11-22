@@ -1,0 +1,29 @@
+{
+ "titre": "Ce que la glace garde",
+ "auteur": "Les notes d'un arpenteur du trésor, de passage à Kobor l'hiver où le Coffre fut trouvé vide.",
+ "pages": [
+  {
+   "t": "Le hameau et le tribut",
+   "txt": "Kobor est un hameau de trappeurs, au bord de la rivière, sous les mélèzes. Chaque hiver, il doit au voïévode Borislav quatre cents zibelines. Les peaux attendent le convoi dans le Coffre, une loge creusée dans le sol gelé, devant la Pierre d'éveil. Le vieux Matveï garde la porte. Il la garde depuis quarante ans. Le sol, là-bas, ne dégèle jamais tout à fait. On dit que le froid y conserve tout : la viande, les peaux, et le reste."
+  },
+  {
+   "t": "Le Coffre vide",
+   "txt": "Cet hiver, quand on a ouvert le Coffre, il était vide. Quatre cents peaux, parties. Pourtant, Kobor a mangé tout l'hiver, alors que la chasse avait été mauvaise. J'ai noté que les greniers étaient pleins. J'ai noté aussi que la barge d'Ilya, le marchand de grain du sud, était venue à l'automne, et repartie chargée. Je ne sais pas ce qu'elle emportait. Vera, la cheffe du hameau, n'a pas voulu me le dire."
+  },
+  {
+   "t": "Le coupable volontaire",
+   "txt": "L'inspecteur Gleb est arrivé pour compter. Il veut un coupable avant le dégel, sinon tout le hameau paiera. Le lendemain, un trappeur, Bogdan, s'est présenté : « J'ai vendu les peaux. » Il partira aux mines. Sa femme, Oustina, qui tient le séchoir, n'a pas pleuré devant moi. Bogdan doit beaucoup à Vera : elle a payé sa dette l'an passé. Je ne crois pas qu'il sache compter quatre cents peaux. Mais il s'accuse très bien."
+  },
+  {
+   "t": "Ce que je n'ai pas écrit",
+   "txt": "Gleb pose beaucoup de questions sur Vera. Je sais pourquoi : elle a écrit au tsar une plainte contre le voïévode, et la plainte le nomme lui aussi. Hier, un reçu de grain traînait sur le chemin du camp, bien en vue. Je ne l'ai pas ramassé. Ce matin, j'ai demandé à Matveï s'il était déjà venu un inspecteur à Kobor. Il a dit : « Il y a quarante ans. » Je lui ai demandé quand il était reparti. Il a"
+  }
+ ],
+ "fin": {
+  "m5": "Le reste de la page est collé par le givre. On ne peut pas la tourner sans la déchirer.",
+  "m2": "La phrase s'arrête là. L'encre a gelé dans la plume, et personne n'a fini.",
+  "z": "La phrase s'arrête là. La page suivante est blanche.",
+  "p2": "La page suivante est humide. On y lit seulement : « ...pas reparti. »",
+  "p5": "La page suivante a pris l'eau du dégel. Une pousse verte sort de la reliure. Sous elle, on lit : « Il n'est jamais reparti. Il est en bas. »"
+ }
+}

@@ -1,0 +1,251 @@
+{
+ "quetes": {
+  "-5": {
+   "t": "Le hameau d'en face",
+   "resume": "Le registre truqué a fait payer le hameau voisin. Le voïévode arrive et demande qui ment : tu protèges Kobor ou tu avoues le faux.",
+   "absents": [
+    "bogdan"
+   ],
+   "debut": "a",
+   "noeuds": {
+    "a": {
+     "qui": "gleb",
+     "txt": "Le voïévode Borislav arrive ce soir. Le hameau voisin est en défaut de quarante peaux. Ce sont les quarante que nous avons rayées de notre registre. Leurs trappeurs l'ont compris. Ils descendent la rivière vers notre camp. Moi, je n'ai rien vu. Toi non plus.",
+     "rep": [
+      {
+       "l": "J'attends les trappeurs au camp",
+       "va": "b"
+      },
+      {
+       "l": "Ilya peut fournir quarante peaux",
+       "va": "c"
+      },
+      {
+       "l": "Je vais parler à Matveï",
+       "va": "d",
+       "trace": "vu_matvei_5"
+      }
+     ]
+    },
+    "b": {
+     "lieu": "camp",
+     "txt": "Six hommes du hameau voisin entrent dans le camp. Ils ont des haches et des registres. Leur chef montre une page : « Quarante peaux. Notre compte était juste. Le vôtre a changé la nuit dernière. »",
+     "combat": "Les trappeurs du hameau voisin viennent reprendre leurs quarante peaux de force.",
+     "gagne": "e",
+     "apres": "Ils repartent sur la glace. Le chef se retourne une fois. « Le voïévode nous croira, ou il vous croira. Pas les deux. »"
+    },
+    "c": {
+     "qui": "ilya",
+     "txt": "Quarante peaux ? J'en ai. Je les vends au hameau voisin, leur dette est payée, plus personne ne crie. Mon prix : le grain de printemps de Kobor. Vous aurez faim en avril, mais vous aurez la paix ce soir.",
+     "rep": [
+      {
+       "l": "Marché conclu",
+       "va": "e",
+       "trace": "ilya_paye_voisin"
+      },
+      {
+       "l": "Trop cher. Je vais au camp",
+       "va": "b"
+      }
+     ]
+    },
+    "d": {
+     "qui": "matvei",
+     "txt": "J'ai déjà vu ce soir-là. Il y a quarante ans. Un hameau voisin qui crie. Puis un homme de la ville qui pose des questions. Puis la porte du Coffre, que j'ai fermée. Il fait froid en bas. Le froid garde tout, et il garde bien.",
+     "rep": [
+      {
+       "l": "Qui était cet homme ?",
+       "va": "d2"
+      },
+      {
+       "l": "Je vais voir le voïévode",
+       "va": "e"
+      }
+     ]
+    },
+    "d2": {
+     "lieu": "pierre",
+     "txt": "Devant la Pierre d'éveil, la porte du Coffre est blanche de givre. Sur le linteau, quelqu'un a gravé des traits : un par hiver. Tu en comptes quarante. Le dernier est frais.",
+     "rep": [
+      {
+       "l": "Aller voir le voïévode",
+       "va": "e"
+      }
+     ]
+    },
+    "e": {
+     "qui": "borislav",
+     "final": true,
+     "txt": "Le voïévode Borislav est assis devant le feu. « Le hameau voisin me doit quarante peaux. Kobor ne me doit rien. Kobor est en règle. Les voisins disent que votre registre est faux. Toi, l'étranger, tu as tout vu. Qui ment ? »",
+     "txtTrace": {
+      "ilya_paye_voisin": "Derrière lui, Ilya compte déjà les sacs de grain de Kobor.",
+      "vu_matvei_5": "Tu penses aux quarante traits sur le linteau."
+     },
+     "fin": [
+      {
+       "vers": -6,
+       "l": "Le hameau voisin a triché",
+       "prix": "Le chef du hameau voisin part aux mines. Ses gens te haïront.",
+       "epreuve": "dialogue",
+       "resultat": "Borislav fait arrêter le chef du hameau voisin. Il regarde Vera longtemps : « Une cheffe qui tient ses comptes. Nous reparlerons. »",
+       "trace": "voisin_accuse"
+      },
+      {
+       "vers": -4,
+       "l": "Notre registre est faux",
+       "prix": "Kobor doit rendre quarante peaux : les vingt d'Oustina et les réserves d'hiver.",
+       "epreuve": "combat",
+       "combat": "Les hommes de Gleb veulent te faire taire avant que tu parles au voïévode.",
+       "resultat": "Borislav efface la dette du voisin et la reporte sur Kobor. Oustina vide sa cachette sans un mot.",
+       "trace": "registre_avoue"
+      }
+     ]
+    }
+   }
+  },
+  "-6": {
+   "t": "La plainte de Vera",
+   "resume": "Le voïévode offre à Vera le titre de starosta si elle brûle sa plainte au tsar. Aide-la à choisir : la paix tout de suite, ou la seule chose vraie qui reste.",
+   "absents": [
+    "bogdan"
+   ],
+   "debut": "a",
+   "noeuds": {
+    "a": {
+     "qui": "vera",
+     "txt": "Borislav me fait starosta si je brûle ma plainte au tsar. Starosta, c'est un tribut fixe et du grain garanti. Il promet aussi de rendre Bogdan dans deux hivers. Mais cette plainte est la seule chose vraie que j'aie écrite depuis le début.",
+     "rep": [
+      {
+       "l": "Que veut Oustina ?",
+       "va": "b"
+      },
+      {
+       "l": "Où est la plainte, en ce moment ?",
+       "va": "c"
+      },
+      {
+       "l": "Une plainte, ça mène où ?",
+       "va": "d"
+      }
+     ]
+    },
+    "b": {
+     "qui": "oustina",
+     "txt": "Une plainte, c'est une enquête. Une enquête, on saura qui a vendu les peaux. Bogdan restera aux mines pour rien, et Vera ira le rejoindre. Le voïévode promet de me le rendre. Il ment peut-être. Mais c'est la seule promesse qu'on m'ait faite.",
+     "rep": [
+      {
+       "l": "Je comprends",
+       "va": "e",
+       "trace": "ecoute_oustina"
+      }
+     ]
+    },
+    "c": {
+     "lieu": "camp",
+     "txt": "La plainte est cousue dans la doublure d'un manteau, au séchoir. Quand tu arrives, trois hommes de Gleb retournent les peaux une à une. Gleb est nommé dans la plainte. Il la veut avant Vera.",
+     "combat": "Les hommes de Gleb fouillent le séchoir pour voler la plainte de Vera.",
+     "gagne": "e",
+     "apres": "Tu tiens la plainte. Trois pages. Le nom de Gleb revient sept fois, celui de Borislav onze fois. Elle est encore tiède du manteau.",
+     "trace": "plainte_sauvee"
+    },
+    "d": {
+     "qui": "matvei",
+     "txt": "Une plainte fait venir un homme de la ville. Il y a quarante ans, il en est venu un. Il a lu nos comptes. Il a dit qu'il écrirait. On a eu peur. Je l'ai suivi jusqu'au Coffre, et j'ai fermé la porte. Il est toujours en bas. Brûle la plainte, petite. Personne ne viendra.",
+     "rep": [
+      {
+       "l": "Retourner voir Vera",
+       "va": "e",
+       "trace": "aveu_matvei"
+      }
+     ]
+    },
+    "e": {
+     "qui": "vera",
+     "final": true,
+     "txt": "Au cercle de pierres, Vera tient la plainte au-dessus du feu. Borislav attend à dix pas. « Si je la brûle, Kobor mange. Si je la garde, Kobor a raison. Dis-moi ce que je fais. »",
+     "txtTrace": {
+      "aveu_matvei": "Elle ajoute, plus bas : « Matveï m'a parlé, à moi aussi. »",
+      "ecoute_oustina": "Oustina est là, au bord du cercle. Elle ne dit rien.",
+      "plainte_sauvee": "Les pages ont encore le pli du manteau."
+     },
+     "fin": [
+      {
+       "vers": -7,
+       "l": "Brûle-la",
+       "prix": "Gleb et Borislav ne seront jamais jugés. Vera devient starosta.",
+       "epreuve": "dialogue",
+       "resultat": "Le papier noircit en une seconde. Borislav serre la main de Vera, et le sol craque sous les pierres : le gel descend d'une coudée.",
+       "trace": "plainte_brulee"
+      },
+      {
+       "vers": -5,
+       "l": "Garde-la",
+       "prix": "Vera refuse le titre. Borislav double le tribut de l'hiver prochain.",
+       "epreuve": "combat",
+       "combat": "Les gardes du voïévode veulent prendre la plainte des mains de Vera.",
+       "resultat": "Vera range la plainte contre sa poitrine. Borislav part sans saluer, et Kobor sait déjà que l'hiver prochain sera plus long.",
+       "trace": "plainte_gardee"
+      }
+     ]
+    }
+   }
+  },
+  "-7": {
+   "t": "Personne n'est venu",
+   "resume": "Un envoyé du tsar cherche l'inspecteur disparu il y a quarante ans. Tout le hameau a juré que personne n'est jamais venu. Toi seul peux ouvrir la porte.",
+   "absents": [
+    "bogdan"
+   ],
+   "debut": "a",
+   "noeuds": {
+    "a": {
+     "lieu": "pierre",
+     "txt": "Kobor est le hameau le plus en règle de la taïga. Le tribut est complet. Personne ne parle fort. Le givre ne fond plus, même à midi. Devant la maison de Bogdan, ses traces de pas, laissées le jour de son départ aux mines, sont toujours nettes dans la neige.",
+     "rep": [
+      {
+       "l": "Aller voir la starosta",
+       "va": "b"
+      },
+      {
+       "l": "Aller droit au Coffre",
+       "va": "c"
+      }
+     ]
+    },
+    "b": {
+     "qui": "vera",
+     "txt": "Un envoyé du tsar monte la piste. Il cherche un inspecteur parti pour Kobor il y a quarante ans. Tout le hameau a juré : personne n'est jamais venu. J'ai juré aussi. Je suis starosta, maintenant. Tout est en règle. Tout.",
+     "txtTrace": {
+      "plainte_brulee": "Elle frotte ses doigts, comme s'ils sentaient encore la fumée."
+     },
+     "rep": [
+      {
+       "l": "Aller au Coffre",
+       "va": "c"
+      }
+     ]
+    },
+    "c": {
+     "qui": "matvei",
+     "final": true,
+     "txt": "Matveï est assis devant la porte du Coffre, couverte de givre. « Il ne manque que ta parole. Jure, et la glace garde tout, pour toujours. Ou bien ouvre. Mais si tu ouvres, ils me prendront, et tout ce que nous avons tenu tombera avec moi. »",
+     "txtTrace": {
+      "aveu_matvei": "« Tu sais ce qu'il y a derrière. Je te l'ai dit moi-même. »",
+      "voisin_accuse": "« Le chef du hameau voisin n'est jamais revenu des mines, lui non plus. »"
+     },
+     "fin": [
+      {
+       "vers": -6,
+       "l": "Ouvrir la porte du Coffre",
+       "prix": "Matveï sera jugé. Kobor perd sa paix gelée.",
+       "epreuve": "combat",
+       "combat": "Les gardes de Borislav barrent la porte du Coffre pour que l'envoyé ne voie rien.",
+       "resultat": "La porte cède. Dans la glace, un homme en manteau d'inspecteur, le visage net, comme endormi : l'envoyé du tsar se découvre, et le givre se met à goutter.",
+       "trace": "porte_ouverte"
+      }
+     ]
+    }
+   }
+  }
+ }
+}
