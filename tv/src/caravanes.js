@@ -176,7 +176,7 @@ function majChariots(){if(typeof scene==='undefined'||typeof S==='undefined'||ty
     const pts=c.traj.map(id=>[ZB[id].alt.x,ZB[id].alt.z]);let p;
     if(c.etat==='en route')p=carSur(pts,ph);else{const i=Math.max(0,c.traj.indexOf(c.lieu));const a=pts[Math.max(0,i-1)],b=pts[i];p=i?[a[0]+(b[0]-a[0])*.7,a[1]+(b[1]-a[1])*.7,Math.atan2(b[1]-a[1],b[0]-a[0])]:[b[0]+6,b[1]+6,0]}
     const y=typeof stand==='function'?stand(p[0],p[1],1e3).g:0;g.position.set(p[0],y,p[1]);g.rotation.set(0,Math.PI/2-p[2],c.etat==='en route'?0:.35)}
-  for(const r in CAR3D)if(!vus[r]){scene.remove(CAR3D[r]);delete CAR3D[r]}}
+  for(const r in CAR3D)if(!vus[r]){liberer(CAR3D[r]);delete CAR3D[r]}}
 let carT=0;(function carAnim(t){requestAnimationFrame(carAnim);if(t-carT<100)return;carT=t;try{if(typeof mode!=='undefined'&&(mode==='monde'||mode==='menu'))majChariots()}catch(_){}})(0);
 
 /* ---------- Tests : MZ.caravanes() (état), MZ.piller(id) (pillage forcé), MZ.escorter(id) ---------- */

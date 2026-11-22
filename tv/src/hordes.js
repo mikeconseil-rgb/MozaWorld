@@ -95,7 +95,7 @@ function montrerHorde(){if(!hordeRapports.length||mode!=='monde')return;const r=
   const Z=(ZB[r.cible]||ZWB[r.cible]);
   ui('menu',{sur:'Horde du sauvage · force '+r.force,t:r.ok?Z.info.nom+' tient':Z.info.nom+' est forcée',
     corps:`<p class="petit">${r.lignes.join('<br>')}</p><p class="petit">Hordes brisées par le héros ${S.hordesBilan.brisees}, repoussées ${S.hordesBilan.repoussees}, passées ${S.hordesBilan.passees}. Une Citadelle tenue à ${HORDE_CIT} tuiles ou moins, un rempart et les pièges du Donjon aménagé renforcent la défense.</p>`,
-    back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde},{l:'Aller '+a_(court(r.cible)),ic:'✧',go:()=>{tp(r.cible);toMonde()}}]})}
+    back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}].concat(ZB[r.cible]?[{l:'Aller '+a_(court(r.cible)),ic:'✧',go:()=>{tp(r.cible);toMonde()}}]:[])})}   /* 21 nov. : pas de « Aller » vers une zone hors région */
 
 /* ---------- Le cycle : colère, grondement, arrivées ---------- */
 function hordesCycle(){initHordes();if(S.nc<HORDE_GRACE)return;

@@ -91,7 +91,7 @@ function placeTour3D(id){const Z=ZB[id],a=Z&&Z.alt;if(!a)return null;
   /* à 8 m de la Pierre, sur le côté, de préférence dans la zone */
   for(const sd of[1,-1]){const x=a.x+Math.cos(a.yaw)*8*sd,z=a.z-Math.sin(a.yaw)*8*sd;if(sd===-1||zoneAt(x,z)===Z)return[x,z]}}
 function majTours3D(){if(typeof scene==='undefined'||typeof S==='undefined')return;const T=S.tours||{};
-  for(const id in TOURS3D)if(!T[id]){scene.remove(TOURS3D[id]);delete TOURS3D[id]}
+  for(const id in TOURS3D)if(!T[id]){liberer(TOURS3D[id]);delete TOURS3D[id]}
   for(const id in T){if(!ZB[id])continue;let g=TOURS3D[id];if(!g){g=TOURS3D[id]=tour3D();scene.add(g)}
     const p=placeTour3D(id);if(p)g.position.set(p[0],stand(p[0],p[1],1e3).g,p[1])}}
 
