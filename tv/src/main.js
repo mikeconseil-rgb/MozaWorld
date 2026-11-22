@@ -598,7 +598,8 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   if(frame%120===0&&started){S.pos=[P.x,P.z,P.yaw];save()}
   /* qualité automatique : si l'image tombe sous 22 images/s pendant 5 s, on baisse la résolution */
   if(autoQ&&T>3){fpsT+=dt;fpsN++;if(fpsT>5){const fps=fpsN/fpsT;fpsT=0;fpsN=0;if(CB){fpsT=0;fpsN=0}else if(fps<(QI>=2?27:22)&&QI>0){QI--;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize()}else autoQ=false}}
-  if(!CB){cullScene();draw(T)}}   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
+  if(!CB){cullScene();draw(T)}
+  if(SOL_LEGER){const v=CB?'hidden':'';if(canvas.style.visibility!==v)canvas.style.visibility=v}}   /* 2.42.3 : sur Xbox, le canevas 3D sort de l'affichage pendant un combat (écran opaque) : une couche plein écran de moins */   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);

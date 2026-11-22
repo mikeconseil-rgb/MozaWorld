@@ -15,13 +15,27 @@ function libererGPU(){if(memLibere)return;memLibere=true;
   try{canvas.width=canvas.height=1}catch(_){}}   /* le tampon d'image du canevas aussi (22 nov.) */
 addEventListener('pagehide',libererGPU);
 addEventListener('pageshow',e=>{if(e.persisted){if(rechargeAutorisee())location.reload();else arretBoucle('retour en arrière')}});   /* page rendue par le cache « retour » : sa carte graphique a été rendue, on recharge */addEventListener('beforeunload',libererGPU);
-canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(memLibere)return;pouls();memLibere=true;
-  try{renderer.render=()=>{};renderer.setRenderTarget=()=>{};renderer.compile=()=>{}}catch(_){}
-  try{localStorage.setItem('mz-plantage',String(Date.now()));const d=JSON.parse(localStorage.getItem('mz-pouls')||'null');
+/* 2.42.3 (22 nov., plantages en plein combat sur Xbox, même en Fluide et après redémarrage) : un contexte perdu n'est plus
+   suivi tout de suite d'un rechargement (qui, sur une Xbox à court de mémoire, ne retrouve souvent pas de carte graphique).
+   On garde la page et la partie, on cesse de dessiner, et on attend que le navigateur rende le contexte (webglcontextrestored) :
+   Three.js refait alors ses ressources tout seul. Pendant un combat (écran opaque), le joueur ne voit rien. Sans retour au bout
+   de 15 s, on retombe sur l'ancien chemin (enregistrer, recharger la région). */
+let glPerdu=0;const glOrig={};
+function glStub(){try{for(const k of['render','setRenderTarget','compile'])if(!glOrig[k])glOrig[k]=renderer[k];renderer.render=()=>{};renderer.setRenderTarget=()=>{};renderer.compile=()=>{}}catch(_){}}
+function glDestub(){try{for(const k in glOrig){renderer[k]=glOrig[k];delete glOrig[k]}}catch(_){}}
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(memLibere||glPerdu)return;pouls();glPerdu=Date.now();glStub();
+  try{const d=JSON.parse(localStorage.getItem('mz-pouls')||'null');
     if(d){d.contexte=1;const L=JSON.parse(localStorage.getItem('mz-plantages')||'[]');L.push(d);localStorage.setItem('mz-plantages',JSON.stringify(L.slice(-10)))}}catch(_){}
-  /* on garde la partie : position du héros, puis rechargement dans la même région */
-  try{if(typeof voyagerRegion==='function'&&typeof REGION!=='undefined'&&started){voyagerRegion(REGION.c,'jeu');return}}catch(_){}
-  if(rechargeAutorisee())setTimeout(()=>location.reload(),60);else arretBoucle('carte graphique perdue')},false);
+  if(typeof toast==='function'&&!(typeof CB!=='undefined'&&CB))toast('Carte graphique saturée','L\'image revient dans un instant','La partie continue.');
+  const t0=glPerdu;setTimeout(()=>{if(glPerdu!==t0)return;memLibere=true;
+    try{localStorage.setItem('mz-plantage',String(Date.now()))}catch(_){}
+    /* on garde la partie : position du héros, puis rechargement dans la même région */
+    try{if(typeof voyagerRegion==='function'&&typeof REGION!=='undefined'&&started){voyagerRegion(REGION.c,'jeu');return}}catch(_){}
+    if(rechargeAutorisee())setTimeout(()=>location.reload(),60);else arretBoucle('carte graphique perdue')},15000)},false);
+canvas.addEventListener('webglcontextrestored',()=>{if(!glPerdu||memLibere)return;glPerdu=0;glDestub();   /* Three.js a déjà refait son contexte (son écouteur passe avant le nôtre) */
+  try{resize()}catch(_){}try{if(typeof appliquerOmbre==='function')appliquerOmbre();if(typeof CULL!=='undefined')CULL.dirty=true;renderer.shadowMap.needsUpdate=true}catch(_){}
+  try{const L=JSON.parse(localStorage.getItem('mz-plantages')||'[]');if(L.length){L[L.length-1].repris=1;localStorage.setItem('mz-plantages',JSON.stringify(L))}}catch(_){}
+  if(typeof toast==='function'&&!(typeof CB!=='undefined'&&CB))toast('Image revenue','La carte graphique a repris','Sans rechargement.')},false);
 /* au réveil après un contexte perdu : un mot au joueur */
 (()=>{let t=0;try{t=+localStorage.getItem('mz-plantage')||0;localStorage.removeItem('mz-plantage')}catch(_){}
   if(t&&Date.now()-t<60000)setTimeout(()=>{if(typeof toast==='function')toast('La partie a repris','La carte graphique a manqué de mémoire','Votre partie a été enregistrée et la région rechargée.')},4000)})();
