@@ -85,9 +85,9 @@ g.putImageData(o,0,0);
   for(const[px,py,pr]of pts){g.fillStyle=col;g.beginPath();g.arc(px,py,pr,0,7);g.fill()}
   pts.forEach(([px,py,pr],k)=>{g.globalAlpha=.5;g.fillStyle='#061312';g.beginPath();g.arc(px+pr*.3,py+pr*.3,pr*.72,0,7);g.fill();g.globalAlpha=.3;g.fillStyle='#8fb5a2';g.beginPath();g.arc(px-pr*.38,py-pr*.38,pr*.3,0,7);g.fill();g.globalAlpha=1;
    if(k%3==1&&pr>9){g.fillStyle='#0a0705';g.beginPath();g.arc(px+pr*.15,py+pr*.25,pr*.36+2,0,7);g.fill();g.fillStyle='#b98f7a';g.beginPath();g.arc(px+pr*.15,py+pr*.25,pr*.36,0,7);g.fill();g.fillStyle='#3a0d0a';g.beginPath();g.arc(px+pr*.15,py+pr*.25,pr*.15,0,7);g.fill()}})};
- tent(-60,960,-.45,66,54,.062,'#2a6058');tent(170,1130,-1.35,54,46,-.075,'#316b5c');
- tent(1990,1010,Math.PI+.3,68,44,-.07,'#2a6058');tent(1750,1130,-1.8,52,46,.075,'#2f6268');
- tent(1975,300,Math.PI-.2,36,40,.085,'#2a5a52');tent(-50,260,.15,32,38,-.085,'#2a5a52');
+ 
+ 
+ 
  /* yeux à demi cachés dans le noir */
  const oeil=(x,y,w,rot,al)=>{g.save();g.translate(x,y);g.rotate(rot);g.globalAlpha=al;g.fillStyle='#0a0705';g.beginPath();g.moveTo(-w-4,0);g.quadraticCurveTo(0,-w*.72-4,w+4,0);g.quadraticCurveTo(0,w*.72+4,-w-4,0);g.fill();
   g.beginPath();g.moveTo(-w,0);g.quadraticCurveTo(0,-w*.62,w,0);g.quadraticCurveTo(0,w*.62,-w,0);g.closePath();g.save();g.clip();g.fillStyle='#c9b98a';g.fillRect(-w,-w,2*w,2*w);
