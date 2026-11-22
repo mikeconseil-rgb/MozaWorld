@@ -78,8 +78,8 @@ function arretBoucle(pourquoi){try{sessionStorage.removeItem('mz-recharges');ses
     const q=+localStorage.getItem('mz-tv-q2');if(!(q>=0)||q>1)localStorage.setItem('mz-tv-q2','1')}catch(_){}
   const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on');const b=vo.querySelector('b'),sp=vo.querySelector('span');
     if(b)b.textContent='La Xbox manque de mémoire graphique';
-    if(sp)sp.textContent='Le jeu a dû se recharger plusieurs fois de suite ('+pourquoi+'). Fermez l\'onglet du jeu dans Edge, puis rouvrez l\'adresse : votre partie est enregistrée et la qualité est passée à « Équilibrée ».'}
-  const v=document.getElementById('seuil-ver');if(v)v.textContent='Rechargements arrêtés : fermez l\'onglet et rouvrez le jeu'}
+    if(sp)sp.textContent='Le jeu a dû se recharger plusieurs fois de suite ('+pourquoi+'). Quittez Edge complètement (bouton Xbox, Edge sélectionné, bouton ≡ Menu, Quitter) ou redémarrez la console, puis rouvrez le jeu : votre partie est enregistrée et la qualité est passée à « Équilibrée ».'}
+  const v=document.getElementById('seuil-ver');if(v)v.textContent='Carte graphique indisponible : quittez Edge puis rouvrez le jeu'}
 let GL_ESSAIS=0;try{GL_ESSAIS=+sessionStorage.getItem('mz-gl-essai')||0}catch(_){}
 const renderer=(()=>{try{const r=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
     try{sessionStorage.removeItem('mz-gl-essai')}catch(_){}return r}
