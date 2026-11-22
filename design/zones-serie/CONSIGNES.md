@@ -131,3 +131,38 @@ Un seul bloc ```json``` par Ressource : `{"fiche":"RES167","nom":"…","recit":"
 6. **Même couple de mots, autre image au ±7** : deux zones du même couple dans un lot ne finissent pas sur la même métamorphose (« tout devient verre ») et ne partagent pas le mot de matière du nom (Vitres, Verre).
 7. **La liste commune nomme la forme réelle du récit et son geste.** Un ostracon, une tablette ou un billet adressés à quelqu'un sont des lettres. Une stèle et une inscription sont un même document. Un geste d'intrigue (monter chercher la glace, souffler la lampe) sert une fois par lot.
 8. **Familles d'animaux : une table commune, à la maille de la famille courante, lue par le script.** On n'identifie pas la famille au nom : la viscache et le cuy sont des rongeurs, le termite n'est pas un coléoptère.
+
+## Leçons du critique après le lot 10 (à appliquer dès le lot 11)
+
+1. **Cinq cartes de dégâts ciblés font des gros coups, même dans un Donjon et même non déclarés.** Un pôle de Donjon qui a une autre famille principale s'arrête à 4. Le compte des vocations lit aussi les cartes des familles des lots anciens : un emploi déclaré compte, même avant le lot 5.
+2. **Tout crochet, pas seulement d'intention ennemie, sert dans 3 pôles au plus par conteur.** Un pôle qui lit un crochet sur 3 cartes et le nourrit sur 2 compte dans son couple, avec le même plafond de 2 pôles par lot.
+3. **L'enchaînement (`cartesJouees`, `troisCartes`) est une famille** : en appoint dans 3 pôles au plus par conteur, comme les autres.
+4. **Une reprise de vocation change de bête principale** : la famille qui porte le plus de cartes ne doit avoir servi dans aucun emploi précédent du mot, pas même en appoint.
+5. **La table commune des bêtes donne la famille scientifique de chaque nom avant l'écriture** : le saïga, le bouquetin et le buffle sont trois bovidés ; le frelon n'est pas un apidé ; la chouette n'est pas un rapace diurne.
+6. **Une forme ou un geste signalé en double se change avant la remise, par le second inscrit**, et sa chute avec lui. On ne le laisse pas au critique.
+7. **Noms : le complément de la seconde moitié (« des Cendres ») ne revient pas non plus dans le lot**, et un conteur ne répète jamais son propre mot principal (« l'Eau » deux fois).
+
+## Leçons du critique après le lot 11 (à appliquer dès le lot 12)
+
+1. **`hesite` et `hesiteAvant` sont un seul crochet** (le moteur lit `int.a === 'h'` pour les deux). Ils comptent ensemble dans le plafond de 3 pôles par conteur.
+2. **« Vos alliés gagnent n de garde » lève aussi la Garde du héros**, car le héros est dans `CB.allies` (et « vos alliés se soignent » le soigne aussi). Elle nourrit `garde` dans les couples, les demi-couples et les conditions rendues vraies.
+3. **Une reprise de famille principale sur un mot** :
+   - est un 2e emploi seulement, par un autre conteur que le premier ;
+   - prend un crochet, un prix principal et une bête principale nouveaux ;
+   - est déclarée dans familles_X.md ;
+   - se fait 2 fois au plus par conteur et par lot.
+   Au-delà, la place est perdue, et LISTE.md la retire avant de répartir.
+4. **Les gros coups font 5 cartes de dégâts ciblés, jamais 6.** Un même assemblage de crochet et de deux prix (`blesse`, défausse, soin ennemi) compte comme un seul assemblage.
+5. **Registre grand public pour adultes.** Pas de sacrifice humain, de mutilation, de châtiment corporel décrit, ni de coup porté à un enfant ou à un « garçon ». On suggère (les fers, la porte barrée) au lieu de montrer, même quand la culture d'inspiration le ferait.
+6. **Même couple dans le lot : le second inscrit compare les images du ±7, pas seulement les familles.** Deux réserves de rêves ou deux « plus d'ombre » font une même métamorphose.
+7. **Noms : la première moitié se compare aussi à une lettre près** (Salinella, Salinera). Un nombre précis compte aussi dans les ambiances (« trois » dans trois zones de C).
+
+## Leçons du critique après le lot 12 (à appliquer dès le lot 13)
+
+1. **Les places se comptent avant de se répartir.** LISTE.md calcule au script, pour chaque conteur, le couplage maximal de ses pôles avec les familles libres sur ses mots. Elle ne donne que ces places, plus les reprises permises. Ce qui manque devient une vocation ou une colonne (4 au plus), ou une place perdue, déclarée avant les cartes.
+2. **Reprises : 3 au plus par conteur**, chacune un 2e emploi par un autre conteur. Le crochet et le prix principal sont neufs pour le mot entier, pas seulement contre l'origine. On ne reprend jamais son propre crochet sur un mot.
+3. **Même couple dans le lot : on compare le geste du ±7, pas ses objets.** La table qui s'étend, le chant à l'unisson ou la ville sous l'eau font une même métamorphose, quel que soit le décor. Le second inscrit change avant la remise.
+4. **Noms : le mot principal et le mot d'institution se comparent entre conteurs avant la remise, et à noms-pris.txt, pluriel compris.** Ce lot avait deux « Attente », et trois institutions déjà en jeu (Yoriai, Darbar, Popol Na).
+5. **La pioche d'Assemblée compte dans le plafond de la famille pioche** (6 pôles du lot), vocation comprise. Une Assemblée garde 2 cartes de Loi au moins par pôle.
+6. **Bêtes : 40 PV au plus aux paliers 1 à 6, 60 au palier 7.** Le budget compte les PV pour moitié et ne voit pas le mur.
+7. **Chutes : une recette de conteur, une fois par lot.** C'est le cas de la promotion qui éloigne chez A, et de « aujourd'hui » dans la dernière phrase chez C (trois fois au lot).

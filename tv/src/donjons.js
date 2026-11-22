@@ -48,7 +48,7 @@ const DJ_BIOME={'Forêt boréale':'Galerie des racines gelées','Fjord':'Grotte 
   'Jungle':'Temple sous les lianes','Archipel':'Grotte marine','Haute montagne':'Gouffre des cimes','Forêt de champignons géants':'Salle des spores',
   'Marais':'Tourbière noyée','Désert de sel':'Galerie de sel','Iles flottantes':'Racines suspendues','Savane':'Termitière creuse','Toundra':'Cave du pergélisol'};
 const djDe=n=>/^[AEIOUYÉÈÊÂÎÔaeiouyéèêâîôh]/.test(n)?'d\''+n:'de '+n;
-const djCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
+const djCourt=id=>ZB[id]?zI(id).nom.split(',')[0]:id;
 const djLieu=id=>{const n=djCourt(id),m=n.match(/\bd(?:e |['’])([^']+)$/);return m?m[1]:n.replace(/^(Le|La|Les|L['’]) ?/,'')};
 function nomsSalles(id){if(id==='DON')return SALLES;const Z=ZB[id],d=(Z&&Z.d)||{},lieu=djLieu(id);
   return[`Porte ${djDe(lieu)}`,DJ_BIOME[d.biome]||`Galerie ${djDe(lieu)}`,d.culture?`Crypte ${d.culture.toLowerCase()}`:`Crypte ${djDe(lieu)}`,`Chambre du Sceau ${djDe(lieu)}`]}

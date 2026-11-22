@@ -1,8 +1,67 @@
 # MozaWorld, version jouable (page web, Edge sur Xbox Series S)
 
-> **État au 17 novembre 2026 (soir).** La version Google TV / Bravia est arrêtée : on ne livre plus d'APK. Le jeu se joue sur la page web (GitHub Pages, qui suit la branche main), dans Edge sur Xbox Series S, à la manette. Le dossier s'appelle encore `tv/` pour des raisons d'historique.
+> **État au 20 novembre 2026 : version 2.24.** Depuis le 17 : les 5 cartes communes sont retirées (départ avec 12 zones à vous), le combat se joue sur le Plateau (le Nœud est l'ancien terrain), le monde compte 925 zones chargées par régions. Les règles en vigueur sont dans `design/REGLES.md`.
+>
+> **Rappel du 17 novembre.** La version Google TV / Bravia est arrêtée : on ne livre plus d'APK. Le jeu se joue sur la page web (GitHub Pages, qui suit la branche main), dans Edge sur Xbox Series S, à la manette. Le dossier s'appelle encore `tv/` pour des raisons d'historique.
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
+
+## Version 2.33 : interface « Carnet sombre », étape 3, le menu pause (22 novembre, `src/carnet-menu.js`)
+- Le menu pause et ses sous-menus (paquet, grimoire, sauvegardes, rivaux, lois…) s'écrivent sur une page de carnet : parchemin déchiré aux coins brûlés, titre gothique, sceau de cire, options à l'encre, notes à la main ; l'option choisie est entourée à l'encre rouge.
+- Mêmes options, même ordre, mêmes commandes. Les cartes à jouer gardent leurs cadres. Aucune image, aucun filtre.
+- Non fait : les onglets LB/RB et le panneau « Votre royaume » de la maquette (ce serait réorganiser le menu, pas l'habiller).
+
+## Version 2.32 : interface « Carnet sombre », étape 2, le combat (22 novembre, `src/carnet-combat.js`)
+Demandes du 21 novembre : « un champ de bataille en mosaïque », « les mosaïques doivent être collées, un damier en mosaïque », jauges tordues, parchemins usés.
+- Le Plateau devient un damier de tuiles jointives : hexagones et nœuds papillon alternés, bord à bord, 5 colonnes × 3 voies. Vos cases sont bleu nuit, celles de l'ennemi brun rouge ; chaque case spéciale garde sa couleur et son emblème Girih incrusté (Bastion bleu, Piège violet, Tanière rouge, Source turquoise, Tribune ocre). Le Centre est la tuile du milieu (verte à vous, rouge à l'ennemi), entre deux cases décoratives sombres.
+- Unités : étiquettes de papier, jauges tordues et hachurées, intentions sur des billets manuscrits.
+- En-tête gothique sur un coup de pinceau violet avec un sceau ; mana et pioche sur parchemin ; « Fin du tour » en sceau de cire rouge, « Manœuvre » en sceau vert.
+- Les règles du Plateau et les cadres des cartes à jouer ne changent pas. Vue de dessus (pas de perspective). Aucune image, aucun filtre ; les halos animés des cases visées deviennent un clignotement simple.
+
+## Version 2.31 : interface « Carnet sombre », étape 1, l'exploration (22 novembre, `src/carnet.js`)
+Maquette validée le 21 novembre au soir (encre, parchemin usé et brûlé aux coins, cire rouge, écriture à la main, coups de pinceau acrylique ; sans tentacules ni coulures, retirés à la demande).
+- Barre du haut en bande de parchemin déchirée, chiffres à l'encre, pastilles de mana cerclées ; le danger de la zone en tampon.
+- Titre de zone et annonces en gothique blanc d'os sur un coup de pinceau vert-de-gris, avec un sceau de cire ; les titres courts passent en capitales.
+- Fiche de zone, jauge des pôles, invite d'action, étiquette de la minicarte et aides des commandes en bouts de papier ; médaillon de la minicarte cerclé d'encre.
+- Bords de l'écran assombris (lueur de bougie).
+- Ce n'est qu'un habillage : aucun contenu ni règle ne change. Poids : aucune image, aucun filtre, aucun flou (le flou d'arrière-plan des cadres de l'exploration est retiré) ; cinq polices libres (OFL) dans `img/polices/` (200 Ko).
+- `?carnet=0` dans l'adresse rend l'ancienne interface. Reste à faire : combat (étape 2), menu pause (étape 3).
+
+## Version 2.30.4 : carte du monde allégée (22 novembre, `src/minicarte.js`)
+Symptôme rapporté : plantage en dézoomant la carte du monde sur la Xbox.
+- La 3D ne se dessine plus derrière la carte ouverte (elle continuait à chaque image, en plus de la carte).
+- L'image de la carte est plafonnée à la taille de l'écran (avant : jusqu'à 2 fois en largeur et en hauteur, soit 4 fois la mémoire) et rendue quand la carte se ferme.
+- Plus d'ombres floues (shadowBlur) : le halo de votre royaume est un trait large et pâle.
+- Entrelacs Girih seulement de près ; au plus 20 images par seconde pendant un zoom, 4 au repos.
+
+## Version 2.30 : la carte enluminée, royaumes bien délimités (22 novembre, `src/minicarte.js`)
+Demande : « une carte mosaïque plus belle où chaque royaume est bien dessiné, des zones bien délimitées dans le chaos d'une mosaïque aléatoire ».
+- Le sauvage devient une mosaïque sombre, gravée d'entrelacs Girih en bronze pâle (cordes en étoile entre les milieux des côtés : décagone {10/3}, pentagone et hexagone {n/2}, losange {4/1}, papillon noué au centre).
+- Chaque royaume (le vôtre en or champagne, chaque maison rivale à ses couleurs) est rempli à ses couleurs, avec un entrelacs doré, et sa frontière est tracée en rempart double (filet sombre, trait de couleur, liseré clair) ; le vôtre a un halo d'or.
+- Nom et blason de chaque royaume d'au moins 3 tuiles d'un seul tenant, au centre, quand on dézoome (de près, les noms des zones prennent le relais). Cadre doré à rosaces autour de la carte.
+- La minicarte reprend les mêmes royaumes et frontières, sans noms ni halo (elle est redessinée à chaque image). X (couleurs des niveaux) garde l'ancien rendu.
+- Coût : les arêtes partagées du monde (5 246) sont calculées une fois ; aucune image ni texture en plus. Captures : `node tv/tools/capture-carte.js <dossier>` (royaumes simulés en milieu de partie).
+
+## Version 2.29 : plantages sur Xbox, mémoire (21-22 novembre, `src/memoire.js`)
+Symptôme rapporté : écran noir « comme un plantage d'Edge », en marchant ou pendant une mue, vers 10 minutes de jeu, parfois en changeant la qualité d'image.
+Mesures (banc `tv/tools/test-endurance.js`) : une région pesait ~700 Mo dans le navigateur, dont un sol d'un million de sommets ; rien ne grossissait sans fin, mais chaque voyage recharge la page.
+- Avant chaque rechargement (voyage, sauvegarde chargée), la mémoire de la carte graphique est rendue tout de suite.
+- 2.30.1 : « Error creating WebGL context » au rechargement d'un voyage (photo de l'utilisateur, 22 nov.) : la page réessaie seule après 1,5 s, 3 s, 4,5 s, 6 s, puis passe en Équilibrée pour la séance.
+- Contexte WebGL perdu (écran noir) : la partie est enregistrée et la région rechargée au même endroit, avec un message.
+- Sur Xbox (ou `?xbox=1`) : maille du sol 5,4 m au lieu de 4,2 (40 % de sommets en moins), anticrénelage ×2 au lieu de ×4 en Belle, et aucun multiéchantillon en Splendide (FXAA seul, image de rendu ~120 Mo → ~25 Mo : l'écran noir revenait surtout en Splendide).
+- L'index de la grande maille du sol (inutile depuis les carreaux) est libéré : ~25 Mo en mémoire et autant sur la carte graphique.
+- Fluide : la carte d'ombre est rendue à la mémoire, sans changer l'état d'éclairage des shaders.
+- Bêtes errantes réutilisées (elles perdaient une dizaine de géométries par zone), chariots et tours libérés.
+- Hordes : le bouton « Aller » n’est plus proposé vers une zone hors région (le reste corrigé en 2.27.2).
+- Journal : si la page s'est fermée brutalement, le jeu le dit au démarrage suivant (moment, zone, minutes de jeu) ; `MZplantages()` dans la console rend les 10 derniers.
+
+## Version 2.27 : boucle graphique 3 (20 novembre)
+
+Trois améliorations acceptées par le testeur de l'équipe graphique :
+- **Sol** : chaque famille de zone a sa propre écriture de pôle (−7 : craquelure sèche en Citadelle, lave en Donjon, cendres en Ressource, flaques-miroirs en Antre, dalles brisées en Assemblée ; +7 : Girih doré en relief, zellige, fleurs, nacre, mosaïque pleine). Les losanges du Marché sont codés en luminance et se lisent sous le gris.
+- **Météo et lumière par lieu et par pôle** : plus de neige sur la lave (braises en Donjon, lucioles et pollen en Antre, poussière en Assemblée), ombres plus courtes vers +7, neige plus rare vers +7 dans la famille Glace.
+- **Combat et barre du haut** : le décor de combat vient de la zone, le disque jaune derrière le héros et le texte fantôme ont disparu, la barre du haut est allégée.
+- Le banc `tv/tools/boucle.js` mesure maintenant les 8 zones des planches. Une même version varie de ±150 appels d'un passage à l'autre dans le Marché : comparer sur plusieurs passages.
 
 ## Gameplay du monde : pacte et siège essayés ensemble (20 nov., testeur)
 
@@ -434,3 +493,8 @@ Code : tv/src/assemblees.js. Une Assemblée n'agit pas en combat : sa loi agit s
 - Barre du haut en trois îlots (mana · territoire · ressources) séparés d'un filet d'or à losange ; valeurs clés en grand (zones à vous, paquet), un seul accent (l'or). Blessures et secrets rejoignent l'îlot des ressources (bandeau.js).
 - Cartes de combat : les cartes non choisies montrent nom, type et trois lignes de texte avec fondu bas ; la carte choisie a une hauteur fixe et `ajuster()` réduit sa police par pas de 4 % (6 au plus), une mesure par carte et par main ; elle s'écarte de ses voisines et porte une ombre de la couleur de son mana. Mana du tour en grille de pastilles.
 - Fichiers : ecrin.js, bandeau.js, cartes-visuel.js. Rien ne change dans main.js, combat.js, cartes.js ni anim-combat.js, ni dans la scène 3D (triangles et appels de dessin identiques, aux variations du tirage près).
+
+### Boucle 3.2 · Météo et lumière signées par lieu et par pôle (20 nov. 2026)
+- Fin de la neige sur la lave : chaque lieu a sa météo (ciels.js, cibles AT dans l'enveloppe de Z.atm, lissage de stepAtmo gardé) — neige dense / givre en paillettes (Glace), braises qui montent / cendres pâles (Feu), lucioles / pollen doré (Eau, Sève, mangrove), sable rouge / poussière horizontale / presque rien (Pierre et déserts : canyon, sable, sel, savane, steppe), bruine / akènes / pétales (Vent), flocons d'encre / rien (Givrecloche) ; un septième par palier ; mélange additif changé seulement au changement de famille ou de pôle (wI ≤ 1,2) ; soleil par paliers (−7…−4 rasant 8–12°, −3…+3 vers 35°, +4…+7 haut 55–65°, Pierre ≤ 17°), sol hémisphérique teinté de l'ombre du pôle ; les 260 poussières de lumière (poussiere.js) montent en braises, clignotent en lucioles ou glissent en grains, toujours un seul appel de dessin. Mesures : appels et triangles dans le bruit du banc (CIT 422 contre 454 avant sur la même machine).
+### Boucle 3.1 · Sol : une écriture de pôle par famille de zone (20 nov. 2026)
+- tv/src/sol.js : chaque famille a sa propre écriture de sol, en qualité Belle comme en Fluide (seuls le Voronoï du Donjon et le Girih complet restent réservés à Belle). À −7 : craquelure sèche en relief, sans lueur (Citadelle), veines de lave (Donjon), cendres en points qui couvent à peine (Ressource), flaques noires en miroir qui prennent le zénith ou l'horizon selon l'angle de vue (Antre), grandes dalles brisées et basculées (Assemblée). À +7 : Girih en relief doré, levé par la normale seule (Citadelle), traits Girih ou zellige (Donjon), prairie semée de fleurs (Ressource), nacre en écailles (Antre), mosaïque Girih pleine en trois aplats terre cuite, sable et vert de cuivre (Assemblée). Marché : losanges codés en luminance (craie sur encre à −7, sombres sur blanc à +7), lisibles à travers le gris de Givrecloche. Au niveau 0, chaque famille garde une trace faible de son motif. L'échelle ou la densité saute aux paliers ±2, ±4 et ±6. Le relief passe par la normale (dérivées), sans texture ni géométrie : aucun appel de dessin en plus. tv/tools/boucle.js mesure désormais les zones des planches.

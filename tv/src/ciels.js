@@ -108,13 +108,75 @@ function duoOf(Z){if(Z._duo!==undefined)return Z._duo;let r=Z.id in DUO_ZONE?DUO
 const EXP7={DON:.62},BL7={DON:.5,Glace:.45}; /* halo plafond : neige blanche + halo = voile laiteux (RES374 +7) */
 const bl7=Z=>BL7[Z.id]||(Z.plus&&BL7[Z.d.mana])||.8;
 const capTo=(v,cap,k)=>v>cap?lerp(v,cap,k):v;
+
+/* ---------- Boucle 3 (20 nov. 2026) : météo et lumière signées par lieu et par pôle ----------
+   Constat : la neige tombait partout (sur la lave, dans le désert, dans la mangrove) et le soleil gardait la même hauteur
+   d'un pôle à l'autre. On écrit ici les CIBLES de l'atmosphère (AT, dans l'enveloppe de Z.atm), jamais A après coup :
+   stepAtmo garde son lissage (~0,5 s) d'une zone ou d'un palier à l'autre.
+   1) Une famille de météo par lieu : le mode de ciel (modeOf), corrigé par le biome (on ne neige pas sur un canyon).
+      Pour chaque famille, trois ancres (−7, 0, +7) ; chaque palier glisse d'un septième de l'une à l'autre.
+   2) Le nuage « weather » passe en mélange additif pour ce qui luit (braises, lucioles, pollen, givre), seulement au
+      CHANGEMENT de famille ou de pôle (aucune recompilation : le mélange est un état GL, pas un programme) ; wI ≤ 1,2.
+   3) Le soleil par paliers nets : −7…−4 rasant (8 à 12°), −3…+3 vers 35°, +4…+7 haut (55 à 65°), ombres courtes.
+      L'exception Pierre (soleil ≤ 17°) est gardée. Le sol du ciel hémisphérique prend la teinte d'ombre du pôle.
+   Aucun objet ni appel de dessin en plus ; le nombre de flocons reste ≤ WN (wn ≤ 1, plus bas au désert et à +7). */
+/* biome → famille ; sinon le mode de ciel : 0 neige, 1 braise, 2 luciole, 3 sable, 4 vent, −1 encre (Givrecloche) */
+const FAM_BIO={'Canyon':'sable','Désert de sable':'sable','Désert de sel':'sable','Savane':'sable','Steppe':'sable',
+  'Glacier':'neige','Toundra':'neige','Haute montagne':'neige','Volcan':'braise','Mangrove':'luciole','Marais':'luciole','Jungle':'luciole'};
+const FAM_MODE=['neige','braise','luciole','sable','vent'];
+const famille=Z=>Z._metF||(Z._metF=(Z.plus&&FAM_BIO[Z.d.biome])||FAM_MODE[modeOf(Z)]||'encre');
+window.familleMeteo=famille; /* lu par poussiere.js (poussières de lumière cohérentes avec la météo) */
+/* ancres [wn, wv (>0 tombe, <0 monte), wd (balancement horizontal, m), ws (taille), wI, couleur, additif] */
+const METEO={
+  /* Glace : neige dense à −7 ; givre en paillettes rares et lentes à +7 (additif : elles scintillent) */
+  neige:{n:[.9,4.6,2.6,.32,1,'#eaf2fa',0],z:[.2,2.1,1.5,.24,1,'#e6edf4',0],p:[.07,.3,1.4,.13,1.2,'#bfe6ff',1]},
+  /* Feu : braises qui montent à −7 (orange, additif) ; cendres pâles et chaudes qui flottent à +7 (jamais blanches) */
+  braise:{n:[.5,-2.6,1.8,.36,1.2,'#ff8a20',1],z:[.08,-.9,1.6,.17,1.1,'#ff8a3a',1],p:[.13,.22,2.4,.24,.9,'#b8a48a',0]},
+  /* Eau/Sève : lucioles rares, grosses et lentes à −7 ; pollen doré à +7 (additif aux deux pôles) */
+  luciole:{n:[.06,.12,3.6,.5,1.2,'#a8ff4a',1],z:[.04,.25,2.6,.3,1,'#e0f088',1],p:[.15,.18,2.6,.15,1.2,'#ffc840',1]},
+  /* Pierre/désert : sable rouge à −7, poussière beige presque horizontale à 0, presque rien à +7 */
+  sable:{n:[.36,.7,9,.26,1.15,'#e0602c',0],z:[.16,.12,10,.19,1,'#d6bc92',0],p:[.02,.06,7,.13,1,'#e8d2a6',0]},
+  /* Vent : bruine grise à −7, akènes qui voyagent à 0, pétales lilas à +7 */
+  vent:{n:[.55,9,3,.13,1,'#7c889a',0],z:[.06,.45,6,.2,1,'#e4dcc4',0],p:[.09,.5,5,.24,1.1,'#dcc0ff',0]},
+  /* Givrecloche (noir et blanc) : flocons d'encre à −7, flocons gris légers à 0, rien à +7 */
+  encre:{n:[.7,1.5,2.4,.42,1,'#050507',0],z:[.15,1.8,1.5,.24,1,'#c4c4c4',0],p:[0,.2,1.5,.2,1,'#ffffff',0]}};
+/* Eau (récifs, deltas, archipels) : des lucioles bleu-vert plutôt que vert-jaune */
+const METEO_MANA={Eau:{n:'#4affd0'}};
+for(const f in METEO)for(const a of 'nzp')METEO[f][a][5]=LIN(METEO[f][a][5]);
+for(const m in METEO_MANA)for(const a in METEO_MANA[m])METEO_MANA[m][a]=LIN(METEO_MANA[m][a]);
+/* teinte d'ombre de la signature du pôle (sol du ciel hémisphérique) : −7 la couleur sombre du mana (PMANA), +7 la complémentaire */
+const OMBRE_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',RES:'Vent'}; /* MAR : noir et blanc, rien */
+function ombreNeg(Z){if(Z._ombN!==undefined)return Z._ombN;const m=Z.plus?Z.d.mana:OMBRE_ORIG[Z.id];
+  const P=typeof PMANA!=='undefined'&&m&&(PMANA[m]||PMANA.Pierre);return Z._ombN=P?LIN(P[0]):null}
+const m3=[0,0,0];let addCur=-1;
+function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=famille(Z),F=METEO[f],a=F.z,b=L<0?F.n:F.p;
+  /* 1. météo : un septième par palier entre l'ancre 0 et celle du pôle */
+  o.wn=Math.min(1,lerp(a[0],b[0],k));o.wv=lerp(a[1],b[1],k);o.wd=lerp(a[2],b[2],k);o.ws=lerp(a[3],b[3],k);o.wI=lerp(a[4],b[4],k);
+  const MM=Z.plus&&METEO_MANA[Z.d.mana],cb=(MM&&MM[L<0?'n':'p'])||b[5],ca=(MM&&MM.z)||a[5];mix3(o.wc,ca,cb,k);
+  const add=(L===0?a:b)[6];if(add)o.wI=Math.min(o.wI,1.2);
+  /* le mélange ne change qu'au changement (famille ou pôle) et seulement pour l'atmosphère réelle (AT) */
+  if(o===AT&&add!==addCur){addCur=add;weather.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending}
+  /* 2. soleil par paliers nets ; dans la bande du milieu, on garde un peu de l'élévation propre à la zone */
+  if(L<=-4){const r=(L+7)/3,e0=Math.max(o.el,8);o.el=lerp(8,12,r);
+    /* soleil rasant : un sol plat reçoit sin(él) de la lumière ; on rend au sol ce que l'abaissement lui retire, et un peu plus,
+       (au plus 2,4, jamais moins qu'avant) et on baisse un peu le ciel diffus, sinon les ombres longues ne se lisent pas */
+    o.sunI=Math.max(o.sunI,Math.min(1.6*o.sunI*Math.sin(e0*D2R)/Math.sin(o.el*D2R),2.4));o.hI*=lerp(.55,.8,r)}
+  else if(L>=4){const r=(L-4)/3;o.el=lerp(55,65,r);
+    /* soleil haut : le sol reçoit presque tout ; on plafonne pour ne pas brûler les sols clairs (neige, dalles de +7) */
+    o.sunI=Math.min(o.sunI,lerp(1.35,1.15,r))}
+  else o.el=35+clamp((o.el-35)*.25,-5,5);
+  if(modeOf(Z)===3)o.el=Math.min(o.el,17); /* exception Pierre (boucle 2) : grand soleil bas, ombres longues */
+  o.el=Math.max(o.el,8);                   /* jamais sous 8° : la boîte d'ombre de fluidite.js déborderait */
+  /* 3. sol du ciel hémisphérique : teinte d'ombre du pôle, luminance gardée (au moins .02 pour que la teinte se lise) */
+  if(L<0){const t=ombreNeg(Z);if(t)mix3(o.hg,o.hg,atL(t,Math.max(Yl(o.hg),.02),m3),.65*k)}
+  return o}
 for(const Z of ZN){const a0=Z.atm;if(typeof a0!=='function')continue;
-  Z.atm=(lv,o)=>{a0(lv,o);
-    if(modeOf(Z)===3)o.el=Math.min(o.el,17); /* Pierre : grand soleil bas, ombres longues */
+  Z.atm=(lv,o)=>{a0(lv,o);signer(Z,lv,o);
     if(!(lv>0))return o;
     const k=clamp(lv/7,0,1),kc=Math.min(1,k*2.5); /* plafonds atteints dès le palier 3 */
     o.exp=capTo(o.exp,lerp(1,EXP7[Z.id]||1,k),kc);o.bl=capTo(o.bl,lerp(.8,bl7(Z),k),kc);
-    if(Z.plus)o.sunI=capTo(o.sunI,1.25,k); /* le soleil colore, il n'éclaircit plus */o.wI=capTo(o.wI,1.2,kc);
+    if(Z.plus)o.sunI=capTo(o.sunI,1.25,k); /* le soleil colore, il n'éclaircit plus */
+    o.wI=Math.min(o.wI,1.2); /* boucle 3 : la table de météo pose wI ; plafond 1,2 sous le bloom */
     o.fog*=lerp(1,.75,k); /* zone sereine : on voit loin */
     const D=duoOf(Z);
     if(D){const dom=D[0],com=D[1],h=o.hor;
@@ -124,7 +186,10 @@ for(const Z of ZN){const a0=Z.atm;if(typeof a0!=='function')continue;
       /* zénith et ombres (ciel hémisphérique) : la complémentaire, à luminance gardée */
       mix3(o.top,o.top,atL(com,Yl(o.top),t3),.5*k);mix3(o.hs,o.hs,atL(com,Yl(o.hs),t3),.22*k);
       /* sol du ciel hémisphérique, soleil et nuages : la dominante */
-      mix3(o.hg,o.hg,atL(dom,Math.max(Yl(o.hg),.05),t3),.7*k);mix3(o.sun,o.sun,atL(dom,Yl(o.sun),t3),.4*k);
+      /* boucle 3 : le sol du ciel hémisphérique garde la dominante (lumière renvoyée par le sol), puis prend la teinte
+         d'ombre du pôle (la complémentaire) pour un tiers : les ombres de +7 ne sont plus du même ton que le soleil */
+      mix3(o.hg,o.hg,atL(dom,Math.max(Yl(o.hg),.05),t3),.7*k);mix3(o.hg,o.hg,atL(com,Yl(o.hg),t3),.35*k);
+      mix3(o.sun,o.sun,atL(dom,Yl(o.sun),t3),.4*k);
       mix3(o.clc,o.clc,atL(dom,Yl(o.clc),t3),.3*k);}
     /* le brouillard prend toujours A.hor dans stepAtmo : il se fond exactement dans l'horizon du ciel */
     return o}}

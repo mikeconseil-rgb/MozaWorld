@@ -4,7 +4,7 @@
 
    Monde   : stick gauche = marcher dans la direction poussée (vitesse selon l'inclinaison), stick droit = caméra,
              gâchette droite (RT) ou clic du stick = courir, A = sauter / agir, X = marche automatique,
-             Y = paquet de combat, B ou Menu (≡) = menu, Vue (⧉) = voyager.
+             Y = paquet de combat, B ou Menu (≡) = menu, Vue (⧉) = carte du monde (minicarte.js), LB = zoom de la minicarte.
    Combat  : stick, croix ou LB / RB = choisir la carte ou la cible, A = jouer, X = fin du tour, B = annuler / pause.
    Menus   : stick ou croix, A = valider, B = retour. Épreuves : stick ou croix, A = OK. */
 

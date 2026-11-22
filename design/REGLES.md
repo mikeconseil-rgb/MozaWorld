@@ -1,30 +1,33 @@
 # MozaWorld : règles en vigueur
 
-État au 17 novembre 2026 (soir). Cette page dit **la règle qui s'applique aujourd'hui**, par sujet. Quand une décision change une règle, on corrige cette page le jour même et on ajoute une ligne à `DECISIONS.md`. En cas de désaccord avec un autre document, cette page gagne ; le détail du combat et des cartes est dans `cartes-2.2/regles-avancees.md`.
+État au 20 novembre 2026 (version 2.24 ; page créée le 17 novembre, relue le 20 lors de la deuxième passe de cohérence). Cette page dit **la règle qui s'applique aujourd'hui**, par sujet. Quand une décision change une règle, on corrige cette page le jour même et on ajoute une ligne à `DECISIONS.md`. En cas de désaccord avec un autre document, cette page gagne ; le détail du combat et des cartes est dans `cartes-2.2/regles-avancees.md`.
+
+**Gel du 23 novembre (décision du 20 nov.)** : plus de nouveau système à partir du 23 nov. ; jusqu'au 28 on joue, on corrige et on règle. Les zones à écrire et les images continuent. Dimanche 22 : dix provisoires à trancher, les autres gardés tels quels jusqu'après le 28.
 
 Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas encore dans le jeu)** = décidé, mais la version jouée ne le fait pas encore.
 
 ## 1. Le cadre
 
 - Monde ouvert découpé en zones selon une mosaïque Girih qui pave tout le plan, sans trou. Le monde est tiré au hasard.
-- La version jouée est une page web (dossier `tv/`), dans Edge sur Xbox Series S, à la manette, ou au clavier sur PC. C'est le jeu pour l'instant ; Unreal Engine 5 sur PC (RTX 2070) reste la dernière étape, sans date.
+- La version jouée est une page web (dossier `tv/`), dans Edge sur Xbox Series S, à la manette, ou au clavier sur PC ; aussi jouable au doigt sur téléphone en paysage (Pixel 9 Pro, Chrome ; 2.34). C'est le jeu pour l'instant ; Unreal Engine 5 sur PC (RTX 2070) reste la dernière étape, sans date.
 - Jeu solo d'abord. Vue à la troisième personne. Français seule langue. Budget : gratuit seulement ; tout achat se demande au cas par cas.
 - L'adversaire principal est le monde sauvage. Les rivaux joués par l'ordinateur sont secondaires (18-19 nov., dans le jeu : quatre maisons, voir section 8).
 
 ## 2. Les cinq types de tuile
 
-| Forme | Type | Nombre visé sur 986 | Rôle |
-|---|---|---|---|
-| Hexagone allongé | Ressource | 383 | Source du mana ; niveaux 0 à 3, sans pôle ; aucune carte |
-| Nœud papillon | Antre | 246 | Bêtes alliées ; passif de combat propre à chaque Antre et à chaque pôle |
-| Losange | Assemblée | 182 | Siège politique ; cartes de loi ; pouvoir sur la carte du monde **(provisoire)** |
-| Pentagone | Donjon | 130 | Cartes de puissance ; passif résistance et piège ; s'aménage une fois conquis |
-| Décagone | Citadelle | 45 | Capitale ; passif endurance et Garde levée ; commerce : le Comptoir (19 nov., dans le jeu, voir section 6) |
+| Forme | Type | Dans la liste des 986 | Posées dans le monde de 925 | Rôle |
+|---|---|---|---|---|
+| Hexagone allongé | Ressource | 383 | 347 | Source du mana ; niveaux 0 à 3, sans pôle ; aucune carte |
+| Nœud papillon | Antre | 246 | 249 | Bêtes alliées ; passif de combat propre à chaque Antre et à chaque pôle |
+| Losange | Assemblée | 182 | 195 | Siège politique ; cartes de loi ; pouvoir sur la carte du monde **(provisoire)** |
+| Pentagone | Donjon | 130 | 90 | Cartes de puissance ; passif résistance et piège ; s'aménage une fois conquis |
+| Décagone | Citadelle | 45 | 44 | Capitale ; passif endurance et Garde levée ; commerce : le Comptoir (19 nov., dans le jeu, voir section 6) |
 
 - Chaque zone est unique : son histoire, ses deux pôles, ses cartes, son bonus. Les quatre conteurs écrivent, le critique juge le ton.
 - Une zone va de −7 à +7. Les deux pôles ne sont ni le bien ni le mal : ce sont deux évolutions opposées, chacune avec sa grandeur et son prix. L'écart entre −7 et +7 doit être frappant, avec un saut visible à chaque palier (la mue).
-- **Le monde entier est posé (20 nov., choix 1 de l'utilisateur)** : la mosaïque compte aujourd'hui 925 zones (909 tuiles autour des 5 d'origine + 16), avec un pavage Girih exact et sans trou ; le but reste 986. Les zones écrites par les conteurs sont jouables ; les autres sont visibles mais scellées (« pas encore écrite ») et arrivent par lots (visé : ~580 jouables le 28 nov., le reste en décembre). Les Ressources restent simples : récit léger, deux images (niveaux 0-1 et 2-3), aucune carte. Au 20 nov. (2.22) : 743 zones jouables ; les 383 Ressources de la liste sont écrites mais la mosaïque n'a que 339 hexagones, donc 36 Ressources écrites attendent une tuile (agrandissement du monde) ; restent à écrire 182 zones à cartes posées.
+- **Le monde entier est posé (20 nov., choix 1 de l'utilisateur)** : la mosaïque compte aujourd'hui 925 zones (909 tuiles autour des 5 d'origine + 16), avec un pavage Girih exact et sans trou. Le 20 nov., l'utilisateur garde 925 zones et 88 Donjons pour l'instant (choix « 1 a ») : on finit d'écrire les zones avant de retoucher le pavage. Les zones écrites par les conteurs sont jouables ; les autres sont visibles mais scellées (« pas encore écrite ») et arrivent par lots (visé : ~580 jouables le 28 nov., le reste en décembre). Les Ressources restent simples : récit léger, deux images (niveaux 0-1 et 2-3), aucune carte. Au 20 nov. (2.26) : 883 zones jouables ; les 383 Ressources de la liste sont écrites mais la mosaïque n'a que 347 hexagones (décompte du 20 nov. dans `tv/src/carte.js` ; le texte disait 339, et le monde compte 90 pentagones de Donjon, pas 88), donc 36 Ressources écrites attendent une tuile (agrandissement du monde) ; restent à écrire 42 zones à cartes posées.
 - **Régions** : seules les zones à moins de 1,7 km de vous sont construites (environ 50). En passant le bord (1,3 km), le jeu sauvegarde et recompose la mosaïque autour de vous (écran « Voyage »). Le territoire de départ est toujours dans la région d'origine.
+  - **Le gameplay du monde reste dans la région de départ d'ici le 28 nov. (décision du 20 nov., « a partout »).** Hordes, maisons rivales, domaines, tours, caravanes, lois, pacte et siège ne regardent que les zones de la région chargée (une cinquantaine), pas les 925 du monde ; les étendre au monde entier passe après le 28. `tv/tools/test-voyage.js` voyage entre deux régions et vérifie que rien ne se perd. **Défaut connu au 20 nov. (pas encore corrigé)** : arriver dans une région pendant qu'une horde marche depuis ou vers une zone qui n'y est pas chargée fait planter la page au démarrage (ligne « Menaces » du bandeau) ; les Citadelles épiques sont tirées parmi celles de la région chargée, elles changent donc d'une région à l'autre.
 - Chaque biome a sa recette visuelle (24 sur 24 depuis le 20 nov.) et chaque zone sa **signature** (palette, relief, densité des objets, brume, repère de sa culture), tirée de son identifiant.
 - 5 Citadelles épiques donnent chacune une victoire à ±7 **(provisoire)** ; après une victoire, fin de ce monde et nouveau monde **(provisoire)**. Dans le jeu : le **siège final**, voir section 8 (19 nov.).
 
@@ -62,7 +65,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 ## 5. Les cartes
 
 - Départ : **plus de cartes communes** (18 nov.). Le paquet de départ, ce sont les 6 cartes de palier 1 des zones à cartes du territoire de départ, chacune du pôle tiré pour sa zone.
-- **Une seule sorte de carte** : la carte de combat. On en gagne une, distincte, à chaque palier réussi d'une zone (paliers 1 à 6). Au palier 7, la carte change de nature et porte une résonance (Braise, Givre, Sang, Racine, Sceau, Abîme) qui permet les grands combos. La « carte de pouvoir » de la première version (Mineure, Majeure, Ultime) est supprimée **(retrait en cours dans le jeu)**.
+- **Une seule sorte de carte** : la carte de combat. On en gagne une, distincte, à chaque palier réussi d'une zone (paliers 1 à 6). Au palier 7, la carte change de nature et porte une résonance (Braise, Givre, Sang, Racine, Sceau, Abîme) qui permet les grands combos. La « carte de pouvoir » de la première version (Mineure, Majeure, Ultime) est supprimée (retirée du jeu ; vérifié le 20 nov. dans le code).
 - Les cartes diffèrent selon le pôle et viennent toujours de l'histoire de la zone. Chaque carte doit avoir un impact et un crochet de combo.
 - Un secret trouvé donne une carte utilitaire ; le Comptoir d'une Citadelle vend aussi ces cartes de secret, une par cycle au plus (19 nov., section 6). Les combats ne donnent jamais de carte. Les Ressources ne donnent pas de carte (les Gerbes sont retirées, leurs textes gardés pour de futurs atouts).
 - Paquet : 40 cartes au plus. La forge du paquet en Citadelle est gardée pour plus tard.
@@ -180,8 +183,12 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Le combat est animé (carte qui vole, élan, impact), sans que les animations changent les règles.
 - Chaque zone a son étalonnage signature, propre à chaque pôle (fin du noir bouché à −7 et du blanc brûlé à +7), et un sol vivant : grain par biome, failles vers −7, motif Girih vers +7 (boucle 1, 19 nov.).
 - Chaque type de zone a sa grammaire de pôle au sol, chaque zone son ciel signature (le +7 se teinte, il ne blanchit pas) ; l'image passe par un FXAA et les ombres restent dans leur boîte (boucle 2, 19 nov.).
+- Chaque famille de zone a son écriture de pôle au sol ; la météo et la lumière suivent le lieu et le pôle (jamais de neige sur la lave) ; le décor de combat vient de la zone (boucle 3, 20 nov.).
 - Le monde est animé : vent dans la végétation, braises vers −7 et lucioles vers +7, créatures qui errent (décoratives) (2.8).
 - Exploration épurée par défaut : fiche de zone quelques secondes à l'entrée, aide qui s'efface, minicarte réduite ; RB ou Tab affiche l'interface complète (2.8).
+- **Interface « Carnet sombre » (21 nov., 2.31)** : style retenu par l'utilisateur sur maquette. Encre, parchemin usé et brûlé aux coins, cire rouge, écriture à la main, coups de pinceau acrylique ; ni tentacules ni coulures. L'exploration est habillée en 2.31 (`tv/src/carnet.js`, sans image ni filtre), le combat en 2.32 (`tv/src/carnet-combat.js` : le Plateau en damier de tuiles jointives, mêmes cases et mêmes règles), le menu pause en 2.33 (`tv/src/carnet-menu.js`). C'est un habillage : aucune règle ne change.
+- **Minicarte et carte du monde (20 nov., 2.24)** : demande de l'utilisateur, « améliore encore la minimap pour qu'elle soit plus jolie et pratique ». La minicarte est un médaillon rond centré sur le héros, qui tourne avec la caméra (le haut = là où l'on regarde) avec un N pour le Nord ; couleur et icône de tuile Girih par type, bord d'or pour vos zones, niveau en bleu (pôle −) ou ambre (pôle +), flèches au bord vers les activités hors de vue (or) et les menaces (rouge) ; nom, type et niveau de la zone sous le médaillon ; LB ou Z : zoom proche, moyen, large. Vue (⧉) ou C ouvre la carte du monde (les 925 tuiles, Nord en haut) : se déplacer, zoomer (LT/RT), colorer par type ou par niveau (X), revenir au héros (Y), voyager vers la zone visée (A), fermer (B). La rotation avec la caméra est **confirmée par l'utilisateur le 20 nov.** (« Oui » à la recommandation). Couleurs des types et Vue qui ouvre la carte au lieu de la liste (la liste reste au menu) : choix de Claude.
+- **Carte enluminée, royaumes (2.30, 21-22 nov.)** : demande de l'utilisateur, « une carte mosaïque plus belle où chaque royaume est bien dessiné ». Les royaumes sont les territoires des joueurs, le vôtre et ceux des quatre maisons rivales **(décision de l'utilisateur, « 1 », 21 nov.)**, pas des royaumes fixes. Sur la carte du monde : le sauvage est une mosaïque sombre à entrelacs Girih bronze ; chaque royaume est rempli à ses couleurs (le vôtre en or avec un halo), frontière tracée en rempart double, nom et blason au centre dès 3 tuiles d'un seul tenant quand on dézoome. La minicarte reprend royaumes et frontières, sans noms. X (couleurs des niveaux) garde l'ancien rendu.
 - Le juge visuel des zones (note de 80 % au moins) est **suspendu** tant que le jeu est la version web. Il reprendra sous Unreal. Le critique reste en place pour les textes et les cartes.
 - Musique : propre à chaque zone et à chaque niveau. Style MIDI : chaque zone a son air, tiré du classique du domaine public (Bach, Mozart, Beethoven, Grieg…), des comptines populaires (Frère Jacques, Au clair de la lune…) ou d'airs originaux dans l'esprit des jeux 16 bits (jamais une mélodie de jeu reprise). Au niveau 0 on n'entend que la trame ; chaque palier vers ±7 ajoute une couche (basse, accords, percussions, arpège ou canon, accords enrichis, ornements, harmonie). Vers −7 l'air passe en mineur puis en mode sombre et ralentit ; vers +7 il s'éclaire et accélère. Détail : `tv/src/musique.js` ; écoute : juke-box `tv/musique.html`.
 

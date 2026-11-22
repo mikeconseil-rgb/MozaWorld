@@ -66,7 +66,7 @@ function donjonsAReparer(){
 function reparer(id){if(typeof reparerPieges==='function')return reparerPieges(id)>0;
   if(id!=='DON'||!Array.isArray(S.pieges))return false;for(const x of S.pieges)if(x){x.dort=false;x.u=3}return true}
 const hordesEnMarche=()=>typeof S.hordes==='object'&&S.hordes?Object.values(S.hordes).filter(h=>ZB[h.src]&&ZB[h.cible]).sort((a,b)=>(S.own[b.cible]?1:0)-(S.own[a.cible]?1:0)||a.arrive-b.arrive):[];
-const nomCourt=id=>ZB[id].info.nom.split(',')[0];
+const nomCourt=id=>zI(id).nom.split(',')[0];
 
 function payerTess(n){if(S.tess<n)return false;S.tess-=n;return true}
 function acheterCarte(Z,k){initCommerce();const prix=TESS_CARTE(S.tessCartes);
@@ -88,7 +88,7 @@ function openComptoir(Z,f){mode='menu';document.body.classList.add('jeu-ouvert')
   if(!dj.length)o.push({l:'Réparer des pièges',ic:'⛬',off:true,d:'aucun Donjon tenu à aménager'});
   for(const h of hd)o.push({l:`Retarder la horde ${typeof de_==='function'?de_(nomCourt(h.src)):'de '+nomCourt(h.src)}`,ic:'⌛',off:!!h.retard||S.tess<TESS_RETARD,
     d:h.retard?'déjà retardée une fois':`${TESS_RETARD} tesselles · +${RETARD_CYCLES} cycles · vers ${nomCourt(h.cible)}${S.own[h.cible]?' (à vous)':''}`,
-    go:()=>{if(acheterRetard(h.src)){sfx('hit');toast('Comptoir · '+nomCourt(Z.id),'La horde '+(typeof de_==='function'?de_(nomCourt(h.src)):'de '+nomCourt(h.src))+' est retardée',`Des guides payés l'égarent : elle arrivera ${RETARD_CYCLES} cycles plus tard sur ${ZB[h.cible].info.nom}.`)}openComptoir(Z,UI.f)}});
+    go:()=>{if(acheterRetard(h.src)){sfx('hit');toast('Comptoir · '+nomCourt(Z.id),'La horde '+(typeof de_==='function'?de_(nomCourt(h.src)):'de '+nomCourt(h.src))+' est retardée',`Des guides payés l'égarent : elle arrivera ${RETARD_CYCLES} cycles plus tard sur ${zI(h.cible).nom}.`)}openComptoir(Z,UI.f)}});
   if(!hd.length)o.push({l:'Retarder une horde',ic:'⌛',off:true,d:'aucune horde en marche'});
   o.push({l:`Échanger ${TESS_ECHANGE} tesselles contre 1 ${t}`,ic:'⇄',off:S.tess<TESS_ECHANGE,d:`réserve de ${t} : ${resN(t)}`,go:()=>{if(echangerTess(Z))sfx('hit');openComptoir(Z,UI.f)}});
   if(typeof optionPacteComptoir==='function')o.push(...optionPacteComptoir(Z));   /* lot 3 : le pacte avec une maison rivale (pacte.js) */

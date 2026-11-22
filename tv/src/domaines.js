@@ -37,7 +37,7 @@ function verrouillee(id){return!!citVerrou(id)||auCoeur(id)}
 function defenseMonde(id){const r={bonus:0,raisons:[]};if(!S.own[id])return r;
   if(auCoeur(id)){r.bonus+=2;r.raisons.push('au cœur du royaume +2')}
   const d=domaineDe(id);if(d&&d.ferme){r.bonus+=1;r.raisons.push('domaine '+DOM_NOMS[d.type][1]+' fermé +1')}
-  const c=citVerrou(id);if(c){r.bonus+=2;r.verrou=2;r.raisons.push('verrou de '+(ZB[c]?ZB[c].info.nom:'la Citadelle')+' +2')}
+  const c=citVerrou(id);if(c){r.bonus+=2;r.verrou=2;r.raisons.push('verrou de '+(ZB[c]?zI(c).nom:'la Citadelle')+' +2')}
   return r}
 
 /* ---------- effets des domaines fermés ---------- */
@@ -86,8 +86,8 @@ function optionsDomaines(Z){const o=[],id=Z.id,d=domaineDe(id),N=DOM_NOMS[domTyp
     d:d.ferme?DOM_BONUS[d.type]:`prenez et activez toutes ses tuiles pour le fermer (${DOM_BONUS[d.type]})`});
   if(auCoeur(id))o.push({l:'Au cœur du royaume',ic:'◉',off:true,d:'toutes ses voisines sont à vous : aucun rival ne peut la viser, défense +2'});
   else if(encerclee(id))o.push({l:'Zone encerclée',ic:'◎',off:true,d:'toutes ses voisines sont à vous : ses gardiens sont affaiblis (PV −25 %, attaque −1)'});
-  const c=citVerrou(id);if(c&&S.own[id])o.push({l:'Zone verrouillée',ic:'⛫',off:true,d:`${c===id?'cette Citadelle':ZB[c].info.nom} la verrouille : aucun rival ne peut la viser, défense +2`});
-  else if(c)o.push({l:'Sous le verrou de votre Citadelle',ic:'⛫',off:true,d:`${ZB[c].info.nom} la verrouille : aucun rival ne peut la viser`});
+  const c=citVerrou(id);if(c&&S.own[id])o.push({l:'Zone verrouillée',ic:'⛫',off:true,d:`${c===id?'cette Citadelle':zI(c).nom} la verrouille : aucun rival ne peut la viser, défense +2`});
+  else if(c)o.push({l:'Sous le verrou de votre Citadelle',ic:'⛫',off:true,d:`${zI(c).nom} la verrouille : aucun rival ne peut la viser`});
   return o}
 /* test : prendre une zone d'un coup (window.MZ.prendre) */
 function domPrendre(id,non){if(!ZB[id])return false;S.own[id]=S.act[id]=!non;save();etatHud();hudKey='';return true}

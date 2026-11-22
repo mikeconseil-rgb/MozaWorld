@@ -12,7 +12,26 @@ const BTYPES=[['CIT','⛫','Citadelles'],['DON','⬟','Donjons'],['RES','⬢','R
 .bandeau .dg{font-size:calc(var(--u)*1.1);font-weight:600;padding:.05em .5em;border-radius:3px;border:1px solid currentColor}.bandeau .dg.faible{color:#8fc06f}.bandeau .dg.reel{color:#e8c77f}.bandeau .dg.mortel{color:#ff7a6a}
 .bandeau .titre{font-size:calc(var(--u)*.85);letter-spacing:.18em;text-transform:uppercase;color:var(--sable)}
 /* 19 nov. : avec les lignes Menaces et Rivaux, la barre peut dépasser 1280 px ; elle passe alors sur deux lignes au lieu d'être coupée */
-.hud.etat,.hud.etat .bandeau{flex-wrap:wrap!important;row-gap:calc(var(--u)*.3)}`;document.head.appendChild(st)})();
+.hud.etat,.hud.etat .bandeau{flex-wrap:wrap!important;row-gap:calc(var(--u)*.3)}
+/* Boucle 3 (20 nov.) : la barre du haut allégée (« elle fait tableau de bord amateur »).
+   Interface épurée (par défaut) : une seule ligne, sept éléments au plus — la réserve de mana (une grappe de pastilles),
+   les zones à vous, le paquet, les tesselles, le danger de la zone, les blessures, puis la menace la plus proche ou, sans menace,
+   les secrets. Les compteurs à 0 (.zero) s'effacent. Le détail complet (territoire, routes, bêtes, rivaux…) reste dans
+   l'interface complète (Tab au clavier, RB à la manette), qui garde tout, même les zéros.
+   Les chiffres sont en elzévir (oldstyle-nums), dans la serif du titre. */
+.hud.etat .bandeau .m,.hud.etat .bandeau .d,.hud.etat .fixe b{font-family:var(--titre);font-variant-numeric:oldstyle-nums proportional-nums;font-feature-settings:"onum" 1,"pnum" 1}
+.hud.etat .bandeau .m{font-size:calc(var(--u)*1.12);font-weight:600}
+.hud.etat .bandeau .d:not(.cle){font-size:calc(var(--u)*1.08);font-weight:500}
+.hud.etat .bandeau .d small,.hud.etat .bandeau .d.cle small{font-family:var(--titre);font-style:italic;letter-spacing:0}
+.hud.etat .bandeau .d>span,.hud.etat .bandeau .d.cle>span{font-family:var(--texte)}
+body.epure .hud.etat,body.epure .hud.etat .bandeau{flex-wrap:nowrap!important}
+body.epure .hud.etat{padding-top:calc(var(--u)*.3);padding-bottom:calc(var(--u)*.3)}
+body.epure .hud.etat .bandeau .zero,body.epure .hud.etat .fixe.zero,body.epure .hud.etat .bandeau .m[title^="Mana gris"],body.epure .hud.etat .i-mana>.d,
+body.epure .hud.etat .i-terr>:not(.cle),body.epure .hud.etat .i-res>.d:not(.cle):not([title^="Tesselles"]),body.epure .hud.etat .i-res>.pt,
+body.epure .hud.etat .bandeau>.ligne,body.epure .hud.etat .i-men .titre,body.epure .hud.etat .i-men>.d~.d,
+body.epure .hud.etat .bandeau:has(.i-men) .fixe:has(#h-sec),body.epure .hud.etat .fixe:has(#h-sec) .l:last-child{display:none}
+body.epure .hud.etat .i-mana{gap:calc(var(--u)*.55)}
+body.epure .hud.etat .i-res{gap:calc(var(--u)*1)}`;document.head.appendChild(st)})();
 /* Boucle 1 (19 novembre 2026) : la barre du haut se lit en trois îlots, mana · territoire · ressources.
    Chaque îlot porte une valeur clé plus grande (le compte de zones, le paquet), le reste est en petit ; un seul accent, l'or.
    Les cases fixes de head.html (blessures, secrets) sont rangées dans l'îlot des ressources : main.js les met à jour par leur id. */
@@ -37,7 +56,12 @@ function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;
   /* boucle 1 + fils domaines, hordes, rivaux (19 nov.) : trois îlots, puis menaces et rivaux s'il y en a */
   b.innerHTML=`<div class="ilot i-mana">${mana}${prod}</div><i class="sep"></i><div class="ilot i-terr">${terr}</div><i class="sep"></i><div class="ilot i-res">${res}</div>`+
     (men.length?`<i class="sep"></i><div class="ilot i-men"><span class="titre">Menaces</span>${men.join('')}</div>`:'')+(typeof ligneRivaux==='function'?ligneRivaux():'');
-  const ir=b.querySelector('.i-res');for(const d of BANDEAU_FIXES)ir.appendChild(d)}
+  const ir=b.querySelector('.i-res');for(const d of BANDEAU_FIXES)ir.appendChild(d);
+  /* boucle 3 (20 nov.) : un compteur dont la valeur (le premier nombre) vaut 0 est marqué .zero ; la barre épurée le masque.
+     Les menaces (comptes à rebours) et les valeurs clés (zones, paquet) ne sont jamais masquées. */
+  for(const e of b.querySelectorAll('.m,.d')){if(e.classList.contains('cle')||e.closest('.i-men'))continue;
+    const n=e.textContent.match(/\d+/);e.classList.toggle('zero',!!n&&+n[0]===0)}
+  for(const f of BANDEAU_FIXES){const v=f.querySelector('b');if(v)f.classList.toggle('zero',v.textContent.trim()==='0')}}
 /* 17 nov. (« affichons ces chiffres dans la barre d'état ») : la boucle de jeu en chiffres — cartes de zone éveillées dans le paquet,
    bêtes, bonus greffés, routes — et le danger estimé de la zone où l'on se trouve. */
 function puissancePaquet(){return(S.deck||[]).filter(k=>k.indexOf('#')>0&&(typeof eveillee!=='function'||eveillee(k))||CK[k]&&CK[k].z&&k.indexOf('#')<0).length}

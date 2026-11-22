@@ -84,7 +84,7 @@ function tenter(r,Z){const R=riv(),id=Z.id;R.t[r.k]={id,de:R.nc,du:R.nc+RIV_TENT
   if(started)toast(`${r.bl} ${LaM(r)} tente l'épreuve ${de_(Z.info.nom)}`,`elle s'y attaque dans ${cyclesTxt(RIV_TENTE)}`,`Pour la devancer, activez la zone avant l'échéance, ou allez à sa Pierre d'éveil défier les gens de la maison. Sans vous, elle réussit ${Math.round(chanceEpreuve(id)*100)} fois sur 100.`);
   return{sorte:'tentative',r:r.k,id}}
 /* échéance d'une tentative : l'épreuve se résout (gagne : true ou false pour forcer le résultat en test) */
-function resoudreTentative(k,gagne){const R=riv(),t=R.t[k];if(!t)return null;delete R.t[k];const r=RIVK[k],Z=ZB[t.id],id=t.id;let res;
+function resoudreTentative(k,gagne){const R=riv(),t=R.t[k];if(!t)return null;delete R.t[k];const r=RIVK[k],Z=(ZB[t.id]||ZWB[t.id]),id=t.id;let res;
   if(S.own[id]){res={fin:'devancée',r:k,id};toast(`${r.bl} ${LaM(r)} renonce`,`${Z.info.nom} est à vous`,'Vous avez activé la zone avant elle : sa tentative tombe.')}
   else if(R.z[id]||protege(id)||(typeof auCoeur==='function'&&auCoeur(id))){res={fin:'protégée',r:k,id};toast(`${r.bl} ${LaM(r)} renonce`,`à l'épreuve ${de_(Z.info.nom)}`,'La zone est désormais hors de sa portée : ses gens repartent.')}
   else if(zonesMaison(k).length>=RIV_MAX()){res={fin:'plafond',r:k,id};toast(`${r.bl} ${LaM(r)} renonce`,`à l'épreuve ${de_(Z.info.nom)}`,'Elle tient déjà autant de zones qu\'elle peut en garder.')}
@@ -107,7 +107,7 @@ function contester(r,Z){const R=riv();R.c={r:r.k,id:Z.id,de:R.nc,du:R.nc+RIV_DEL
   return{sorte:'conteste',r:r.k,id:Z.id}}
 
 /* ---------- échéance d'une contestation ---------- */
-function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const r=RIVK[c.r],Z=ZB[c.id];let res;
+function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const r=RIVK[c.r],Z=(ZB[c.id]||ZWB[c.id]);let res;
   if(!Z||!S.own[c.id]||!S.act[c.id]){res={fin:'sans objet'}}
   else if(protegeConteste(c.id)){res={fin:'protégée'};toast(`${r.bl} ${r.nom}`,`renonce à ${Z.info.nom}`,typeof borne==='function'&&borne(c.id)?'La Pierre de bornage de Raak tient : la zone ne recule pas.':typeof enSiege==='function'&&enSiege(c.id)?'La Citadelle soutient le siège final : aucune maison n\'ose s\'en approcher.':'La zone est au cœur du royaume : la maison repart les mains vides.')}
   else{const ch=chanceRival(c.id),ok=gagne===undefined?Math.random()<ch:!!gagne,lv=S.lv[c.id]||0;
@@ -180,15 +180,15 @@ function dessinerRivaux(mc,s,ox,oz){if(!S.riv)return;const R=S.riv,pl=.5+.5*Math
     if(ct){const m=RIVK[R.c.r];mc.lineWidth=2+2*pl;mc.strokeStyle=m?m.col:'#ff7a6a';mc.setLineDash([5,4]);mc.stroke();mc.setLineDash([])}}}
 function ligneRivaux(){if(!S.riv)return'';const R=S.riv;
   const m=RIVAUX.map(r=>`<span class="d" title="${r.nom}"><span style="color:${r.col}">${r.bl}</span>${zonesMaison(r.k).length}</span>`).join('');
-  const c=R.c&&ZB[R.c.id]?`<span class="d" title="${RIVK[R.c.r].nom} conteste ${ZB[R.c.id].info.nom}" style="color:#ff9a8a"><span style="color:${RIVK[R.c.r].col}">${RIVK[R.c.r].bl}</span>${court(R.c.id).split(' ').pop()}<small> ${(n=>n+' cycle'+(n>1?'s':''))(Math.max(0,R.c.du-R.nc))}</small></span>`:'';
+  const c=R.c&&ZB[R.c.id]?`<span class="d" title="${RIVK[R.c.r].nom} conteste ${zI(R.c.id).nom}" style="color:#ff9a8a"><span style="color:${RIVK[R.c.r].col}">${RIVK[R.c.r].bl}</span>${court(R.c.id).split(' ').pop()}<small> ${(n=>n+' cycle'+(n>1?'s':''))(Math.max(0,R.c.du-R.nc))}</small></span>`:'';
   const t=Object.keys(R.t||{}).filter(k=>tentativeSur(R.t[k].id)===k).map(k=>{const r=RIVK[k],id=R.t[k].id;
-    return`<span class="d" title="${LaM(r)} tente l'épreuve ${de_(ZB[id].info.nom)}" style="color:${r.col}">${r.bl}?${court(id).split(' ').pop()}<small> ${cyclesTxt(resteTente(k))}</small></span>`}).join('');
+    return`<span class="d" title="${LaM(r)} tente l'épreuve ${de_(zI(id).nom)}" style="color:${r.col}">${r.bl}?${court(id).split(' ').pop()}<small> ${cyclesTxt(resteTente(k))}</small></span>`}).join('');
   return`<div class="ligne"><span class="titre">Rivaux</span>${m}${t}${c}${typeof lignePacte==='function'?lignePacte():''}</div>`}
 
 /* ---------- écran « Rivaux » (menu Pause) ---------- */
 function menaceDe(r){const R=riv(),l=[];const tk=R.t[r.k]&&tentativeSur(R.t[r.k].id)===r.k;
-  if(tk)l.push(`tente l'épreuve ${de_(ZB[R.t[r.k].id].info.nom)} dans ${cyclesTxt(resteTente(r.k))}`);
-  if(R.c&&R.c.r===r.k&&ZB[R.c.id])l.push(`conteste ${ZB[R.c.id].info.nom} : épreuve dans ${cyclesTxt(Math.max(0,R.c.du-R.nc))}`);
+  if(tk)l.push(`tente l'épreuve ${de_(zI(R.t[r.k].id).nom)} dans ${cyclesTxt(resteTente(r.k))}`);
+  if(R.c&&R.c.r===r.k&&ZB[R.c.id])l.push(`conteste ${zI(R.c.id).nom} : épreuve dans ${cyclesTxt(Math.max(0,R.c.du-R.nc))}`);
   if(typeof pacteTexte==='function'){const p=pacteTexte(r);if(p)l.unshift(p)}   /* pacte.js */
   return l.length?l.join(' ; '):'aucune menace annoncée'}
 function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv();

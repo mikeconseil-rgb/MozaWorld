@@ -58,16 +58,42 @@ for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=i
   if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
+/* 2.27.2 : nom et fiche d'une zone, même hors de la région chargée (ZB ne contient que la région) */
+const zI=id=>{let Z=null;try{Z=ZB[id]}catch(_){}Z=Z||ZWB[id];return(Z&&Z.info)||{nom:String(id),sur:"",pm:"Pénurie",pp:"Abondance",pal:["","","","",""]}};
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
 
 /* ---------- Rendu ---------- */
 const canvas=document.getElementById('vue');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
+/* 22 nov. (plantage au voyage sur Xbox : « Error creating WebGL context » au rechargement). La carte graphique de la page
+   précédente n'est pas toujours rendue à temps : au lieu de s'arrêter sur l'erreur, on réessaie après un court délai
+   (jusqu'à 4 fois, de plus en plus long), puis la qualité est baissée pour la séance. */
+/* 22 nov. soir (« l'écran de chargement boucle sur Voyage ») : garde ferme contre les rechargements en chaîne. Tout
+   rechargement automatique (voyage, contexte perdu, nouvel essai de la carte graphique) passe par rechargeAutorisee() :
+   au plus 4 en 2 minutes. Au-delà, plus de rechargement : un message clair reste à l'écran, la qualité est baissée. */
+function rechargeAutorisee(){let L=[];try{L=JSON.parse(sessionStorage.getItem('mz-recharges')||'[]')}catch(_){}const n=Date.now();L=L.filter(t=>n-t<120000);
+  if(L.length>=4)return false;L.push(n);try{sessionStorage.setItem('mz-recharges',JSON.stringify(L))}catch(_){}return true}
+function arretBoucle(pourquoi){try{sessionStorage.removeItem('mz-recharges');sessionStorage.removeItem('mz-gl-essai');
+    const q=+localStorage.getItem('mz-tv-q2');if(!(q>=0)||q>1)localStorage.setItem('mz-tv-q2','1')}catch(_){}
+  const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on');const b=vo.querySelector('b'),sp=vo.querySelector('span');
+    if(b)b.textContent='La Xbox manque de mémoire graphique';
+    if(sp)sp.textContent='Le jeu a dû se recharger plusieurs fois de suite ('+pourquoi+'). Quittez Edge complètement (bouton Xbox, Edge sélectionné, bouton ≡ Menu, Quitter) ou redémarrez la console, puis rouvrez le jeu : votre partie est enregistrée et la qualité est passée à « Équilibrée ».'}
+  const v=document.getElementById('seuil-ver');if(v)v.textContent='Carte graphique indisponible : quittez Edge puis rouvrez le jeu'}
+let GL_ESSAIS=0;try{GL_ESSAIS=+sessionStorage.getItem('mz-gl-essai')||0}catch(_){}
+const renderer=(()=>{try{const r=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
+    try{sessionStorage.removeItem('mz-gl-essai')}catch(_){}return r}
+  catch(e){if(GL_ESSAIS<3&&rechargeAutorisee()){try{sessionStorage.setItem('mz-gl-essai',String(GL_ESSAIS+1))}catch(_){}
+      const v=document.getElementById('seuil-ver');if(v)v.textContent='La carte graphique se libère… nouvel essai ('+(GL_ESSAIS+1)+' sur 3)';
+      const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on')}
+      setTimeout(()=>location.reload(),1500*(GL_ESSAIS+1));throw new Error('Nouvel essai de la carte graphique')}
+    arretBoucle('la carte graphique refuse de démarrer');throw new Error('Nouvel essai de la carte graphique : arrêt')}})();
 /* Version télé : on rend l'image à une largeur fixe (QUAL.w) puis la télé l'agrandit. Trois réglages, ajustés seuls si l'image saccade. */
 const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4},{nom:'Splendide',w:1920,sh:2048,ms:4}];
-let QI=window.Android?0:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
+/* 2.34 : téléphone (écran tactile, pas de manette) : « Équilibrée » par défaut, prudent pour la mémoire graphique */
+const TACTILE=!window.Android&&!/xbox/i.test(navigator.userAgent)&&(matchMedia('(pointer:coarse)').matches||/[?&]tactile=1/.test(location.search));
+let QI=window.Android?0:TACTILE?1:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}
+if(GL_ESSAIS>=2&&QI>1)QI=1;   /* 22 nov. : après deux essais ratés de la carte graphique, « Équilibrée » pour la séance */   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
 const QUAL=()=>QUALS[QI];
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,QUAL().w/Math.max(320,innerWidth)));
 renderer.shadowMap.enabled=QUAL().sh>0;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -117,6 +143,8 @@ function stairs(Z,x0,z0,y0,x1,z1,y1,w,geoList,hex){const n=Math.max(1,Math.ceil(
   const arr=[];for(let i=0;i<n;i++){const t=(i+.5)/n,x=lerp(x0,x1,t),z=lerp(z0,z1,t),y=lerp(y0,y1,(i+1)/n);
     arr.push(sBox(Z,x,z,len*.5+.25,w*.5,rot,y-.45,y));if(geoList)geoList.push([box(len+.3,.4,w,x,y-.2,z,-rot),hex])}return arr}
 
+/* 21 nov. (plantages) : retirer un objet de la scène ET rendre la mémoire de ses géométries à la carte graphique (les matières sont partagées, on les garde) */
+function liberer(o){if(!o)return;if(o.parent)o.parent.remove(o);o.traverse(m=>{if(m.geometry)m.geometry.dispose()})}
 /* ---------- Secrets ---------- */
 const secrets=[];
 const secGeo=new THREE.OctahedronGeometry(.55),secMat=new THREE.MeshBasicMaterial({color:new THREE.Color(3.2,2.3,.9)});
@@ -127,7 +155,10 @@ function secret(Z,pos,titre,texte,cond){const m=new THREE.Mesh(secGeo,secMat);sc
 const secHalo=points(32,7,{opacity:.8});
 
 /* ---------- Terrain ---------- */
-const CELL=4.2; /* 2.6 : 4,2 m avec les zones agrandies, pour garder à peu près le même nombre de sommets */ /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
+/* 21 nov. (plantages) : sur Xbox (ou ?xbox=1), maille de 5,4 m : 40 % de sommets en moins pour le sol de la région (le plus gros
+   bloc de mémoire de la page, un million de sommets en 4,2 m). Edge sur Xbox manque de mémoire ; le PC garde 4,2 m. */
+const SOL_LEGER=/xbox/i.test(navigator.userAgent)||/[?&](xbox|leger)=1/.test(location.search);
+const CELL=SOL_LEGER?5.4:4.2; /* 2.6 : 4,2 m avec les zones agrandies, pour garder à peu près le même nombre de sommets */ /* version télé : maille de 3 m au lieu de 2 (2,2 fois moins de sommets) */let X0=1e9,X1=-1e9,Z0=1e9,Z1=-1e9;
 for(const Z of ZN)if(Z.reg)for(const p of Z.poly){X0=Math.min(X0,p[0]);X1=Math.max(X1,p[0]);Z0=Math.min(Z0,p[1]);Z1=Math.max(Z1,p[1])}
 X0-=64;X1+=64;Z0-=64;Z1+=64;
 const GW=Math.ceil((X1-X0)/CELL)+1,GH=Math.ceil((Z1-Z0)/CELL)+1,GN=GW*GH;

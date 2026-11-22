@@ -11,10 +11,47 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
 | Gameplay du monde, lot 1 : hordes (5 cycles de colère, 3 de marche, cibles 2 à 3 paliers plus faibles), domaines dès 2 tuiles et leurs bonus, défense +2/+1/+2, rivaux (1 chance sur 6 par cycle, préavis 2 cycles, verrou contestable), reprise par l'empreinte en un palier | 19 nov. | Les jouer ; réglages proposés par l'équipe, pas encore tranchés par l'utilisateur |
 | Plateau de combat (3 voies, avant/arrière, cases Girih à effet, Manœuvre, Sentinelle, soutien de l'arrière, plancher de capacité) | 19 nov. | Le jouer sur la Xbox ; notes des testeurs à chaque passe (design/plateau/notes.md) |
+| Gameplay du monde, lot 2 : tours de guet (prix, portée, sans entretien), Comptoir des Citadelles (prix en tesselles, primes après combat, change tesselles contre mana), aménagement de chaque Donjon (2 dispositifs, bonus des voisines), épreuve des rivaux | 19 nov. | Les jouer ; les principes sont décidés, les chiffres sont ceux de l'équipe |
+| Gameplay du monde, lot 3 : caravanes (gains, risques de pillage), lois du catalogue de onze et leurs chiffres, prix des pactes par maison, forces des vagues du siège | 19-20 nov. | Les jouer ; les six réglages posés le 20 nov. sont confirmés (« Oui à tout »), les autres chiffres restent ceux de l'équipe |
+| Monde de 925 zones (347 Ressources, 249 Antres, 195 Assemblées, 90 Donjons, 44 Citadelles posés) au lieu des 986 de la liste | 20 nov. | Décidé « pour l'instant » ; à revoir après le 28 nov. (pavage) |
 | Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
+
+## 22 novembre 2026 (téléphone)
+
+| Sujet | Décision | Statut | Version |
+|---|---|---|---|
+| Plateforme : téléphone | « On pourrait ajouter des commandes pour mon Pixel 9 Pro » : commandes tactiles (stick flottant à gauche, caméra au doigt à droite, sceaux A B X Y, carte, zoom, courir ; menus, cartes et cibles se touchent directement), en paysage, qualité « Équilibrée » par défaut. Rien ne change pour la Xbox ni le clavier | en vigueur | 2.34 |
+
+## 21 novembre 2026 soir (interface « Carnet sombre »)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Interface : style | Style « Carnet sombre » retenu sur maquette (« C'est bien mieux », puis « C'est bien ») : encre, parchemin usé et brûlé aux coins, sceaux de cire, jauges tordues, écriture à la main, touche lovecraftienne (yeux, notes) et coups de pinceau acrylique ; champ de bataille en damier de mosaïque collée (habillage du Plateau, sans changer ses règles) ; **pas de tentacules, pas de coulures**. Ordre choisi : exploration (2.31), puis combat, puis menu pause. | en vigueur (exploration en 2.31, le reste à venir) | L'interface dorée sur fond sombre (barre en îlots) |
+
+## 21 novembre 2026 soir (carte du monde, royaumes)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Carte du monde : royaumes | « Une carte mosaïque plus belle où chaque royaume est bien dessiné, des zones bien délimitées dans le chaos d'une mosaïque aléatoire » ; à la question du sens de « royaumes », réponse « 1 » : les royaumes sont les territoires des joueurs (le vôtre et ceux des quatre maisons rivales), qui changent pendant la partie, pas des royaumes fixes en décor | en vigueur (2.30) : sauvage sombre à entrelacs Girih, royaumes à leurs couleurs avec frontière en rempart, nom et blason ; minicarte au même style | carte du monde colorée par type (2.24) |
+
+## 20 novembre 2026 (minicarte)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Minicarte | « Améliore encore la minimap pour qu'elle soit plus jolie et pratique » : médaillon rond centré sur le héros et zoom à trois crans, plus une carte du monde complète (Vue ou C) d'où l'on voyage | en vigueur : rotation avec la caméra confirmée par l'utilisateur le 20 nov. (« Oui » à la recommandation de garder la rotation, lecture du coordinateur) ; couleurs par type | minicarte carrée de toute la région (2.4) ; Vue = liste de voyage |
+
+## 20 novembre 2026 (deuxième passe de cohérence, « A partout »)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Gameplay du monde | D'ici le 28 nov., hordes, rivaux, domaines, caravanes, lois, pacte et siège restent dans la région de départ ; un test qui voyage entre régions vérifie que rien ne se perd (`tv/tools/test-voyage.js`) | en vigueur | |
+| Gel | Plus de nouveau système à partir du 23 nov. ; du 23 au 28 on joue, on corrige et on règle. Les zones à écrire et les images des cartes continuent (contenu) | en vigueur | |
+| Provisoires | Dimanche 22 nov., une liste courte des dix réglages qui comptent, à trancher par oui ou non ; les autres sont gardés tels quels jusqu'après le 28 | en vigueur | revue de tous les provisoires un par un |
+| Tests | Les tests du monde tournent tout seuls chaque nuit et à la demande (`.github/workflows/tests-monde.yml`) | en vigueur | tests du monde lancés à la main |
+| Plan | Le plan de travail est réécrit en plan de fin, jour par jour jusqu'au 28 nov. | en vigueur | plan en trois jalons du 17 nov. |
 
 ## 20 novembre 2026 (zones en série)
 
@@ -22,6 +59,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 |---|---|---|---|
 | Zones | Option 1 choisie : le monde entier est posé, ~580 zones jouables le 28 nov. (383 Ressources + ~200 zones à cartes), les autres visibles mais scellées jusqu'en décembre ; pas de zones au rabais | en vigueur | |
 | Monde | Chargement par régions de 1,7 km (voyage = sauvegarde et recomposition), choix technique de Claude pour tenir sur la Xbox | en vigueur | toutes les zones construites au démarrage |
+| Taille du monde | « 1 a » (20 nov., 15 h 45 UTC) : on garde 925 zones et 88 Donjons pour l'instant (le pavage n'a pas pu être agrandi) et on finit d'écrire les zones ; pas de travail sur le pavage avant le 28 nov. | en vigueur | but de 986 zones et 130 Donjons |
 
 ## 19 novembre 2026 (gameplay du monde, réponses de l'utilisateur)
 

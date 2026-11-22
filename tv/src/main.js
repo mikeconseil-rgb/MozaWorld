@@ -210,6 +210,7 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
 /* 2.15 : régions. Voyager = enregistrer, recentrer la région sur une tuile, recharger la page ; « apres » dit quoi faire au réveil. */
 const regionOrigine=()=>dReg([0,0])<1;
 function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw];if(apres!=='neuf')save();
+  if(typeof rechargeAutorisee==='function'&&!rechargeAutorisee()){if(typeof libererGPU==='function')libererGPU();arretBoucle('voyage');return}   /* 22 nov. : pas de boucle de voyages */
   try{localStorage.setItem('mz-region',JSON.stringify([Math.round(c[0]),Math.round(c[1])]));localStorage.setItem('mz-apres',apres||'jeu')}catch(_){}
   const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}setTimeout(()=>location.reload(),60)}
 function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');return}
@@ -227,6 +228,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
   ui('menu',{sur:'Pause · version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:''),t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
+    {l:'Carte du monde',ic:'◈',d:'Vue ou C',go:()=>{toMonde();if(typeof ouvrirCarte==='function')ouvrirCarte()}},
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Sauvegarder',ic:'▣',d:'20 emplacements',go:()=>openSauver(0)},
     {l:'Charger une partie',ic:'▤',go:openCharger},
