@@ -343,7 +343,7 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
   ok('lot 3 : le bandeau montre la caravane (⛟)',await p.evaluate(()=>!!document.querySelector('#bandeau [title^="Caravanes"]')));
   /* dix cycles : la vigueur renforcée s'éteint, la caravane continue de rapporter */
   const g0=await p.evaluate(()=>MZ.S.carBilan.gains);
-  for(let i=0;i<10;i++){await p.evaluate(()=>{for(const s in MZ.S.hordes)if(['RES','CIT','ASS150'].includes(MZ.S.hordes[s].cible))delete MZ.S.hordes[s];if(MZ.S.riv.c&&['RES','CIT','ASS150'].includes(MZ.S.riv.c.id))MZ.S.riv.c=null;MZ.cycle()});await p.waitForTimeout(1050);await monde()}
+  for(let i=0;i<10;i++){await p.evaluate(()=>{MZ.S.hordes={};   /* 22 nov. : une horde près du trajet pille aussi (50 %) ; on les écarte toutes pendant ces dix cycles */if(MZ.S.riv.c&&['RES','CIT','ASS150'].includes(MZ.S.riv.c.id))MZ.S.riv.c=null;MZ.cycle()});await p.waitForTimeout(1050);await monde()}
   const fr=await p.evaluate(()=>{const v=MZ.lois().vigueur.find(v=>v.id==='ASS150');return{v,gains:MZ.S.carBilan.gains,fin:window.__toasts.some(t=>/^Fin de la vigueur renforcée/.test(t))||LOI_FILE.some(m=>Array.isArray(m)&&/^Fin de la vigueur/.test(m[0]))}});
   ok('lot 3 : dix cycles plus tard, la loi reste en vigueur sans renfort (message)',!!fr.v&&!fr.v.renforcee&&fr.fin,JSON.stringify(fr));
   ok('lot 3 : la caravane a rapporté pendant ces dix cycles',fr.gains>g0,g0+' → '+fr.gains);
