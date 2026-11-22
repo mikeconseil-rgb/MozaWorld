@@ -49,6 +49,12 @@ Réponses de l'utilisateur à la liste de dix réglages du dimanche 22 nov., poi
 |---|---|---|---|
 | Plateforme : téléphone | « On pourrait ajouter des commandes pour mon Pixel 9 Pro » : commandes tactiles (stick flottant à gauche, caméra au doigt à droite, sceaux A B X Y, carte, zoom, courir ; menus, cartes et cibles se touchent directement), en paysage, qualité « Équilibrée » par défaut. Rien ne change pour la Xbox ni le clavier | en vigueur | 2.34 |
 
+## 22 novembre 2026 (annonces sobres)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Interface : annonces | « Enlève les affiches lors des montées de zone et autre, ça prend trop d'espace, restons plus sobre pour l'interface tout en gardant le style » : annonces en petit billet sous la barre du haut, fiche de zone seulement sur demande (RB) | en vigueur (2.42) | Le grand titre central avec coup de pinceau et sceau (2.31) |
+
 ## 21 novembre 2026 soir (interface « Carnet sombre »)
 
 | Sujet | Décision | Statut | Remplace |
