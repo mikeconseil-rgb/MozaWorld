@@ -59,7 +59,7 @@ const donjonAVous=()=>!!(S.act.DON&&S.own.DON);
 
 /* ---------- Cycle : production, entretien, assaut ---------- */
 let ecoRapport=[];
-function cycle(){S.nc++;const lignes=[];
+function cycle(){S.nc++;mondeAttend();const lignes=[];
   const pt=prodParType();for(const t in pt){gagner(t,pt[t]);lignes.push(`+${pt[t]} ${t} des Ressources`)}
   if(donjonAVous()&&nbPieges()&&S.ent===0){let paye=0,dorment=0;
     for(const x of S.pieges){if(!x)continue;const m=PIEGES[x.k].m;if(peutPayer(m,1)){payer(m,1);paye++;x.dort=false}else{x.dort=true;dorment++}}
@@ -111,3 +111,16 @@ function changerPiege(i){const cur=S.pieges[i],k0=cur?cur.k:null;
     opts:[...PORDRE.slice(1).map(k=>{const P_=PIEGES[k];return{l:P_.nom+(k===k0?' (en place)':''),ic:P_.pose,d:`${P_.pose} ${P_.m} · force ${P_.force} · ${P_.txt}`,off:k===k0||!peutPayer(P_.m,P_.pose),
       go:()=>{payer(P_.m,P_.pose);S.pieges[i]={k,u:3,dort:false};save();etatHud();sfx('hit');openDonjon(i)}}}),
       {l:'Salle vide',ic:'○',off:!cur,go:()=>{S.pieges[i]=null;save();openDonjon(i)}},{l:'Retour',ic:'◆',go:()=>openDonjon(i)}]})}
+
+/* 20 nov. : loin de la région de départ, le gameplay du monde attend (voir mondeIci, core.js) : chaque échéance repoussée d'un cycle */
+function mondeAttend(){if(mondeIci()||typeof S==='undefined')return;const up=o=>{if(o&&typeof o.du==='number'){o.du++;if(typeof o.de==='number')o.de++}};
+  if(typeof S.dernierAssaut==='number')S.dernierAssaut++;
+  for(const k in S.hordes||{}){const h=S.hordes[k];if(h&&typeof h.arrive==='number')h.arrive++}
+  if(S.siege&&typeof S.siege.arrive==='number')S.siege.arrive++;
+  for(const k in S.siegeRepos||{})if(S.siegeRepos[k]>=S.nc)S.siegeRepos[k]++;
+  for(const k in S.loisRenf||{})if(S.loisRenf[k]>=S.nc)S.loisRenf[k]++;
+  const R=S.riv;if(R){for(const k in R.t||{})up(R.t[k]);up(R.c)}
+  const p=S.pacte;if(p){up(p.cr);for(const k in p.refus||{})if(p.refus[k]>=S.nc)p.refus[k]++}}
+let mondeAttenteDit=false;
+setInterval(()=>{if(mondeAttenteDit||typeof started==='undefined'||!started||mode!=='monde'||mondeIci())return;mondeAttenteDit=true;
+  toast('Loin de la région de départ','Le monde attend votre retour','D\'ici le 28 novembre, hordes, maisons rivales, pacte, siège final, caravanes et lois ne jouent que dans la région de départ. Ici, leurs échéances sont suspendues : elles reprennent quand vous y revenez.')},1500);

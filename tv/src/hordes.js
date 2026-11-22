@@ -111,7 +111,7 @@ function hordesCycle(){initHordes();if(S.nc<HORDE_GRACE)return;
 let hordeNc=null;
 setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;initHordes();
   if(hordeNc===null||S.nc<hordeNc)hordeNc=S.nc;
-  while(hordeNc<S.nc){hordeNc++;hordesCycle()}
+  while(hordeNc<S.nc){hordeNc++;if(mondeIci())hordesCycle()}
   for(const src in S.hordes){const h=S.hordes[src];if(S.nc<h.arrive)continue;if(typeof CB!=='undefined'&&CB&&CB.horde===src)continue;hordeArrive(src)}
   if(mode==='monde'&&hordeRapports.length)montrerHorde();
   /* le héros arrive dans une zone visée : on le prévient une fois */
