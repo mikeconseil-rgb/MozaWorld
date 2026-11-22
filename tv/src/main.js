@@ -210,6 +210,7 @@ function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textCo
 /* 2.15 : régions. Voyager = enregistrer, recentrer la région sur une tuile, recharger la page ; « apres » dit quoi faire au réveil. */
 const regionOrigine=()=>dReg([0,0])<1;
 function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw];if(apres!=='neuf')save();
+  if(typeof rechargeAutorisee==='function'&&!rechargeAutorisee()){if(typeof libererGPU==='function')libererGPU();arretBoucle('voyage');return}   /* 22 nov. : pas de boucle de voyages */
   try{localStorage.setItem('mz-region',JSON.stringify([Math.round(c[0]),Math.round(c[1])]));localStorage.setItem('mz-apres',apres||'jeu')}catch(_){}
   const v=$('voyage');if(v){v.hidden=false;v.classList.add('on')}setTimeout(()=>location.reload(),60)}
 function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');return}
