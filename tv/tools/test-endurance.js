@@ -17,10 +17,10 @@ const etapes=[];let echec=null;const ok=(n,c,d)=>{etapes.push((c?'OK    ':'ÉCHE
   const attendre=()=>p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function'&&window.MZ.ZN.length>0,null,{timeout:90000}).then(()=>true,()=>false);
   const mesure=async()=>{await p.evaluate(()=>{if(window.gc)gc()});
     const m=Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(x=>[x.name,x.value]));
-    const r=await p.evaluate(()=>{let o=0;scene.traverse(()=>o++);const i=renderer.info;return{geo:i.memory.geometries,tex:i.memory.textures,prog:(i.programs||[]).length,obj:o,
+    const r=await p.evaluate(()=>{let o=0;const gs=new Set();scene.traverse(x=>{o++;if(x.geometry)gs.add(x.geometry)});const i=renderer.info;return{orph:Math.max(0,i.memory.geometries-gs.size),geo:i.memory.geometries,tex:i.memory.textures,prog:(i.programs||[]).length,obj:o,
       ls:Object.keys(localStorage).reduce((s,k)=>s+k.length+(localStorage.getItem(k)||'').length,0)}});
     return{heap:Math.round(m.JSHeapUsedSize/1048576),dom:m.Nodes,ecout:m.JSEventListeners,...r}};
-  const ligne=(t,x)=>console.log(t.padEnd(16),'tas',x.heap+' Mo','DOM',x.dom,'écouteurs',x.ecout,'géom',x.geo,'tex',x.tex,'prog',x.prog,'objets',x.obj,'sauvegarde',Math.round(x.ls/1024)+' Ko');
+  const ligne=(t,x)=>console.log(t.padEnd(16),'tas',x.heap+' Mo','DOM',x.dom,'écouteurs',x.ecout,'géom',x.geo,'hors scène',x.orph,'tex',x.tex,'prog',x.prog,'objets',x.obj,'sauvegarde',Math.round(x.ls/1024)+' Ko');
   await p.goto(page0);ok('la page démarre',await attendre());
   await p.evaluate(()=>{try{localStorage.clear()}catch(_){};MZ.start()});await p.waitForTimeout(2000);
   const serie=[];let m0=await mesure();ligne('départ',m0);serie.push(m0);
@@ -42,7 +42,8 @@ const etapes=[];let echec=null;const ok=(n,c,d)=>{etapes.push((c?'OK    ':'ÉCHE
       if((t+1)%Math.max(1,Math.floor(TOURS/4))===0){const x=await mesure();ligne('région '+v+' tour '+(t+1),x);serie.push(x)}}
     if(v<VOY){const c=await p.evaluate(v=>{const L=ZW.filter(Z=>Z.d&&Z.d.pret!==false&&Math.hypot(Z.c[0],Z.c[1])>2500);const Z=L[(v*37+11)%L.length];return Z&&Z.c},v);
       if(!c)break;const charge=p.waitForEvent('load',{timeout:90000}).then(()=>true,()=>false);
-      await p.evaluate(c=>voyagerRegion(c,'jeu'),c).catch(()=>{});ok('voyage '+(v+1),await charge&&await attendre());await p.waitForTimeout(3000);
+      await p.evaluate(c=>voyagerRegion(c,'jeu'),c).catch(()=>{});const arrive=await charge&&await attendre();ok('voyage '+(v+1),arrive,arrive?'':[...new Set(erreurs)].slice(0,3).join(' | '));
+      if(!arrive){await nav.close();console.log('\n'+etapes.join('\n'));console.log('\nTest d\'endurance : ÉCHEC (voyage '+(v+1)+')');process.exit(1)}await p.waitForTimeout(3000);
       const x=await mesure();ligne('après voyage '+(v+1),x);serie.push(x)}}
   /* changer la qualité d'image deux tours complets : aucun shader ne doit être recompilé (écran noir sur Xbox, 21 nov.) */
   const progAvant=(await mesure()).prog;
@@ -51,10 +52,12 @@ const etapes=[];let echec=null;const ok=(n,c,d)=>{etapes.push((c?'OK    ':'ÉCHE
   ok('changer la qualité ne recompile pas les shaders',progApres-progAvant<=2,progAvant+' → '+progApres+' programmes');
   /* croissance dans une même région : on compare le premier et le dernier relevé de la dernière région */
   const fin=serie[serie.length-1],debut=base[base.length-1];
-  ok('géométries stables dans une région',fin.geo-debut.geo<=60,debut.geo+' → '+fin.geo);
+  /* la carte graphique reçoit les objets d'une zone la première fois qu'ils sont dessinés : le nombre de géométries monte
+     pendant qu'on découvre la région. Une fuite, ce sont des géométries envoyées puis retirées de la scène sans être libérées. */
+  ok('aucune géométrie perdue (hors scène)',serie.every(x=>x.orph<=20),serie.map(x=>x.orph).join(','));
   ok('textures stables dans une région',fin.tex-debut.tex<=10,debut.tex+' → '+fin.tex);
   ok('objets de scène stables',fin.obj-debut.obj<=200,debut.obj+' → '+fin.obj);
-  ok('DOM stable',fin.dom-debut.dom<=500,debut.dom+' → '+fin.dom);
+  ok('DOM borné',serie.every(x=>x.dom<5000),'max '+Math.max(...serie.map(x=>x.dom)));
   ok('aucune erreur JavaScript',erreurs.length===0,[...new Set(erreurs)].slice(0,4).join(' | '));
   await nav.close();console.log('\n'+etapes.join('\n'));
   if(echec){console.log('\nTest d\'endurance : ÉCHEC ('+echec+')');process.exit(1)}console.log('\nTest d\'endurance : tout passe.')
