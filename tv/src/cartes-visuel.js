@@ -291,8 +291,22 @@ function cadreCarte(k,coul,nP,ult){const r=rng(k+'|cadre'),coin=Math.floor(r()*4
     :`M${i+c} ${i} H${W-i-c} Q${W-i-c} ${i+c} ${W-i} ${i+c} V${H-i-c} Q${W-i-c} ${H-i-c} ${W-i-c} ${H-i} H${i+c} Q${i+c} ${H-i-c} ${i} ${H-i-c} V${i+c} Q${i+c} ${i+c} ${i+c} ${i}Z`;
   const etoile=(x,y,R)=>{let p='';for(let j=0;j<n*2;j++){const a=j*PI/n-PI/2,rr=j%2?R*.45:R;p+=(j?'L':'M')+f1(x+Math.cos(a)*rr)+' '+f1(y+Math.sin(a)*rr)}return`<path d="${p}Z" fill="${coul}"/>`};
   const nm=nP>=6||ult?3:nP>=3?2:1,ys=Array.from({length:nm},(_,j)=>f1(70+(j-(nm-1)/2)*26+(r()-.5)*8));
-  const med=ys.map(y=>etoile(i,+y,3.4)+etoile(W-i,+y,3.4)).join('')+(nP>=4||ult?etoile(W/2,H-i,3.8):'');
+  const med=(nP>=4||ult?etoile(W/2,H-i,3.8):'');   /* 21 nov. : les médaillons de côté laissent la place au cartouche du nom et aux écoinçons */
   return`<svg class="kcadre" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${coul}" stroke-width="${nP>=5||ult?2:1.5}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/>${med}</svg>`}
+
+/* ---------- Cadres ornés (21 nov., « les cadres sont trop simples ») : quatre écoinçons d'orfèvrerie par carte.
+   Quatre dessins (rinceau, étoile girih, éventail, grecque) tirés de la clé ; une gemme à la couleur du mana au coin. ---------- */
+function angles(k,nP,ult,uid){const v=hsh(k+'|angle')%4,g='url(#ka'+uid+')';
+  const d=[
+    '<path d="M8 8 Q21 5 28 12 Q21 10 17 14 Q23 16 23 23 Q18 17 14 17 Q10 21 12 28 Q5 21 8 8Z" fill="'+g+'" stroke="#2a1c08" stroke-width=".6"/><circle cx="26.5" cy="4" r="1.5" fill="'+g+'"/><circle cx="4" cy="26.5" r="1.5" fill="'+g+'"/>',
+    '<path d="M11 2 L13.6 8.4 L20 6 L17.6 12.4 L24 15 L17.6 17.6 L20 24 L13.6 21.6 L11 28 L8.4 21.6 L2 24 L4.4 17.6 L2 15 L4.4 12.4 L2 6 L8.4 8.4Z" fill="'+g+'" stroke="#2a1c08" stroke-width=".6" transform="translate(1 -1) scale(.82)"/><path d="M22 4 H31 M4 22 V31" stroke="'+g+'" stroke-width="1.6" stroke-linecap="round"/>',
+    '<path d="M4 4 L26 7 A24 24 0 0 0 7 26Z" fill="'+g+'" stroke="#2a1c08" stroke-width=".6"/><path d="M5 5 L22 12 M5 5 L17 17 M5 5 L12 22" stroke="#2a1c08" stroke-width=".7" opacity=".7"/><circle cx="28.5" cy="5" r="1.4" fill="'+g+'"/><circle cx="5" cy="28.5" r="1.4" fill="'+g+'"/>',
+    '<path d="M4 4 H30 V8 H22 V14 H16 V8 H8 V16 H14 V22 H8 V30 H4Z" fill="'+g+'" stroke="#2a1c08" stroke-width=".6"/>'][v];
+  const corps='<defs><linearGradient id="ka'+uid+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--mt1)"/><stop offset=".5" stop-color="var(--mt2)"/><stop offset="1" stop-color="var(--mt3)"/></linearGradient></defs>'+
+    '<path d="M0 0 H36 Q28 3.2 22 3.2 H9 Q3.2 3.2 3.2 9 V22 Q3.2 28 0 36Z" fill="'+g+'" stroke="#1a1206" stroke-width=".7"/>'+d+
+    '<path d="M6.5 2.2 L10.8 6.5 L6.5 10.8 L2.2 6.5Z" fill="var(--kl)" stroke="#1a1206" stroke-width=".7"/><path d="M6.5 3.6 L8.6 6.5 L6.5 6.5Z" fill="#fff" opacity=".75"/>';
+  const cl=nP>=5||ult?' grand':nP>=3?' moyen':'';
+  return['tl','tr','bl','br'].map((q,i)=>'<svg class="kang '+q+cl+'" viewBox="0 0 36 36">'+(i?corps.replace(/ka\w+/g,m=>m+i):corps)+'</svg>').join('')}
 
 /* ---------- Texte de la carte : chiffres, prix et résonances mis en valeur ---------- */
 function texteCoupe(t){t=String(t);const m=t.slice(25).search(/[.;:]\s/);if(m<0||t.length<70)return texteRiche(t);const i=25+m+1;
@@ -384,7 +398,7 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
   const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
   return`<div class="${cls}" style="--kb:${V[0]};--kl:${V[1]};--kd:${V[2]};--kcA:${rgba(V[0],.28)};--kcB:${rgba(V[0],.8)};--pc:${coulP}">
-   ${cadreCarte(k,V[1],nP,ult)}${nP>=5||ult?coins(P.mana,V[1],nP):''}${coZ}${crest}<div class="art">${artCarte(k)}${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
+   ${cadreCarte(k,V[1],nP,ult)}${angles(k,nP,ult,uid)}${coZ}${crest}<div class="art">${artCarte(k)}<i class="kvitre"></i>${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
    <div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${txtR}</div>${nP>=4&&!ult?bandeau(ckey(P.cult),V[1],uid+'b').replace('kband','kband bas'):''}${ambH}${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`};
 
 /* ---------- CSS propre au visuel 2.2 ---------- */
@@ -532,6 +546,35 @@ const css=document.createElement('style');css.textContent=`
 #cb-main .cc.kcarte.f .ct{flex:1 1 0;min-height:0;overflow:hidden;font-size:calc(var(--u)*.86*var(--kf,1));line-height:1.26;padding:.4em .5em 0;border-bottom:.35em solid transparent}
 #cb-main .cc.kcarte.f .kamb{font-size:calc(var(--u)*.74*var(--kf,1));flex:none;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-bottom:0;border-bottom:.3em solid transparent}
 #cb-main .cc.kcarte.f.serre .kamb{display:none}
+/* ---- Cadres ornés (21 novembre 2026) : métal ciselé, écoinçons, vitre d'illustration, cartouche du nom ---- */
+.cc.kcarte.z{--mt1:#e6bd86;--mt2:#9a6a34;--mt3:#4a2f16}
+.cc.kcarte.z.L3,.cc.kcarte.z.L4{--mt1:#f6e2a4;--mt2:#b98b3a;--mt3:#5f4418}
+.cc.kcarte.z.L5,.cc.kcarte.z.L6,.cc.kcarte.z.ultime{--mt1:#fff3c4;--mt2:#e0b64e;--mt3:#7d5a16}
+.cc.kcarte.z:not(.ultime){border:calc(var(--u)*.32) solid transparent;border-radius:calc(var(--u)*.5);
+  background:repeating-linear-gradient(60deg,rgba(255,255,255,.022) 0 1px,transparent 1px calc(var(--u)*.62)) padding-box,repeating-linear-gradient(-60deg,rgba(255,255,255,.022) 0 1px,transparent 1px calc(var(--u)*.62)) padding-box,
+    radial-gradient(120% 60% at 50% 0%,var(--kcA),transparent 72%) padding-box,linear-gradient(180deg,#17131a,#0e0c11) padding-box,
+    linear-gradient(145deg,var(--mt1) 0%,var(--mt2) 16%,var(--mt3) 34%,var(--mt1) 50%,var(--mt3) 66%,var(--mt2) 84%,var(--mt1) 100%) border-box}
+.cc.kcarte.z.L1:not(.ultime),.cc.kcarte.z.L2:not(.ultime),.cc.kcarte.z.L0:not(.ultime){box-shadow:0 10px 24px rgba(0,0,0,.65),inset 0 0 0 1px rgba(0,0,0,.85),inset 0 0 0 2px rgba(255,236,180,.2)}
+.kang{position:absolute;width:calc(var(--u)*2.3);height:calc(var(--u)*2.3);z-index:1;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}
+.kang.moyen{width:calc(var(--u)*2.7);height:calc(var(--u)*2.7)}
+.kang.grand{width:calc(var(--u)*2.9);height:calc(var(--u)*2.9);filter:drop-shadow(0 0 5px var(--kcB)) drop-shadow(0 1px 1px #000)}
+.kang.tl{top:calc(var(--u)*-.42);left:calc(var(--u)*-.42)}.kang.tr{top:calc(var(--u)*-.42);right:calc(var(--u)*-.42);transform:scaleX(-1)}
+.kang.bl{bottom:calc(var(--u)*-.42);left:calc(var(--u)*-.42);transform:scaleY(-1)}.kang.br{bottom:calc(var(--u)*-.42);right:calc(var(--u)*-.42);transform:scale(-1,-1)}
+#cb-main .cc.kcarte:not(.f) .kang{width:calc(var(--u)*1.9);height:calc(var(--u)*1.9)}
+.cc.kcarte.z .art{border:calc(var(--u)*.13) solid var(--mt2);border-image:linear-gradient(160deg,var(--mt1),var(--mt3) 45%,var(--mt2) 70%,var(--mt1)) 1;box-shadow:0 0 0 1px #000,0 calc(var(--u)*.25) calc(var(--u)*.5) rgba(0,0,0,.6)}
+.kvitre{position:absolute;inset:0;z-index:1;pointer-events:none;--r:calc(var(--u)*.62);--f:calc(var(--u)*.78);
+  background:radial-gradient(circle at 0 0,#120e0b 0 var(--r),var(--mt1) var(--r) var(--f),transparent calc(var(--f) + 1px)),radial-gradient(circle at 100% 0,#120e0b 0 var(--r),var(--mt1) var(--r) var(--f),transparent calc(var(--f) + 1px)),
+    radial-gradient(circle at 0 100%,#120e0b 0 var(--r),var(--mt1) var(--r) var(--f),transparent calc(var(--f) + 1px)),radial-gradient(circle at 100% 100%,#120e0b 0 var(--r),var(--mt1) var(--r) var(--f),transparent calc(var(--f) + 1px));
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.75),inset 0 0 0 2px rgba(255,236,180,.28),inset 0 0 calc(var(--u)*.9) rgba(0,0,0,.55)}
+.cc.kcarte.z .cn{position:relative;text-align:center;margin:calc(var(--u)*.3) calc(var(--u)*-.3) .32em;padding:.2em 1em .24em;color:#f8ebc6;text-shadow:0 1px 0 #000,0 0 calc(var(--u)*.5) var(--kcB);
+  background:linear-gradient(180deg,rgba(255,236,180,.13),rgba(0,0,0,.38)),linear-gradient(90deg,transparent,var(--kcA) 18%,var(--kcA) 82%,transparent);
+  border-top:1px solid var(--mt2);border-bottom:1px solid var(--mt2);box-shadow:0 -2px 0 -1px rgba(0,0,0,.7),0 2px 0 -1px rgba(0,0,0,.7)}
+.cc.kcarte.z .cn::before,.cc.kcarte.z .cn::after{content:'';position:absolute;top:50%;width:.46em;height:.46em;background:linear-gradient(135deg,var(--mt1),var(--mt3));transform:translateY(-50%) rotate(45deg);box-shadow:0 0 0 1px #000}
+.cc.kcarte.z .cn::before{left:.18em}.cc.kcarte.z .cn::after{right:.18em}
+.cc.kcarte.z .ct{background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,.2));border:1px solid rgba(255,236,180,.17);border-radius:calc(var(--u)*.22);box-shadow:inset 0 0 calc(var(--u)*.7) rgba(0,0,0,.5)}
+.kcadre{opacity:.75}
+#cb-main .cc.kcarte.z:not(.f) .cn{padding:.16em .62em .2em;margin-left:calc(var(--u)*-.2);margin-right:calc(var(--u)*-.2);font-size:calc(var(--u)*1.22)}
+.cc.kcarte.z .kamb{padding-bottom:calc(var(--u)*.5)}
 `;document.head.appendChild(css);
 
 /* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)
