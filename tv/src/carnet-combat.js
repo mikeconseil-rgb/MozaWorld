@@ -8,14 +8,26 @@
    Les cadres des cartes à jouer (cartes-visuel.js) ne sont pas touchés. ?carnet=0 rend l'ancien écran. */
 (function(){
 if(!document.body.classList.contains('carnet'))return;
+/* boucle 4 bis (22 nov.) : tons inégaux des tesselles. Un petit motif SVG de 7 × 5 tesselles (tirage fixe), chacune un peu
+   plus claire ou plus sombre, posé au pas exact des joints (.72u) : la case vibre comme une vraie mosaïque, sans bandes
+   régulières. Une image vectorielle sans filtre, rastérisée une fois : rien à recalculer à chaque image. */
+const TONS=(()=>{let g=97;const r=()=>(g=(g*16807)%2147483647)/2147483647;let s='';
+  for(let y=0;y<5;y++)for(let x=0;x<7;x++){const v=r(),c=v<.5?'#0c0705':'#fff2d8',o=(v<.5?(.5-v)*.26:(v-.5)*.18).toFixed(3);
+    s+=`<rect x='${x}' y='${y}' width='1' height='1' fill='${c}' fill-opacity='${o}'/>`}
+  return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='7' height='5' viewBox='0 0 7 5' preserveAspectRatio='none' shape-rendering='crispEdges'>${s}</svg>`)}") 0 0/calc(var(--u)*5.04) calc(var(--u)*3.6)`})();
 const st=document.createElement('style');st.textContent=`
 #combat{--cw:calc(var(--u)*9);--ch:calc(var(--u)*6.3);--ck:calc(var(--u)*1.25);--cj:3px;
   /* boucle 4 (22 nov.) : opus vermiculatum au lieu de nappe vichy. Joints de 1 px couleur mortier chaud au pas de .72u,
      plus une seconde grille décalée (pas de 1,7u, très légère) qui casse la régularité du quadrillage. */
   --tess:repeating-linear-gradient(90deg,rgba(40,28,18,.22) 0 1px,rgba(255,236,200,.045) 1px 2px,transparent 2px calc(var(--u)*.72)),
    repeating-linear-gradient(0deg,rgba(40,28,18,.22) 0 1px,rgba(255,236,200,.045) 1px 2px,transparent 2px calc(var(--u)*.72)),
-   repeating-linear-gradient(90deg,transparent 0 calc(var(--u)*.43),rgba(40,28,18,.07) calc(var(--u)*.43) calc(var(--u)*.43 + 1px),transparent calc(var(--u)*.43 + 1px) calc(var(--u)*1.7)),
-   repeating-linear-gradient(0deg,transparent 0 calc(var(--u)*.97),rgba(40,28,18,.07) calc(var(--u)*.97) calc(var(--u)*.97 + 1px),transparent calc(var(--u)*.97 + 1px) calc(var(--u)*1.7));
+   repeating-linear-gradient(90deg,transparent 0 calc(var(--u)*.43),rgba(40,28,18,.10) calc(var(--u)*.43) calc(var(--u)*.43 + 1px),transparent calc(var(--u)*.43 + 1px) calc(var(--u)*1.7)),
+   repeating-linear-gradient(0deg,transparent 0 calc(var(--u)*.97),rgba(40,28,18,.10) calc(var(--u)*.97) calc(var(--u)*.97 + 1px),transparent calc(var(--u)*.97 + 1px) calc(var(--u)*1.7)),
+   /* boucle 4 bis (22 nov.) : deux grilles légères penchées de 4 et 3 degrés, puis les tons inégaux des tesselles (TONS),
+      pour que la case ne se lise plus comme du papier millimétré */
+   repeating-linear-gradient(94deg,transparent 0 calc(var(--u)*.61),rgba(40,28,18,.09) calc(var(--u)*.61) calc(var(--u)*.61 + 1px),transparent calc(var(--u)*.61 + 1px) calc(var(--u)*1.13)),
+   repeating-linear-gradient(-3deg,transparent 0 calc(var(--u)*.88),rgba(40,28,18,.08) calc(var(--u)*.88) calc(var(--u)*.88 + 1px),transparent calc(var(--u)*.88 + 1px) calc(var(--u)*1.31)),
+   ${TONS};
   column-gap:0!important;grid-template-columns:1fr var(--cw) 1fr!important}
 /* le décor de la zone reste, assombri comme à la bougie */
 #combat::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,rgba(8,5,3,.38) 30%,rgba(8,5,3,.8) 100%)}
@@ -118,14 +130,15 @@ const st=document.createElement('style');st.textContent=`
   background:radial-gradient(circle at 50% 46%,#86332a 0 38%,#7a2a22 52%,#5c1d17 100%)!important;
   box-shadow:inset 0 0 0 calc(var(--u)*.42) #6a231c,inset 0 0 0 calc(var(--u)*.42 + 1px) rgba(30,8,6,.75),inset 0 0 0 calc(var(--u)*.42 + 2px) rgba(201,164,92,.42),
     inset 0 calc(var(--u)*-.18) calc(var(--u)*.3) rgba(30,8,6,.35),2px 3px 0 rgba(0,0,0,.65)!important;backdrop-filter:none!important}
-#combat #cb-main .cc.fin .cn{font-family:var(--c-fell);font-variant:small-caps;text-transform:lowercase;font-size:calc(var(--u)*1.02);letter-spacing:.08em;line-height:1;
-  color:#e4c483!important;text-shadow:0 1px 0 rgba(20,6,4,.85)!important}
+/* boucle 4 bis (22 nov.) : libellé plus clair et plus gras, lisible de loin à la télé sur la cire assourdie */
+#combat #cb-main .cc.fin .cn{font-family:var(--c-fell);font-variant:small-caps;text-transform:lowercase;font-size:calc(var(--u)*1.12);font-weight:700;letter-spacing:.07em;line-height:.98;
+  color:#f6dc9c!important;text-shadow:0 1px 0 rgba(20,6,4,.95),0 0 3px rgba(30,8,6,.9),0 0 1px rgba(30,8,6,1)!important}
 #combat #cb-main .cc.fin.f:not(.man){box-shadow:inset 0 0 0 calc(var(--u)*.42) #6a231c,inset 0 0 0 calc(var(--u)*.42 + 1px) rgba(30,8,6,.75),inset 0 0 0 calc(var(--u)*.42 + 2px) rgba(232,199,127,.7),
     0 0 0 2px #17100a,0 0 0 4px #d9b56a,3px 5px 0 3px rgba(0,0,0,.6)!important}
 #combat #cb-main .cc.fin.man{border-radius:50%!important;border:0!important;background:radial-gradient(circle at 50% 45%,#221a14,#120d0a 72%)!important;
   box-shadow:inset 0 0 0 2px #b8924e,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(201,164,92,.45),2px 3px 0 rgba(0,0,0,.65)!important;backdrop-filter:none!important}
 #combat #cb-main .cc.fin.man{width:calc(var(--u)*5);height:calc(var(--u)*5);transform:none}#combat #cb-main .cc.fin.man.f{transform:scale(1.08)}
-#combat #cb-main .cc.fin.man .cn{font-size:calc(var(--u)*.84);letter-spacing:.02em;color:#d4b26e!important;text-shadow:0 1px 0 #000!important}
+#combat #cb-main .cc.fin.man .cn{font-size:calc(var(--u)*.84);letter-spacing:.02em;color:#e8c983!important;text-shadow:0 1px 0 #000!important}
 #combat #cb-main .cc.fin.man.f{box-shadow:inset 0 0 0 2px #e8c77f,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(232,199,127,.7),0 0 0 2px #17100a,0 0 0 4px #d9b56a!important}
 `;document.head.appendChild(st);
 /* papier déchiré pour les deux panneaux du bas (même tirage que carnet.js : classe c-papier + clip-path) */

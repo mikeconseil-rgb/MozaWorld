@@ -604,9 +604,14 @@ const css=document.createElement('style');css.textContent=`
 #cb-main .cc.kcarte:not(.f) .ct{font-size:max(13px,calc(var(--u)*.84));line-height:1.22;text-overflow:ellipsis}
 #cb-main .cc.kcarte:not(.f) .ct.deborde{-webkit-mask-image:none;mask-image:none}
 #cb-main .cc.kcarte.f .ct{font-size:max(13px,calc(var(--u)*.86*var(--kf,1)))}
-/* carte choisie : quand ajuster() serre le texte (--kf < 1), l'illustration rétrécit aussi, pour que le texte, qui ne descend
-   plus sous 13 px, trouve sa place au lieu de se fondre */
-#cb-main .cc.kcarte.f .art{height:calc(var(--u)*(5.4 - (1 - var(--kf,1))*10))}
+/* carte choisie : quand ajuster() serre le texte (--kf < 1), l'illustration rétrécit un peu, jamais sous 4,4u (plus de 80 %
+   de ses 5,4u) : la peinture reste grande. Boucle 4 bis (22 nov.) : avant, elle pouvait tomber à 3,2u et s'écraser.
+   La citation s'efface d'abord ; si le texte déborde encore, la carte grandit vers le haut (classe « haute », +0,9u, la
+   place libre entre la main et la ligne d'aide), puis la peinture cède un peu, enfin la dernière ligne se fond
+   (8 à 10 lignes à 13 px). */
+#cb-main .cc.kcarte.f .art{height:max(calc(var(--u)*4.4),calc(var(--u)*(5.4 - (1 - var(--kf,1))*8)))}
+#cb-main .cc.kcarte.f.haute{height:calc(var(--u)*21.9)}
+#cb-main .cc.kcarte.f.haute .ct,#cb-main .cc.kcarte.f.serre .ct{line-height:1.2}
 `;document.head.appendChild(css);
 
 /* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)
@@ -616,12 +621,15 @@ const css=document.createElement('style');css.textContent=`
 const deborde=t=>t.scrollHeight>t.clientHeight+1;
 /* boucle 4 (22 nov.) : seul le texte est mesuré. La carte elle-même dépasse toujours de quelques pixels (ornements du cadre),
    ce qui faisait serrer chaque carte choisie au maximum (texte à 78 %, citation cachée) même quand tout tenait. */
-function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false;const trop=()=>deborde(t);
-  el.style.removeProperty('--kf');el.classList.remove('serre');t.classList.remove('deborde');
-  for(let i=0;i<6&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
+/* boucle 4 bis (22 nov.) : ordre des recours. D'abord la citation s'efface, puis la carte grandit vers le haut (la peinture
+   garde ses 5,4u) ; puis la police descend (plancher 13 px) avec un peu de peinture (plancher 4,4u) ; enfin le fondu. */
+function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false,haute=false;const trop=()=>deborde(t);
+  el.style.removeProperty('--kf');el.classList.remove('serre','haute');t.classList.remove('deborde');
   if(trop()&&el.querySelector('.kamb')){serre=true;el.classList.add('serre')}
-  const fondu=deborde(t);t.classList.toggle('deborde',fondu);return{k,serre,fondu}}
-function appliquer(el,r){const t=el.querySelector('.ct');if(r.k<1)el.style.setProperty('--kf',r.k.toFixed(3));el.classList.toggle('serre',!!r.serre);if(t)t.classList.toggle('deborde',!!r.fondu)}
+  if(trop()){haute=true;el.classList.add('haute')}
+  for(let i=0;i<4&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
+  const fondu=deborde(t);t.classList.toggle('deborde',fondu);return{k,serre,haute,fondu}}
+function appliquer(el,r){const t=el.querySelector('.ct');if(r.k<1)el.style.setProperty('--kf',r.k.toFixed(3));el.classList.toggle('serre',!!r.serre);el.classList.toggle('haute',!!r.haute);if(t)t.classList.toggle('deborde',!!r.fondu)}
 window.ajuster=ajuster;
 const AJ={main:'',m:new Map()},hm=document.getElementById('cb-main');
 if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return;
