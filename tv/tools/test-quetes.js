@@ -12,7 +12,7 @@ await p.evaluate(()=>MZ.start());await p.waitForTimeout(1500);
 let echecs=0;
 for(let lv=-7;lv<=7;lv++)for(const fin of(lv===7||lv===-7?[0]:[0,1])){
   const r=await p.evaluate(async([lv,fin])=>{const Z=MZ.ZN.find(z=>z.id==='DON045');MZ.S.act.DON045=true;MZ.S.own.DON045=true;MZ.set('DON045',lv);MZ.S.rest.DON045=0;MZ.S.quete={};MZ.S.parole={};
-    const attendre=ms=>new Promise(r=>setTimeout(r,ms)),chemin=[];
+    const attendre=ms=>new Promise(r=>setTimeout(r,ms)),chemin=[];await attendre(400); /* la visibilité des PNJ suit le palier au tic suivant */
     for(let pas=0;pas<14;pas++){const et=MZquetes.etape(Z);if(!et)return{err:'pas de nœud'};chemin.push(MZquetes.etat(Z).n);
       if(et.lieu){MZquetes.lieuAtteint(Z,et)}else{const f=MZquetes.FIG.find(f=>f.id===et.qui);if(!f.g.visible)return{err:et.qui+' absent mais attendu',chemin};toMonde();MZquetes.parler(f)}
       if(et.final){const o=UI.opts[fin];if(!o||o.off)return{err:'choix final indisponible',chemin};const vers=et.fin[fin].vers;o.go();await attendre(50);
