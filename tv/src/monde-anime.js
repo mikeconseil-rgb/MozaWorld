@@ -53,10 +53,13 @@ function bete(sorte){const g=new THREE.Group(),m=sombre.clone(),parts={};g.userD
     parts.p=[[-.4,.75],[.4,.75],[-.4,-.75],[.4,-.75]].map(([x,z])=>add(new THREE.BoxGeometry(.22,.8,.22).translate(0,-.4,0),x,.8,z))}
   g.visible=false;scene.add(g);return g}
 const BETES=[];let zoneB=null;
+/* 21 nov. (plantages) : une réserve de bêtes par sorte, réutilisées d'une zone à l'autre. Avant, chaque changement de sorte
+   retirait les bêtes de la scène sans libérer leurs géométries : une dizaine de géométries perdues par zone traversée. */
+const BETES_POOL={};function betePool(sorte,i){const l=BETES_POOL[sorte]||(BETES_POOL[sorte]=[]);return l[i]||(l[i]=bete(sorte))}
 function peupler(Z){zoneB=Z;const mod=Z.mod||Z.id,sorte=mod==='ANT'?'aile':mod==='DON'?'feu':'pattes',col=(typeof ZCOL!=='undefined'&&ZCOL[Z.id])||'#c9a45c';
   const n=sorte==='pattes'?5:6;while(BETES.length<n)BETES.push(null);
-  for(let i=0;i<BETES.length;i++){let b=BETES[i];if(b&&b.userData.sorte!==sorte){scene.remove(b);b=null}if(i>=n){if(b)b.visible=false;continue}
-    if(!b)b=BETES[i]=bete(sorte);const u=b.userData;u.m.color.set(col).lerp(new THREE.Color(0x2a2420),.35);if(u.ma)u.ma.color.set(col);if(u.mb)u.mb.color.set(col).multiplyScalar(2.2);
+  for(let i=0;i<BETES.length;i++){let b=BETES[i];if(b&&b.userData.sorte!==sorte){b.visible=false;b.userData.actif=false;b=BETES[i]=null}if(i>=n){if(b){b.visible=false;b.userData.actif=false}continue}
+    if(!b)b=BETES[i]=betePool(sorte,i);const u=b.userData;u.m.color.set(col).lerp(new THREE.Color(0x2a2420),.35);if(u.ma)u.ma.color.set(col);if(u.mb)u.mb.color.set(col).multiplyScalar(2.2);
     const a=Math.random()*TAU,r=25+Math.random()*45;b.position.set(P.x+Math.cos(a)*r,0,P.z+Math.sin(a)*r);u.cap=Math.random()*TAU;u.v=0;u.t=Math.random()*3;u.ph=Math.random()*6;u.actif=true;b.visible=true}}
 function majBetes(dt,T,Z){const vis=QI>0&&mode==='monde'&&!!Z;for(const b of BETES)if(b)b.visible=vis&&b.userData.actif;if(!vis)return;if(Z!==zoneB)peupler(Z);
   for(const b of BETES){if(!b||!b.userData.actif)continue;const u=b.userData,dx=b.position.x-P.x,dz=b.position.z-P.z,d=Math.hypot(dx,dz);

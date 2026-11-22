@@ -35,7 +35,11 @@ function terrainCarreaux(){const g=terrain.geometry,A=g.attributes,src=g.index.a
     const cg=new THREE.BufferGeometry();for(const n in A)cg.setAttribute(n,A[n]);cg.setIndex(new THREE.BufferAttribute(new Uint32Array(idx),1));
     const m=new THREE.Mesh(cg,terrain.material);m.receiveShadow=true;m.castShadow=true;m.frustumCulled=false;scene.add(m);
     CULL.list.push({o:m,c:new THREE.Vector3((x0+x1)/2,10,(z0+z1)/2),r:Math.hypot(x1-x0,z1-z0,200)/2,fixe:true})}
-  terrain.visible=false;CULL.carreaux=true}
+  terrain.visible=false;CULL.carreaux=true;
+  /* 21 nov. (plantages) : la grande maille n'est plus dessinée ; on rend la mémoire de son index (un million de sommets,
+     environ 25 Mo en mémoire et autant sur la carte graphique). Les attributs restent : les carreaux les partagent et les
+     renvoient à la carte graphique à la prochaine image. */
+  g.dispose();g.setIndex(null)}
 
 /* ---------- Boucle 2 (19 nov. 2026) : budget repris (ombres limitées à leur boîte, coupe selon le brouillard) ----------
    Mesuré au banc (Belle, rendu logiciel) : à Berestograd, la passe d'ombre envoyait ~229 000 triangles et ~100 appels
@@ -68,6 +72,7 @@ function farOmbre(sinEl){const s=clamp(sinEl,.05,1);return clamp(260+120*Math.sq
 /* (a) passe d'ombre : le temps de l'appel, on masque ce qui est hors de la boîte (+30 m), puis on rend l'état exact */
 {const SM=renderer.shadowMap,_ombre=SM.render;
  SM.render=function(lights,sc,cam){
+  if(!SM.autoUpdate&&!SM.needsUpdate)return;
   if(sc!==scene||!SM.enabled||!sun.castShadow||!lights||!lights.length)return _ombre.call(SM,lights,sc,cam);
   rendreMiettes();   /* les miettes ne servent qu'à la caméra (la liste de la passe principale est déjà faite) */
   const S=sun.shadow,C=S.camera;S.updateMatrices(sun);
@@ -97,8 +102,17 @@ sun.shadow.camera.far=farOmbre(Math.sin(30*D2R));sun.shadow.camera.updateProject
    ce que l'on voit ne doit pas dépendre du rythme des images. */
 function baisseAuto(){try{return autoQ&&frame>0&&fpsT===0&&fpsN===0}catch(_){return false}}
 const _resizeOmb=resize;
-resize=function(){_resizeOmb();if(baisseAuto())return;const sh=QUAL().sh;renderer.shadowMap.enabled=sun.castShadow=sh>0;
-  if(sh>0&&sun.shadow.mapSize.x!==sh){if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}sun.shadow.mapSize.set(sh,sh)}};
+/* 21 nov. (plantages : écran noir parfois en changeant la qualité sur Xbox). Les ombres restent « allumées » pour les
+   shaders (aucun changement d'état d'éclairage, donc aucun risque de recompilation) ; en Fluide, la passe d'ombre ne tourne
+   plus (autoUpdate), sa carte est rendue à la mémoire et un biais de -1 rend tout éclairé : même image qu'avant. */
+function appliquerOmbre(){const sh=QUAL().sh,SM=renderer.shadowMap;SM.enabled=true;sun.castShadow=true;
+  if(sh>0){SM.autoUpdate=true;sun.shadow.bias=-.0006;
+    if(sun.shadow.mapSize.x!==sh){if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}sun.shadow.mapSize.set(sh,sh)}}
+  else{SM.autoUpdate=false;sun.shadow.bias=-1;if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}}}
+/* sur Xbox (sol allégé), l'anticrénelage multiéchantillon passe de 4 à 2 : l'image de rendu pèse deux fois moins (FXAA reste) */
+if(typeof SOL_LEGER!=='undefined'&&SOL_LEGER)for(const q of QUALS)if(q.ms>2)q.ms=2;
+resize=function(){_resizeOmb();if(baisseAuto())return;appliquerOmbre()};
+appliquerOmbre();resize();
 /* (c) coupe selon le brouillard. FogExp2 : à 2,3/densité, il reste 0,5 % de l'objet ; +40 m de marge, entre 180 et 620 m.
    Densité visée (AT.fog) ; si le brouillard lissé est encore plus clair (on entre dans une zone plus brumeuse), on garde
    le plus clair des deux : rien ne surgit, rien ne s'efface sous les yeux. Même atténuation en hauteur que stepAtmo. */

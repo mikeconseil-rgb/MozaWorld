@@ -6,6 +6,18 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Plantages sur Xbox : mémoire (21-22 novembre, `src/memoire.js`)
+Symptôme rapporté : écran noir « comme un plantage d'Edge », en marchant ou pendant une mue, vers 10 minutes de jeu, parfois en changeant la qualité d'image.
+Mesures (banc `tv/tools/test-endurance.js`) : une région pesait ~700 Mo dans le navigateur, dont un sol d'un million de sommets ; rien ne grossissait sans fin, mais chaque voyage recharge la page.
+- Avant chaque rechargement (voyage, sauvegarde chargée), la mémoire de la carte graphique est rendue tout de suite.
+- Contexte WebGL perdu (écran noir) : la partie est enregistrée et la région rechargée au même endroit, avec un message.
+- Sur Xbox (ou `?xbox=1`) : maille du sol 5,4 m au lieu de 4,2 (40 % de sommets en moins), anticrénelage ×2 au lieu de ×4.
+- L'index de la grande maille du sol (inutile depuis les carreaux) est libéré : ~25 Mo en mémoire et autant sur la carte graphique.
+- Fluide : la carte d'ombre est rendue à la mémoire, sans changer l'état d'éclairage des shaders.
+- Bêtes errantes réutilisées (elles perdaient une dizaine de géométries par zone), chariots et tours libérés.
+- Hordes : plus d'erreur quand une horde vise une zone hors de la région chargée (le défaut trouvé par `test-voyage.js` le 20 nov.).
+- Journal : si la page s'est fermée brutalement, le jeu le dit au démarrage suivant (moment, zone, minutes de jeu) ; `MZplantages()` dans la console rend les 10 derniers.
+
 ## Version 2.27 : boucle graphique 3 (20 novembre)
 
 Trois améliorations acceptées par le testeur de l'équipe graphique :
