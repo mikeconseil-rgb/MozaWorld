@@ -6,6 +6,12 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.38 : boucle graphique 4 (22 novembre)
+
+Deux améliorations acceptées par le testeur de l'équipe graphique (la troisième, la marqueterie des sols, est refusée et reprise à la boucle 5) :
+- **Le niveau 0 devient un lieu** : chaque zone a sa troisième ancre de couleur et son heure du jour au niveau 0 (Citadelle ambrée, DON045 à l'heure bleue, RES374 en brume jade, ASS152 en canyon brique, ANT120 en oasis). Les pôles ±7 sont inchangés (vérifié sur les 52 zones).
+- **Combat et interface** : plateau en vraies tesselles au lieu de la nappe vichy, boutons en sceaux, la carte choisie garde sa peinture, « Fin du tour » lisible, écran d'exploration allégé.
+
 ## Boucle 4, artisan 3 : combat et interface classieux (22 novembre, `src/carnet-combat.js`, `cartes-visuel.js`, `epure.js`, `fluidite.js`)
 On garde la mosaïque collée et la cire rouge demandées le 21 novembre ; seules l'échelle, le contraste et la finition changent.
 - Cases du Plateau en tesselles fines (opus vermiculatum) au lieu d'un quadrillage de nappe vichy : joints de 1 px couleur mortier chaud au pas de .72u, filet clair d'1 px, seconde grille décalée très légère, liseré intérieur assombri puis filet d'or.
