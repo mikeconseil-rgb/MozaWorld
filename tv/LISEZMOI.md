@@ -6,6 +6,15 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.31 : interface « Carnet sombre », étape 1, l'exploration (22 novembre, `src/carnet.js`)
+Maquette validée le 21 novembre au soir (encre, parchemin usé et brûlé aux coins, cire rouge, écriture à la main, coups de pinceau acrylique ; sans tentacules ni coulures, retirés à la demande).
+- Barre du haut en bande de parchemin déchirée, chiffres à l'encre, pastilles de mana cerclées ; le danger de la zone en tampon.
+- Titre de zone et annonces en gothique blanc d'os sur un coup de pinceau vert-de-gris, avec un sceau de cire ; les titres courts passent en capitales.
+- Fiche de zone, jauge des pôles, invite d'action, étiquette de la minicarte et aides des commandes en bouts de papier ; médaillon de la minicarte cerclé d'encre.
+- Bords de l'écran assombris (lueur de bougie).
+- Ce n'est qu'un habillage : aucun contenu ni règle ne change. Poids : aucune image, aucun filtre, aucun flou (le flou d'arrière-plan des cadres de l'exploration est retiré) ; cinq polices libres (OFL) dans `img/polices/` (200 Ko).
+- `?carnet=0` dans l'adresse rend l'ancienne interface. Reste à faire : combat (étape 2), menu pause (étape 3).
+
 ## Version 2.30.4 : carte du monde allégée (22 novembre, `src/minicarte.js`)
 Symptôme rapporté : plantage en dézoomant la carte du monde sur la Xbox.
 - La 3D ne se dessine plus derrière la carte ouverte (elle continuait à chaque image, en plus de la carte).
