@@ -6,6 +6,13 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.32 : interface « Carnet sombre », étape 2, le combat (22 novembre, `src/carnet-combat.js`)
+Demandes du 21 novembre : « un champ de bataille en mosaïque », « les mosaïques doivent être collées, un damier en mosaïque », jauges tordues, parchemins usés.
+- Le Plateau devient un damier de tuiles jointives : hexagones et nœuds papillon alternés, bord à bord, 5 colonnes × 3 voies. Vos cases sont bleu nuit, celles de l'ennemi brun rouge ; chaque case spéciale garde sa couleur et son emblème Girih incrusté (Bastion bleu, Piège violet, Tanière rouge, Source turquoise, Tribune ocre). Le Centre est la tuile du milieu (verte à vous, rouge à l'ennemi), entre deux cases décoratives sombres.
+- Unités : étiquettes de papier, jauges tordues et hachurées, intentions sur des billets manuscrits.
+- En-tête gothique sur un coup de pinceau violet avec un sceau ; mana et pioche sur parchemin ; « Fin du tour » en sceau de cire rouge, « Manœuvre » en sceau vert.
+- Les règles du Plateau et les cadres des cartes à jouer ne changent pas. Vue de dessus (pas de perspective). Aucune image, aucun filtre ; les halos animés des cases visées deviennent un clignotement simple.
+
 ## Version 2.31 : interface « Carnet sombre », étape 1, l'exploration (22 novembre, `src/carnet.js`)
 Maquette validée le 21 novembre au soir (encre, parchemin usé et brûlé aux coins, cire rouge, écriture à la main, coups de pinceau acrylique ; sans tentacules ni coulures, retirés à la demande).
 - Barre du haut en bande de parchemin déchirée, chiffres à l'encre, pastilles de mana cerclées ; le danger de la zone en tampon.
