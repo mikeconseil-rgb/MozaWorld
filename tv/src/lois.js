@@ -65,7 +65,7 @@ const LOI_POLES={
   Liberté:'relais',Chaos:'relais',Chant:'relais'};
 const LOI_FORCEE={};          /* tests seulement (MZ.loiForcer) : id d'Assemblée → loi du catalogue, pour ses deux pôles ; jamais sauvegardé */
 const estAssL=Z=>!!Z&&(Z.mod||Z.id)==='MAR';
-const nomAssL=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
+const nomAssL=id=>ZB[id]?zI(id).nom.split(',')[0]:id;
 function hashLoi(s){let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h}
 /* les deux lois du catalogue d'une Assemblée sans fiche : [loi du pôle −, loi du pôle +] ; null pour une Assemblée à fiche */
 const LOI_DE={};

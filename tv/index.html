@@ -414,6 +414,8 @@ for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=i
   if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
+/* 2.27.2 : nom et fiche d'une zone, même hors de la région chargée (ZB ne contient que la région) */
+const zI=id=>{let Z=null;try{Z=ZB[id]}catch(_){}Z=Z||ZWB[id];return(Z&&Z.info)||{nom:String(id),sur:"",pm:"Pénurie",pp:"Abondance",pal:["","","","",""]}};
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
@@ -3619,12 +3621,12 @@ const borne=id=>!!loi('ASS155')&&S.borne===id&&!!S.own[id];
 /* ligne de la Pierre d'éveil : loi de la fiche, ou loi du catalogue (lois.js) pour les autres Assemblées */
 function optionsAssemblee(Z){const A=ASSEMBLEES[Z.id];
   if(!A||(typeof poleCatalogue==='function'&&poleCatalogue(Z.id))){const o=typeof optionsLoiCatalogue==='function'?optionsLoiCatalogue(Z):[];   /* loi écrite et loi du catalogue */
-    if(Z.id==='ASS155'&&loi('ASS155'))o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+ZB[S.borne].info.nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
+    if(Z.id==='ASS155'&&loi('ASS155'))o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+zI(S.borne).nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
     return o}
   const l=loi(Z.id),o=[];
   const r=l&&renfAss(Z.id),fin=r&&typeof finRenfTxt==='function'?finRenfTxt(Z.id):'';
   o.push({l:l?(r?'Loi en vigueur renforcée':'Loi en vigueur'):'Loi endormie',ic:'⚖',off:true,d:l?A.loi(l)+(r?' ; renforcée : '+A.renf(l)+fin:' · gagnez le Duel d\'arguments pour la renforcer'):'prenez et activez l\'Assemblée, puis montez-la au palier 1 ou plus : '+A.loi(1)});
-  if(Z.id==='ASS155'&&l)o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+ZB[S.borne].info.nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
+  if(Z.id==='ASS155'&&l)o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+zI(S.borne).nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
   return o}
 function choisirBorne(){const mes=ZN.filter(Z=>S.own[Z.id]);
   ui('menu',{sur:'Oasis de Raak · Pierre de bornage',t:'Borner une zone',corps:'<p class="petit">La zone bornée ne peut pas perdre de niveau face à une horde ou un rival, tant qu\'elle est à vous. Une seule à la fois.</p>',back:()=>openEveil(ZB.ASS155),
@@ -3658,7 +3660,7 @@ function citadellesEpiques(){const g=S.graine||0;if(epiquesCache.g===g&&epiquesC
   const l=cits.length<=SIEGE_EPIQUES?cits:cits.slice().sort((a,b)=>hashSiege(a+'#'+g)-hashSiege(b+'#'+g)).slice(0,SIEGE_EPIQUES);
   epiquesCache={g,l};return l}
 const estEpique=id=>!!ZB[id]&&citadellesEpiques().indexOf(id)>=0;
-const courtS=id=>ZB[id].info.nom.split(',')[0];
+const courtS=id=>zI(id).nom.split(',')[0];
 const cyclesS=n=>n+' cycle'+(n>1?'s':'');
 
 function initSiege(){if(S.siege===undefined)S.siege=null;if(!S.siegeRepos||typeof S.siegeRepos!=='object')S.siegeRepos={};
@@ -3680,7 +3682,7 @@ function sourceSiege(cit){const d=typeof aPortee==='function'?aPortee(cit,12):{}
 function lancerSiege(id){initSiege();if(S.siege||S.siegeFini||!peutSieger(id)||reposSiege(id))return null;
   S.siege={cit:id,vague:0,tenues:0,brisees:0,debut:S.nc};
   /* les maisons s'écartent de la Citadelle assiégée : contestation en cours levée */
-  if(S.riv&&S.riv.c&&S.riv.c.id===id){const r=typeof RIVK!=='undefined'&&RIVK[S.riv.c.r];S.riv.c=null;if(r&&started)setTimeout(()=>toast(`${r.bl} ${r.nom} renonce à ${ZB[id].info.nom}`,'la Citadelle soutient le siège final','Aucune maison rivale ne s\'en approche tant que dure le siège.'),6000)}
+  if(S.riv&&S.riv.c&&S.riv.c.id===id){const r=typeof RIVK!=='undefined'&&RIVK[S.riv.c.r];S.riv.c=null;if(r&&started)setTimeout(()=>toast(`${r.bl} ${r.nom} renonce à ${zI(id).nom}`,'la Citadelle soutient le siège final','Aucune maison rivale ne s\'en approche tant que dure le siège.'),6000)}
   annoncerVague();return S.siege}
 function annoncerVague(){const s=S.siege;if(!s)return;s.vague++;s.arrive=S.nc+SIEGE_DELAI;s.src=sourceSiege(s.cit);s.vu=0;
   s.force=7+Math.floor((S.nc||0)/(typeof HORDE_CROIT==='number'?HORDE_CROIT:10))+SIEGE_SURCROIT[s.vague-1]+Math.floor(Math.random()*2);
@@ -3693,7 +3695,7 @@ function annoncerVague(){const s=S.siege;if(!s)return;s.vague++;s.arrive=S.nc+SI
     `Force ${s.force} contre votre défense ${D.total}, arrivée dans ${cyclesS(SIEGE_DELAI)} (environ ${fmt(resteSiege(s))}). ${s.vague>=SIEGE_VAGUES?'Menée par leur chef, elle dépasse vos défenses : allez la briser vous-même à la Pierre d\'éveil de la Citadelle.':'À la Pierre d\'éveil de la Citadelle, « Briser la vague » pour l\'affronter vous-même.'}`)}
 let siegeRapports=[];
 /* forcer : true = la vague est tenue, false = elle passe, absent = force contre défense */
-function vagueArrive(forcer){initSiege();const s=S.siege;if(!s)return null;const Z=ZB[s.cit],D=defenseHorde(s.cit),l=[];
+function vagueArrive(forcer){initSiege();const s=S.siege;if(!s)return null;const Z=(ZB[s.cit]||ZWB[s.cit]),D=defenseHorde(s.cit),l=[];
   const tenue=forcer===true||forcer!==false&&s.force<=D.total;
   l.push(`Vague ${s.vague} sur ${SIEGE_VAGUES}, force ${s.force}, contre ${Z.info.nom}, défense ${D.total} (${D.parts.map(p=>p[0]+' +'+p[1]).join(', ')}).`);
   if(tenue){s.tenues++;if(S.hordesBilan)S.hordesBilan.repoussees++;gagner(ZMANA[s.cit]||'Pierre',1);
@@ -3705,20 +3707,20 @@ function suiteSiege(l){const s=S.siege;
   annoncerVague();l.push(`La vague ${s.vague} se forme déjà : arrivée dans ${cyclesS(SIEGE_DELAI)}, force ${s.force}.`);
   siegeRapports.push({ok:true,t:'La Citadelle tient',lignes:l});montrerSiege();return{tenue:true,lignes:l}}
 function echecSiege(l,sansRapport){const s=S.siege;S.siege=null;S.siegeRepos[s.cit]=S.nc+SIEGE_REPOS;
-  l.push(`Le siège final échoue. Ramenez ${ZB[s.cit].info.nom} à ±7 : vous pourrez le relancer après ${cyclesS(SIEGE_REPOS)} de repos.`);
+  l.push(`Le siège final échoue. Ramenez ${zI(s.cit).nom} à ±7 : vous pourrez le relancer après ${cyclesS(SIEGE_REPOS)} de repos.`);
   save();hudKey='';etatHud();if(!sansRapport){siegeRapports.push({ok:false,t:'Le siège échoue',lignes:l});montrerSiege()}return{tenue:false,lignes:l}}
 function montrerSiege(){if(!siegeRapports.length||mode!=='monde')return;const r=siegeRapports.shift();if(r.victoire){if(typeof fanfare==='function')fanfare(7);ecranVictoire(r.victoire,r.lignes);return}mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
   ui('menu',{sur:'Siège final',t:r.t,corps:`<p class="petit">${r.lignes.join('<br>')}</p>`,back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}
 
 setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;initSiege();if(mode==='monde'&&siegeRapports.length)montrerSiege();const s=S.siege;if(!s)return;
   if(!ZB[s.cit]||!tient(s.cit)||Math.abs(S.lv[s.cit]||0)<7){S.siege=null;save();hudKey='';etatHud();
-    toast('Le siège est levé',ZB[s.cit]?ZB[s.cit].info.nom:'',tient(s.cit)?'La Citadelle n\'est plus à ±7 : le siège final s\'arrête. Ramenez-la à ±7 pour le relancer.':'La Citadelle n\'est plus à vous : le siège final s\'arrête. Reprenez-la et ramenez-la à ±7 pour le relancer.');return}
+    toast('Le siège est levé',ZB[s.cit]?zI(s.cit).nom:'',tient(s.cit)?'La Citadelle n\'est plus à ±7 : le siège final s\'arrête. Ramenez-la à ±7 pour le relancer.':'La Citadelle n\'est plus à vous : le siège final s\'arrête. Reprenez-la et ramenez-la à ±7 pour le relancer.');return}
   if(S.nc>=s.arrive&&!(typeof CB!=='undefined'&&CB&&CB.siege))vagueArrive();
   if(mode==='monde'&&curZ&&curZ.id===s.cit&&s.vu!==s.vague){s.vu=s.vague;
     toast(`Siège final · vague ${s.vague} sur ${SIEGE_VAGUES}`,'Elle approche de la Citadelle',`Arrivée dans environ ${fmt(resteSiege(s))}. À la Pierre, OK puis « Briser la vague » pour la combattre.`)}},1000);
 
 /* ---------- Le héros brise une vague (combat d'avant-garde de hordes.js) ---------- */
-function combatSiege(){const s=S.siege;if(!s)return;const Zc=ZB[s.cit],Zs=ZB[s.src]||Zc,liste=MON[Zs.id]||MON[Zs.mod]||MON.CIT,L=6;
+function combatSiege(){const s=S.siege;if(!s)return;const Zc=(ZB[s.cit]||ZWB[s.cit]),Zs=ZB[s.src]||Zc,liste=MON[Zs.id]||MON[Zs.mod]||MON.CIT,L=6;
   startCombat(Zc,'horde');if(!CB)return;CB.siege=s.vague;
   const mk=i=>{const m=liste[i],pv=Math.round(m.pv*(1+.4*L));return{nom:m.nom,pv,max:pv,atk:m.atk+L+s.vague-1,g:0,mv:m.mv,mi:Math.floor(Math.random()*m.mv.length),chef:m.chef,z:s.cit}};
   const idx=s.vague===1?[0,1]:s.vague===2?[0,1,Math.random()<.5?0:1]:[0,1,liste[2]?2:0];
@@ -3728,7 +3730,7 @@ function combatSiege(){const s=S.siege;if(!s)return;const Zc=ZB[s.cit],Zs=ZB[s.s
   journal(`La vague ${s.vague} monte à l'assaut de ${Zc.info.nom}. Brisez-la et elle ne touchera pas les murs.`);if(typeof majUnites==='function')majUnites()}
 function finSiegeCombat(ok,C){const s=S.siege;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
-    ui('menu',{sur:'Défaite',t:'La vague vous repousse',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). ${s?`La vague ${s.vague} marche toujours sur ${ZB[s.cit].info.nom}, arrivée dans environ ${fmt(resteSiege(s))}.`:''}</p><p class="petit">Vous pouvez retenter le combat à la Pierre d'éveil de la Citadelle avant son arrivée ; sinon, vos défenses la reçoivent.</p>`,
+    ui('menu',{sur:'Défaite',t:'La vague vous repousse',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). ${s?`La vague ${s.vague} marche toujours sur ${zI(s.cit).nom}, arrivée dans environ ${fmt(resteSiege(s))}.`:''}</p><p class="petit">Vous pouvez retenter le combat à la Pierre d'éveil de la Citadelle avant son arrivée ; sinon, vos défenses la reçoivent.</p>`,
       back:toMonde,opts:[{l:'Repartir',ic:'◆',go:toMonde}]});return}
   if(!s||s.vague!==C.siege){toMonde();return}
   s.brisees++;if(S.hordesBilan)S.hordesBilan.brisees++;if(typeof gagnerTesselles==='function')gagnerTesselles(TESS_PRIMES.horde,'horde');
@@ -3743,7 +3745,7 @@ function finSiegeCombat(ok,C){const s=S.siege;
 function tempsJeu(sec){const m=Math.floor(sec/60),h=Math.floor(m/60);return h?`${h} h ${String(m%60).padStart(2,'0')} min`:`${m} min`}
 function bilanMonde(cit){const own=ZN.filter(Z=>S.own[Z.id]),B=S.hordesBilan||{brisees:0,repoussees:0,passees:0};
   const maisons=typeof RIVAUX!=='undefined'&&typeof zonesMaison==='function'?RIVAUX.map(r=>({nom:r.nom,bl:r.bl,n:zonesMaison(r.k).length})):[];
-  return{date:new Date().toISOString().slice(0,10),cit,nom:ZB[cit].info.nom,pole:(S.lv[cit]||0)>0?ZB[cit].info.pp:ZB[cit].info.pm,signe:sgn(S.lv[cit]||0),graine:S.graine,
+  return{date:new Date().toISOString().slice(0,10),cit,nom:zI(cit).nom,pole:(S.lv[cit]||0)>0?zI(cit).pp:zI(cit).pm,signe:sgn(S.lv[cit]||0),graine:S.graine,
     zones:own.length,total:ZN.length,sept:own.filter(Z=>Math.abs(S.lv[Z.id]||0)>=7).length,brisees:B.brisees,repoussees:B.repoussees,passees:B.passees,
     maisons,temps:(S.nc||0)*CYCLE+(S.tc||0),cycles:S.nc||0,morts:Math.max(0,(S.lives||1)-1),cartes:(S.deck||[]).length}}
 function lirePalmares(){try{const l=JSON.parse(localStorage.getItem(PALMARES_CLE)||'[]');return Array.isArray(l)?l:[]}catch(_){return[]}}
@@ -3795,9 +3797,9 @@ function optionsSiege(Z){const o=[];if(!Z||!estCIT(Z)||!estEpique(Z.id))return o
 function ficheSiege(Z){const el=$('h-mai');if(!el||!Z||!estCIT(Z)||!estEpique(Z.id))return;initSiege();const s=S.siege;
   el.innerHTML+=`<br><small><b style="color:#f0c95a">♛ Citadelle épique</b> · ${s&&s.cit===Z.id?`siège final, vague ${s.vague}/${SIEGE_VAGUES}`:S.siegeFini?'monde gagné':'victoire au siège final, à ±7'}</small>`}
 function menacesSiege(){if(typeof S==='undefined')return[];initSiege();const s=S.siege;if(!s||!ZB[s.cit])return[];
-  return[`<span class="d" title="Siège final de ${ZB[s.cit].info.nom}" style="color:#ffcf6a"><span>♛</span>${courtS(s.cit).split(' ').pop()} vague ${s.vague}/${SIEGE_VAGUES}<small> ${fmt(resteSiege(s))}</small></span>`]}
+  return[`<span class="d" title="Siège final de ${zI(s.cit).nom}" style="color:#ffcf6a"><span>♛</span>${courtS(s.cit).split(' ').pop()} vague ${s.vague}/${SIEGE_VAGUES}<small> ${fmt(resteSiege(s))}</small></span>`]}
 function dessinerSiege(mc,sc,ox,oz,T){if(typeof S==='undefined'||!S.lv)return;const s=S.siege,pulse=.55+.45*Math.sin((T||0)*4);
-  for(const id of citadellesEpiques()){const Z=ZB[id];if(!Z)continue;const x=(Z.c[0]+ox)*sc,y=(Z.c[1]+oz)*sc,siege=s&&s.cit===id;
+  for(const id of citadellesEpiques()){const Z=(ZB[id]||ZWB[id]);if(!Z)continue;const x=(Z.c[0]+ox)*sc,y=(Z.c[1]+oz)*sc,siege=s&&s.cit===id;
     mc.save();mc.strokeStyle=siege?`rgba(255,96,72,${.5+.5*pulse})`:'rgba(240,201,90,.9)';mc.fillStyle='rgba(240,201,90,.95)';mc.lineWidth=2;
     mc.beginPath();mc.arc(x,y,siege?15+5*pulse:11,0,TAU);mc.stroke();if(siege){mc.beginPath();mc.arc(x,y,21+5*pulse,0,TAU);mc.stroke()}
     mc.font='bold 13px sans-serif';mc.textAlign='center';mc.textBaseline='middle';mc.fillText('♛',x,y-(siege?30:18));
@@ -3858,7 +3860,7 @@ const DJ_BIOME={'Forêt boréale':'Galerie des racines gelées','Fjord':'Grotte 
   'Jungle':'Temple sous les lianes','Archipel':'Grotte marine','Haute montagne':'Gouffre des cimes','Forêt de champignons géants':'Salle des spores',
   'Marais':'Tourbière noyée','Désert de sel':'Galerie de sel','Iles flottantes':'Racines suspendues','Savane':'Termitière creuse','Toundra':'Cave du pergélisol'};
 const djDe=n=>/^[AEIOUYÉÈÊÂÎÔaeiouyéèêâîôh]/.test(n)?'d\''+n:'de '+n;
-const djCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
+const djCourt=id=>ZB[id]?zI(id).nom.split(',')[0]:id;
 const djLieu=id=>{const n=djCourt(id),m=n.match(/\bd(?:e |['’])([^']+)$/);return m?m[1]:n.replace(/^(Le|La|Les|L['’]) ?/,'')};
 function nomsSalles(id){if(id==='DON')return SALLES;const Z=ZB[id],d=(Z&&Z.d)||{},lieu=djLieu(id);
   return[`Porte ${djDe(lieu)}`,DJ_BIOME[d.biome]||`Galerie ${djDe(lieu)}`,d.culture?`Crypte ${d.culture.toLowerCase()}`:`Crypte ${djDe(lieu)}`,`Chambre du Sceau ${djDe(lieu)}`]}
@@ -4014,7 +4016,7 @@ function donjonsAReparer(){
 function reparer(id){if(typeof reparerPieges==='function')return reparerPieges(id)>0;
   if(id!=='DON'||!Array.isArray(S.pieges))return false;for(const x of S.pieges)if(x){x.dort=false;x.u=3}return true}
 const hordesEnMarche=()=>typeof S.hordes==='object'&&S.hordes?Object.values(S.hordes).filter(h=>ZB[h.src]&&ZB[h.cible]).sort((a,b)=>(S.own[b.cible]?1:0)-(S.own[a.cible]?1:0)||a.arrive-b.arrive):[];
-const nomCourt=id=>ZB[id].info.nom.split(',')[0];
+const nomCourt=id=>zI(id).nom.split(',')[0];
 
 function payerTess(n){if(S.tess<n)return false;S.tess-=n;return true}
 function acheterCarte(Z,k){initCommerce();const prix=TESS_CARTE(S.tessCartes);
@@ -4036,7 +4038,7 @@ function openComptoir(Z,f){mode='menu';document.body.classList.add('jeu-ouvert')
   if(!dj.length)o.push({l:'Réparer des pièges',ic:'⛬',off:true,d:'aucun Donjon tenu à aménager'});
   for(const h of hd)o.push({l:`Retarder la horde ${typeof de_==='function'?de_(nomCourt(h.src)):'de '+nomCourt(h.src)}`,ic:'⌛',off:!!h.retard||S.tess<TESS_RETARD,
     d:h.retard?'déjà retardée une fois':`${TESS_RETARD} tesselles · +${RETARD_CYCLES} cycles · vers ${nomCourt(h.cible)}${S.own[h.cible]?' (à vous)':''}`,
-    go:()=>{if(acheterRetard(h.src)){sfx('hit');toast('Comptoir · '+nomCourt(Z.id),'La horde '+(typeof de_==='function'?de_(nomCourt(h.src)):'de '+nomCourt(h.src))+' est retardée',`Des guides payés l'égarent : elle arrivera ${RETARD_CYCLES} cycles plus tard sur ${ZB[h.cible].info.nom}.`)}openComptoir(Z,UI.f)}});
+    go:()=>{if(acheterRetard(h.src)){sfx('hit');toast('Comptoir · '+nomCourt(Z.id),'La horde '+(typeof de_==='function'?de_(nomCourt(h.src)):'de '+nomCourt(h.src))+' est retardée',`Des guides payés l'égarent : elle arrivera ${RETARD_CYCLES} cycles plus tard sur ${zI(h.cible).nom}.`)}openComptoir(Z,UI.f)}});
   if(!hd.length)o.push({l:'Retarder une horde',ic:'⌛',off:true,d:'aucune horde en marche'});
   o.push({l:`Échanger ${TESS_ECHANGE} tesselles contre 1 ${t}`,ic:'⇄',off:S.tess<TESS_ECHANGE,d:`réserve de ${t} : ${resN(t)}`,go:()=>{if(echangerTess(Z))sfx('hit');openComptoir(Z,UI.f)}});
   if(typeof optionPacteComptoir==='function')o.push(...optionPacteComptoir(Z));   /* lot 3 : le pacte avec une maison rivale (pacte.js) */
@@ -4094,7 +4096,7 @@ function verrouillee(id){return!!citVerrou(id)||auCoeur(id)}
 function defenseMonde(id){const r={bonus:0,raisons:[]};if(!S.own[id])return r;
   if(auCoeur(id)){r.bonus+=2;r.raisons.push('au cœur du royaume +2')}
   const d=domaineDe(id);if(d&&d.ferme){r.bonus+=1;r.raisons.push('domaine '+DOM_NOMS[d.type][1]+' fermé +1')}
-  const c=citVerrou(id);if(c){r.bonus+=2;r.verrou=2;r.raisons.push('verrou de '+(ZB[c]?ZB[c].info.nom:'la Citadelle')+' +2')}
+  const c=citVerrou(id);if(c){r.bonus+=2;r.verrou=2;r.raisons.push('verrou de '+(ZB[c]?zI(c).nom:'la Citadelle')+' +2')}
   return r}
 
 /* ---------- effets des domaines fermés ---------- */
@@ -4143,8 +4145,8 @@ function optionsDomaines(Z){const o=[],id=Z.id,d=domaineDe(id),N=DOM_NOMS[domTyp
     d:d.ferme?DOM_BONUS[d.type]:`prenez et activez toutes ses tuiles pour le fermer (${DOM_BONUS[d.type]})`});
   if(auCoeur(id))o.push({l:'Au cœur du royaume',ic:'◉',off:true,d:'toutes ses voisines sont à vous : aucun rival ne peut la viser, défense +2'});
   else if(encerclee(id))o.push({l:'Zone encerclée',ic:'◎',off:true,d:'toutes ses voisines sont à vous : ses gardiens sont affaiblis (PV −25 %, attaque −1)'});
-  const c=citVerrou(id);if(c&&S.own[id])o.push({l:'Zone verrouillée',ic:'⛫',off:true,d:`${c===id?'cette Citadelle':ZB[c].info.nom} la verrouille : aucun rival ne peut la viser, défense +2`});
-  else if(c)o.push({l:'Sous le verrou de votre Citadelle',ic:'⛫',off:true,d:`${ZB[c].info.nom} la verrouille : aucun rival ne peut la viser`});
+  const c=citVerrou(id);if(c&&S.own[id])o.push({l:'Zone verrouillée',ic:'⛫',off:true,d:`${c===id?'cette Citadelle':zI(c).nom} la verrouille : aucun rival ne peut la viser, défense +2`});
+  else if(c)o.push({l:'Sous le verrou de votre Citadelle',ic:'⛫',off:true,d:`${zI(c).nom} la verrouille : aucun rival ne peut la viser`});
   return o}
 /* test : prendre une zone d'un coup (window.MZ.prendre) */
 function domPrendre(id,non){if(!ZB[id])return false;S.own[id]=S.act[id]=!non;save();etatHud();hudKey='';return true}
@@ -4174,9 +4176,7 @@ const envahitA=(id,lv)=>{const p=poleEnvahisseur(id);return Math.abs(lv)>=7&&(p=
 const estRESh=id=>!!ZB[id]&&(ZB[id].mod||id)==='RES';
 const nomPole=(Z,s)=>s<0?Z.info.pm:Z.info.pp;
 /* « de » et « à » devant un nom de zone qui commence souvent par un article */
-/* 21 nov. (plantages) : le nom d'une zone même hors de la région chargée (avant : erreur à chaque affichage après un voyage) */
-const nomZ=id=>{const Z=typeof ZWZ==='function'?ZWZ(id):ZB[id];return Z&&Z.info&&Z.info.nom||String(id)};
-const court=id=>nomZ(id).split(',')[0];
+const court=id=>zI(id).nom.split(',')[0];
 const de_=n=>/^Le /.test(n)?'du '+n.slice(3):/^Les /.test(n)?'des '+n.slice(4):/^La /.test(n)?'de la '+n.slice(3):/^L['’]/.test(n)?'de l\''+n.slice(2):/^[AEIOUÉÈÊHaeiouéèêh]/.test(n)?'d\''+n:'de '+n;
 const a_=n=>/^Le /.test(n)?'au '+n.slice(3):/^Les /.test(n)?'aux '+n.slice(4):/^La /.test(n)?'à la '+n.slice(3):/^L['’]/.test(n)?'à l\''+n.slice(2):'à '+n;
 /* une zone lève-t-elle des hordes ? */
@@ -4218,17 +4218,17 @@ function leverHorde(src,cible,force){initHordes();if(!ZB[src]||S.hordes[src])ret
   const greniers=S.own[cible]&&typeof loi==='function'&&loi('ASS150'),delai=HORDE_DELAI*(greniers?2:1)+(typeof preavisTours==='function'?preavisTours(cible):0);   /* tour de guet : préavis */
   const h=S.hordes[src]={src,cible,nee:S.nc,arrive:S.nc+delai,force:force||Math.abs(S.lv[src]||0)+Math.floor((S.nc||0)/HORDE_CROIT)+Math.floor(Math.random()*4)};
   save();hudKey='';etatHud();
-  if(started&&(S.own[cible]||S.own[src]))toast('Une horde se lève · '+court(src),'Elle marche sur '+nomZ(cible),
+  if(started&&(S.own[cible]||S.own[src]))toast('Une horde se lève · '+court(src),'Elle marche sur '+zI(cible).nom,
     `Arrivée dans ${delai} cycles (environ ${fmt(resteHorde(h))})${greniers?', retardée par les Greniers de Pama':''}. Allez à la Pierre d'éveil de la zone visée pour briser son avant-garde.`);
   return h}
 const resteHorde=h=>Math.max(0,(h.arrive-S.nc-1)*CYCLE+(CYCLE-S.tc));
 let hordeRapports=[];
 function finirHorde(src){delete S.hordes[src];S.hordeMur[src]=0}
 function hordeArrive(src){initHordes();src=src||Object.keys(S.hordes).sort((a,b)=>S.hordes[a].arrive-S.hordes[b].arrive)[0];const h=S.hordes[src];if(!h)return null;
-  const Zs=ZWZ(src),Zc=ZWZ(h.cible),l=[],nomS=court(src),aVous=!!S.own[h.cible];finirHorde(src);let passe=false;
+  const Zs=(ZB[src]||ZWB[src]),Zc=(ZB[h.cible]||ZWB[h.cible]),l=[],nomS=court(src),aVous=!!S.own[h.cible];finirHorde(src);let passe=false;
   if(!sourceHorde(src))l.push(`${nomS} n'est plus au palier 7 de son pôle envahisseur : la horde se disperse en chemin.`);
   else if(S.own[h.cible]&&typeof cacheParBrume==='function'&&cacheParBrume(h.cible))l.push('La Brume de Givrecloche cache la zone : la horde passe son chemin.');
-  else{const D=defenseHorde(h.cible);l.push(`Horde ${de_(nomS)}, force ${h.force}, contre ${nomZ(h.cible)}, défense ${D.total} (${D.parts.map(p=>p[0]+' +'+p[1]).join(', ')}).`);
+  else{const D=defenseHorde(h.cible);l.push(`Horde ${de_(nomS)}, force ${h.force}, contre ${Zc.info.nom}, défense ${D.total} (${D.parts.map(p=>p[0]+' +'+p[1]).join(', ')}).`);
     if(h.force<=D.total){S.hordesBilan.repoussees++;gagner(ZMANA[src]||'Pierre',1);l.push(`La horde se brise sur les défenses : +1 ${ZMANA[src]||'Pierre'} pris sur les vaincus.`)}
     else{passe=true;S.hordesBilan.passees++;l.push(...defaite(h.cible))}}
   save();etatHud();hudKey='';
@@ -4236,18 +4236,18 @@ function hordeArrive(src){initHordes();src=src||Object.keys(S.hordes).sort((a,b)
   else if(started)toast('Le sauvage gronde','Horde '+de_(nomS),l[l.length-1]);
   montrerHorde();return{passe,lignes:l}}
 /* la horde passe : la zone recule d'un palier vers 0 (Ressource : −1 niveau et routes coupées) ; une zone à vous qui tombe à 0 redevient sauvage, avec votre empreinte (réponse de l'utilisateur, 19 nov.) */
-function defaite(id){const Z=ZWZ(id)||{},l=[],a=S.own[id],lv=S.lv[id]||0;
+function defaite(id){const Z=(ZB[id]||ZWB[id]),l=[],a=S.own[id],lv=S.lv[id]||0;
   if(typeof borne==='function'&&borne(id)){l.push('La Pierre de bornage de Raak tient : la zone ne recule pas.');return l}
   if(estRESh(id)){if(S.routes&&S.routes[id]&&S.routes[id].length){delete S.routes[id];l.push('Ses routes sont coupées.')}}
-  if(lv!==0){const n=lv-Math.sign(lv);S.lv[id]=n;Z.lvT=n;l.push(`${nomZ(id)} recule d'un palier (${sgn(n)||'0'}).`)}
+  if(lv!==0){const n=lv-Math.sign(lv);S.lv[id]=n;Z.lvT=n;l.push(`${Z.info.nom} recule d'un palier (${sgn(n)||'0'}).`)}
   if(a&&(S.lv[id]||0)===0){S.own[id]=false;S.act[id]=false;S.emp[id]=true;l.push('La zone tombe à 0 et redevient sauvage. Votre empreinte y reste : vous la reprendrez plus facilement.')}
   if(typeof etatRoutes==='function')etatRoutes();
   return l}
 function montrerHorde(){if(!hordeRapports.length||mode!=='monde')return;const r=hordeRapports.shift();mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
-  const nm=nomZ(r.cible);
-  ui('menu',{sur:'Horde du sauvage · force '+r.force,t:r.ok?nm+' tient':nm+' est forcée',
+  const Z=(ZB[r.cible]||ZWB[r.cible]);
+  ui('menu',{sur:'Horde du sauvage · force '+r.force,t:r.ok?Z.info.nom+' tient':Z.info.nom+' est forcée',
     corps:`<p class="petit">${r.lignes.join('<br>')}</p><p class="petit">Hordes brisées par le héros ${S.hordesBilan.brisees}, repoussées ${S.hordesBilan.repoussees}, passées ${S.hordesBilan.passees}. Une Citadelle tenue à ${HORDE_CIT} tuiles ou moins, un rempart et les pièges du Donjon aménagé renforcent la défense.</p>`,
-    back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}].concat(ZB[r.cible]?[{l:'Aller '+a_(court(r.cible)),ic:'✧',go:()=>{tp(r.cible);toMonde()}}]:[])})}
+    back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}].concat(ZB[r.cible]?[{l:'Aller '+a_(court(r.cible)),ic:'✧',go:()=>{tp(r.cible);toMonde()}}]:[])})}   /* 21 nov. : pas de « Aller » vers une zone hors région */
 
 /* ---------- Le cycle : colère, grondement, arrivées ---------- */
 function hordesCycle(){initHordes();if(S.nc<HORDE_GRACE)return;
@@ -4271,16 +4271,16 @@ setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;init
     toast('Avant-garde de la horde · '+court(src),'Elle campe près de la Pierre d\'éveil',`Arrivée de la horde dans environ ${fmt(resteHorde(h))}. À la Pierre, OK puis « Affronter l'avant-garde » pour la briser.`)}}}},1000);
 
 /* ---------- Le héros répond : combat contre l'avant-garde ---------- */
-function combatHorde(src){const h=S.hordes[src];if(!h)return;const Zc=ZB[h.cible],Zs=ZB[src],L=Math.min(6,Math.abs(S.lv[h.cible]||0)+2),liste=MON[Zs.id]||MON[Zs.mod];
+function combatHorde(src){const h=S.hordes[src];if(!h)return;const Zc=(ZB[h.cible]||ZWB[h.cible]),Zs=(ZB[src]||ZWB[src]),L=Math.min(6,Math.abs(S.lv[h.cible]||0)+2),liste=MON[Zs.id]||MON[Zs.mod];
   startCombat(Zc,'horde');if(!CB)return;CB.horde=src;
   const foes=[0,1].map(i=>{const m=liste[Math.random()<.5?0:1],pv=Math.round(m.pv*(1+.4*L));return{nom:m.nom,pv,max:pv,atk:m.atk+L,g:0,mv:m.mv,mi:Math.floor(Math.random()*m.mv.length),z:h.cible}});
   const br=CB.foes[0]&&CB.foes[0].br;CB.foes=foes;$('cb-foes').innerHTML='';
   if(typeof rangerEnnemis==='function'&&CB.cases)rangerEnnemis(foes);foes.forEach((u,i)=>{if(u.voie==null)u.voie=i%2;if(br)u.br=br.map(x=>x.slice());uniteEl(u,'cb-foes');intention(u)});
   $('cb-sur').textContent='Avant-garde de la horde · '+court(src)+' (palier '+sgn(S.lv[src]||0)+')';
   journal(`L'avant-garde ${de_(court(src))} se jette sur vous. Brisez-la et la horde se disperse.`);if(typeof majUnites==='function')majUnites()}
-function finHorde(ok,C){const src=C.horde,h=S.hordes[src],Zs=ZB[src];
+function finHorde(ok,C){const src=C.horde,h=S.hordes[src],Zs=(ZB[src]||ZWB[src]);
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
-    ui('menu',{sur:'Défaite',t:'L\'avant-garde passe',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). La horde marche toujours${h?' sur '+nomZ(h.cible)+', arrivée dans environ '+fmt(resteHorde(h)):''}.</p><p class="petit">Vous pouvez retenter le combat à la Pierre d'éveil de la zone visée avant son arrivée.</p>`,
+    ui('menu',{sur:'Défaite',t:'L\'avant-garde passe',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). La horde marche toujours${h?' sur '+zI(h.cible).nom+', arrivée dans environ '+fmt(resteHorde(h)):''}.</p><p class="petit">Vous pouvez retenter le combat à la Pierre d'éveil de la zone visée avant son arrivée.</p>`,
       back:toMonde,opts:[{l:'Repartir',ic:'◆',go:toMonde}]});return}
   if(h&&typeof gagnerTesselles==='function')gagnerTesselles(TESS_PRIMES.horde,'horde');   /* commerce.js : prime en tesselles */
   const t=ZMANA[src]||'Pierre';gagner(t,HORDE_BUTIN);if(h){finirHorde(src);S.hordesBilan.brisees++}save();etatHud();hudKey='';sfx('hit');
@@ -4302,10 +4302,10 @@ function ficheHorde(Z){const el=$('h-mai');if(!el||!Z)return;initHordes();let t=
   else if(!estRESh(Z.id)){const p=poleEnvahisseur(Z.id);t=S.hordes[Z.id]?`<b style="color:#ff8a6a">Lève une horde</b>`:p===2?'Hordes : les deux pôles':`Hordes : ${p<0?'−7':'+7'} ${nomPole(Z,p)}`}
   if(t)el.innerHTML+=`<br><small>${t}</small>`}
 function menacesHordes(){initHordes();const L=Object.values(S.hordes).sort((a,b)=>(S.own[b.cible]?1:0)-(S.own[a.cible]?1:0)||a.arrive-b.arrive);
-  return L.slice(0,2).map(h=>`<span class="d" title="Horde ${de_(court(h.src))} vers ${nomZ(h.cible)}" style="${S.own[h.cible]?'color:#ff8a6a':''}"><span>⚔</span>${nomZ(h.src).split(',')[0].split(' ').pop()} → ${nomZ(h.cible).split(',')[0].split(' ').pop()}<small> ${fmt(resteHorde(h))}</small></span>`)
+  return L.slice(0,2).map(h=>`<span class="d" title="Horde ${de_(court(h.src))} vers ${zI(h.cible).nom}" style="${S.own[h.cible]?'color:#ff8a6a':''}"><span>⚔</span>${zI(h.src).nom.split(',')[0].split(' ').pop()} → ${zI(h.cible).nom.split(',')[0].split(' ').pop()}<small> ${fmt(resteHorde(h))}</small></span>`)
     .concat(L.length>2?[`<span class="d"><small>+${L.length-2}</small></span>`]:[])}
 function dessinerHordes(mc,s,ox,oz,T){if(typeof S==='undefined'||!S.hordes)return;const pulse=.55+.45*Math.sin((T||0)*5);
-  for(const src in S.hordes){const h=S.hordes[src],A=ZB[src],B=ZB[h.cible];if(!A||!B)continue;
+  for(const src in S.hordes){const h=S.hordes[src],A=(ZB[src]||ZWB[src]),B=(ZB[h.cible]||ZWB[h.cible]);if(!A||!B)continue;
     const x0=(A.c[0]+ox)*s,y0=(A.c[1]+oz)*s,x1=(B.c[0]+ox)*s,y1=(B.c[1]+oz)*s,a=Math.atan2(y1-y0,x1-x0);
     mc.save();mc.strokeStyle=`rgba(255,96,72,${.5+.5*pulse})`;mc.fillStyle=mc.strokeStyle;mc.lineWidth=3;mc.setLineDash([7,4]);
     mc.beginPath();mc.moveTo(x0,y0);mc.lineTo(x1-Math.cos(a)*10,y1-Math.sin(a)*10);mc.stroke();mc.setLineDash([]);
@@ -4413,7 +4413,7 @@ function tenter(r,Z){const R=riv(),id=Z.id;R.t[r.k]={id,de:R.nc,du:R.nc+RIV_TENT
   if(started)toast(`${r.bl} ${LaM(r)} tente l'épreuve ${de_(Z.info.nom)}`,`elle s'y attaque dans ${cyclesTxt(RIV_TENTE)}`,`Pour la devancer, activez la zone avant l'échéance, ou allez à sa Pierre d'éveil défier les gens de la maison. Sans vous, elle réussit ${Math.round(chanceEpreuve(id)*100)} fois sur 100.`);
   return{sorte:'tentative',r:r.k,id}}
 /* échéance d'une tentative : l'épreuve se résout (gagne : true ou false pour forcer le résultat en test) */
-function resoudreTentative(k,gagne){const R=riv(),t=R.t[k];if(!t)return null;delete R.t[k];const r=RIVK[k],Z=ZB[t.id],id=t.id;let res;
+function resoudreTentative(k,gagne){const R=riv(),t=R.t[k];if(!t)return null;delete R.t[k];const r=RIVK[k],Z=(ZB[t.id]||ZWB[t.id]),id=t.id;let res;
   if(S.own[id]){res={fin:'devancée',r:k,id};toast(`${r.bl} ${LaM(r)} renonce`,`${Z.info.nom} est à vous`,'Vous avez activé la zone avant elle : sa tentative tombe.')}
   else if(R.z[id]||protege(id)||(typeof auCoeur==='function'&&auCoeur(id))){res={fin:'protégée',r:k,id};toast(`${r.bl} ${LaM(r)} renonce`,`à l'épreuve ${de_(Z.info.nom)}`,'La zone est désormais hors de sa portée : ses gens repartent.')}
   else if(zonesMaison(k).length>=RIV_MAX()){res={fin:'plafond',r:k,id};toast(`${r.bl} ${LaM(r)} renonce`,`à l'épreuve ${de_(Z.info.nom)}`,'Elle tient déjà autant de zones qu\'elle peut en garder.')}
@@ -4436,7 +4436,7 @@ function contester(r,Z){const R=riv();R.c={r:r.k,id:Z.id,de:R.nc,du:R.nc+RIV_DEL
   return{sorte:'conteste',r:r.k,id:Z.id}}
 
 /* ---------- échéance d'une contestation ---------- */
-function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const r=RIVK[c.r],Z=ZB[c.id];let res;
+function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const r=RIVK[c.r],Z=(ZB[c.id]||ZWB[c.id]);let res;
   if(!Z||!S.own[c.id]||!S.act[c.id]){res={fin:'sans objet'}}
   else if(protegeConteste(c.id)){res={fin:'protégée'};toast(`${r.bl} ${r.nom}`,`renonce à ${Z.info.nom}`,typeof borne==='function'&&borne(c.id)?'La Pierre de bornage de Raak tient : la zone ne recule pas.':typeof enSiege==='function'&&enSiege(c.id)?'La Citadelle soutient le siège final : aucune maison n\'ose s\'en approcher.':'La zone est au cœur du royaume : la maison repart les mains vides.')}
   else{const ch=chanceRival(c.id),ok=gagne===undefined?Math.random()<ch:!!gagne,lv=S.lv[c.id]||0;
@@ -4509,15 +4509,15 @@ function dessinerRivaux(mc,s,ox,oz){if(!S.riv)return;const R=S.riv,pl=.5+.5*Math
     if(ct){const m=RIVK[R.c.r];mc.lineWidth=2+2*pl;mc.strokeStyle=m?m.col:'#ff7a6a';mc.setLineDash([5,4]);mc.stroke();mc.setLineDash([])}}}
 function ligneRivaux(){if(!S.riv)return'';const R=S.riv;
   const m=RIVAUX.map(r=>`<span class="d" title="${r.nom}"><span style="color:${r.col}">${r.bl}</span>${zonesMaison(r.k).length}</span>`).join('');
-  const c=R.c&&ZB[R.c.id]?`<span class="d" title="${RIVK[R.c.r].nom} conteste ${ZB[R.c.id].info.nom}" style="color:#ff9a8a"><span style="color:${RIVK[R.c.r].col}">${RIVK[R.c.r].bl}</span>${court(R.c.id).split(' ').pop()}<small> ${(n=>n+' cycle'+(n>1?'s':''))(Math.max(0,R.c.du-R.nc))}</small></span>`:'';
+  const c=R.c&&ZB[R.c.id]?`<span class="d" title="${RIVK[R.c.r].nom} conteste ${zI(R.c.id).nom}" style="color:#ff9a8a"><span style="color:${RIVK[R.c.r].col}">${RIVK[R.c.r].bl}</span>${court(R.c.id).split(' ').pop()}<small> ${(n=>n+' cycle'+(n>1?'s':''))(Math.max(0,R.c.du-R.nc))}</small></span>`:'';
   const t=Object.keys(R.t||{}).filter(k=>tentativeSur(R.t[k].id)===k).map(k=>{const r=RIVK[k],id=R.t[k].id;
-    return`<span class="d" title="${LaM(r)} tente l'épreuve ${de_(ZB[id].info.nom)}" style="color:${r.col}">${r.bl}?${court(id).split(' ').pop()}<small> ${cyclesTxt(resteTente(k))}</small></span>`}).join('');
+    return`<span class="d" title="${LaM(r)} tente l'épreuve ${de_(zI(id).nom)}" style="color:${r.col}">${r.bl}?${court(id).split(' ').pop()}<small> ${cyclesTxt(resteTente(k))}</small></span>`}).join('');
   return`<div class="ligne"><span class="titre">Rivaux</span>${m}${t}${c}${typeof lignePacte==='function'?lignePacte():''}</div>`}
 
 /* ---------- écran « Rivaux » (menu Pause) ---------- */
 function menaceDe(r){const R=riv(),l=[];const tk=R.t[r.k]&&tentativeSur(R.t[r.k].id)===r.k;
-  if(tk)l.push(`tente l'épreuve ${de_(ZB[R.t[r.k].id].info.nom)} dans ${cyclesTxt(resteTente(r.k))}`);
-  if(R.c&&R.c.r===r.k&&ZB[R.c.id])l.push(`conteste ${ZB[R.c.id].info.nom} : épreuve dans ${cyclesTxt(Math.max(0,R.c.du-R.nc))}`);
+  if(tk)l.push(`tente l'épreuve ${de_(zI(R.t[r.k].id).nom)} dans ${cyclesTxt(resteTente(r.k))}`);
+  if(R.c&&R.c.r===r.k&&ZB[R.c.id])l.push(`conteste ${zI(R.c.id).nom} : épreuve dans ${cyclesTxt(Math.max(0,R.c.du-R.nc))}`);
   if(typeof pacteTexte==='function'){const p=pacteTexte(r);if(p)l.unshift(p)}   /* pacte.js */
   return l.length?l.join(' ; '):'aucune menace annoncée'}
 function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv();
@@ -4594,8 +4594,8 @@ function signerPacte(r,gratuit){const p=pac();if(!r||p.k||refusPacte(r.k))return
   if(p.rup&&p.rup.k===r.k)p.rup=null;
   /* la maison retire ce qu'elle menait contre vous */
   const R=typeof riv==='function'?riv():null,l=[];
-  if(R&&R.c&&R.c.r===r.k){l.push(`elle renonce à contester ${ZB[R.c.id].info.nom}`);R.c=null}
-  if(R&&R.t[r.k]&&S.emp[R.t[r.k].id]){l.push(`elle abandonne sa tentative ${de_(ZB[R.t[r.k].id].info.nom)}, votre ancienne zone`);delete R.t[r.k]}
+  if(R&&R.c&&R.c.r===r.k){l.push(`elle renonce à contester ${zI(R.c.id).nom}`);R.c=null}
+  if(R&&R.t[r.k]&&S.emp[R.t[r.k].id]){l.push(`elle abandonne sa tentative ${de_(zI(R.t[r.k].id).nom)}, votre ancienne zone`);delete R.t[r.k]}
   save();pacMaj();
   pacDire(`${PACTE_SYM} Pacte avec ${laM(r)}`,`${pacTxt(prix)} par cycle${r.k==='omb'?' (la dîme)':''}`,`Elle ne contestera plus vos zones et laissera vos anciennes zones tranquilles${l.length?' ; '+l.join(', '):''}. Ses gens s'en prendront aux autres maisons.`);
   return true}
@@ -4632,7 +4632,7 @@ function contesterMaison(r,Z){const p=pac(),R=riv(),d=RIVK[R.z[Z.id]];
   p.cr={k:r.k,id:Z.id,de:d.k,du:(S.nc||0)+PACTE_CR_DELAI};R.vu[r.k]=(R.vu[r.k]||0)+1;save();pacMaj();
   pacDire(`${r.bl} ${LaM(r)} conteste ${Z.info.nom}`,`à ${laM(d)}, dans ${cyclesTxt(PACTE_CR_DELAI)}`,`Votre pacte la tourne contre les autres maisons : à l'échéance, elle réussit ${Math.round(PACTE_CR_CHANCE*100)} fois sur 100. La zone passera à elle, ou redeviendra sauvage si elle tient déjà assez de zones.`);
   return{sorte:'contesteMaison',r:r.k,id:Z.id,contre:d.k}}
-function resoudreContesteMaison(gagne){const p=pac(),c=p&&p.cr;if(!c)return null;p.cr=null;const R=riv(),r=RIVK[c.k],d=RIVK[c.de],Z=ZB[c.id];let res;
+function resoudreContesteMaison(gagne){const p=pac(),c=p&&p.cr;if(!c)return null;p.cr=null;const R=riv(),r=RIVK[c.k],d=RIVK[c.de],Z=(ZB[c.id]||ZWB[c.id]);let res;
   if(!Z||S.own[c.id]||R.z[c.id]!==c.de){res={fin:'sans objet'}}
   else{const ok=gagne===undefined?Math.random()<PACTE_CR_CHANCE:!!gagne;
     if(ok&&zonesMaison(c.k).length<plafondPacte()){R.z[c.id]=c.k;res={fin:'prise',id:c.id};
@@ -4684,13 +4684,13 @@ function fichePacte(r){const p=pac();if(!p)return'';const ref=refusPacte(r.k),ru
 /* écran Rivaux : ce que la maison fait sous le pacte */
 function pacteTexte(r){const p=pac();if(!p)return'';const l=[];
   if(p.k===r.k)l.push(`${PACTE_SYM} pacte, ${pacTxt(p.prix)} par cycle`);
-  if(p.cr&&p.cr.k===r.k&&ZB[p.cr.id])l.push(`conteste ${ZB[p.cr.id].info.nom} à ${laM(RIVK[p.cr.de])} dans ${cyclesTxt(Math.max(0,p.cr.du-(S.nc||0)))}`);
+  if(p.cr&&p.cr.k===r.k&&ZB[p.cr.id])l.push(`conteste ${zI(p.cr.id).nom} à ${laM(RIVK[p.cr.de])} dans ${cyclesTxt(Math.max(0,p.cr.du-(S.nc||0)))}`);
   if(p.rup&&p.rup.k===r.k)l.push(`pacte rompu : ${p.rup.n} contestation${p.rup.n>1?'s':''} à venir`);
   return l.join(' ; ')}
 /* bandeau, ligne Rivaux */
 function lignePacte(){const p=pac();if(!p)return'';let s='';
   if(p.k){const r=RIVK[p.k];s+=`<span class="d" title="Pacte avec ${laM(r)} : ${pacTxt(p.prix)} par cycle${p.warn?' ; votre bourse ne suffira pas au prochain cycle':''}" style="color:${p.warn?'#ff9a8a':r.col}">${PACTE_SYM}<span style="color:${r.col}">${r.bl}</span>${p.warn?'<small> !</small>':''}</span>`}
-  if(p.cr&&ZB[p.cr.id]){const a=RIVK[p.cr.k],d=RIVK[p.cr.de];s+=`<span class="d" title="${LaM(a)} conteste ${ZB[p.cr.id].info.nom} à ${laM(d)}" style="color:${a.col}">${a.bl}→<span style="color:${d.col}">${d.bl}</span><small> ${cyclesTxt(Math.max(0,p.cr.du-(S.nc||0)))}</small></span>`}
+  if(p.cr&&ZB[p.cr.id]){const a=RIVK[p.cr.k],d=RIVK[p.cr.de];s+=`<span class="d" title="${LaM(a)} conteste ${zI(p.cr.id).nom} à ${laM(d)}" style="color:${a.col}">${a.bl}→<span style="color:${d.col}">${d.bl}</span><small> ${cyclesTxt(Math.max(0,p.cr.du-(S.nc||0)))}</small></span>`}
   if(p.rup){const r=RIVK[p.rup.k];s+=`<span class="d" title="Pacte rompu : ${laM(r)} va contester encore ${p.rup.n} fois vos zones" style="color:#ff9a8a">✂<span style="color:${r.col}">${r.bl}</span><small>×${p.rup.n}</small></span>`}
   return s}
 /* Comptoir d'une Citadelle tenue (commerce.js) */
@@ -4718,7 +4718,7 @@ const TOUR_DEF=2;       /* défense contre les hordes, zone de la tour et voisin
 const TOUR_PREAVIS=2;   /* cycles de plus avant l'arrivée d'une horde qui vise une zone couverte (provisoire) */
 const TOUR_TYPES={RES:'Ressource',DON:'Donjon',CIT:'Citadelle'};
 const tourType=id=>ZB[id]?(ZB[id].mod||id):null;
-const tourCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
+const tourCourt=id=>ZB[id]?zI(id).nom.split(',')[0]:id;
 
 function initTours(){if(!S.tours||typeof S.tours!=='object')S.tours={};
   /* nouvelle partie (graine changée) : les tours de l'ancien monde disparaissent */
@@ -4837,7 +4837,7 @@ function initCaravanes(){if(typeof S==='undefined')return;
 const carTient=id=>!!(ZB[id]&&S.own[id]&&S.act[id]);
 const carEstRES=id=>!!ZB[id]&&(ZB[id].mod||id)==='RES';
 const carEstCIT=id=>!!ZB[id]&&(ZB[id].mod||id)==='CIT';
-const carCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
+const carCourt=id=>ZB[id]?zI(id).nom.split(',')[0]:id;
 const carDe=n=>typeof de_==='function'?de_(n):'de '+n;
 const carA=n=>typeof a_==='function'?a_(n):'à '+n;
 /* Loi des Relais (lois.js) : une caravane dont le trajet passe dans sa juridiction rapporte n de plus (1, 2 renforcée ; provisoire) */
@@ -4915,7 +4915,7 @@ setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||type
   if(mode==='monde'&&CAR_FILE.length&&(typeof toastT==='undefined'||toastT<1))toast(...CAR_FILE.shift())},1000);
 
 /* ---------- Escorte : combat court contre les pillards, dans la zone du pillage ---------- */
-function escorterCaravane(r){const c=caravaneDe(r);if(!c||c.etat!=='pillée'||!ZB[c.lieu])return false;const Z=ZB[c.lieu];
+function escorterCaravane(r){const c=caravaneDe(r);if(!c||c.etat!=='pillée'||!ZB[c.lieu])return false;const Z=(ZB[c.lieu]||ZWB[c.lieu]);
   startCombat(Z,'renc');if(typeof CB==='undefined'||!CB)return false;CB.caravane=r;
   const noms=['Pillard de grand chemin','Guetteur des pillards'];
   const foes=[0,1].map(i=>{const m=monstre(Z,i);m.pv=m.max=Math.max(4,Math.round(m.pv*.6));m.nom=noms[i];m.chef=0;return m});
@@ -4933,7 +4933,7 @@ function finEscorte(ok,C){const r=C.caravane,e=S.car[r];
   if(n&&typeof gagnerTesselles==='function'){gagnerTesselles(n,'Cargaison reprise aux pillards');S.carBilan.gains+=n}
   save();etatHud();if(typeof hudKey!=='undefined')hudKey='';sfx('hit');
   const c=caravaneDe(r);
-  ui('menu',{sur:'Victoire · escorte',t:'La caravane '+carDe(carCourt(r))+' repart',corps:`<p>Les pillards s'enfuient. ${n?`La cargaison est reprise : ${n} tesselle${n>1?'s':''} rejoignent votre bourse.`:''} ${c&&c.cit?`La caravane reprend la route vers ${ZB[c.cit].info.nom}.`:''}</p><p class="petit">Une tour de guet sur une zone du trajet divise par deux le risque de pillage.</p>`,
+  ui('menu',{sur:'Victoire · escorte',t:'La caravane '+carDe(carCourt(r))+' repart',corps:`<p>Les pillards s'enfuient. ${n?`La cargaison est reprise : ${n} tesselle${n>1?'s':''} rejoignent votre bourse.`:''} ${c&&c.cit?`La caravane reprend la route vers ${zI(c.cit).nom}.`:''}</p><p class="petit">Une tour de guet sur une zone du trajet divise par deux le risque de pillage.</p>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}
 /* la fin du combat d'escorte passe par ici ; les autres combats suivent leur chemin habituel (combat.js) */
 if(typeof finCombat==='function'){const _carFin=finCombat;
@@ -5055,7 +5055,7 @@ const LOI_POLES={
   Liberté:'relais',Chaos:'relais',Chant:'relais'};
 const LOI_FORCEE={};          /* tests seulement (MZ.loiForcer) : id d'Assemblée → loi du catalogue, pour ses deux pôles ; jamais sauvegardé */
 const estAssL=Z=>!!Z&&(Z.mod||Z.id)==='MAR';
-const nomAssL=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
+const nomAssL=id=>ZB[id]?zI(id).nom.split(',')[0]:id;
 function hashLoi(s){let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h}
 /* les deux lois du catalogue d'une Assemblée sans fiche : [loi du pôle −, loi du pôle +] ; null pour une Assemblée à fiche */
 const LOI_DE={};
@@ -5521,9 +5521,9 @@ function carteHTML(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k
   const gris=typeof enGris==='function'&&enGris(k);
   return`<div class="cc kcarte ${z?'z':'base'}${gris?' gris':''}" style="--kb:${bord};--kcA:${rgba(bord,.28)};--kcB:${rgba(bord,.8)}"><div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div><div class="art">${artCarte(k)}</div><div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${c.txt(k)}</div>${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`}
 /* Images IA des cartes présentes dans img/cartes/ (généré par tools/images-cartes/generer.py, ne pas modifier à la main). */
-window.CARTES_IMG=new Set(["ANT120_p5", "ANT_m1", "ANT_p1", "ASS006_m1", "ASS006_p1", "ASS006_p2", "ASS150_m1", "ASS150_p1", "ASS155_m1", "ASS155_p1", "CIT_m1", "CIT_m3", "CIT_p1", "DON045_m1", "DON045_p1", "DON045_p7", "DON_m1", "DON_m7", "DON_p1", "MAR_m1", "MAR_p1"]);
+window.CARTES_IMG=new Set(["ANT120_m1", "ANT120_p5", "ANT_m1", "ANT_p1", "ASS006_m1", "ASS006_p1", "ASS006_p2", "ASS012_m1", "ASS012_p1", "ASS150_m1", "ASS150_p1", "ASS152_m1", "ASS152_p1", "ASS155_m1", "ASS155_p1", "CIT_m1", "CIT_m3", "CIT_p1", "DON024_m1", "DON024_p1", "DON045_m1", "DON045_p1", "DON045_p7", "DON_m1", "DON_m7", "DON_p1", "MAR_m1", "MAR_p1"]);
 /* Décors peints (Pollinations) : le sujet vectoriel de la carte est dessiné par-dessus. */
-window.CARTES_FOND=new Set(["ANT120_m1", "ANT120_m2", "ANT120_m3", "ANT120_m4", "ANT120_m5", "ANT120_m6", "ANT120_m7", "ANT120_p1", "ANT120_p2", "ANT120_p3", "ANT120_p4", "ANT120_p6", "ANT120_p7", "ANT_m2", "ANT_m3", "ANT_m4", "ANT_m5", "ANT_m6", "ANT_m7", "ANT_p2", "ANT_p3", "ANT_p4", "ANT_p5", "ANT_p6", "ANT_p7", "ASS006_m2", "ASS006_m3", "ASS006_m4", "ASS006_m5", "ASS006_m6", "ASS006_m7", "ASS006_p3", "ASS006_p4", "ASS006_p5", "ASS006_p6", "ASS006_p7", "ASS012_m1", "ASS012_m2", "ASS012_m3", "ASS012_m4", "ASS012_m5", "ASS012_m6", "ASS012_m7", "ASS012_p1", "ASS012_p2", "ASS012_p3", "ASS012_p4", "ASS012_p5", "ASS012_p6", "ASS012_p7", "ASS150_m2", "ASS150_m3", "ASS150_m4", "ASS150_m5", "ASS150_m6", "ASS150_m7", "ASS150_p2", "ASS150_p3", "ASS150_p4", "ASS150_p5", "ASS150_p6", "ASS150_p7", "ASS152_m1", "ASS152_m2", "ASS152_m3", "ASS152_m4", "ASS152_m5", "ASS152_m6", "ASS152_m7", "ASS152_p1", "ASS152_p2", "ASS152_p3", "ASS152_p4", "ASS152_p5", "ASS152_p6", "ASS152_p7", "ASS155_m2", "ASS155_m3", "ASS155_m4", "ASS155_m5", "ASS155_m6", "ASS155_m7", "ASS155_p2", "ASS155_p3", "ASS155_p4", "ASS155_p5", "ASS155_p6", "ASS155_p7", "CIT_m2", "CIT_m4", "CIT_m5", "CIT_m6", "CIT_m7", "CIT_p2", "CIT_p3", "CIT_p4", "CIT_p5", "CIT_p6", "CIT_p7", "DON024_m1", "DON024_m2", "DON024_m3", "DON024_m4", "DON024_m5", "DON024_m6", "DON024_m7", "DON024_p1", "DON024_p2", "DON024_p3", "DON024_p4", "DON024_p5", "DON024_p6", "DON024_p7", "DON045_m2", "DON045_m3", "DON045_m4", "DON045_m5", "DON045_m6", "DON045_m7", "DON045_p2", "DON045_p3", "DON045_p4", "DON045_p5", "DON045_p6", "DON_m2", "DON_m3", "DON_m4", "DON_m5", "DON_m6", "DON_p2", "DON_p3", "DON_p4", "DON_p5", "DON_p6", "DON_p7", "MAR_m2", "MAR_m3", "MAR_m4", "MAR_m5", "MAR_m6", "MAR_m7", "MAR_p2", "MAR_p3", "MAR_p4", "MAR_p5", "MAR_p6", "MAR_p7"]);
+window.CARTES_FOND=new Set(["ANT020_m1", "ANT020_p1", "ANT072_m1", "ANT072_p1", "ANT120_m2", "ANT120_m3", "ANT120_m4", "ANT120_m5", "ANT120_m6", "ANT120_m7", "ANT120_p1", "ANT120_p2", "ANT120_p3", "ANT120_p4", "ANT120_p6", "ANT120_p7", "ANT209_m1", "ANT209_p1", "ANT239_m1", "ANT239_p1", "ANT_m2", "ANT_m3", "ANT_m4", "ANT_m5", "ANT_m6", "ANT_m7", "ANT_p2", "ANT_p3", "ANT_p4", "ANT_p5", "ANT_p6", "ANT_p7", "ASS006_m2", "ASS006_m3", "ASS006_m4", "ASS006_m5", "ASS006_m6", "ASS006_m7", "ASS006_p3", "ASS006_p4", "ASS006_p5", "ASS006_p6", "ASS006_p7", "ASS012_m2", "ASS012_m3", "ASS012_m4", "ASS012_m5", "ASS012_m6", "ASS012_m7", "ASS012_p2", "ASS012_p3", "ASS012_p4", "ASS012_p5", "ASS012_p6", "ASS012_p7", "ASS040_m1", "ASS040_p1", "ASS074_m1", "ASS150_m2", "ASS150_m3", "ASS150_m4", "ASS150_m5", "ASS150_m6", "ASS150_m7", "ASS150_p2", "ASS150_p3", "ASS150_p4", "ASS150_p5", "ASS150_p6", "ASS150_p7", "ASS152_m2", "ASS152_m3", "ASS152_m4", "ASS152_m5", "ASS152_m6", "ASS152_m7", "ASS152_p2", "ASS152_p3", "ASS152_p4", "ASS152_p5", "ASS152_p6", "ASS152_p7", "ASS155_m2", "ASS155_m3", "ASS155_m4", "ASS155_m5", "ASS155_m6", "ASS155_m7", "ASS155_p2", "ASS155_p3", "ASS155_p4", "ASS155_p5", "ASS155_p6", "ASS155_p7", "CIT_m2", "CIT_m4", "CIT_m5", "CIT_m6", "CIT_m7", "CIT_p2", "CIT_p3", "CIT_p4", "CIT_p5", "CIT_p6", "CIT_p7", "DON024_m2", "DON024_m3", "DON024_m4", "DON024_m5", "DON024_m6", "DON024_m7", "DON024_p2", "DON024_p3", "DON024_p4", "DON024_p5", "DON024_p6", "DON024_p7", "DON030_m1", "DON030_p1", "DON045_m2", "DON045_m3", "DON045_m4", "DON045_m5", "DON045_m6", "DON045_m7", "DON045_p2", "DON045_p3", "DON045_p4", "DON045_p5", "DON045_p6", "DON073_m1", "DON073_p1", "DON106_m1", "DON106_p1", "DON_m2", "DON_m3", "DON_m4", "DON_m5", "DON_m6", "DON_p2", "DON_p3", "DON_p4", "DON_p5", "DON_p6", "DON_p7", "MAR_m2", "MAR_m3", "MAR_m4", "MAR_m5", "MAR_m6", "MAR_m7", "MAR_p2", "MAR_p3", "MAR_p4", "MAR_p5", "MAR_p6", "MAR_p7"]);
 /* MozaWorld TV : visuel des cartes 2.2 (17 nov., demande de l'utilisateur : « c'est bien mais il faut plus de personnalisation »).
    Chaque carte de zone se compose à partir de ses données, sans aucune image à télécharger :
    - la ZONE donne la scène (biome, emblème du type, graine propre à la tuile) et le bandeau de sa culture ;
@@ -5817,8 +5817,22 @@ function cadreCarte(k,coul,nP,ult){const r=rng(k+'|cadre'),coin=Math.floor(r()*4
     :`M${i+c} ${i} H${W-i-c} Q${W-i-c} ${i+c} ${W-i} ${i+c} V${H-i-c} Q${W-i-c} ${H-i-c} ${W-i-c} ${H-i} H${i+c} Q${i+c} ${H-i-c} ${i} ${H-i-c} V${i+c} Q${i+c} ${i+c} ${i+c} ${i}Z`;
   const etoile=(x,y,R)=>{let p='';for(let j=0;j<n*2;j++){const a=j*PI/n-PI/2,rr=j%2?R*.45:R;p+=(j?'L':'M')+f1(x+Math.cos(a)*rr)+' '+f1(y+Math.sin(a)*rr)}return`<path d="${p}Z" fill="${coul}"/>`};
   const nm=nP>=6||ult?3:nP>=3?2:1,ys=Array.from({length:nm},(_,j)=>f1(70+(j-(nm-1)/2)*26+(r()-.5)*8));
-  const med=ys.map(y=>etoile(i,+y,3.4)+etoile(W-i,+y,3.4)).join('')+(nP>=4||ult?etoile(W/2,H-i,3.8):'');
+  const med=(nP>=4||ult?etoile(W/2,H-i,3.8):'');   /* 21 nov. : les médaillons de côté laissent la place au cartouche du nom et aux écoinçons */
   return`<svg class="kcadre" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${coul}" stroke-width="${nP>=5||ult?2:1.5}" stroke-dasharray="${dash}" vector-effect="non-scaling-stroke"/>${med}</svg>`}
+
+/* ---------- Cadres ornés (21 nov., « les cadres sont trop simples ») : quatre écoinçons d'orfèvrerie par carte.
+   Quatre dessins (rinceau, étoile girih, éventail, grecque) tirés de la clé ; une gemme à la couleur du mana au coin. ---------- */
+function angles(k,nP,ult,uid){const v=hsh(k+'|angle')%4,g='url(#ka'+uid+')';
+  const d=[
+    '<path d="M8 8 Q21 5 28 12 Q21 10 17 14 Q23 16 23 23 Q18 17 14 17 Q10 21 12 28 Q5 21 8 8Z" fill="'+g+'" stroke="#2a1c08" stroke-width=".6"/><circle cx="26.5" cy="4" r="1.5" fill="'+g+'"/><circle cx="4" cy="26.5" r="1.5" fill="'+g+'"/>',
+    '<path d="M11 2 L13.6 8.4 L20 6 L17.6 12.4 L24 15 L17.6 17.6 L20 24 L13.6 21.6 L11 28 L8.4 21.6 L2 24 L4.4 17.6 L2 15 L4.4 12.4 L2 6 L8.4 8.4Z" fill="'+g+'" stroke="#2a1c08" stroke-width=".6" transform="translate(1 -1) scale(.82)"/><path d="M22 4 H31 M4 22 V31" stroke="'+g+'" stroke-width="1.6" stroke-linecap="round"/>',
+    '<path d="M4 4 L26 7 A24 24 0 0 0 7 26Z" fill="'+g+'" stroke="#2a1c08" stroke-width=".6"/><path d="M5 5 L22 12 M5 5 L17 17 M5 5 L12 22" stroke="#2a1c08" stroke-width=".7" opacity=".7"/><circle cx="28.5" cy="5" r="1.4" fill="'+g+'"/><circle cx="5" cy="28.5" r="1.4" fill="'+g+'"/>',
+    '<path d="M4 4 H30 V8 H22 V14 H16 V8 H8 V16 H14 V22 H8 V30 H4Z" fill="'+g+'" stroke="#2a1c08" stroke-width=".6"/>'][v];
+  const corps='<defs><linearGradient id="ka'+uid+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--mt1)"/><stop offset=".5" stop-color="var(--mt2)"/><stop offset="1" stop-color="var(--mt3)"/></linearGradient></defs>'+
+    '<path d="M0 0 H36 Q28 3.2 22 3.2 H9 Q3.2 3.2 3.2 9 V22 Q3.2 28 0 36Z" fill="'+g+'" stroke="#1a1206" stroke-width=".7"/>'+d+
+    '<path d="M6.5 2.2 L10.8 6.5 L6.5 10.8 L2.2 6.5Z" fill="var(--kl)" stroke="#1a1206" stroke-width=".7"/><path d="M6.5 3.6 L8.6 6.5 L6.5 6.5Z" fill="#fff" opacity=".75"/>';
+  const cl=nP>=5||ult?' grand':nP>=3?' moyen':'';
+  return['tl','tr','bl','br'].map((q,i)=>'<svg class="kang '+q+cl+'" viewBox="0 0 36 36">'+(i?corps.replace(/ka\w+/g,m=>m+i):corps)+'</svg>').join('')}
 
 /* ---------- Texte de la carte : chiffres, prix et résonances mis en valeur ---------- */
 function texteCoupe(t){t=String(t);const m=t.slice(25).search(/[.;:]\s/);if(m<0||t.length<70)return texteRiche(t);const i=25+m+1;
@@ -5910,7 +5924,7 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${c.cout}</div>`;
   const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
   return`<div class="${cls}" style="--kb:${V[0]};--kl:${V[1]};--kd:${V[2]};--kcA:${rgba(V[0],.28)};--kcB:${rgba(V[0],.8)};--pc:${coulP}">
-   ${cadreCarte(k,V[1],nP,ult)}${nP>=5||ult?coins(P.mana,V[1],nP):''}${coZ}${crest}<div class="art">${artCarte(k)}${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
+   ${cadreCarte(k,V[1],nP,ult)}${angles(k,nP,ult,uid)}${coZ}${crest}<div class="art">${artCarte(k)}<i class="kvitre"></i>${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
    <div class="cn">${c.nom()}</div><div class="cz">${ligne}</div><div class="ct">${txtR}</div>${nP>=4&&!ult?bandeau(ckey(P.cult),V[1],uid+'b').replace('kband','kband bas'):''}${ambH}${gris?'<div class="kgris">Mana gris · effet −25 %</div>':''}</div>`};
 
 /* ---------- CSS propre au visuel 2.2 ---------- */
@@ -6058,6 +6072,58 @@ const css=document.createElement('style');css.textContent=`
 #cb-main .cc.kcarte.f .ct{flex:1 1 0;min-height:0;overflow:hidden;font-size:calc(var(--u)*.86*var(--kf,1));line-height:1.26;padding:.4em .5em 0;border-bottom:.35em solid transparent}
 #cb-main .cc.kcarte.f .kamb{font-size:calc(var(--u)*.74*var(--kf,1));flex:none;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-bottom:0;border-bottom:.3em solid transparent}
 #cb-main .cc.kcarte.f.serre .kamb{display:none}
+/* ---- Cadres ornés (21 novembre 2026) : métal ciselé, écoinçons, vitre d'illustration, cartouche du nom ---- */
+.cc.kcarte.z{--mt1:#e6bd86;--mt2:#9a6a34;--mt3:#4a2f16}
+.cc.kcarte.z.L3,.cc.kcarte.z.L4{--mt1:#f6e2a4;--mt2:#b98b3a;--mt3:#5f4418}
+.cc.kcarte.z.L5,.cc.kcarte.z.L6,.cc.kcarte.z.ultime{--mt1:#fff3c4;--mt2:#e0b64e;--mt3:#7d5a16}
+.cc.kcarte.z:not(.ultime){border:calc(var(--u)*.32) solid transparent;border-radius:calc(var(--u)*.5);
+  background:repeating-linear-gradient(60deg,rgba(255,255,255,.022) 0 1px,transparent 1px calc(var(--u)*.62)) padding-box,repeating-linear-gradient(-60deg,rgba(255,255,255,.022) 0 1px,transparent 1px calc(var(--u)*.62)) padding-box,
+    radial-gradient(120% 60% at 50% 0%,var(--kcA),transparent 72%) padding-box,linear-gradient(180deg,#17131a,#0e0c11) padding-box,
+    linear-gradient(145deg,var(--mt1) 0%,var(--mt2) 16%,var(--mt3) 34%,var(--mt1) 50%,var(--mt3) 66%,var(--mt2) 84%,var(--mt1) 100%) border-box}
+.kang{position:absolute;width:calc(var(--u)*2.3);height:calc(var(--u)*2.3);z-index:1;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}
+.kang.moyen{width:calc(var(--u)*2.7);height:calc(var(--u)*2.7)}
+.kang.grand{width:calc(var(--u)*2.9);height:calc(var(--u)*2.9);filter:drop-shadow(0 0 5px var(--kcB)) drop-shadow(0 1px 1px #000)}
+.kang.tl{top:calc(var(--u)*-.42);left:calc(var(--u)*-.42)}.kang.tr{top:calc(var(--u)*-.42);right:calc(var(--u)*-.42);transform:scaleX(-1)}
+.kang.bl{bottom:calc(var(--u)*-.42);left:calc(var(--u)*-.42);transform:scaleY(-1)}.kang.br{bottom:calc(var(--u)*-.42);right:calc(var(--u)*-.42);transform:scale(-1,-1)}
+#cb-main .cc.kcarte:not(.f) .kang{width:calc(var(--u)*1.9);height:calc(var(--u)*1.9)}
+.cc.kcarte.z .art{border:calc(var(--u)*.13) solid var(--mt2);border-image:linear-gradient(160deg,var(--mt1),var(--mt3) 45%,var(--mt2) 70%,var(--mt1)) 1;box-shadow:0 0 0 1px #000,0 calc(var(--u)*.25) calc(var(--u)*.5) rgba(0,0,0,.6)}
+.kvitre{position:absolute;inset:0;z-index:1;pointer-events:none;--r:calc(var(--u)*.62);--f:calc(var(--u)*.78);
+  background:radial-gradient(circle at 0 0,#120e0b 0 var(--r),var(--mt1) var(--r) var(--f),transparent calc(var(--f) + 1px)),radial-gradient(circle at 100% 0,#120e0b 0 var(--r),var(--mt1) var(--r) var(--f),transparent calc(var(--f) + 1px)),
+    radial-gradient(circle at 0 100%,#120e0b 0 var(--r),var(--mt1) var(--r) var(--f),transparent calc(var(--f) + 1px)),radial-gradient(circle at 100% 100%,#120e0b 0 var(--r),var(--mt1) var(--r) var(--f),transparent calc(var(--f) + 1px));
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.75),inset 0 0 0 2px rgba(255,236,180,.28),inset 0 0 calc(var(--u)*.9) rgba(0,0,0,.55)}
+.cc.kcarte.z .cn{position:relative;text-align:center;margin:calc(var(--u)*.3) calc(var(--u)*-.3) .32em;padding:.2em 1em .24em;color:#f8ebc6;text-shadow:0 1px 0 #000,0 0 calc(var(--u)*.5) var(--kcB);
+  background:linear-gradient(180deg,rgba(255,236,180,.13),rgba(0,0,0,.38)),linear-gradient(90deg,transparent,var(--kcA) 18%,var(--kcA) 82%,transparent);
+  border-top:1px solid var(--mt2);border-bottom:1px solid var(--mt2);box-shadow:0 -2px 0 -1px rgba(0,0,0,.7),0 2px 0 -1px rgba(0,0,0,.7)}
+.cc.kcarte.z .cn::before,.cc.kcarte.z .cn::after{content:'';position:absolute;top:50%;width:.46em;height:.46em;background:linear-gradient(135deg,var(--mt1),var(--mt3));transform:translateY(-50%) rotate(45deg);box-shadow:0 0 0 1px #000}
+.cc.kcarte.z .cn::before{left:.18em}.cc.kcarte.z .cn::after{right:.18em}
+.cc.kcarte.z .ct{background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,.2));border:1px solid rgba(255,236,180,.17);border-radius:calc(var(--u)*.22);box-shadow:inset 0 0 calc(var(--u)*.7) rgba(0,0,0,.5)}
+.kcadre{opacity:.75}
+#cb-main .cc.kcarte.z:not(.f) .cn{padding:.16em .62em .2em;margin-left:calc(var(--u)*-.2);margin-right:calc(var(--u)*-.2);font-size:calc(var(--u)*1.22)}
+.cc.kcarte.z .kamb{padding-bottom:calc(var(--u)*.5)}
+/* ---- Léger relief 3D (21 novembre 2026, « faudrait un léger effet 3D ») ----
+   Tranche de la carte (ombres empilées), biseau du métal, cartouche en saillie, illustration en creux ;
+   la carte choisie et les cartes agrandies basculent doucement, un reflet passe sur la vitre. */
+.cc.kcarte.z{--tr:0 calc(var(--u)*.11) 0 var(--mt3),0 calc(var(--u)*.24) 0 #24160a,0 calc(var(--u)*.38) 0 #0b0704;
+  --bz:inset calc(var(--u)*.07) calc(var(--u)*.07) 0 rgba(255,244,210,.28),inset calc(var(--u)*-.07) calc(var(--u)*-.07) 0 rgba(0,0,0,.7)}
+.cc.kcarte.z:not(.ultime){box-shadow:var(--tr),0 calc(var(--u)*.9) calc(var(--u)*1.3) rgba(0,0,0,.7),var(--bz),inset 0 0 0 calc(var(--u)*.14) rgba(0,0,0,.55)}
+.cc.kcarte.z.L3:not(.ultime),.cc.kcarte.z.L4:not(.ultime){box-shadow:var(--tr),0 calc(var(--u)*.9) calc(var(--u)*1.3) rgba(0,0,0,.7),var(--bz),inset 0 0 0 calc(var(--u)*.2) var(--kd),inset 0 0 0 calc(var(--u)*.26) var(--kb)}
+.cc.kcarte.z.L5:not(.ultime),.cc.kcarte.z.L6:not(.ultime){box-shadow:var(--tr),0 calc(var(--u)*.9) calc(var(--u)*1.3) rgba(0,0,0,.7),0 0 calc(var(--u)*1) var(--kcA),var(--bz),inset 0 0 0 calc(var(--u)*.2) var(--kd),inset 0 0 0 calc(var(--u)*.26) var(--kb)}
+.cc.kcarte.z.ultime{box-shadow:var(--tr),0 calc(var(--u)*.9) calc(var(--u)*1.4) rgba(0,0,0,.75),0 0 calc(var(--u)*1.2) var(--kcB),var(--bz)}
+#cb-main .cc.kcarte.z.f{box-shadow:var(--tr),0 0 0 2px rgba(245,220,156,.6),0 calc(var(--u)*1.8) calc(var(--u)*2.4) calc(var(--u)*-.3) var(--kcB,rgba(201,164,92,.7)),0 calc(var(--u)*2.6) calc(var(--u)*3.2) rgba(0,0,0,.75),var(--bz)}
+.cc.kcarte.z .cn{box-shadow:0 calc(var(--u)*.16) calc(var(--u)*.3) rgba(0,0,0,.65),inset 0 1px 0 rgba(255,244,210,.3),inset 0 -1px 0 rgba(0,0,0,.6)}
+.cc.kcarte.z .art{box-shadow:0 0 0 1px #000,0 calc(var(--u)*.08) 0 rgba(255,244,210,.22),inset 0 calc(var(--u)*.3) calc(var(--u)*.5) rgba(0,0,0,.8)}
+.kvitre{box-shadow:inset 0 0 0 1px rgba(0,0,0,.75),inset 0 0 0 2px rgba(255,236,180,.28),inset 0 calc(var(--u)*.35) calc(var(--u)*.6) rgba(0,0,0,.7),inset 0 calc(var(--u)*-.2) calc(var(--u)*.5) rgba(0,0,0,.45);overflow:hidden}
+.cc.kcarte.z .ct{box-shadow:inset 0 calc(var(--u)*.14) calc(var(--u)*.35) rgba(0,0,0,.75),0 1px 0 rgba(255,244,210,.14)}
+.kang{filter:drop-shadow(0 calc(var(--u)*.1) calc(var(--u)*.08) rgba(0,0,0,.9))}
+.kvitre::after{content:'';position:absolute;top:-20%;bottom:-20%;left:-60%;width:45%;transform:skewX(-18deg);opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(255,250,230,.22) 45%,rgba(255,255,255,.34) 50%,rgba(255,250,230,.22) 55%,transparent)}
+#cb-main,.boite{perspective:calc(var(--u)*70)}
+#cb-main .cc.kcarte.z.f,.boite .cc.kcarte.z.f,.boite :not(.cartes)>.cc.kcarte.z{animation:k3d 6s ease-in-out infinite alternate}
+.cc.kcarte.z.ultime.f,.boite :not(.cartes)>.cc.kcarte.z.ultime{animation:kult 6s linear infinite,k3d 6s ease-in-out infinite alternate}
+#cb-main .cc.kcarte.z.f .kvitre::after,.boite .cc.kcarte.z.f .kvitre::after,.boite :not(.cartes)>.cc.kcarte.z .kvitre::after{animation:kreflet 6s ease-in-out infinite alternate}
+@keyframes k3d{from{rotate:y -7deg}to{rotate:y 7deg}}
+@keyframes kreflet{0%{left:-60%;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:115%;opacity:0}}
+@media (prefers-reduced-motion:reduce){#cb-main .cc.kcarte.z.f,.boite .cc.kcarte.z{animation:none}.kvitre::after{display:none}}
 `;document.head.appendChild(css);
 
 /* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)

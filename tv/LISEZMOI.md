@@ -15,7 +15,7 @@ Mesures (banc `tv/tools/test-endurance.js`) : une région pesait ~700 Mo dans le
 - L'index de la grande maille du sol (inutile depuis les carreaux) est libéré : ~25 Mo en mémoire et autant sur la carte graphique.
 - Fluide : la carte d'ombre est rendue à la mémoire, sans changer l'état d'éclairage des shaders.
 - Bêtes errantes réutilisées (elles perdaient une dizaine de géométries par zone), chariots et tours libérés.
-- Hordes : plus d'erreur quand une horde vise une zone hors de la région chargée (le défaut trouvé par `test-voyage.js` le 20 nov.).
+- Hordes : le bouton « Aller » n’est plus proposé vers une zone hors région (le reste corrigé en 2.27.2).
 - Journal : si la page s'est fermée brutalement, le jeu le dit au démarrage suivant (moment, zone, minutes de jeu) ; `MZplantages()` dans la console rend les 10 derniers.
 
 ## Version 2.27 : boucle graphique 3 (20 novembre)

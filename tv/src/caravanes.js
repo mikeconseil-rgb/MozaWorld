@@ -31,7 +31,7 @@ function initCaravanes(){if(typeof S==='undefined')return;
 const carTient=id=>!!(ZB[id]&&S.own[id]&&S.act[id]);
 const carEstRES=id=>!!ZB[id]&&(ZB[id].mod||id)==='RES';
 const carEstCIT=id=>!!ZB[id]&&(ZB[id].mod||id)==='CIT';
-const carCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
+const carCourt=id=>ZB[id]?zI(id).nom.split(',')[0]:id;
 const carDe=n=>typeof de_==='function'?de_(n):'de '+n;
 const carA=n=>typeof a_==='function'?a_(n):'à '+n;
 /* Loi des Relais (lois.js) : une caravane dont le trajet passe dans sa juridiction rapporte n de plus (1, 2 renforcée ; provisoire) */
@@ -109,7 +109,7 @@ setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||type
   if(mode==='monde'&&CAR_FILE.length&&(typeof toastT==='undefined'||toastT<1))toast(...CAR_FILE.shift())},1000);
 
 /* ---------- Escorte : combat court contre les pillards, dans la zone du pillage ---------- */
-function escorterCaravane(r){const c=caravaneDe(r);if(!c||c.etat!=='pillée'||!ZB[c.lieu])return false;const Z=ZB[c.lieu];
+function escorterCaravane(r){const c=caravaneDe(r);if(!c||c.etat!=='pillée'||!ZB[c.lieu])return false;const Z=(ZB[c.lieu]||ZWB[c.lieu]);
   startCombat(Z,'renc');if(typeof CB==='undefined'||!CB)return false;CB.caravane=r;
   const noms=['Pillard de grand chemin','Guetteur des pillards'];
   const foes=[0,1].map(i=>{const m=monstre(Z,i);m.pv=m.max=Math.max(4,Math.round(m.pv*.6));m.nom=noms[i];m.chef=0;return m});
@@ -127,7 +127,7 @@ function finEscorte(ok,C){const r=C.caravane,e=S.car[r];
   if(n&&typeof gagnerTesselles==='function'){gagnerTesselles(n,'Cargaison reprise aux pillards');S.carBilan.gains+=n}
   save();etatHud();if(typeof hudKey!=='undefined')hudKey='';sfx('hit');
   const c=caravaneDe(r);
-  ui('menu',{sur:'Victoire · escorte',t:'La caravane '+carDe(carCourt(r))+' repart',corps:`<p>Les pillards s'enfuient. ${n?`La cargaison est reprise : ${n} tesselle${n>1?'s':''} rejoignent votre bourse.`:''} ${c&&c.cit?`La caravane reprend la route vers ${ZB[c.cit].info.nom}.`:''}</p><p class="petit">Une tour de guet sur une zone du trajet divise par deux le risque de pillage.</p>`,
+  ui('menu',{sur:'Victoire · escorte',t:'La caravane '+carDe(carCourt(r))+' repart',corps:`<p>Les pillards s'enfuient. ${n?`La cargaison est reprise : ${n} tesselle${n>1?'s':''} rejoignent votre bourse.`:''} ${c&&c.cit?`La caravane reprend la route vers ${zI(c.cit).nom}.`:''}</p><p class="petit">Une tour de guet sur une zone du trajet divise par deux le risque de pillage.</p>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}
 /* la fin du combat d'escorte passe par ici ; les autres combats suivent leur chemin habituel (combat.js) */
 if(typeof finCombat==='function'){const _carFin=finCombat;

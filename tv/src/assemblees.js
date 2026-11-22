@@ -39,12 +39,12 @@ const borne=id=>!!loi('ASS155')&&S.borne===id&&!!S.own[id];
 /* ligne de la Pierre d'éveil : loi de la fiche, ou loi du catalogue (lois.js) pour les autres Assemblées */
 function optionsAssemblee(Z){const A=ASSEMBLEES[Z.id];
   if(!A||(typeof poleCatalogue==='function'&&poleCatalogue(Z.id))){const o=typeof optionsLoiCatalogue==='function'?optionsLoiCatalogue(Z):[];   /* loi écrite et loi du catalogue */
-    if(Z.id==='ASS155'&&loi('ASS155'))o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+ZB[S.borne].info.nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
+    if(Z.id==='ASS155'&&loi('ASS155'))o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+zI(S.borne).nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
     return o}
   const l=loi(Z.id),o=[];
   const r=l&&renfAss(Z.id),fin=r&&typeof finRenfTxt==='function'?finRenfTxt(Z.id):'';
   o.push({l:l?(r?'Loi en vigueur renforcée':'Loi en vigueur'):'Loi endormie',ic:'⚖',off:true,d:l?A.loi(l)+(r?' ; renforcée : '+A.renf(l)+fin:' · gagnez le Duel d\'arguments pour la renforcer'):'prenez et activez l\'Assemblée, puis montez-la au palier 1 ou plus : '+A.loi(1)});
-  if(Z.id==='ASS155'&&l)o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+ZB[S.borne].info.nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
+  if(Z.id==='ASS155'&&l)o.push({l:'Borner une zone',ic:'⌖',cls:'p',d:S.borne&&ZB[S.borne]?'bornée : '+zI(S.borne).nom+(S.own[S.borne]?'':' (plus à vous : elle ne tient plus)'):'aucune zone bornée',go:()=>choisirBorne()});
   return o}
 function choisirBorne(){const mes=ZN.filter(Z=>S.own[Z.id]);
   ui('menu',{sur:'Oasis de Raak · Pierre de bornage',t:'Borner une zone',corps:'<p class="petit">La zone bornée ne peut pas perdre de niveau face à une horde ou un rival, tant qu\'elle est à vous. Une seule à la fois.</p>',back:()=>openEveil(ZB.ASS155),
