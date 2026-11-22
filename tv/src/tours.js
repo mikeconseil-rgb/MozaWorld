@@ -12,7 +12,7 @@ const TOUR_DEF=2;       /* défense contre les hordes, zone de la tour et voisin
 const TOUR_PREAVIS=2;   /* cycles de plus avant l'arrivée d'une horde qui vise une zone couverte (provisoire) */
 const TOUR_TYPES={RES:'Ressource',DON:'Donjon',CIT:'Citadelle'};
 const tourType=id=>ZB[id]?(ZB[id].mod||id):null;
-const tourCourt=id=>ZB[id]?ZB[id].info.nom.split(',')[0]:id;
+const tourCourt=id=>ZB[id]?zI(id).nom.split(',')[0]:id;
 
 function initTours(){if(!S.tours||typeof S.tours!=='object')S.tours={};
   /* nouvelle partie (graine changée) : les tours de l'ancien monde disparaissent */

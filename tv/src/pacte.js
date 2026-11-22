@@ -62,8 +62,8 @@ function signerPacte(r,gratuit){const p=pac();if(!r||p.k||refusPacte(r.k))return
   if(p.rup&&p.rup.k===r.k)p.rup=null;
   /* la maison retire ce qu'elle menait contre vous */
   const R=typeof riv==='function'?riv():null,l=[];
-  if(R&&R.c&&R.c.r===r.k){l.push(`elle renonce à contester ${ZB[R.c.id].info.nom}`);R.c=null}
-  if(R&&R.t[r.k]&&S.emp[R.t[r.k].id]){l.push(`elle abandonne sa tentative ${de_(ZB[R.t[r.k].id].info.nom)}, votre ancienne zone`);delete R.t[r.k]}
+  if(R&&R.c&&R.c.r===r.k){l.push(`elle renonce à contester ${zI(R.c.id).nom}`);R.c=null}
+  if(R&&R.t[r.k]&&S.emp[R.t[r.k].id]){l.push(`elle abandonne sa tentative ${de_(zI(R.t[r.k].id).nom)}, votre ancienne zone`);delete R.t[r.k]}
   save();pacMaj();
   pacDire(`${PACTE_SYM} Pacte avec ${laM(r)}`,`${pacTxt(prix)} par cycle${r.k==='omb'?' (la dîme)':''}`,`Elle ne contestera plus vos zones et laissera vos anciennes zones tranquilles${l.length?' ; '+l.join(', '):''}. Ses gens s'en prendront aux autres maisons.`);
   return true}
@@ -100,7 +100,7 @@ function contesterMaison(r,Z){const p=pac(),R=riv(),d=RIVK[R.z[Z.id]];
   p.cr={k:r.k,id:Z.id,de:d.k,du:(S.nc||0)+PACTE_CR_DELAI};R.vu[r.k]=(R.vu[r.k]||0)+1;save();pacMaj();
   pacDire(`${r.bl} ${LaM(r)} conteste ${Z.info.nom}`,`à ${laM(d)}, dans ${cyclesTxt(PACTE_CR_DELAI)}`,`Votre pacte la tourne contre les autres maisons : à l'échéance, elle réussit ${Math.round(PACTE_CR_CHANCE*100)} fois sur 100. La zone passera à elle, ou redeviendra sauvage si elle tient déjà assez de zones.`);
   return{sorte:'contesteMaison',r:r.k,id:Z.id,contre:d.k}}
-function resoudreContesteMaison(gagne){const p=pac(),c=p&&p.cr;if(!c)return null;p.cr=null;const R=riv(),r=RIVK[c.k],d=RIVK[c.de],Z=ZB[c.id];let res;
+function resoudreContesteMaison(gagne){const p=pac(),c=p&&p.cr;if(!c)return null;p.cr=null;const R=riv(),r=RIVK[c.k],d=RIVK[c.de],Z=(ZB[c.id]||ZWB[c.id]);let res;
   if(!Z||S.own[c.id]||R.z[c.id]!==c.de){res={fin:'sans objet'}}
   else{const ok=gagne===undefined?Math.random()<PACTE_CR_CHANCE:!!gagne;
     if(ok&&zonesMaison(c.k).length<plafondPacte()){R.z[c.id]=c.k;res={fin:'prise',id:c.id};
@@ -152,13 +152,13 @@ function fichePacte(r){const p=pac();if(!p)return'';const ref=refusPacte(r.k),ru
 /* écran Rivaux : ce que la maison fait sous le pacte */
 function pacteTexte(r){const p=pac();if(!p)return'';const l=[];
   if(p.k===r.k)l.push(`${PACTE_SYM} pacte, ${pacTxt(p.prix)} par cycle`);
-  if(p.cr&&p.cr.k===r.k&&ZB[p.cr.id])l.push(`conteste ${ZB[p.cr.id].info.nom} à ${laM(RIVK[p.cr.de])} dans ${cyclesTxt(Math.max(0,p.cr.du-(S.nc||0)))}`);
+  if(p.cr&&p.cr.k===r.k&&ZB[p.cr.id])l.push(`conteste ${zI(p.cr.id).nom} à ${laM(RIVK[p.cr.de])} dans ${cyclesTxt(Math.max(0,p.cr.du-(S.nc||0)))}`);
   if(p.rup&&p.rup.k===r.k)l.push(`pacte rompu : ${p.rup.n} contestation${p.rup.n>1?'s':''} à venir`);
   return l.join(' ; ')}
 /* bandeau, ligne Rivaux */
 function lignePacte(){const p=pac();if(!p)return'';let s='';
   if(p.k){const r=RIVK[p.k];s+=`<span class="d" title="Pacte avec ${laM(r)} : ${pacTxt(p.prix)} par cycle${p.warn?' ; votre bourse ne suffira pas au prochain cycle':''}" style="color:${p.warn?'#ff9a8a':r.col}">${PACTE_SYM}<span style="color:${r.col}">${r.bl}</span>${p.warn?'<small> !</small>':''}</span>`}
-  if(p.cr&&ZB[p.cr.id]){const a=RIVK[p.cr.k],d=RIVK[p.cr.de];s+=`<span class="d" title="${LaM(a)} conteste ${ZB[p.cr.id].info.nom} à ${laM(d)}" style="color:${a.col}">${a.bl}→<span style="color:${d.col}">${d.bl}</span><small> ${cyclesTxt(Math.max(0,p.cr.du-(S.nc||0)))}</small></span>`}
+  if(p.cr&&ZB[p.cr.id]){const a=RIVK[p.cr.k],d=RIVK[p.cr.de];s+=`<span class="d" title="${LaM(a)} conteste ${zI(p.cr.id).nom} à ${laM(d)}" style="color:${a.col}">${a.bl}→<span style="color:${d.col}">${d.bl}</span><small> ${cyclesTxt(Math.max(0,p.cr.du-(S.nc||0)))}</small></span>`}
   if(p.rup){const r=RIVK[p.rup.k];s+=`<span class="d" title="Pacte rompu : ${laM(r)} va contester encore ${p.rup.n} fois vos zones" style="color:#ff9a8a">✂<span style="color:${r.col}">${r.bl}</span><small>×${p.rup.n}</small></span>`}
   return s}
 /* Comptoir d'une Citadelle tenue (commerce.js) */
