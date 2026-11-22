@@ -1,0 +1,67 @@
+{
+ "pnj": {
+  "vera": {
+   "dit": {
+    "m5": "Le voïévode m'appelle starosta, maintenant. Le tribut part à l'heure. Ne me parle pas de plainte : il n'y a jamais eu de plainte.",
+    "m2": "Bogdan est aux mines pour moi. Chaque bouchée de ce grain, je la lui dois. Alors je tiens le hameau, et je me tais.",
+    "z": "Un hiver ne se paie pas en peaux. Il se paie en grain. Pour le reste, je répondrai devant qui voudra l'entendre.",
+    "p2": "Par la grille ou au grand jour, je dis la même chose : j'ai vendu les peaux, le grain est mangé. Jugez-moi, mais lisez ma plainte.",
+    "p5": "Ma plainte a été lue. J'ai payé pour ça, et je paierai encore. Mais pour la première fois, un voïévode a peur de Kobor."
+   }
+  },
+  "bogdan": {
+   "dit": {
+    "m5": "(Lettre des mines, lue par Oustina) « Ici, on casse la pierre et on ne parle pas. Dis à la cheffe que je ne regrette rien. »",
+    "m2": "(Lettre des mines, lue par Oustina) « Le travail est dur, mais on mange. Ne crois pas ce qu'on dit de moi. Ou crois-le, si ça aide. »",
+    "z": "Je me suis accusé pour la cheffe. Qu'on me croie ou non, je referais pareil. Elle a payé ma dette l'an passé.",
+    "p2": "Libre, oui. Et tout Kobor détourne les yeux quand je passe. On dit que j'ai laissé enfermer la cheffe. On dit vrai, un peu.",
+    "p5": "Je relève mes pièges comme avant. Moins de peaux, plus de regards en face. Je ne sais pas encore si on y gagne."
+   }
+  },
+  "oustina": {
+   "dit": {
+    "m5": "Mon mari est un voleur, tout le monde le dit. Je le dis aussi, maintenant. C'est plus simple. Le séchoir tourne, et je ne pose plus de questions.",
+    "m2": "Tu sais quelque chose sur Bogdan. Je le vois dans tes yeux. Mon mari est-il un voleur ? Dis-le-moi en face.",
+    "z": "Les peaux sèchent mal cet hiver. Tout sèche mal à Kobor, les peaux comme les paroles. Bogdan ne me dit plus rien.",
+    "p2": "Il a menti à tout le monde pour la cheffe. À moi aussi. Je ne sais pas ce qui fait le plus mal : le mensonge, ou qu'il l'ait fait pour elle.",
+    "p5": "Le dégel rend tout ce qu'on a enfoui. Mes vingt peaux aussi, tôt ou tard. Je commence à croire qu'on respire mieux sans secret."
+   }
+  },
+  "gleb": {
+   "dit": {
+    "m5": "Le registre est parfait. Chaque peau à sa place, même celles qui n'existent pas. Kobor est le hameau le plus en règle de la taïga. Grâce à moi.",
+    "m2": "Tu as couvert un menteur. Moi, je couvre tout le monde. La différence, c'est ma part : une peau sur dix. Ce n'est pas cher, pour dormir.",
+    "z": "Je ne cherche pas la vérité. Je cherche un nom. Le voïévode veut un coupable avant le dégel, et il l'aura.",
+    "p2": "Le carnet d'un marchand qui achète des peaux volées ? Belle source. Avant de me juger, demande-toi qui t'a mis le reçu sous le nez.",
+    "p5": "(Derrière les barreaux du convoi) « Le prochain inspecteur volera aussi. Moi, au moins, je ne prenais qu'une peau sur dix. »"
+   }
+  },
+  "ilya": {
+   "dit": {
+    "m5": "Kobor paie à l'heure et ne me vend plus rien. Plus un prix crié, plus un mot sur la place. Un marché sans paroles, c'est un marché mort.",
+    "m2": "Mon carnet dort au fond de ma barge. Tant que personne ne le demande, je vends mon grain et je compte en silence.",
+    "z": "Je pèse tout. Surtout la parole. Trois zibelines le sac de grain, cet hiver : c'est cher, mais c'est le prix de la faim.",
+    "p2": "Mon carnet pèse plus lourd que ma barge. Il peut faire tomber Gleb, et moi avec. Je sais compter : je n'aime pas ce calcul.",
+    "p5": "Une zibeline le sac, au printemps, au prix affiché. Kobor est pauvre, mais il compte juste. Avec un client pareil, je reviendrai."
+   }
+  },
+  "matvei": {
+   "dit": {
+    "m5": "Personne n'est jamais venu à Kobor. Ni inspecteur, ni voleur, ni rien. Jure-le avec moi, et la glace tiendra encore quarante ans.",
+    "m2": "Le Coffre garde bien ce qu'on lui confie. Ne descends pas trop loin, au fond. Il fait froid, là-dessous. Plus froid que tu ne crois.",
+    "z": "Je garde ce Coffre depuis quarante hivers. Il a vu des peaux, des voleurs, des menteurs. Un jour, il rendra tout. J'espère être mort avant.",
+    "p2": "Le sol craque, la nuit. Le dégel vient tôt cette année. Si tu entends quelque chose bouger sous la loge, viens me chercher. Moi seul.",
+    "p5": "Il s'appelait Semion. C'est moi qui ai tourné la clé. Quarante ans que je porte ce nom tout seul. Bientôt, tout Kobor le portera."
+   }
+  },
+  "borislav": {
+   "dit": {
+    "m5": "Kobor, le hameau le plus en règle de ma province. Pas une peau qui manque, pas une plainte, pas un mot de trop. Voilà ce que j'aime.",
+    "m2": "(Message scellé du voïévode, lu au camp) « Le tribut est attendu au complet. Les bavards seront comptés avec les peaux manquantes. »",
+    "z": "(Message scellé du voïévode, lu au camp) « Quatre cents zibelines, ou un coupable. Le voïévode n'a pas de préférence. »",
+    "p2": "(Message scellé du voïévode, lu au camp) « On parle beaucoup à Kobor, dit-on. Le voïévode viendra écouter lui-même. »",
+    "p5": "Le tsar veut un compte juste ? Il l'aura, plus juste qu'il ne croit. Je n'aime pas qu'on m'accuse. J'aime encore moins perdre."
+   }
+  }
+ }
+}
