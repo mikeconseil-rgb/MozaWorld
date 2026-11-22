@@ -7,17 +7,32 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Règle | Depuis | Ce qui manque pour trancher |
 |---|---|---|
 | Lot graphique 2.6 et zones +33 % | 18 nov. | Fluidité validée sur la Xbox (18 nov.) ; reste son avis sur le rendu |
-| Blessures façon Shadowrun | 17 nov. | Deux ou trois soirs de jeu, puis un seul système |
 | Pouvoirs de carte du monde des 6 Assemblées | 17 nov. | Les jouer |
 | Gameplay du monde, lot 1 : hordes (5 cycles de colère, 3 de marche, cibles 2 à 3 paliers plus faibles), domaines dès 2 tuiles et leurs bonus, défense +2/+1/+2, rivaux (1 chance sur 6 par cycle, préavis 2 cycles, verrou contestable), reprise par l'empreinte en un palier | 19 nov. | Les jouer ; réglages proposés par l'équipe, pas encore tranchés par l'utilisateur |
 | Plateau de combat (3 voies, avant/arrière, cases Girih à effet, Manœuvre, Sentinelle, soutien de l'arrière, plancher de capacité ; passes 4-8 du 20-21 nov. : renforts annoncés, chef dans sa voie, échauffement, renfort lourd, Sentinelle de relève) | 19-21 nov. | Le jouer sur la Xbox ; notes des testeurs à chaque passe (design/plateau/notes.md) |
 | Gameplay du monde, lot 2 : tours de guet (prix, portée, sans entretien), Comptoir des Citadelles (prix en tesselles, primes après combat, change tesselles contre mana), aménagement de chaque Donjon (2 dispositifs, bonus des voisines), épreuve des rivaux | 19 nov. | Les jouer ; les principes sont décidés, les chiffres sont ceux de l'équipe |
 | Gameplay du monde, lot 3 : caravanes (gains, risques de pillage), lois du catalogue de onze et leurs chiffres, prix des pactes par maison, forces des vagues du siège | 19-20 nov. | Les jouer ; les six réglages posés le 20 nov. sont confirmés (« Oui à tout »), les autres chiffres restent ceux de l'équipe |
 | Monde de 925 zones (347 Ressources, 249 Antres, 195 Assemblées, 90 Donjons, 44 Citadelles posés) au lieu des 986 de la liste | 20 nov. | Décidé « pour l'instant » ; à revoir après le 28 nov. (pavage) |
-| Entretien des pièges du Donjon (trois rythmes) | 16 nov. | Comparer les trois rythmes en jeu |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
+
+## 22 novembre 2026 (revue des dix provisoires)
+
+Réponses de l'utilisateur à la liste de dix réglages du dimanche 22 nov., point par point. Les autres provisoires sont gardés tels quels jusqu'après le 28.
+
+| Sujet | Mots de l'utilisateur | Lecture retenue | Statut |
+|---|---|---|---|
+| 1. Plateau à trois voies comme combat du jeu | « 1 non » | Le Plateau à trois voies n'est pas gardé ; le champ en mosaïque où l'on déplace ses créatures est à l'essai dans l'Arène | remplace « Plateau, provisoire » (19 nov.) ; la suite se décide dans l'Arène |
+| 2. Blessures façon Shadowrun, mort à la troisième défaite | « 2 ok » | Gardées | en vigueur |
+| 3. Pièges du Donjon : un seul rythme d'entretien, sans choix au menu | « 3 oui » | Rythme par défaut gardé, choix retiré du menu | en vigueur (retrait du menu à faire dans le jeu) |
+| 4. Maisons rivales : 1 chance sur 6 par cycle, pas avant le 10e cycle | « 4 ok pour l'instant on y reviendra » | Gardé | provisoire |
+| 5. Zone contestée sans défense : la maison réussit 55 fois sur 100 | (pas de réponse) | Inchangé | provisoire, en attente |
+| 6. Hordes : arrivée 3 cycles après l'annonce | « 6 ok » | Gardé | en vigueur |
+| 7. Zone tombée à 0 sous une horde : sauvage, reprise par l'empreinte en un palier sans combat | « 7 ok » | Gardé | en vigueur |
+| 8. Caravanes : pillage 30 % près d'une horde, 15 % près d'une maison | « Plus grande. Faudrait des cas automatique » (sans numéro) | Lecture probable : risque plus élevé et cas de pillage automatique ; à confirmer | en attente, rien de changé |
+| 9. Siège final : trois vagues, 3 cycles, relance après 5 cycles | « 9 ok pour l'instant » | Gardé | provisoire |
+| 10. Délai de 40 secondes avant de refaire évoluer une même zone | « 10 pour la beta non. Je dois pouvoir enchaîné les monter de compétences » | Plus de délai dans la bêta ; le délai d'un jour reste prévu pour le jeu complet | en vigueur (à retirer dans le jeu) ; remplace le délai raccourci à 40 s |
 
 ## 22 novembre 2026 (Kobor : PNJ et quêtes)
 
