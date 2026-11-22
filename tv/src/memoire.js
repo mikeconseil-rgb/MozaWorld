@@ -13,14 +13,14 @@ function libererGPU(){if(memLibere)return;memLibere=true;
   try{for(const r of[rtS,rtA,rtB,rtC,rtD,rtE])if(r)r.dispose();if(sun.shadow.map)sun.shadow.map.dispose()}catch(_){}
   try{renderer.renderLists.dispose();renderer.dispose();renderer.forceContextLoss()}catch(_){}}
 addEventListener('pagehide',libererGPU);
-addEventListener('pageshow',e=>{if(e.persisted)location.reload()});   /* page rendue par le cache « retour » : sa carte graphique a été rendue, on recharge */addEventListener('beforeunload',libererGPU);
+addEventListener('pageshow',e=>{if(e.persisted){if(rechargeAutorisee())location.reload();else arretBoucle('retour en arrière')}});   /* page rendue par le cache « retour » : sa carte graphique a été rendue, on recharge */addEventListener('beforeunload',libererGPU);
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(memLibere)return;pouls();memLibere=true;
   try{renderer.render=()=>{};renderer.setRenderTarget=()=>{};renderer.compile=()=>{}}catch(_){}
   try{localStorage.setItem('mz-plantage',String(Date.now()));const d=JSON.parse(localStorage.getItem('mz-pouls')||'null');
     if(d){d.contexte=1;const L=JSON.parse(localStorage.getItem('mz-plantages')||'[]');L.push(d);localStorage.setItem('mz-plantages',JSON.stringify(L.slice(-10)))}}catch(_){}
   /* on garde la partie : position du héros, puis rechargement dans la même région */
   try{if(typeof voyagerRegion==='function'&&typeof REGION!=='undefined'&&started){voyagerRegion(REGION.c,'jeu');return}}catch(_){}
-  setTimeout(()=>location.reload(),60)},false);
+  if(rechargeAutorisee())setTimeout(()=>location.reload(),60);else arretBoucle('carte graphique perdue')},false);
 /* au réveil après un contexte perdu : un mot au joueur */
 (()=>{let t=0;try{t=+localStorage.getItem('mz-plantage')||0;localStorage.removeItem('mz-plantage')}catch(_){}
   if(t&&Date.now()-t<60000)setTimeout(()=>{if(typeof toast==='function')toast('La partie a repris','La carte graphique a manqué de mémoire','Votre partie a été enregistrée et la région rechargée.')},4000)})();
