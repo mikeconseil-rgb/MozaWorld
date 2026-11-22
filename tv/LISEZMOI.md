@@ -6,6 +6,12 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Paquet de combat lisible et modifiable (22 novembre, `src/paquet.js`)
+
+- L'écran du paquet (menu, ou Y à la manette) montre chaque carte en grand avec son texte entier, dans une grille qui s'adapte à la télé et au téléphone (paysage et portrait). Stick ou flèches : ▲ ▼ sautent d'une rangée ; toucher une carte marche aussi.
+- A ou un toucher active ou désactive la carte désignée (toutes ses copies) : tampon « Désactivée », carte grisée. Une carte désactivée n'est plus piochée en combat (le duel d'Assemblée a son propre paquet). Garde-fou provisoire : au moins 4 cartes actives (`PAQ_MIN`).
+- Sauvegardé dans la partie (`S.paqOff`, liste des clés de carte désactivées). Rien d'animé.
+
 ## Combat allégé et bestiaire par zone (22 novembre)
 
 - Ralentissements et plantages sur la Xbox pendant le combat : plus aucune animation permanente dans l'écran de combat (respiration des médaillons, dérive des toiles, reflet des cartes, dérive du décor plein écran). Restent seulement les gestes brefs : attaque, coup reçu, soin, mort.
