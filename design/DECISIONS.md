@@ -41,6 +41,7 @@ Réponses de l'utilisateur à la liste de dix réglages du dimanche 22 nov., poi
 | Taïga de Kobor (zone pilote) | « Ce n'est qu'un habillage… Des PNJ et un système de quête à l'intérieur de la zone. Ce sera le résultat des quêtes qui déterminera l'évolution de la zone. Quêtes adultes, choix cornéliens. L'histoire est un charabia : refais-la. » Deux historiens (grands hommes) et un philosophe (cas moral), puis les quatre auteurs ; boucle critique + historien | en vigueur, Kobor seulement (pas généralisé sans accord) | 2.40 |
 | Lecture validée (« 1 oui 2 oui ») | 1. Seule Kobor change, les autres zones gardent leurs scènes ; 2. on garde taïga, Glace, pôles Mensonge / Vérité, histoire réécrite de zéro | en vigueur | 2.40 |
 | Forme des quêtes (« 3. ») | « L'épreuve devrait être un combat de cartes ou un choix de dialogue. Un arbre complexe de 3 à 8 étapes qui amène à la fin aux deux choix d'évolution de la zone. » Plus de mini-jeu d'épreuve à Kobor | en vigueur | 2.40 |
+| Kobor, boucle critique + historien | Cinq tours : critique 64 → 80 → 87 → 91/100 (objectif 90 de l'utilisateur) ; philosophe 88/100, leçon apprenable dans les deux sens (se raviser coûte le knout dans les deux sens) ; entrées de quête selon le dernier choix (retour vers 0, remontée) ; plainte de Vera, double dîme de Gleb, Zverevo, Bogdan au fort avant les mines | en vigueur | 2.41 |
 
 ## 22 novembre 2026 (téléphone)
 

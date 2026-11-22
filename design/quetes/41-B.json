@@ -2,29 +2,30 @@
  "quetes": {
   "4": {
    "t": "Le procès des pierres",
-   "resume": "Le procès de Vera continue au cercle de pierres. Réunis les témoins, puis décide avec Vera si elle lit sa plainte devant tous.",
+   "resume": "Le procès de Vera continue au cercle de pierres. Réunis les témoins, puis décide avec Vera si elle lit la plainte du hameau devant tous.",
    "absents": [
     "borislav"
    ],
    "debut": "a",
+   "debutRetour": "r1",
    "noeuds": {
     "a": {
      "qui": "vera",
-     "txt": "On m'a sortie du Coffre pour la suite du procès. Le carnet d'Ilya a fait trembler Gleb. Demain, il m'accusera d'avoir vendu le tribut. C'est vrai, et je le dirai. Mais j'ai aussi ma plainte contre le voïévode, et contre lui. Seule, personne ne me croira. Il me faut des témoins avant l'aube.",
+     "txt": "Vera : « On m'a sortie du Coffre pour la suite du procès. Hier, j'ai demandé à Matveï de tailler ma croix de tombe. Si on m'envoie aux mines, je suis prête : on ne peut plus me faire peur. Gleb accuse, même accusé : seul le voïévode pourra le juger. Demain, je dirai la vente, et je lirai notre plainte. Il me faut des témoins. »",
      "rep": [
       {
        "l": "Ilya doit parler en personne.",
        "va": "b"
       },
       {
-       "l": "Bogdan doit dire qu'il a menti.",
+       "l": "Bogdan doit accuser Gleb.",
        "va": "c"
       }
      ]
     },
     "b": {
      "qui": "ilya",
-     "txt": "Ilya : « Ma barge porte des scellés. Il ne me reste que ma voix. Un carnet ne répond pas aux questions, moi si. Mais les hommes de Gleb gardent le sentier du belvédère. Si je descends témoigner, ils m'attendent. »",
+     "txt": "Ilya : « Ma barge porte les scellés du trésor. Il ne me reste que ma voix. Un carnet ne répond pas aux questions, moi si. Et c'est moi qui ai écrit la plainte de Vera, sous sa dictée. Mais les hommes de Gleb gardent le sentier du belvédère. Si je descends témoigner, ils m'attendent. »",
      "rep": [
       {
        "l": "Je t'escorte jusqu'au cercle.",
@@ -40,14 +41,14 @@
     },
     "c": {
      "qui": "bogdan",
-     "txt": "Bogdan : « Tout Kobor me crache dessus. J'ai menti pour la cheffe, et toi, tu l'as livrée. Mais tu as raison sur un point : je n'ai jamais vu ce marchand. Je le dirai au cercle. Le problème, c'est Oustina. Elle ne me parle plus depuis qu'elle sait. »",
+     "txt": "Bogdan : « J'ai déjà dit la vente : j'ai porté les peaux au traîneau d'Ilya, sur l'ordre de la cheffe. Cette fois, je dirai la double dîme. J'ai vu ses hommes remplir des sacs sans sceau avec des peaux estampillées. Mais un trappeur contre un inspecteur… Il me faut Oustina à côté de moi. Et elle ne me parle plus. »",
      "rep": [
       {
        "l": "Allons voir Oustina ensemble.",
        "va": "f"
       },
       {
-       "l": "Viens au cercle, c'est tout.",
+       "l": "Viens au cercle, seul.",
        "va": "e",
        "trace": "bogdan_seul"
       }
@@ -62,7 +63,7 @@
     },
     "f": {
      "qui": "oustina",
-     "txt": "Oustina : « Il a menti au hameau. Il m'a menti à moi aussi, en me regardant dans les yeux. Pour la cheffe, pas pour nous. » Elle se tait. « Je viendrai au cercle. Je dirai qu'il était au séchoir la nuit de la vente. Mais je ne m'assiérai pas à côté de lui. »",
+     "txt": "Oustina : « Il a menti à tout Kobor pour la cheffe. Et tout Kobor me le fait payer : plus personne n'apporte ses peaux à mon séchoir. » Elle se tait. « Je viendrai au cercle. Je dirai ce que j'ai vu, moi aussi : les sacs sans sceau, au belvédère. Mais je ne m'assiérai pas à côté de lui. »",
      "rep": [
       {
        "l": "Merci, Oustina.",
@@ -73,12 +74,12 @@
     },
     "e": {
      "lieu": "cercle",
-     "txt": "Tout le hameau est assis sur les pierres gelées. Gleb lit l'accusation : Vera a vendu le tribut. Puis il se penche vers toi et murmure : « Qu'elle déchire sa plainte, et je dis que les peaux sont perdues dans la tempête. Quelques mois de Coffre pour elle, et on oublie tout. Le carnet d'un receleur ne pèse rien. »",
+     "txt": "Le hameau est assis sur les pierres gelées. Gleb lit l'accusation : Vera a vendu le tribut. Puis il se penche vers toi : « Qu'elle déchire sa plainte, et j'écris : traîneau du tribut perdu sous la glace. Le trésor efface ces pertes-là. Kobor ne devra rien, et elle fera quelques mois de Coffre. »",
      "txtTrace": {
-      "escorte_ilya": "Ilya est assis au premier rang, prêt à parler.",
-      "ilya_cache": "La place d'Ilya est vide. Gleb l'a remarqué.",
-      "oustina_temoin": "Oustina est là, loin de Bogdan, les mains serrées.",
-      "bogdan_seul": "Bogdan est assis seul. Personne ne s'approche de lui."
+      "escorte_ilya": "Ilya est au premier rang.",
+      "ilya_cache": "La place d'Ilya est vide.",
+      "oustina_temoin": "Oustina est là, loin de Bogdan.",
+      "bogdan_seul": "Bogdan est assis seul."
      },
      "rep": [
       {
@@ -90,27 +91,113 @@
     "g": {
      "qui": "vera",
      "final": true,
-     "txt": "Vera : « Gleb t'a fait son offre, je l'ai vu. Si je lis ma plainte, j'avoue la vente devant tous, et ses hommes ne me laisseront pas finir sans se battre. Si je me tais, je retourne au Coffre quelques mois, et il garde sa place. Toi qui as cherché la vérité depuis le début : je lis, ou je déchire ? »",
+     "txt": "Vera : « Gleb t'a fait son offre. Elle est bonne, je le sais : si je déchire, Kobor ne doit plus rien. Si je lis, j'avoue la vente devant tous, et ce peut être les mines. Le voïévode, humilié, s'en prendra à Kobor. Cette plainte porte vingt marques, une par famille. Je ne la lirai pas sans ton accord. Je lis, ou je déchire ? »",
      "fin": [
       {
        "vers": 5,
-       "l": "Lis ta plainte, jusqu'au bout.",
-       "prix": "Vera sera condamnée pour la vente. Il faudra se battre.",
+       "l": "Lis la plainte, jusqu'au bout.",
+       "prix": "Vera avoue la vente : ce peut être les mines. Le voïévode, humilié, s'en prendra à Kobor.",
        "epreuve": "combat",
        "combat": "Les hommes de Gleb chargent dans le cercle pour arracher la plainte des mains de Vera.",
-       "resultat": "Vera lit jusqu'au dernier mot. Le nom de Gleb résonne sur les pierres, et un cavalier part chercher le voïévode.",
+       "resultat": "Vera lit jusqu'à la dernière marque. Le nom de Gleb résonne sur les pierres, et un coureur part à skis chercher le voïévode.",
        "trace": "plainte_lue"
       },
       {
        "vers": 3,
-       "l": "Déchire-la. Prends la tempête.",
-       "prix": "Vera retourne au Coffre. Gleb garde sa place et sa part.",
-       "epreuve": "dialogue",
-       "resultat": "Vera déchire sa plainte sans un mot. Gleb écrit « tempête » dans son registre, et le hameau rentre chez lui, soulagé et honteux.",
-       "trace": "plainte_dechiree"
+       "l": "Déchire-la. Accepte son offre.",
+       "prix": "Le tribut perdu est effacé : Kobor ne doit plus rien, et Vera ne fait que quelques mois de Coffre. Gleb garde sa place.",
+       "epreuve": "combat",
+       "resultat": "Vera déchire la plainte, et vingt marques partent au feu. Gleb écrit « perdu sous la glace » dans son registre, et le hameau rentre chez lui, soulagé et honteux.",
+       "trace": "plainte_dechiree",
+       "combat": "Des familles qui ont mis leur marque veulent empêcher qu'on brûle la plainte."
+      }
+     ]
+    },
+    "r1": {
+     "lieu": "camp",
+     "txt": "Gleb est libre au camp, et le voïévode est loin. Gleb passe de porte en porte : chaque famille qui retire sa marque de la plainte n'aura rien à payer. Celles qui la gardent le regretteront.",
+     "txtTrace": {
+      "semion_cache": "Le voïévode a noté Semion « trappeur inconnu », puis il a relâché Gleb.",
+      "page_retiree": "La plainte ne nomme plus le voïévode. Gleb, si."
+     },
+     "rep": [
+      {
+       "l": "Parler à Oustina.",
+       "va": "r3"
+      },
+      {
+       "l": "Aller voir Vera.",
+       "va": "r4"
+      }
+     ]
+    },
+    "r3": {
+     "qui": "oustina",
+     "txt": "Oustina : « Gleb est venu au séchoir. Il a dit : pas de marque de toi sur la plainte, et je ne compte pas les peaux sous tes claies. » Elle montre ses mains. « J'ai dit non. Bogdan aussi. Ses hommes ont renversé le séchoir en partant. Ils reviendront ce soir. »",
+     "rep": [
+      {
+       "l": "Je les attends avec vous.",
+       "va": "r5"
+      },
+      {
+       "l": "Je vais prévenir Vera.",
+       "va": "r4"
+      }
+     ]
+    },
+    "r5": {
+     "lieu": "camp",
+     "txt": "La nuit tombe sur le séchoir renversé. Des torches descendent le sentier : les hommes de Gleb reviennent finir le travail. Bogdan se place devant la porte, une hache à la main.",
+     "combat": "Les hommes de Gleb viennent punir la famille qui garde sa marque.",
+     "gagne": "r4",
+     "apres": "Les hommes de Gleb reculent dans le noir. Au matin, trois familles qui avaient cédé viennent remettre leur marque."
+    },
+    "r4": {
+     "qui": "vera",
+     "final": true,
+     "txt": "Vera : « Sur vingt familles, neuf gardent leur marque sur la plainte. Les autres ont cédé à Gleb. Avec moins de dix marques, dit-il, il ne reste qu'une voleuse et ses amis. Je peux la faire partir maintenant, par la piste du nord, loin du fort de Borislav. Ou tout laisser tomber, et retourner au Coffre. Kobor ne devrait alors plus rien. »",
+     "fin": [
+      {
+       "vers": 5,
+       "l": "Garde les marques. Fais-la partir.",
+       "prix": "Les familles fidèles subiront la colère de Gleb. Il faudra se battre.",
+       "epreuve": "combat",
+       "combat": "Les hommes de Gleb barrent la piste du nord pour arrêter la plainte.",
+       "resultat": "Un trappeur part à skis par la piste du nord, la plainte cousue dans sa chemise. Borislav Andreïevitch l'apprend : pour se couvrir, il vient à Kobor chercher Gleb.",
+       "trace": "plainte_portee"
+      },
+      {
+       "vers": 3,
+       "l": "Laisse tomber. Retourne au Coffre.",
+       "prix": "La plainte meurt. Vera retourne au Coffre, Gleb garde sa place. Kobor ne doit plus rien.",
+       "epreuve": "combat",
+       "resultat": "Vera jette elle-même la plainte au feu. Kobor ne doit plus rien, et Gleb sourit de nouveau au cercle de pierres.",
+       "trace": "plainte_dechiree",
+       "combat": "Des familles qui ont mis leur marque veulent empêcher qu'on brûle la plainte."
+      }
+     ]
+    },
+    "s1": {
+     "qui": "vera",
+     "txt": "Vera, sortie du Coffre : « J'ai déchiré notre plainte, et Gleb a écrit : perdu sous la glace. Mais Ilya a tenu son carnet devant tous, et le procès est rouvert. Sans plainte, le carnet n'accuse que Gleb, pas le voïévode. Ilya peut la réécrire de mémoire. Encore faut-il que les familles remettent leur marque. Gleb passe déjà de porte en porte. »",
+     "rep": [
+      {
+       "l": "Parler à Oustina.",
+       "va": "r3"
+      },
+      {
+       "l": "Compter les marques avec toi.",
+       "va": "r4"
       }
      ]
     }
+   },
+   "debutSi": {
+    "carnet_maintenu": "s1"
+   },
+   "resumeRetour": "Gleb est libre et achète le retrait des marques sur la plainte. Aide Vera à décider si la plainte part quand même.",
+   "resumeSi": {
+    "carnet_maintenu": "Vera a déchiré sa plainte, mais Ilya a tenu son carnet. Il faut retrouver les marques des familles malgré Gleb."
    }
   },
   "5": {
@@ -120,10 +207,11 @@
     "gleb"
    ],
    "debut": "a",
+   "debutRetour": "r1",
    "noeuds": {
     "a": {
      "lieu": "pierre",
-     "txt": "Le dégel a fendu la glace au fond du Coffre. Dedans, un homme assis, intact, en manteau d'inspecteur. Le sceau du tsar brille encore à sa ceinture. Le voïévode Borislav est arrivé hier pour emmener Gleb. S'il voit ça, il verra un meurtre.",
+     "txt": "Le dégel a fendu la glace au fond du Coffre. Dedans, un homme assis, intact, en manteau d'inspecteur. Dans sa sacoche, une lettre de mission à la cire rouge. Le voïévode Borislav Andreïevitch est arrivé hier pour emmener Gleb : mieux vaut livrer l'inspecteur que d'être nommé avec lui. S'il lit cette lettre, il verra un meurtre.",
      "rep": [
       {
        "l": "Trouver le vieux Matveï.",
@@ -137,7 +225,7 @@
     },
     "b": {
      "qui": "matvei",
-     "txt": "Matveï : « Tu l'as vu, alors. Il s'appelait Semion. Il voulait nos peaux et la moitié de nos hommes pour l'armée. On l'a enfermé une nuit, pour lui faire peur. C'est moi qui ai tourné la clé. Au matin, le froid l'avait pris. Personne n'a voulu ça. Tout le monde s'est tu. »",
+     "txt": "Matveï : « Tu l'as vu, alors. Il s'appelait Semion. Il avait trouvé nos peaux cachées. Il a dit qu'il écrirait au trésor. On l'a enfermé une nuit, pour lui faire peur. C'est moi qui ai tourné la clé. Au matin, le froid l'avait pris. Personne n'a voulu ça. Tout le monde s'est tu. »",
      "rep": [
       {
        "l": "Sortons-le du Coffre.",
@@ -152,7 +240,7 @@
     },
     "c": {
      "qui": "vera",
-     "txt": "Vera : « Mon père était là, cette nuit-là. Il me l'a dit avant de mourir. Toute ma plainte parle du mensonge des puissants. Et voilà le nôtre, assis dans la glace. » Elle serre les poings. « Si Matveï se tait, je me tairai. Mais alors, j'aurai lu ma plainte pour rien. »",
+     "txt": "Vera : « Mon père était là, cette nuit-là. Il me l'a dit avant de mourir. Des peaux cachées, un inspecteur qu'on fait taire : c'est notre histoire d'aujourd'hui, avec quarante ans d'avance. » Elle serre les poings. « Si Matveï se tait, je me tairai. Mais alors, notre plainte ne vaut plus rien. »",
      "txtTrace": {
       "matvei_parle": "Elle sait déjà que Matveï t'a tout dit."
      },
@@ -172,7 +260,7 @@
     },
     "e": {
      "qui": "borislav",
-     "txt": "Le voïévode Borislav : « Un inspecteur du tsar, dans votre Coffre ? Si c'est un meurtre, Kobor paiera quarante ans de tribut d'un coup. Si c'est un accident, je veux un nom et un aveu. » Il sourit. « Ou alors, c'est un trappeur égaré, et je n'ai rien vu. Un hameau qui me doit un silence m'obéit longtemps. »",
+     "txt": "Le voïévode : « Un inspecteur du trésor, dans votre Coffre ? Si c'est un meurtre et que personne ne se nomme, Kobor entier paiera le prix du sang : cent zibelines. Si quelqu'un avoue, trente suffiront. » Il sourit. « Ou c'est un trappeur égaré, et je n'ai rien vu. Un hameau qui me doit un silence m'obéit longtemps. »",
      "txtTrace": {
       "plainte_lue": "Il jette un regard noir à Vera : sa plainte l'a humilié."
      },
@@ -186,26 +274,211 @@
     "f": {
      "qui": "matvei",
      "final": true,
-     "txt": "Matveï : « Le voïévode attend. Si je dis la vérité, on m'emmène à la ville, et je n'en reviendrai pas. Kobor paiera une amende, mais Semion aura une tombe et un nom. Si je me tais, c'est un trappeur égaré, et Kobor doit un silence à Borislav. Je suis vieux. Décide ce que je dis. »",
+     "txt": "Matveï : « Le voïévode attend. Si j'avoue, on m'emmène à la ville, et je n'en reviendrai pas. Kobor paiera trente zibelines, mais Semion aura une tombe et son nom. Si je me tais, c'est un trappeur égaré : Kobor ne paie rien, et doit un silence à Borislav. Il s'en servira. Je suis vieux. Décide ce que je dis. »",
      "fin": [
       {
        "vers": 6,
        "l": "Dis tout, Matveï.",
-       "prix": "Matveï sera emmené. Kobor paiera une amende.",
+       "prix": "Matveï sera emmené et ne reviendra pas. Kobor paiera trente zibelines.",
        "epreuve": "dialogue",
-       "resultat": "Matveï avoue devant tous. Semion est enterré sous les mélèzes avec son nom, et Kobor se tient autour de la tombe, plus pauvre et plus léger.",
+       "resultat": "Matveï avoue devant tous. Semion est enterré sous les mélèzes avec son nom, et Kobor se tient autour de la tombe, plus pauvre, sans plus rien à cacher.",
        "trace": "matvei_avoue"
       },
       {
        "vers": 4,
        "l": "C'était un trappeur égaré.",
-       "prix": "Kobor doit un silence au voïévode. Gleb sera relâché.",
+       "prix": "Matveï reste chez lui. Kobor doit un silence au voïévode, et Gleb sera relâché.",
        "epreuve": "dialogue",
-       "resultat": "Borislav note « trappeur inconnu » et referme le Coffre. Le soir même, faute de témoins sûrs, il relâche Gleb.",
+       "resultat": "Borislav jette la lettre de mission au feu et note « trappeur inconnu ». Le soir même, faute de témoins sûrs, il relâche Gleb.",
        "trace": "semion_cache"
       }
      ]
+    },
+    "r1": {
+     "lieu": "pierre",
+     "txt": "Les pages du carnet ont brûlé, celle du voïévode avec elles. Vera porte seule la dette de Kobor. Près de la tombe de Semion, Matveï attend le convoi, sous garde. Borislav Andreïevitch sourit : plus rien ne le nomme, sauf la plainte que Vera garde cousue dans son manteau.",
+     "txtTrace": {
+      "pages_brulees": "Les cendres des pages sont encore dans le feu du camp."
+     },
+     "rep": [
+      {
+       "l": "Parler au voïévode.",
+       "va": "r2"
+      },
+      {
+       "l": "Parler à Ilya.",
+       "va": "r3"
+      }
+     ]
+    },
+    "r2": {
+     "qui": "borislav",
+     "txt": "Le voïévode : « Le compte est clos. Il me reste un vieil homme à emmener. Mais je sais être bon. Que Vera retire de sa plainte la page qui me nomme, et Matveï finira ses jours chez lui. Gleb portera seul la faute. Va le lui dire. »",
+     "rep": [
+      {
+       "l": "Aller voir Vera.",
+       "va": "r4"
+      }
+     ]
+    },
+    "r3": {
+     "qui": "ilya",
+     "txt": "Ilya : « Ma page sur les hommes du voïévode a brûlé. Mais je la sais par cœur : quel hiver, combien de peaux, quel homme. Je peux la réécrire et jurer dessus, devant tous. Après ça, aucune piste de la taïga ne me laissera passer. » Il hausse les épaules. « Sans barge, je n'ai plus de route, de toute façon. »",
+     "rep": [
+      {
+       "l": "Aller voir Vera.",
+       "va": "r4",
+       "trace": "ilya_reecrit"
+      }
+     ]
+    },
+    "r4": {
+     "qui": "vera",
+     "final": true,
+     "txt": "Vera : « Borislav propose un marché : je retire la page qui le nomme, et Matveï meurt chez lui au lieu de partir avec le convoi. Sinon, Matveï part, et la plainte partira entière au printemps. Matveï a tourné la clé sur Semion. Mais il a taillé ma croix sans rien demander. Tu en dis quoi ? »",
+     "txtTrace": {
+      "ilya_reecrit": "Ilya attend dehors, prêt à réécrire sa page."
+     },
+     "fin": [
+      {
+       "vers": 6,
+       "l": "Garde la page. Matveï part.",
+       "prix": "Matveï part avec le convoi et ne reviendra pas.",
+       "epreuve": "dialogue",
+       "resultat": "Vera garde la page qui nomme le voïévode. Le soir, Matveï lui laisse les clés du Coffre, et Ilya commence à réécrire sa page de mémoire.",
+       "trace": "page_gardee"
+      },
+      {
+       "vers": 4,
+       "l": "Retire la page. Matveï reste.",
+       "prix": "La plainte ne nomme plus le voïévode. Gleb sera relâché.",
+       "epreuve": "dialogue",
+       "resultat": "Vera raye la page qui nomme Borislav. Matveï rentre chez lui, et le voïévode, qui n'a plus rien à craindre, relâche Gleb en partant.",
+       "trace": "page_retiree"
+      }
+     ]
+    },
+    "t1": {
+     "qui": "matvei",
+     "final": true,
+     "txt": "Matveï : « Bogdan peut rattraper le coureur avant la nuit. Si la plainte va au tsar, Borislav me fera payer Semion : on m'emmène, et je ne reviendrai pas. Si on la rappelle, il relâche Gleb et repart, et je meurs chez moi. J'ai déjà fermé une porte sur un homme. Ne me demande pas d'en fermer une sur Kobor. Décide. »",
+     "fin": [
+      {
+       "vers": 6,
+       "l": "Laisse courir la plainte.",
+       "prix": "Borislav fera payer Semion : Matveï sera emmené et ne reviendra pas.",
+       "epreuve": "combat",
+       "resultat": "La plainte file vers le nord. Borislav fait garder Matveï jusqu'au convoi, et Kobor paie trente zibelines pour la tombe de Semion.",
+       "trace": "plainte_courue",
+       "combat": "Les hommes du voïévode partent à la poursuite du coureur sur la piste du nord."
+      },
+      {
+       "vers": 4,
+       "l": "Rappelle le coureur.",
+       "prix": "La plainte revient à Kobor. Borislav relâche Gleb et repart.",
+       "epreuve": "dialogue",
+       "resultat": "Bogdan rattrape le coureur avant la nuit. Borislav relâche Gleb et repart, et la plainte dort de nouveau dans le manteau de Vera.",
+       "trace": "plainte_rappelee"
+      }
+     ]
+    },
+    "u1": {
+     "qui": "borislav",
+     "final": true,
+     "txt": "Borislav : « Mes hommes ont vu vos fosses sous la neige. Dis à l'escorte que la page du carnet sur moi est un faux d'Ilya, et je n'ai rien vu. Sinon, demain, l'escorte saura où creuser. »",
+     "fin": [
+      {
+       "vers": 6,
+       "l": "Je ne mentirai pas pour vous.",
+       "prix": "Borislav livre les fosses : chaque famille perd sa réserve.",
+       "epreuve": "dialogue",
+       "resultat": "Le lendemain, l'escorte vide les fosses une à une. Kobor maudit Borislav, et un peu toi aussi.",
+       "trace": "fosses_livrees"
+      },
+      {
+       "vers": 4,
+       "l": "La page d'Ilya est un faux.",
+       "prix": "Ilya passe pour un faussaire. Borislav repart libre au fort, et Gleb revient.",
+       "epreuve": "dialogue",
+       "resultat": "Tu jures devant l'escorte que la page est fausse. Les fosses restent pleines, Ilya baisse la tête, et Borislav repart au fort, Gleb sur ses talons.",
+       "trace": "page_reniee"
+      }
+     ]
+    },
+    "t0": {
+     "lieu": "pierre",
+     "txt": "Le voïévode Borislav Andreïevitch est revenu à Kobor. Devant la Pierre d'éveil, il fait enchaîner Gleb : la plainte court sur la piste du nord, et elle les nomme tous les deux. Puis il se tourne vers la tombe sous les mélèzes : « Un inspecteur du trésor, mort dans votre Coffre. Rappelez votre coureur, ou je juge cette mort. »",
+     "rep": [
+      {
+       "l": "Aller trouver Matveï.",
+       "va": "t1"
+      }
+     ]
+    },
+    "u0": {
+     "lieu": "camp",
+     "txt": "Le dégel a coupé la piste. Le convoi attend au camp, et avec lui Borislav Andreïevitch, déchu, sous garde, à côté de Matveï. Sous la neige, les fosses de quatre familles sont pleines. Le voïévode déchu te fait signe d'approcher.",
+     "rep": [
+      {
+       "l": "Écouter Borislav.",
+       "va": "u1"
+      }
+     ]
+    },
+    "v0": {
+     "lieu": "camp",
+     "txt": "Tu as juré que Borislav mentait. Le scribe est reparti, et il a noté autre chose : si Borislav ment sur les fosses, sa page dans le carnet d'Ilya ment peut-être aussi.",
+     "rep": [
+      {
+       "l": "Aller voir Ilya.",
+       "va": "v1"
+      }
+     ]
+    },
+    "v1": {
+     "qui": "ilya",
+     "final": true,
+     "txt": "Ilya : « Ton serment a fait de ma page un mensonge. Je peux la rejurer devant le scribe : Borislav ne sortira plus du fort. Mais le scribe saura alors que tu as menti, et il reviendra compter les familles. Ou je me tais, et Borislav finira blanchi. »",
+     "fin": [
+      {
+       "vers": 6,
+       "l": "Rejure ta page, Ilya.",
+       "prix": "Le knout pour faux serment. Tu passes pour un menteur devant le scribe, et les quatre familles seront recomptées.",
+       "epreuve": "dialogue",
+       "resultat": "Tu reçois le knout pour faux serment, devant la Pierre. Puis Ilya rejure sa page devant le scribe, mot pour mot. Le scribe te regarde longtemps, puis rouvre son registre à la page de Kobor.",
+       "trace": "page_rejuree",
+       "cout": {
+        "pv": 3
+       }
+      },
+      {
+       "vers": 4,
+       "l": "Tais-toi. Laisse-le blanchi.",
+       "prix": "Borislav repart libre au fort, Gleb sur ses talons.",
+       "epreuve": "dialogue",
+       "resultat": "Ilya se tait. Le scribe raye la page du voïévode, et Borislav repart au fort, libre, Gleb sur ses talons.",
+       "trace": "page_reniee"
+      }
+     ]
     }
+   },
+   "debutSi": {
+    "plainte_portee": "t0",
+    "fosses_creusees": "u0",
+    "borislav_dementi": "v0"
+   },
+   "resumeRetour": "Le carnet a brûlé. Le voïévode épargnera Matveï si Vera retire la page de la plainte qui le nomme.",
+   "resumeSi": {
+    "plainte_portee": "La plainte est partie par la piste du nord. Le voïévode jugera la mort de Semion si l'on ne rappelle pas le coureur.",
+    "fosses_creusees": "Borislav, déchu, a vu vos fosses. Il les livrera, sauf si tu jures que la page du carnet sur lui est un faux.",
+    "borislav_dementi": "Tu as juré que Borislav mentait. Sa page dans le carnet d'Ilya devient suspecte : Ilya doit-il la rejurer ?"
+   },
+   "absentsSi": {
+    "borislav_dementi": [
+     "gleb",
+     "borislav",
+     "matvei"
+    ]
    }
   },
   "6": {
@@ -215,10 +488,16 @@
     "gleb"
    ],
    "debut": "a",
+   "debutRetour": "r1",
+   "absentsRetour": [
+    "gleb",
+    "matvei",
+    "borislav"
+   ],
    "noeuds": {
     "a": {
      "qui": "borislav",
-     "txt": "Le voïévode Borislav : « Le tsar a lu la plainte de Vera. Il me demande un compte juste. Il l'aura : chaque peau cachée depuis six hivers, famille par famille. Vera avouera la première, au cercle. Ensuite, les autres. Et le carnet de ton marchand a tous les noms. Apporte-le-moi. »",
+     "txt": "Le voïévode Borislav Andreïevitch : « Ta cheffe a fait écrire au tsar. Sa plainte partira au printemps. Avant elle, le tsar recevra un compte juste, de ma main : chaque peau cachée depuis six hivers, famille par famille. Vera avouera la première. Et le carnet de ton marchand a tous les noms. Apporte-le-moi. »",
      "rep": [
       {
        "l": "Je vais voir Vera.",
@@ -232,7 +511,7 @@
     },
     "b": {
      "qui": "vera",
-     "txt": "Vera : « J'avouerai demain. Les peaux de la vente, et douze autres, cachées l'an passé pour payer la dette de Bogdan. Ce jour devait venir. Mais les autres familles ont caché pour manger, comme moi. Si tu donnes tout le carnet, Kobor entier paiera. Si tu ne donnes que ma page, je paierai pour tous. Je l'accepte. »",
+     "txt": "Vera : « J'avouerai demain : la vente, et douze peaux de plus, vendues l'an passé pour payer la dette de Bogdan. Ce jour devait venir. Mais les autres familles ont caché pour manger, comme moi. Si tu donnes tout le carnet, Kobor entier paiera. Si tu ne donnes que ma page, je paierai pour tous. Je l'accepte. »",
      "rep": [
       {
        "l": "Et Oustina ?",
@@ -246,21 +525,23 @@
     },
     "c": {
      "qui": "ilya",
-     "txt": "Ilya : « Tout est noté. Qui m'a vendu quoi, depuis six hivers. Le voïévode me rend ma barge si le carnet lui arrive complet. » Il te le tend. « Je ne le porterai pas moi-même. Je n'arrive pas à vendre mes clients. Toi, tu sais ce qu'il vaut. »",
+     "txt": "Ilya : « Tout est noté. Qui m'a vendu quoi, depuis six hivers. Et une page que personne n'attend : les peaux que les hommes du voïévode me revendent, chaque hiver. » Il baisse la voix. « Borislav veut le carnet complet. Il ne sait pas ce qu'il demande. Je ne le porterai pas moi-même : je n'arrive pas à vendre mes clients. »",
      "rep": [
       {
        "l": "Je vais voir Oustina.",
-       "va": "d"
+       "va": "d",
+       "trace": "page_voievode"
       },
       {
        "l": "Je vais voir Matveï.",
-       "va": "e"
+       "va": "e",
+       "trace": "page_voievode"
       }
      ]
     },
     "d": {
      "qui": "oustina",
-     "txt": "Oustina : « Vingt peaux, sous le plancher du séchoir. Pour nos vieux jours, à Bogdan et moi. Il ne le sait même pas. Si mon nom est livré, on recommence à zéro, à cinquante ans. » Elle te regarde. « Je ne te demande rien. Je voulais que tu le saches avant de choisir. »",
+     "txt": "Oustina : « Vingt peaux, sous les claies du séchoir. Pour nos vieux jours. Bogdan le sait : il les a tannées lui-même. Cinq, je les ai vendues à Ilya pour du sel : mon nom est dans le carnet. S'il est lu, on viendra chercher les quinze autres. » Elle te regarde. « Je ne te demande rien. Je voulais que tu le saches. »",
      "rep": [
       {
        "l": "Je dois parler à Matveï.",
@@ -275,7 +556,7 @@
     },
     "e": {
      "qui": "matvei",
-     "txt": "Matveï, sous la garde d'un soldat, attend le convoi. « Écoute un vieux qui a fermé une porte. Un secret de hameau gèle d'abord, puis il pourrit. J'en sais quelque chose. Mais une vérité donnée à un voïévode, il en fait toujours un fouet. Les deux sont vrais. Choisis lequel tu préfères porter. »",
+     "txt": "Matveï, sous la garde d'un soldat : « Si tu donnes tout, le voïévode tiendra chaque famille par son nom. Si tu caches, ça pourrira sous la neige, comme Semion. J'ai choisi de cacher, il y a quarante ans. Je ne sais toujours pas si j'aurais dû parler. »",
      "rep": [
       {
        "l": "Aller au cercle de pierres.",
@@ -288,28 +569,195 @@
      "final": true,
      "txt": "Au cercle, Vera a tout avoué, sans baisser les yeux. Le hameau attend la suite en silence. Le voïévode Borislav tend la main vers toi : « Le carnet. Toutes les pages. »",
      "txtTrace": {
-      "oustina_avoue": "Au premier rang, Oustina tient la main de Bogdan."
+      "oustina_avoue": "Au premier rang, Oustina tient la main de Bogdan.",
+      "page_voievode": "Tu sais ce qu'il y a à la dernière page. Lui ne le sait pas."
      },
      "fin": [
       {
        "vers": 7,
-       "l": "Toutes les pages.",
-       "prix": "Chaque famille paie. Oustina perd ses vingt peaux.",
-       "epreuve": "combat",
-       "combat": "Des trappeurs refusent d'être livrés et se dressent entre toi et le voïévode.",
-       "resultat": "Borislav lit le carnet nom par nom. Kobor n'a plus une peau de réserve, mais Ilya retrouve sa barge, et plus personne ne pourra faire chanter le hameau.",
+       "l": "Toutes les pages, à voix haute.",
+       "prix": "Chaque famille paie. Oustina perd ses quinze peaux.",
+       "epreuve": "dialogue",
+       "resultat": "Tu lis le carnet au cercle, nom par nom, jusqu'à la page du voïévode. Borislav ne peut plus rien cacher : tout Kobor a entendu, et chaque famille paie jusqu'à sa dernière peau.",
        "trace": "carnet_complet"
       },
       {
        "vers": 5,
        "l": "Seulement la page de Vera.",
-       "prix": "Vera paie pour tout le hameau. Ilya perd sa barge.",
+       "prix": "Vera paie pour tout Kobor. La page du voïévode brûle avec les autres.",
+       "epreuve": "combat",
+       "resultat": "Tu arraches les autres pages et tu les jettes au feu. Vera porte seule la dette de Kobor, et Borislav, sans le savoir, vient d'être sauvé.",
+       "trace": "pages_brulees",
+       "combat": "Les hommes du voïévode veulent t'arracher le carnet entier avant que tu en brûles les pages."
+      }
+     ]
+    },
+    "r1": {
+     "lieu": "camp",
+     "txt": "Le voïévode est tombé, Matveï est parti avec le convoi. Sous le séchoir, dix peaux dorment dans la fosse de Bogdan. Ce matin, un traîneau est arrivé : le scribe du nouveau voïévode. Personne ne sait encore qui est son maître. Il veut compter les réserves de chaque famille avant l'hiver prochain.",
+     "txtTrace": {
+      "cache_hiver": "La neige fraîche cache mal la terre remuée sous le séchoir."
+     },
+     "rep": [
+      {
+       "l": "Parler à Vera.",
+       "va": "r2"
+      },
+      {
+       "l": "Parler à Ilya.",
+       "va": "r3"
+      }
+     ]
+    },
+    "r2": {
+     "qui": "vera",
+     "txt": "Vera : « Le scribe m'a demandé si Kobor cache encore quelque chose. J'ai dit que j'irais voir. Je sais pour la fosse. Tout le hameau le sait. Si on la déclare, Bogdan passe pour l'homme qui a menti deux fois. Si on se tait, on recommence, avec un maître qu'on ne connaît pas encore. »",
+     "rep": [
+      {
+       "l": "Aller voir Bogdan.",
+       "va": "r4"
+      }
+     ]
+    },
+    "r3": {
+     "qui": "ilya",
+     "txt": "Ilya : « Le scribe m'a montré sa liste. Elle est courte, et propre. Il ne cherche pas les voleurs. Il cherche ce que Kobor peut payer. » Il frotte ses mains. « Un maître qui sait compter, c'est bien. Un maître qui sait ce que tu caches, c'est autre chose. Bogdan devrait y penser. »",
+     "rep": [
+      {
+       "l": "Aller voir Bogdan.",
+       "va": "r4"
+      }
+     ]
+    },
+    "r4": {
+     "qui": "bogdan",
+     "final": true,
+     "txt": "Bogdan : « Trois familles sont venues cette nuit. Elles veulent creuser, elles aussi, chacune sa fosse, avant que le scribe compte. Ou alors je vais le voir, et je lui montre la mienne. Dis-moi. Moi, je n'ai plus d'avis : j'ai déjà menti une fois pour tout le monde. »",
+     "fin": [
+      {
+       "vers": 7,
+       "l": "Montre ta fosse au scribe.",
+       "prix": "Les dix peaux partent. Bogdan reste l'homme qui a menti deux fois.",
        "epreuve": "dialogue",
-       "resultat": "Tu arraches les autres pages et tu les jettes au feu. Vera porte seule la dette de Kobor, et le hameau lui doit désormais un silence.",
-       "trace": "pages_brulees"
+       "resultat": "Bogdan conduit le scribe sous le séchoir. Le scribe note dix peaux sans un mot, et Kobor n'a plus rien à cacher au nouveau maître.",
+       "trace": "fosse_declaree"
+      },
+      {
+       "vers": 5,
+       "l": "Creusez tous, avant qu'il compte.",
+       "prix": "Kobor recommence à cacher, famille par famille.",
+       "epreuve": "dialogue",
+       "resultat": "Cette nuit-là, quatre fosses s'ouvrent sous la neige. Le scribe repart avec un compte propre, et faux.",
+       "trace": "fosses_creusees"
+      }
+     ]
+    },
+    "v1": {
+     "qui": "ilya",
+     "txt": "Ilya : « Le carnet a brûlé. Mais je n'oublie pas un compte. En trois nuits, je l'ai réécrit de mémoire : chaque famille, et la page des hommes du voïévode. Borislav l'a su. Il veut cette copie, toutes les pages, pour son compte au tsar. Vera a déjà tout avoué au cercle. » Il te tend les feuilles. « Moi, je ne les porterai pas. »",
+     "rep": [
+      {
+       "l": "Je vais voir Oustina.",
+       "va": "d",
+       "trace": "page_voievode"
+      },
+      {
+       "l": "Je vais voir Matveï.",
+       "va": "e",
+       "trace": "page_voievode"
+      }
+     ]
+    },
+    "x1": {
+     "qui": "borislav",
+     "txt": "Le voïévode Borislav Andreïevitch : « Votre plainte court vers le nord. Elle arrivera. Moi aussi, j'écris au tsar, et ma lettre ira plus vite : un compte juste, chaque peau cachée depuis six hivers, famille par famille. Vera avouera la première. Le carnet de ton marchand a tous les noms. Apporte-le-moi. »",
+     "rep": [
+      {
+       "l": "Je vais voir Vera.",
+       "va": "b"
+      },
+      {
+       "l": "Je vais voir Ilya.",
+       "va": "c"
+      }
+     ]
+    },
+    "y1": {
+     "lieu": "camp",
+     "txt": "L'escorte a vidé les fosses et emmené Borislav. Kobor n'a plus rien sous la neige. Le scribe du nouveau voïévode est là. Il ne compte plus les peaux : il veut savoir qui a creusé.",
+     "rep": [
+      {
+       "l": "Aller voir Vera.",
+       "va": "y2"
+      }
+     ],
+     "txtTrace": {
+      "page_rejuree": "Ilya a rejuré sa page. Le scribe sait que tu as menti une fois."
+     }
+    },
+    "y2": {
+     "qui": "vera",
+     "final": true,
+     "txt": "Vera : « Borislav a donné au scribe les noms de ceux qui ont creusé. Mais la parole d'un voïévode déchu ne vaut rien sans témoin. Si tu confirmes, quatre familles paieront l'amende des peaux cachées, Bogdan en tête. Si tu dis que Borislav a menti pour se venger, le scribe repart, et Kobor commence avec son nouveau maître sur un mensonge. »",
+     "fin": [
+      {
+       "vers": 7,
+       "l": "Donne les noms au scribe.",
+       "prix": "Quatre familles paient l'amende des peaux cachées, Bogdan en tête.",
+       "epreuve": "dialogue",
+       "resultat": "Le scribe note quatre noms sans lever les yeux. Kobor paie, et plus personne ne pourra le faire chanter.",
+       "trace": "noms_donnes"
+      },
+      {
+       "vers": 5,
+       "l": "Dis que Borislav a menti.",
+       "prix": "Kobor ment au nouveau maître dès le premier jour, et le scribe recomptera tout Kobor.",
+       "epreuve": "dialogue",
+       "resultat": "Tu jures que Borislav a menti pour se venger. Le scribe referme son registre, et Kobor respire, un peu trop vite.",
+       "trace": "borislav_dementi"
+      }
+     ],
+     "txtTrace": {
+      "page_rejuree": "« Cette fois, le scribe ne te croira pas sur parole. Si tu redis que Borislav ment, il comptera lui-même chaque fosse. »"
+     }
+    },
+    "z1": {
+     "lieu": "camp",
+     "txt": "Le scribe est revenu plus tôt qu'il ne l'avait dit. Il a vu la neige remuée sous le séchoir. Il ne demande rien. Il attend.",
+     "rep": [
+      {
+       "l": "Parler à Vera.",
+       "va": "r2"
       }
      ]
     }
+   },
+   "debutSi": {
+    "page_gardee": "v1",
+    "plainte_courue": "x1",
+    "fosses_livrees": "y1",
+    "cache_hiver_bis": "z1",
+    "page_rejuree": "y1"
+   },
+   "resumeRetour": "Le scribe du nouveau voïévode compte les réserves. Bogdan doit-il montrer sa fosse, ou chaque famille creuser la sienne ?",
+   "resumeSi": {
+    "page_gardee": "Le carnet a brûlé, mais Ilya l'a réécrit de mémoire. Le voïévode veut toutes les pages pour son compte au tsar.",
+    "plainte_courue": "La plainte court vers le nord. Le voïévode veut le carnet d'Ilya, toutes les pages, pour écrire au tsar avant elle.",
+    "fosses_livrees": "L'escorte a vidé les fosses. Le scribe veut savoir qui a creusé : donner les noms, ou dire que Borislav a menti ?",
+    "cache_hiver_bis": "Le scribe du nouveau voïévode compte les réserves. Bogdan doit-il montrer sa fosse, ou chaque famille creuser la sienne ?",
+    "page_rejuree": "Ilya a rejuré sa page contre Borislav. Le scribe revient : donner les noms de ceux qui ont creusé, ou non ?"
+   },
+   "absentsSi": {
+    "fosses_livrees": [
+     "gleb",
+     "borislav",
+     "matvei"
+    ],
+    "page_rejuree": [
+     "gleb",
+     "borislav",
+     "matvei"
+    ]
    }
   },
   "7": {
@@ -324,7 +772,7 @@
    "noeuds": {
     "a": {
      "lieu": "pierre",
-     "txt": "Le Coffre est ouvert, et vide. Le dégel a tout rendu : Semion sous sa tombe, les peaux cachées, les noms. Le voïévode est rappelé par le tsar. Gleb ne reviendra pas. Kobor n'a plus de maître corrompu. Il n'a plus de réserve non plus.",
+     "txt": "Le Coffre est ouvert, et vide. Le dégel a tout rendu : Semion dans sa tombe, les peaux cachées, les noms. Le voïévode est tombé, Gleb aussi. Personne ne sait qui viendra à leur place. La plainte de Vera partira au printemps, par la piste du nord. Kobor n'a plus de maître corrompu. Il n'a plus de réserve non plus.",
      "rep": [
       {
        "l": "Aller voir Vera.",
@@ -334,11 +782,14 @@
        "l": "Aller droit au séchoir.",
        "va": "c"
       }
-     ]
+     ],
+     "txtTrace": {
+      "plainte_courue": "La plainte, elle, est déjà loin sur la piste du nord."
+     }
     },
     "b": {
      "qui": "vera",
-     "txt": "Vera : « Tout le monde sait tout, maintenant. On se regarde en face, au camp. C'est nouveau, et c'est dur. Ilya promet une barge de grain au printemps, au prix affiché. D'ici là, il faut tenir. » Elle détourne les yeux. « Bogdan veut te parler. Je devine pourquoi, et je ne veux pas l'entendre. »",
+     "txt": "Vera : « Tout le monde sait tout, maintenant. On se regarde en face, au camp. Oustina m'a demandé : « Jusqu'à quand ? » J'ai dit : « Jusqu'au printemps, et le grain d'Ilya. » Elle a dit : « Eh bien, tenons encore. » Et elle est retournée au séchoir. » Vera détourne les yeux. « Bogdan veut te parler. Je devine pourquoi. »",
      "rep": [
       {
        "l": "Aller au séchoir.",
@@ -349,7 +800,7 @@
     "c": {
      "qui": "bogdan",
      "final": true,
-     "txt": "Bogdan : « Une fosse sous le séchoir. Dix peaux, juste de quoi tenir si la barge ne vient pas. Personne ne demandera. Oustina dit oui. » Il plante sa pelle dans la neige. « Toi, tu as tout fait sortir de la glace. Tu nous laisses y remettre une seule chose ? »",
+     "txt": "Bogdan : « Une fosse sous le séchoir. Dix peaux, juste de quoi tenir si le grain ne vient pas. Personne ne demandera. Oustina dit oui. » Il plante sa pelle dans la neige. « Toi, tu as tout fait sortir de la glace. Tu nous laisses y remettre une seule chose ? »",
      "fin": [
       {
        "vers": 6,
@@ -359,8 +810,31 @@
        "resultat": "Bogdan creuse sous le séchoir pendant la nuit. Le gel reprend une mince couche du sol, juste assez pour garder un secret.",
        "trace": "cache_hiver"
       }
-     ]
+     ],
+     "refus": "Quitter Bogdan : la fosse restera vide"
+    },
+    "w1": {
+     "qui": "bogdan",
+     "final": true,
+     "txt": "Bogdan : « J'ai montré ma fosse au scribe. Il a noté dix peaux et il est reparti. Une autre fosse, dix peaux, il ne la verra pas. Oustina dit non, cette fois. Moi, je dis : juste de quoi tenir si le grain ne vient pas. »",
+     "fin": [
+      {
+       "vers": 6,
+       "l": "Creusez. Dix peaux, pas une de plus.",
+       "prix": "Kobor recommence à mentir, un peu, et Oustina ne te le pardonne pas.",
+       "epreuve": "dialogue",
+       "resultat": "Bogdan creuse seul sous le séchoir pendant la nuit. Le gel reprend une mince couche du sol, juste assez pour garder un secret.",
+       "trace": "cache_hiver_bis"
+      }
+     ],
+     "refus": "Quitter Bogdan : la fosse restera vide"
     }
+   },
+   "debutSi": {
+    "fosse_declaree": "w1"
+   },
+   "resumeSi": {
+    "fosse_declaree": "Bogdan a montré sa fosse au scribe. Il veut en creuser une autre, en secret."
    }
   }
  }
