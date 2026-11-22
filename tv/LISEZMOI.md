@@ -6,7 +6,7 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
-## Plantages sur Xbox : mémoire (21-22 novembre, `src/memoire.js`)
+## Version 2.29 : plantages sur Xbox, mémoire (21-22 novembre, `src/memoire.js`)
 Symptôme rapporté : écran noir « comme un plantage d'Edge », en marchant ou pendant une mue, vers 10 minutes de jeu, parfois en changeant la qualité d'image.
 Mesures (banc `tv/tools/test-endurance.js`) : une région pesait ~700 Mo dans le navigateur, dont un sol d'un million de sommets ; rien ne grossissait sans fin, mais chaque voyage recharge la page.
 - Avant chaque rechargement (voyage, sauvegarde chargée), la mémoire de la carte graphique est rendue tout de suite.
