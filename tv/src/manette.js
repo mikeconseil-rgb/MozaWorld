@@ -17,7 +17,7 @@ function padInactif(){if(!PAD.on)return;PAD.on=false;document.body.classList.rem
 /* ---------- Boutons ---------- */
 function padBouton(n){if(AX&&AX.state==='suspended')AX.resume();
   if(mode==='combat'&&CB){const C=CB;
-    if(n==='x'){if(!C.busy&&!C.sel&&!C.pl){C.f=C.main.length;cbInput('ok',false)}return}
+    if(n==='x'){if(!C.busy&&!C.sel&&!C.pl&&!C.man){C.f=C.main.length;cbInput('ok',false)}return}
     if(n==='y'){if(!C.busy&&!C.sel&&!C.pl&&!C.man&&C.cases&&typeof debutManoeuvre==='function')debutManoeuvre();return}
     if(n==='lb'||n==='rb'){cbInput(n==='lb'?'left':'right',false);return}
     if(n==='a'){cbInput('ok',false);return}
