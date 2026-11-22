@@ -13,6 +13,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Gameplay du monde, lot 2 : tours de guet (prix, portée, sans entretien), Comptoir des Citadelles (prix en tesselles, primes après combat, change tesselles contre mana), aménagement de chaque Donjon (2 dispositifs, bonus des voisines), épreuve des rivaux | 19 nov. | Les jouer ; les principes sont décidés, les chiffres sont ceux de l'équipe |
 | Gameplay du monde, lot 3 : caravanes (gains, risques de pillage), lois du catalogue de onze et leurs chiffres, prix des pactes par maison, forces des vagues du siège | 19-20 nov. | Les jouer ; les six réglages posés le 20 nov. sont confirmés (« Oui à tout »), les autres chiffres restent ceux de l'équipe |
 | Monde de 925 zones (347 Ressources, 249 Antres, 195 Assemblées, 90 Donjons, 44 Citadelles posés) au lieu des 986 de la liste | 20 nov. | Décidé « pour l'instant » ; à revoir après le 28 nov. (pavage) |
+| Minimum de 4 cartes actives au paquet de combat (désactivation des cartes) | 22 nov. | Le jouer ; 8 était prévu mais le paquet de départ n'a que 6 cartes |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
@@ -42,6 +43,14 @@ Réponses de l'utilisateur à la liste de dix réglages du dimanche 22 nov., poi
 | Lecture validée (« 1 oui 2 oui ») | 1. Seule Kobor change, les autres zones gardent leurs scènes ; 2. on garde taïga, Glace, pôles Mensonge / Vérité, histoire réécrite de zéro | en vigueur | 2.40 |
 | Forme des quêtes (« 3. ») | « L'épreuve devrait être un combat de cartes ou un choix de dialogue. Un arbre complexe de 3 à 8 étapes qui amène à la fin aux deux choix d'évolution de la zone. » Plus de mini-jeu d'épreuve à Kobor | en vigueur | 2.40 |
 | Kobor, boucle critique + historien | Cinq tours : critique 64 → 80 → 87 → 91/100 (objectif 90 de l'utilisateur) ; philosophe 88/100, leçon apprenable dans les deux sens (se raviser coûte le knout dans les deux sens) ; entrées de quête selon le dernier choix (retour vers 0, remontée) ; plainte de Vera, double dîme de Gleb, Zverevo, Bogdan au fort avant les mines | en vigueur | 2.41 |
+
+## 22 novembre 2026 (paquet modifiable)
+
+| Sujet | Décision | Statut | Version |
+|---|---|---|---|
+| Paquet de combat : écran | « L'écran de visualisation du paquet ne permet pas de bien voir les cartes » : chaque carte en grand, texte entier, dans une grille qui s'adapte (télé, téléphone en paysage et en portrait), manette ou toucher | en vigueur | `src/paquet.js` |
+| Paquet de combat : activer ou désactiver | « Je voudrais pouvoir éditer mon paquet en pouvant activer ou désactiver une carte » : A ou un toucher bascule la carte (toutes ses copies) ; une carte désactivée reste au paquet mais n'est plus piochée en combat (le duel d'Assemblée garde son paquet politique) ; sauvegardé avec la partie | en vigueur | `src/paquet.js` |
+| Paquet de combat : garde-fou | Au moins 4 cartes actives (ou tout le paquet s'il est plus petit) | provisoire | `src/paquet.js` |
 
 ## 22 novembre 2026 (téléphone)
 

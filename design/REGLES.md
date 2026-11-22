@@ -70,6 +70,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Les cartes diffèrent selon le pôle et viennent toujours de l'histoire de la zone. Chaque carte doit avoir un impact et un crochet de combo.
 - Un secret trouvé donne une carte utilitaire ; le Comptoir d'une Citadelle vend aussi ces cartes de secret, une par cycle au plus (19 nov., section 6). Les combats ne donnent jamais de carte. Les Ressources ne donnent pas de carte (les Gerbes sont retirées, leurs textes gardés pour de futurs atouts).
 - Paquet : 40 cartes au plus. La forge du paquet en Citadelle est gardée pour plus tard.
+- Paquet modifiable (22 nov.) : à l'écran du paquet (menu, ou Y), on active ou désactive chaque carte (toutes ses copies ensemble). Une carte désactivée reste au paquet mais n'est pas piochée en combat ; le duel d'Assemblée garde son paquet politique. Il faut garder au moins 4 cartes actives, ou tout le paquet s'il est plus petit **(provisoire)**. Le choix est sauvegardé avec la partie.
 - Contre-pouvoir : une carte de zone a son effet doublé dans la zone qu'elle contre.
 
 ## 6. Le mana et les routes
