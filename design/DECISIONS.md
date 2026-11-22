@@ -19,6 +19,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
 
+## 21 novembre 2026 soir (carte du monde, royaumes)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Carte du monde : royaumes | « Une carte mosaïque plus belle où chaque royaume est bien dessiné, des zones bien délimitées dans le chaos d'une mosaïque aléatoire » ; à la question du sens de « royaumes », réponse « 1 » : les royaumes sont les territoires des joueurs (le vôtre et ceux des quatre maisons rivales), qui changent pendant la partie, pas des royaumes fixes en décor | en vigueur (2.30) : sauvage sombre à entrelacs Girih, royaumes à leurs couleurs avec frontière en rempart, nom et blason ; minicarte au même style | carte du monde colorée par type (2.24) |
+
 ## 20 novembre 2026 (minicarte)
 
 | Sujet | Décision | Statut | Remplace |
