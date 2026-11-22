@@ -11,7 +11,8 @@ function libererGPU(){if(memLibere)return;memLibere=true;
   try{renderer.render=()=>{};renderer.setRenderTarget=()=>{};renderer.compile=()=>{}}catch(_){}
   try{scene.traverse(o=>{if(o.geometry)o.geometry.dispose();const m=o.material;if(m)for(const x of[].concat(m)){for(const k in x)if(x[k]&&x[k].isTexture)x[k].dispose();x.dispose()}})}catch(_){}
   try{for(const r of[rtS,rtA,rtB,rtC,rtD,rtE])if(r)r.dispose();if(sun.shadow.map)sun.shadow.map.dispose()}catch(_){}
-  try{renderer.renderLists.dispose();renderer.dispose();renderer.forceContextLoss()}catch(_){}}
+  try{renderer.renderLists.dispose();renderer.dispose();renderer.forceContextLoss()}catch(_){}
+  try{canvas.width=canvas.height=1}catch(_){}}   /* le tampon d'image du canevas aussi (22 nov.) */
 addEventListener('pagehide',libererGPU);
 addEventListener('pageshow',e=>{if(e.persisted){if(rechargeAutorisee())location.reload();else arretBoucle('retour en arrière')}});   /* page rendue par le cache « retour » : sa carte graphique a été rendue, on recharge */addEventListener('beforeunload',libererGPU);
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(memLibere)return;pouls();memLibere=true;

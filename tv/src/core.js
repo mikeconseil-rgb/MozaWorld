@@ -74,9 +74,9 @@ const canvas=document.getElementById('vue');
    (jusqu'à 4 fois, de plus en plus long), puis la qualité est baissée pour la séance. */
 /* 22 nov. soir (« l'écran de chargement boucle sur Voyage ») : garde ferme contre les rechargements en chaîne. Tout
    rechargement automatique (voyage, contexte perdu, nouvel essai de la carte graphique) passe par rechargeAutorisee() :
-   au plus 4 en 2 minutes. Au-delà, plus de rechargement : un message clair reste à l'écran, la qualité est baissée. */
+   au plus 6 en 2 minutes. Au-delà, plus de rechargement : un message clair reste à l'écran, la qualité est baissée. */
 function rechargeAutorisee(){let L=[];try{L=JSON.parse(sessionStorage.getItem('mz-recharges')||'[]')}catch(_){}const n=Date.now();L=L.filter(t=>n-t<120000);
-  if(L.length>=4)return false;L.push(n);try{sessionStorage.setItem('mz-recharges',JSON.stringify(L))}catch(_){}return true}
+  if(L.length>=6)return false;L.push(n);try{sessionStorage.setItem('mz-recharges',JSON.stringify(L))}catch(_){}return true}
 function arretBoucle(pourquoi){try{sessionStorage.removeItem('mz-recharges');sessionStorage.removeItem('mz-gl-essai');
     const q=+localStorage.getItem('mz-tv-q2');if(!(q>=0)||q>1)localStorage.setItem('mz-tv-q2','1')}catch(_){}
   const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on');const b=vo.querySelector('b'),sp=vo.querySelector('span');
@@ -86,10 +86,10 @@ function arretBoucle(pourquoi){try{sessionStorage.removeItem('mz-recharges');ses
 let GL_ESSAIS=0;try{GL_ESSAIS=+sessionStorage.getItem('mz-gl-essai')||0}catch(_){}
 const renderer=(()=>{try{const r=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
     try{sessionStorage.removeItem('mz-gl-essai')}catch(_){}return r}
-  catch(e){if(GL_ESSAIS<3&&rechargeAutorisee()){try{sessionStorage.setItem('mz-gl-essai',String(GL_ESSAIS+1))}catch(_){}
-      const v=document.getElementById('seuil-ver');if(v)v.textContent='La carte graphique se libère… nouvel essai ('+(GL_ESSAIS+1)+' sur 3)';
+  catch(e){if(GL_ESSAIS<4&&rechargeAutorisee()){try{sessionStorage.setItem('mz-gl-essai',String(GL_ESSAIS+1))}catch(_){}
+      const v=document.getElementById('seuil-ver');if(v)v.textContent='La carte graphique se libère… nouvel essai ('+(GL_ESSAIS+1)+' sur 4)';
       const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on')}
-      setTimeout(()=>location.reload(),1500*(GL_ESSAIS+1));throw new Error('Nouvel essai de la carte graphique')}
+      setTimeout(()=>location.reload(),2500*(GL_ESSAIS+1));   /* 2,5 s, 5 s, 7,5 s, 10 s : Edge sur Xbox met du temps à rendre la mémoire */throw new Error('Nouvel essai de la carte graphique')}
     arretBoucle('la carte graphique refuse de démarrer');throw new Error('Nouvel essai de la carte graphique : arrêt')}})();
 /* Version télé : on rend l'image à une largeur fixe (QUAL.w) puis la télé l'agrandit. Trois réglages, ajustés seuls si l'image saccade. */
 const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4},{nom:'Splendide',w:1920,sh:2048,ms:4}];
