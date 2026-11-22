@@ -210,7 +210,7 @@ function agir(m){const I=m.int;if(!I)return;m.el&&(m.el.classList.remove('agit')
   else journal(`${m.nom} prend son élan : le prochain coup sera fort.`)}
 
 /* ---------- Fin du combat : récompenses ---------- */
-function fermerCombat(){if(typeof oublierManaDeCombat==='function')oublierManaDeCombat(CB);$('combat').hidden=true;CB=null;CBwalk=P.walked;CBnext=prochaineRencontre()}
+function fermerCombat(){P.recadrer=true;if(typeof oublierManaDeCombat==='function')oublierManaDeCombat(CB);$('combat').hidden=true;CB=null;CBwalk=P.walked;CBnext=prochaineRencontre()}
 const RECO={RES:'Source de mana : elle remplit votre réserve à chaque cycle, 1 mana, puis 2 au niveau 2, puis 2 et une carte de plus en main au niveau 3.',
   ANT:'Une bête alliée : la carte d\'appel fait venir une créature qui se bat à vos côtés.',DON:'Un pouvoir d\'attaque, le plus fort de vos cartes.',
   CIT:'Plus de points de vie et une carte de garde pour tous vos alliés.',MAR:'Une carte gratuite qui fait piocher (et donne du mana au niveau 2).'};

@@ -92,6 +92,16 @@ function stand(x,z,feet){let g=ground(x,z),blocked=false,ramp=false,on=null;cons
     let top=s.y1;if(s.k)top+=s.k*((x-s.x)*s.cs+(z-s.z)*s.sn);
     if(feet>=top-1.35){if(top>g){g=top;on=s}if(s.ramp)ramp=true}else if(s.y1-s.y0>1.4&&feet+1.7>s.y0)blocked=true}   /* 2.0 : marches jusqu'à 1,35 m franchies sans sauter */
   return{g,blocked:blocked&&!ramp,on}}
+/* 2.42.2 (22 nov., demande de l'utilisateur) : au retour dans le monde (combat, mue, épreuve, voyage), le héros est reposé au sol à un
+   endroit libre (le relief ou un bâtiment a pu bouger pendant la mue), et la caméra revient à sa hauteur de départ, face à l'horizon. */
+const PITCH0=.3;
+function placeLibre(x,z){if(!zoneAt(x,z))return false;for(const Z of ZN)if(Z.alt&&Math.hypot(Z.alt.x-x,Z.alt.z-z)<(Z.alt.col||2.6)+.4)return false;
+  const g=ground(x,z),s=stand(x,z,g+.05);return s.blocked||s.g>g+1.4?false:s.g}
+function recaler(cam){const s=stand(P.x,P.z,P.y+.05);
+  if(!s.blocked&&zoneAt(P.x,P.z)){if(P.y<s.g+.9){P.y=s.g;P.vy=0;P.g=true}}   /* sous le sol ou juste dessus : posé ; plus haut : il retombe */
+  else{let bon=null;for(let r=2;r<=60&&!bon;r+=2)for(let k=0;k<16;k++){const a=k/16*TAU+P.yaw,x=P.x+Math.sin(a)*r,z=P.z+Math.cos(a)*r,g=placeLibre(x,z);if(g!==false){bon=[x,z,g];break}}
+    if(bon){P.x=bon[0];P.z=bon[1];P.y=bon[2];P.vy=0;P.g=true}}
+  if(cam){P.pitch=PITCH0;P.auto=0}}
 /* Le héros arrive devant la Pierre, un peu en retrait */
 function tp(id){const s=SPOTS[id],Z=ZB[id],a=Z.alt;let x=s[0],z=s[1],yaw=s[2];
   if(a){x=a.x-Math.sin(a.yaw)*9;z=a.z-Math.cos(a.yaw)*9;yaw=a.yaw}
@@ -201,7 +211,7 @@ function uiAct(a,rep){if(!UI)return;const n=UI.opts.length,st=UI.deux&&(a==='lef
   else if(a==='ok'&&!rep){const p=UI.opts[UI.f];if(p&&!p.off&&p.go){clack();p.go()}}
   else if(a==='back'&&!rep&&UI.back)UI.back()}
 function closeUI(){if(UI){$(UI.host).hidden=true;UI=null}}
-function toMonde(){closeUI();mode='monde';document.body.classList.remove('jeu-ouvert')}
+function toMonde(){closeUI();mode='monde';document.body.classList.remove('jeu-ouvert');if(started){recaler(P.recadrer);P.recadrer=false}}
 
 function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textContent='version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:'');
   if(hasSave)o.push({l:'Reprendre la partie',ic:'◆',go:()=>{startGame(false)}});
@@ -224,8 +234,8 @@ function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');
     S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;S.found=[];S.secT={};
     donnerDepart();CULL.dirty=true;terrainAll();save()}
   $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
-  if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
-  mode='monde';hudKey='';etatHud();
+  if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=ground(P.x,P.z)}
+  mode='monde';recaler(true);hudKey='';etatHud();
   if(neuf)setTimeout(()=>toast('Berestograd · votre territoire','Vos 12 zones de départ sont à vous, au niveau 1','Votre paquet : leurs cartes de palier 1. Montez-les à leur Pierre d\'éveil pour gagner des cartes.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
@@ -299,7 +309,7 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 
 /* ---------- Mue : le bond d'un palier, caméra qui tourne autour de la Pierre ---------- */
 let mue=null;
-function startMue(Z,lv){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
+function startMue(Z,lv){mode='mue';P.recadrer=true;mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
   const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. ${(r=>r?`Elle se repose ${r} secondes avant le prochain bond.`:'Vous pouvez enchaîner le palier suivant.')(typeof reposZone==='function'?reposZone(Z.id):REPOS)}</p>`;
   const sc=!rs&&Z._sansCarte;Z._sansCarte=false;
   ui('menu',{sur:rs?'Mue · Ressource':sc?'Mue · vous vous êtes ravisé':'Mue · nouvelle carte',t:I.nom,corps:sc?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)||'0'}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La zone revient d'un palier vers l'autre pôle. Se raviser ne donne pas de carte, mais le monde s'en souviendra.</p>${fin}</div></div>`:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
@@ -322,7 +332,7 @@ function startEpreuve(Z,target){const pw=contrePar(Z).pw;
   $('j-sur').textContent=TYPE[Z.id].ep+' · palier visé '+sgn(target)+(pw?' · contre-pouvoir −'+pw:'');$('j-t').textContent=Z.info.nom;$('j-c').textContent=E.consigne;
   E.compte();$('toast').classList.remove('vu');toastT=0}
 function compte(pairs){$('j-n').innerHTML=pairs.map(p=>`<span>${p[0]} <b>${p[1]}</b></span>`).join('')}
-function endEpreuve(ok){const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
+function endEpreuve(ok){P.recadrer=true;const Z=E.Z,target=E.target;if(E.fin)E.fin();E=null;$('jeu').hidden=true;
   if(ok){palierReussi(Z,target)}
   else{S.hurt++;sfx('fail');etatHud();
     if(S.hurt>=3){mort();return}
