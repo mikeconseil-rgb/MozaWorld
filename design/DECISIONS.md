@@ -66,6 +66,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Citadelles épiques | Tirées une fois pour tout le monde (graine), Berestograd toujours comprise, pour que le siège final reste jouable dans la région de départ d'ici le 28 | en vigueur (22 nov., « Ok ») | 5 tirées parmi les Citadelles de la région chargée |
 | Lot 3, réglages | Prix du pacte au moins le quart du revenu, qui suit ce quart ; 3e vague du siège au-dessus de la défense (combat obligatoire) ; Fossés, Guet, Greniers et Feux trompeurs sans effet sur les vagues ; une vague en marche menace les caravanes ; vengeance d'un pacte rompu hors Couvre-feu ; on peut rester dans le monde après la victoire | en vigueur (20 nov., « Oui à tout ») | |
 | Hordes | Une horde ne vise que les zones plus faibles de 2 ou 3 paliers | en vigueur | |
 | Hordes | Une zone à vous qui tombe à 0 sous une horde redevient sauvage (« Non » à « elle reste à vous ») ; elle garde votre empreinte (« Bonne idée », 19 nov.) | en vigueur | « reste à vous » (essai du 19 nov.) |
