@@ -23,7 +23,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
-| 21 nov. | Interface | Style « Carnet sombre » retenu sur maquette (« C'est bien mieux », puis « C'est bien ») : encre, parchemin usé et brûlé aux coins, sceaux de cire, jauges tordues, écriture à la main, touche lovecraftienne (yeux, notes) et coups de pinceau acrylique ; champ de bataille en damier de mosaïque collée (habillage du Plateau, sans changer ses règles) ; **pas de tentacules, pas de coulures**. Ordre choisi : exploration (2.31), puis combat, puis menu pause. | en vigueur (exploration en 2.31, le reste à venir) |
+| Interface : style | Style « Carnet sombre » retenu sur maquette (« C'est bien mieux », puis « C'est bien ») : encre, parchemin usé et brûlé aux coins, sceaux de cire, jauges tordues, écriture à la main, touche lovecraftienne (yeux, notes) et coups de pinceau acrylique ; champ de bataille en damier de mosaïque collée (habillage du Plateau, sans changer ses règles) ; **pas de tentacules, pas de coulures**. Ordre choisi : exploration (2.31), puis combat, puis menu pause. | en vigueur (exploration en 2.31, le reste à venir) | L'interface dorée sur fond sombre (barre en îlots) |
 
 ## 21 novembre 2026 soir (carte du monde, royaumes)
 
