@@ -600,4 +600,4 @@ if(typeof pacteTest==='function')Object.assign(window.MZ,{pacte:pacteTest,rompre
 if(typeof tourTest==='function')Object.assign(window.MZ,{tour:tourTest,tourTombe:id=>tomberTour(id,'Test.'),defenseTours,preavisTours});
 if(typeof caravanesTest==='function')Object.assign(window.MZ,{caravanes:caravanesTest,piller:pillerTest,escorter:escorterCaravane,caravanesCycle});
 if(typeof loisEtat==='function')Object.assign(window.MZ,{lois:loisEtat,loiForcer,loiRenforcer,loisCycle,loisTest:LOIS_TEST});
-if(typeof siegeTest==='function')Object.assign(window.MZ,{siege:siegeTest,siegeVague,citadellesEpiques,palmares:lirePalmares,victoire:()=>{const b=bilanMonde(citadellesEpiques()[0]);ecranVictoire(b,[]);return b}});
+if(typeof siegeTest==='function')Object.assign(window.MZ,{siege:siegeTest,siegeVague,citadellesEpiques,epiquesForcer,palmares:lirePalmares,victoire:()=>{const b=bilanMonde(citadellesEpiques()[0]);ecranVictoire(b,[]);return b}});

@@ -452,6 +452,7 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
   ok('lot 3b : bandeau, ✂ pour la vengeance',/✂/.test(ru.ban),ru.ban);
   await monde();await coherent3b('rupture du pacte');
   /* 15d. nouveau pacte (Grisaille) et siège final lancé à la Pierre de Berestograd */
+  await p.evaluate(()=>MZ.epiquesForcer(['CIT']));   /* 22 nov. : Berestograd n'est plus épique en jeu ; le test y joue le siège */
   const sg=await p.evaluate(()=>{const S=MZ.S;for(const s in S.hordes)if(S.hordes[s].cible==='CIT'||s==='CIT')delete S.hordes[s];S.siegeRepos={};S.siegeFini=null;S.siege=null;
     MZ.set('CIT',7);S.own.CIT=S.act.CIT=true;MZ.tesselles(40);const okp=signerPacte(RIVK.gri);S.riv.c={r:'omb',id:'CIT',de:S.riv.nc,du:S.riv.nc+2};
     tp('CIT');openEveil(ZB.CIT);return{okp,o:UI.opts.map(o=>o.l)}});
@@ -475,7 +476,7 @@ const fmtDef=(L,F)=>'force des hordes '+F+' à '+(F+3)+'\n'+L.map(x=>`        ${
   await p.waitForFunction(()=>!MZ.S.pacte||MZ.S.pacte.nc>=MZ.S.nc,null,{timeout:5000}).catch(()=>{});
   await p.evaluate(()=>save());const av3=await p.evaluate(cle3b);
   await p.reload();await p.waitForFunction(()=>window.MZ&&typeof window.MZ.start==='function',null,{timeout:30000});
-  await p.evaluate(()=>startGame(false));await p.waitForTimeout(1500);
+  await p.evaluate(()=>{MZ.epiquesForcer(['CIT']);startGame(false)});await p.waitForTimeout(1500);
   const ap3=await p.evaluate(cle3b);
   ok('lot 3b : rechargement, pacte et siège à l\'identique',av3===ap3,av3===ap3?undefined:av3.slice(0,160)+' ≠ '+ap3.slice(0,160));
   await monde();await coherent3b('rechargement');
