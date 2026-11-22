@@ -66,10 +66,21 @@ const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
 
 /* ---------- Rendu ---------- */
 const canvas=document.getElementById('vue');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
+/* 22 nov. (plantage au voyage sur Xbox : « Error creating WebGL context » au rechargement). La carte graphique de la page
+   précédente n'est pas toujours rendue à temps : au lieu de s'arrêter sur l'erreur, on réessaie après un court délai
+   (jusqu'à 4 fois, de plus en plus long), puis la qualité est baissée pour la séance. */
+let GL_ESSAIS=0;try{GL_ESSAIS=+sessionStorage.getItem('mz-gl-essai')||0}catch(_){}
+const renderer=(()=>{try{const r=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
+    try{sessionStorage.removeItem('mz-gl-essai')}catch(_){}return r}
+  catch(e){if(GL_ESSAIS<4){try{sessionStorage.setItem('mz-gl-essai',String(GL_ESSAIS+1))}catch(_){}
+      const v=document.getElementById('seuil-ver');if(v)v.textContent='La carte graphique se libère… nouvel essai ('+(GL_ESSAIS+1)+' sur 4)';
+      const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on')}
+      setTimeout(()=>location.reload(),1500*(GL_ESSAIS+1));throw new Error('Nouvel essai de la carte graphique')}
+    try{sessionStorage.removeItem('mz-gl-essai')}catch(_){}throw e}})();
 /* Version télé : on rend l'image à une largeur fixe (QUAL.w) puis la télé l'agrandit. Trois réglages, ajustés seuls si l'image saccade. */
 const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4},{nom:'Splendide',w:1920,sh:2048,ms:4}];
-let QI=window.Android?0:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
+let QI=window.Android?0:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}
+if(GL_ESSAIS>=2&&QI>1)QI=1;   /* 22 nov. : après deux essais ratés de la carte graphique, « Équilibrée » pour la séance */   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
 const QUAL=()=>QUALS[QI];
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,QUAL().w/Math.max(320,innerWidth)));
 renderer.shadowMap.enabled=QUAL().sh>0;renderer.shadowMap.type=THREE.PCFSoftShadowMap;

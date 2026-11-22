@@ -18,6 +18,7 @@ Demande : « une carte mosaïque plus belle où chaque royaume est bien dessiné
 Symptôme rapporté : écran noir « comme un plantage d'Edge », en marchant ou pendant une mue, vers 10 minutes de jeu, parfois en changeant la qualité d'image.
 Mesures (banc `tv/tools/test-endurance.js`) : une région pesait ~700 Mo dans le navigateur, dont un sol d'un million de sommets ; rien ne grossissait sans fin, mais chaque voyage recharge la page.
 - Avant chaque rechargement (voyage, sauvegarde chargée), la mémoire de la carte graphique est rendue tout de suite.
+- 2.30.1 : « Error creating WebGL context » au rechargement d'un voyage (photo de l'utilisateur, 22 nov.) : la page réessaie seule après 1,5 s, 3 s, 4,5 s, 6 s, puis passe en Équilibrée pour la séance.
 - Contexte WebGL perdu (écran noir) : la partie est enregistrée et la région rechargée au même endroit, avec un message.
 - Sur Xbox (ou `?xbox=1`) : maille du sol 5,4 m au lieu de 4,2 (40 % de sommets en moins), anticrénelage ×2 au lieu de ×4 en Belle, et aucun multiéchantillon en Splendide (FXAA seul, image de rendu ~120 Mo → ~25 Mo : l'écran noir revenait surtout en Splendide).
 - L'index de la grande maille du sol (inutile depuis les carreaux) est libéré : ~25 Mo en mémoire et autant sur la carte graphique.
