@@ -6400,7 +6400,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.42.3';
+const MZ_VERSION='2.42.4';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -8636,12 +8636,12 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   for(let i=hi;i<32;i++)secHalo.P[i*3+1]=-999;secHalo.up();
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').classList.remove('vu')}
   if(typeof majPoussiere==='function')majPoussiere(dt,T);
-  if(frame%6===0)drawMini(T);
+  if(frame%6===0&&!CB)drawMini(T);   /* 2.42.4 : la minicarte est cachée pendant un combat */
   if(frame%120===0&&started){S.pos=[P.x,P.z,P.yaw];save()}
   /* qualité automatique : si l'image tombe sous 22 images/s pendant 5 s, on baisse la résolution */
   if(autoQ&&T>3){fpsT+=dt;fpsN++;if(fpsT>5){const fps=fpsN/fpsT;fpsT=0;fpsN=0;if(CB){fpsT=0;fpsN=0}else if(fps<(QI>=2?27:22)&&QI>0){QI--;try{localStorage.setItem('mz-tv-q2',QI)}catch(_){}resize()}else autoQ=false}}
   if(!CB){cullScene();draw(T)}
-  if(SOL_LEGER){const v=CB?'hidden':'';if(canvas.style.visibility!==v)canvas.style.visibility=v}}   /* 2.42.3 : sur Xbox, le canevas 3D sort de l'affichage pendant un combat (écran opaque) : une couche plein écran de moins */   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
+  if(SOL_LEGER){const v=CB?'hidden':'';if(canvas.style.visibility!==v){canvas.style.visibility=v;document.documentElement.classList.toggle('en-combat',!!CB)}}}   /* 2.42.3 : sur Xbox, le canevas 3D sort de l'affichage pendant un combat (écran opaque) : une couche plein écran de moins */   /* pendant un combat, l'écran est opaque : on ne dessine plus la 3D (plus léger pour la télé) */
 addEventListener('resize',resize);
 resize();etatHud();tp(hasSave&&S.pos?(zoneAt(S.pos[0],S.pos[1])||CIT).id:'CIT');if(hasSave&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=stand(P.x,P.z,1e3).g+.1}
 plusTables();if(typeof recoAssemblees==='function')recoAssemblees();titre();requestAnimationFrame(loop);
@@ -9473,6 +9473,16 @@ if(window.MZ)Object.assign(window.MZ,{carte:ouvrirCarte,fermerCarte,carteEtat:()
    (2) avant chaque rechargement (voyage entre régions, chargement d'une sauvegarde), on rend tout de suite la mémoire de la
        carte graphique, pour que l'ancienne région et la nouvelle ne soient pas en mémoire en même temps ;
    (3) window.MZmem() : relevé pour les bancs d'essai (tv/tools/test-endurance.js). */
+/* 2.42.4 (22 nov., combat lent puis plantage sur Xbox) : sur Xbox, l'écran de combat garde ses gestes brefs mais perd ses
+   animations sans fin qui forcent un repeint à chaque image (effets dans les SVG des cartes, halo filter des cases visées,
+   bordure tournante et pouls des cartes de palier 7, reflet en « left »), et la minicarte s'efface. Mesure (CPU ÷4, combat à
+   Givrecloche −5) : 15,8 images/s avant, ~40 après. */
+if(typeof SOL_LEGER!=='undefined'&&SOL_LEGER){document.documentElement.classList.add('xbox-leger');
+  const st=document.createElement('style');st.textContent=`
+html.xbox-leger #combat svg,html.xbox-leger #combat svg *{animation:none!important}
+html.xbox-leger #combat .kvitre,html.xbox-leger .kvitre::after,html.xbox-leger #combat .kcarte.ultime,html.xbox-leger #combat .kcarte.ultime .kimg,html.xbox-leger #combat .kpal i.on{animation:none!important}
+html.xbox-leger #combat .pcase.vise,html.xbox-leger #combat .plrenfort,html.xbox-leger #combat .plhero.mortel{animation:none!important;filter:drop-shadow(0 0 8px #e8c77f)}
+html.xbox-leger.en-combat .hud.mondain{visibility:hidden!important}`;document.head.appendChild(st)}
 let memLibere=false;
 function libererGPU(){if(memLibere)return;memLibere=true;
   /* la boucle peut encore tourner une image ou deux avant le départ : on ne dessine plus rien */

@@ -5,6 +5,16 @@
    (2) avant chaque rechargement (voyage entre régions, chargement d'une sauvegarde), on rend tout de suite la mémoire de la
        carte graphique, pour que l'ancienne région et la nouvelle ne soient pas en mémoire en même temps ;
    (3) window.MZmem() : relevé pour les bancs d'essai (tv/tools/test-endurance.js). */
+/* 2.42.4 (22 nov., combat lent puis plantage sur Xbox) : sur Xbox, l'écran de combat garde ses gestes brefs mais perd ses
+   animations sans fin qui forcent un repeint à chaque image (effets dans les SVG des cartes, halo filter des cases visées,
+   bordure tournante et pouls des cartes de palier 7, reflet en « left »), et la minicarte s'efface. Mesure (CPU ÷4, combat à
+   Givrecloche −5) : 15,8 images/s avant, ~40 après. */
+if(typeof SOL_LEGER!=='undefined'&&SOL_LEGER){document.documentElement.classList.add('xbox-leger');
+  const st=document.createElement('style');st.textContent=`
+html.xbox-leger #combat svg,html.xbox-leger #combat svg *{animation:none!important}
+html.xbox-leger #combat .kvitre,html.xbox-leger .kvitre::after,html.xbox-leger #combat .kcarte.ultime,html.xbox-leger #combat .kcarte.ultime .kimg,html.xbox-leger #combat .kpal i.on{animation:none!important}
+html.xbox-leger #combat .pcase.vise,html.xbox-leger #combat .plrenfort,html.xbox-leger #combat .plhero.mortel{animation:none!important;filter:drop-shadow(0 0 8px #e8c77f)}
+html.xbox-leger.en-combat .hud.mondain{visibility:hidden!important}`;document.head.appendChild(st)}
 let memLibere=false;
 function libererGPU(){if(memLibere)return;memLibere=true;
   /* la boucle peut encore tourner une image ou deux avant le départ : on ne dessine plus rien */
