@@ -3195,6 +3195,8 @@ function debutTour(){if(!CB)return;CB.tour++;if(typeof renforts==='function')ren
   pioche(mainMax()+(CB.tour===1&&aPassif('vote')?1:0)-CB.main.length);CB.busy=false;CB.f=0;CB.sel=null;CB.man=null;dessinerMain();majUnites();if((CB.tour===1||(CB.aPlacer&&CB.aPlacer.length))&&typeof debutPlacement==='function')debutPlacement()}
 function pioche(n){for(let i=0;i<n&&CB.main.length<8;i++){if(!CB.pile.length){if(!CB.defausse.length)break;CB.pile=melange(CB.defausse);CB.defausse=[]}CB.main.push(CB.pile.pop())}if(!CB.busy)dessinerMain()}
 const vivants=a=>a.filter(u=>u.pv>0);
+/* interface, passe 3 : sur le Plateau, les cibles se parcourent dans l'ordre de l'écran (voie haute à basse, avant puis arrière, le chef dans sa voie) */
+const ordreCibles=()=>{const v=vivants(CB.foes);return CB.cases&&typeof rangDe==='function'?v.slice().sort((p,q)=>((p.chef?p.cv:p.voie)||0)-((q.chef?q.cv:q.voie)||0)||rangDe(p)-rangDe(q)):v};
 function jouer(i,t){const k=CB.main[i],c=CK[k],g=enGris(k);CB.nJoues=(CB.nJoues||0)+1;const cc0=coutDe(k);if(CB.gratuit===k)CB.gratuit=null;CB.mana-=cc0;if(mtype(k)&&!g&&cc0)payer(mtype(k),cc0);CB.main.splice(i,1);CB.defausse.push(k);
   journal(`Vous jouez « ${c.nom()} »${g?' en mana gris : effet affaibli.':contreX(k)>1?' : contre-pouvoir, effet doublé !':'.'}`);CB.gris=g;CB.enCarte=true;try{c.jeu(k,t)}finally{CB.gris=false;CB.enCarte=false}clack();
   CB.f=Math.min(CB.f,CB.main.length);CB.sel=null;majUnites();dessinerMain();if(!finSiFini()&&typeof debutPlacement==='function')debutPlacement()}
@@ -3211,7 +3213,8 @@ function finSiFini(){if(!CB)return false;
   if(!vivants(CB.foes).length){CB.q=[];CB.busy=true;attendre(.9,()=>finCombat(true));return true}return false}
 
 /* ---------- Effets ---------- */
-function pop(u,txt,cls){if(!u.el)return;const s=document.createElement('span');s.className='pop '+(cls||'');s.textContent=txt;u.el.appendChild(s);setTimeout(()=>s.remove(),1000)}
+function pop(u,txt,cls){if(!u.el)return;/* interface, passe 5 : les textes flottants d'une même unité se suivent au lieu de s'empiler */const now=performance.now(),d=Math.max(0,(u._popT||0)-now);u._popT=now+d+380;
+  const go=()=>{if(!u.el)return;const s=document.createElement('span');s.className='pop '+(cls||'');s.textContent=txt;u.el.appendChild(s);setTimeout(()=>s.remove(),1000)};d>0?setTimeout(go,Math.min(d,1500)):go()}
 function frappe(u,n,src){if(!u||u.pv<=0)return 0;if(CB&&CB.sr&&u.hero&&src&&CB.foes.indexOf(src)>=0&&n>0){srBlesse(u,n,src);if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}majUnites();return n}if(CB&&n>0&&CB.centre){const ennemi=CB.foes.indexOf(u)>=0;if(ennemi&&CB.centre==='heros'&&(CB.cases?src&&(src.bete||src.hero):(!src||src.bete||src.hero)))n+=2;else if(!ennemi&&CB.centre==='ennemi'&&src&&CB.foes.indexOf(src)>=0)n+=1}if(u.hero&&u.res&&src&&src!==u&&n>0)n=Math.max(1,n-u.res);if(CB&&CB.gris&&!src)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u.vul&&n>0)n+=CB&&CB.cases?Math.min(4,u.vul):u.vul;const bl=Math.min(u.g,n);u.g-=bl;n-=bl;u.pv=Math.max(0,u.pv-n);
   pop(u,n>0?'−'+n:'garde',n>0?'deg':'g');if(u.el){u.el.classList.remove('choc');void u.el.offsetWidth;u.el.classList.add('choc')}
   if(AX&&soundOn)n>0?perc(AX.currentTime,'t',.9):note(AX.currentTime,523,SIN,.2,.07);
@@ -3250,7 +3253,7 @@ function coupSurTerrain(m,v,opt){if(CB&&CB.cases&&!opt.vol){v+=bonusSource(m);pi
     if(deja.indexOf(t)>=0){const v0=voieDe(m),ch=CB.cases?[occupant(v0,0),occupant(v0,1),gardeU(),CB.hero]:[gardeU(),CB.hero];t=ch.find(u=>u&&u.pv>0&&deja.indexOf(u)<0)||CB.hero}
     deja.push(t);const avant=t.pv+t.g,x=opt.belier&&!t.hero&&(t.garde||t.mur||!CB.cases)?(t.sentinelle?1.5:2):1;
   journal(`${m.nom} ${opt.vol?(t.hero?'passe par-dessus et frappe le héros':'passe par-dessus et frappe '+t.nom):opt.belier&&!t.hero?'enfonce '+t.nom:'frappe '+(t.hero?'le héros':t.nom)} (${Math.round(reste*x)}${CB.cases&&CB.centre==='ennemi'?' +1 du centre':''}).`);
-  frappe(t,Math.round(reste*x),m);if((t.hero||t.garde)&&CB.riposte)frappe(m,CB.riposte,CB.hero);if(t.epine&&m.pv>0)frappe(m,t.epine,t);
+  frappe(t,Math.round(reste*x),m);if((t.hero||t.garde)&&CB.riposte)frappe(m,CB.riposte,CB.hero);if(t.epine&&m.pv>0)frappe(m,t.epine,t);if(m.pv<=0)break;
   /* passe 4 : sur le Plateau, une Garde qui cède laisse passer le reste du coup au héros */
   if((!opt.pietine&&!(t.garde&&CB.cases))||t.hero||t.pv>0)break;reste=Math.ceil((reste*x-avant)/x);if(reste>0)journal(opt.pietine?'Le coup piétine et passe au suivant.':'La Garde cède : le reste du coup passe au héros.')}}
 function intention(m){if(typeof plancherAtk==='function')plancherAtk(m);let a=m.mv[m.mi%m.mv.length],forc=0;m.mi++;if(m.reElan){m.reElan=0;m.mi--;a='c';forc=1}else if(m.forceF){a=m.forceF===2?'b':'f';m.forceF=0;m.mi--;forc=1}else if(CB&&CB.cases&&(CB.tour<1||m.renfort===1)&&(a==='f'||a==='b')){m.forceF=a==='b'?2:1;a='c'}if(m.chef&&CB&&CB.cases&&!(m.int&&m.int.a==='c')&&!forc&&a!=='f')m.cv=m.cv==null?Math.floor(Math.random()*3):(m.cv+1)%3;if(a==='g'&&CB&&CB.cases&&CB.tour>=5)a='a';if(a==='c'&&m.chef&&aPassif('silence')&&!m.silence){m.silence=1;a='a'}const L=Lz(m.z);
@@ -3297,8 +3300,8 @@ function cbInput(a,rep){const C=CB;if(!C)return;
   if(a==='back'&&!rep&&!C.pl&&!C.man){if(C.sel){C.sel=null;dessinerMain();majUnites()}else pauseCombat();return}
   if(C.pl&&!C.busy){plInput(a,rep);return}
   if(C.busy)return;
-  if(C.sel){const v=vivants(C.foes);if(a==='left'||a==='right'){C.ti=(C.ti+(a==='left'?-1:1)+v.length)%v.length;tick();majUnites()}
-    else if(a==='down'){C.sel=null;dessinerMain();majUnites()}
+  if(C.sel){const v=ordreCibles();if(a==='left'||a==='right'){C.ti=(C.ti+(a==='left'?-1:1)+v.length)%v.length;tick();majUnites()}
+    else if(a==='down'){C.sel=null;journal('Carte remise en main.');dessinerMain();majUnites()}
     else if(a==='ok'&&!rep)jouer(C.f,v[C.ti]);return}
   if(C.man&&!C.busy){manInput(a,rep);return}
   const n=C.main.length+1+(typeof manoeuvrePossible==='function'&&manoeuvrePossible()?1:0);
@@ -3307,7 +3310,7 @@ function cbInput(a,rep){const C=CB;if(!C)return;
   else if(a==='up'&&C.f===C.main.length&&C.main.length){C.f=0;tick();dessinerMain()}
   else if(a==='ok'&&!rep){if(C.f===C.main.length){clack();finTour();return}if(C.f===C.main.length+1){debutManoeuvre();return}
     const k=C.main[C.f],c=CK[k];if(!jouable(k)){sfx('miss');journal('Capacité de dépense atteinte ce tour pour « '+c.nom()+' ».');return}
-    if(c.cible){const v=vivants(C.foes);if(v.length>1){C.sel='cible';C.ti=0;dessinerMain();majUnites();journal('Choisissez la cible avec ◀ ▶, puis OK.');return}jouer(C.f,v[0])}
+    if(c.cible){const v=ordreCibles();if(v.length>1){C.sel='cible';C.ti=0;dessinerMain();majUnites();journal('Choisissez la cible avec ◀ ▶, puis OK.');return}jouer(C.f,v[0])}
     else jouer(C.f)}}
 
 /* ---------- Dessin (éléments HTML, mis à jour seulement quand quelque chose change) ---------- */
@@ -3325,26 +3328,27 @@ function placerNoeud(){if(!CB)return;
   const pose=(u,col,row)=>{if(u.el){u.el.style.gridColumn=col;u.el.style.gridRow=row}};
   if(CB.cases){/* Plateau (19 nov.) : vous, héros (col. 1), Garde (2), arrière (3), avant (4) ; l'ennemi, avant (1), arrière (2), chef (3) ; trois voies en rangées */
     if(typeof dessinerCases==='function')dessinerCases();if(typeof badgesMenace==='function')badgesMenace();
+    {/* interface, passe 4 : la place de la Garde reste tenue quand elle tombe (le plateau ne glisse plus) */const g=gardeU(),h=$('cb-allies');if(g&&g.el&&g.el.offsetWidth){CB.gw=g.el.offsetWidth;try{const cs=getComputedStyle(g.el);CB.gm=[cs.marginLeft,cs.marginRight]}catch(_){}}let ph=$('pl-garde-place');if(h&&!ph&&CB.gw){ph=document.createElement('div');ph.id='pl-garde-place';h.appendChild(ph)}if(ph){ph.style.gridColumn='2';ph.style.gridRow='1 / 4';ph.style.width=(CB.gw||0)+'px';if(CB.gm){ph.style.marginLeft=CB.gm[0];ph.style.marginRight=CB.gm[1]}ph.style.display=g?'none':'flex'}}
     for(const u of CB.allies){if(u.pv<=0&&!u.hero)continue;if(u.hero)pose(u,'1','1 / 4');else if(u.garde)pose(u,'2','1 / 4');else{pose(u,(u.rang||0)?'3':'4',String((u.voie||0)+1));if(u.el)u.el.classList.toggle('arriere',!!u.rang)}}
-    for(const u of CB.foes){if(u.pv<=0)continue;if(u.chef)pose(u,'3','1 / 4');else pose(u,String(rangDe(u)+1),String((u.voie||0)+1))}
+    for(const u of CB.foes){if(u.pv<=0)continue;if(u.chef)pose(u,'3',u.cv!=null?String(u.cv+1):'1 / 4');else pose(u,String(rangDe(u)+1),String((u.voie||0)+1))}
     return}
   for(const side of[CB.allies,CB.foes]){const n=[0,0];for(const u of side){if(u.pv<=0&&!u.hero)continue;
     if(side===CB.allies){if(u.hero)pose(u,'1','1 / 3');else if(u.garde)pose(u,'4','1 / 3');else{const i=n[u.voie||0]++;pose(u,String(Math.max(2,3-i)),String((u.voie||0)+1))}}
     else{if(u.chef)pose(u,'3','1 / 3');else{const i=n[u.voie||0]++;pose(u,String(Math.min(2,1+i)),String((u.voie||0)+1))}}}}}
 function majUnites(){if(!CB)return;const v=vivants(CB.foes);majCentre();placerNoeud();
   for(const u of[...CB.foes,...CB.allies]){const e=u.el;if(!e)continue;e.classList.toggle('mort',u.pv<=0);
-    e.querySelector('.bar i').style.width=(100*u.pv/u.max)+'%';e.querySelector('.bar span').textContent=CB.sr&&u.hero?`Blessures ${u.max-u.pv} / ${u.max}${srMalus()?' · −'+srMalus():''}`:u.pv+' / '+u.max;
+    e.querySelector('.bar i').style.width=(100*u.pv/u.max)+'%';e.querySelector('.bar span').textContent=CB.sr&&u.hero?`PV ${u.pv} / ${u.max}${srMalus()?' · capacité −'+Math.min(srMalus(),CB.tour<4?1:99):''}`:u.pv+' / '+u.max;
     const g=e.querySelector('.gd');g.textContent=u.g>0?'⛨ '+u.g:'';
     if(u.garde)e.querySelector('.int').textContent=CB.cases?'⛨ dernier rempart du héros':'⛨ prend les coups, s\'effrite de moitié';else if(u.mur)e.querySelector('.int').textContent='⛨ bloqueur'+(u.atk>0&&CB.cases&&typeof forceBete==='function'?' · ⚔ '+forceBete(u):'')+(u.epine?' · renvoie '+u.epine:'')+(CB.cases&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:'');else if(u.bete)e.querySelector('.int').textContent=CB.cases&&typeof forceBete==='function'?'⚔ '+forceBete(u)+((u.rang||0)?' · arrière':' · avant')+(terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''):'⚔ '+u.atk+' à chaque tour';
-    else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}${u.chef&&CB.cases&&u.cv!=null&&'afb'.indexOf(I.a)>=0?' <span class="voie">voie '+PL_NOMV[u.cv]+'</span>':''}${aPassif('lecture')&&u.mv?' · puis '+NOMACT[u.mv[u.mi%u.mv.length]]:''}${CB.cases&&typeof terrainDe==='function'&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''}`:''}
-    e.classList.toggle('vise',!!CB.sel&&u===v[CB.ti])}
+    else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.a==='c'&&CB.cases&&typeof elanDe==='function'?'<span class="elan">élan : '+elanDe(u)+' au prochain tour</span>':I.t}${u.chef&&CB.cases&&u.cv!=null?' <span class="voie">voie '+PL_NOMV[u.cv]+'</span>':''}${aPassif('lecture')&&u.mv?' · puis '+NOMACT[u.mv[u.mi%u.mv.length]]:''}${CB.cases&&typeof terrainDe==='function'&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''}${CB.cases&&typeof hesiteRaison==='function'&&I.a!=='h'&&hesiteRaison(u)?' · <i class="hab">'+hesiteRaison(u)+'</i>':''}`:''}
+    {const vi=!!CB.sel&&u===ordreCibles()[CB.ti];e.classList.toggle('vise',vi);if(vi&&typeof apercuCible==='function')e.dataset.apercu=apercuCible(u)}}
   const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">${resHTML()}</span>`;
   $('cb-piles').innerHTML=`<span>Pioche <b>${CB.pile.length}</b></span><span>Défausse <b>${CB.defausse.length}</b></span><span>Tour <b>${CB.tour}</b></span>${CB.reso&&Object.keys(CB.reso).some(r=>CB.reso[r]>0)?`<span>Résonances <b>${Object.keys(CB.reso).filter(r=>CB.reso[r]>0).map(r=>r+(CB.reso[r]>1?' ×'+CB.reso[r]:'')).join(', ')}</b></span>`:''}`}
 function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" style="${z?'--kcA:'+rgba(ZCOL[z],.3)+';--kcB:'+rgba(ZCOL[z],.75):''}"><div class="co" style="${mtype(k)?'background:'+MCOL[mtype(k)]+';color:#111':''}">${coutDe(k)}</div><div class="cn">${c.nom()}</div><div class="ct">${c.txt(k)}</div><div class="cz">${z?TYPE[z].kind+' · '+ZCOURT[z]+' · '+ZMANA[z]:'Commune · tout mana'}</div></div>`}
 function dessinerMain(){const C=CB;if(!C)return;const h=$('cb-main');
   h.innerHTML=C.main.map(carteHTML).join('')+`<div class="cc fin"><div class="cn">Fin du tour</div><div class="ct">Les bêtes frappent, puis les monstres agissent.</div></div>`+(typeof manoeuvreHTML==='function'?manoeuvreHTML():'');
   [...h.children].forEach((d,i)=>{d.classList.toggle('f',i===C.f&&!C.busy);if(i<C.main.length&&!jouable(C.main[i]))d.classList.add('off');if(C.sel&&i===C.f)d.classList.add('choisie')});
-  $('combat').classList.toggle('placement',!!C.pl);$('cb-aide').textContent=C.busy?'Les créatures agissent…':(C.pl||C.man)&&typeof aidePlacement==='function'?aidePlacement():C.sel?'◀ ▶ choisir la cible · OK frapper · ▼ annuler':'◀ ▶ choisir une carte · OK jouer · ▼ fin du tour'+(C.cases?' · Y manœuvre':'')+' · Retour pause';majUnites()}
+  $('combat').classList.toggle('placement',!!C.pl);$('cb-aide').textContent=C.busy?'Les créatures agissent…':(C.pl||C.man)&&typeof aidePlacement==='function'?aidePlacement():C.sel?'◀ ▶ cible · OK frapper · ▼ annuler':'◀ ▶ carte · OK jouer · ▼ fin du tour'+(C.cases?' · Y manœuvre':'')+' · Retour pause';majUnites()}
 function journal(t){const j=$('cb-log');j.textContent=t;j.classList.remove('neuf');void j.offsetWidth;j.classList.add('neuf')}
 
 /* ---------- Rencontres en se promenant ---------- */
@@ -3427,6 +3431,7 @@ function coupPrevu(m){const I=m&&m.int;if(!I||'afbv'.indexOf(I.a)<0)return null;
 function menaces(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes)){const I=m.int;if(!I)continue;if(I.a==='t'){for(let v=0;v<3;v++)t[v]+=I.v+(CB.centre==='ennemi'?1:0);continue}const c=coupPrevu(m);if(c&&!c.vol)t[c.voie]+=c.v}return t}
 const vols=()=>{const t=[0,0,0];if(CB)for(const m of vivants(CB.foes)){const c=coupPrevu(m);if(c&&c.vol)t[c.voie]+=c.v}return t};
 /* élans : la frappe forte arrivera au tour suivant (affichée à part) */
+function elanDe(m){const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;return c?c.v:2*m.atk}
 function elans(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes))if(m.int&&m.int.a==='c'){
   /* passe 8 : le coup qui suit vraiment (bélier ou coup fort), échauffement compris, calculé comme coupPrevu */
   const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;t[voieDe(m)]+=c?c.v:2*m.atk}return t}
@@ -3495,10 +3500,58 @@ const plCss=document.createElement('style');plCss.textContent=`
 .u.chef .por{width:calc(var(--u)*9)!important;height:calc(var(--u)*9)!important}
 .u.chef .int .voie,.u .int .voie{color:var(--laiton2)}
 .u.arriere .por{opacity:.85;transform:scale(.92)}
-.plmenace{position:absolute;z-index:6;left:-50%;right:-50%;top:-.2em;text-align:center;white-space:nowrap;line-height:1.15;font-size:calc(var(--u)*.85);font-weight:700;color:#ff9a8a;text-shadow:0 1px 4px #000}
+.plmenace{position:absolute;z-index:6;left:50%;transform:translateX(-50%);top:-.35em;white-space:nowrap;line-height:1.25;font-size:calc(var(--u)*.9);font-weight:700;color:#ffb3a6;background:rgba(24,8,8,.92);border:1px solid rgba(226,103,90,.7);border-radius:calc(var(--u)*.6);padding:0 .55em;box-shadow:0 2px 8px #000}
+.plmenace:empty{display:none}
+.plrenfort{position:absolute;z-index:6;left:50%;transform:translateX(-50%);top:30%;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#ffd0c8;background:rgba(24,8,8,.85);border:1px dashed #e2675a;border-radius:calc(var(--u)*.5);padding:.1em .5em;animation:plvise .8s ease-in-out infinite alternate}
+.plrenfort:empty{display:none}
+.pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
+#combat .pcase.chefvoie{outline:2px dashed #e2675a;outline-offset:-5px}
+#combat .plelan{display:none!important}
+#combat .u .int .elan{color:#8a1a10!important;font-weight:800}
+#combat .u .int .hab{color:#4a3a2a!important;font-style:normal}
+#combat .plhero,#combat .plrenfort,#combat .plpart{font-family:var(--c-fell,serif)!important;font-style:normal!important;font-size:calc(var(--u)*1.15)!important}
+#combat .plpart{top:auto;bottom:-1.4em;font-size:calc(var(--u)*.9)!important}
+#combat .u.lourd::after{right:-.7em!important;top:45%!important;bottom:auto!important;left:auto!important;width:auto!important;height:auto!important;line-height:1!important;border-radius:.4em!important;padding:.2em .35em!important;font-size:calc(var(--u)*.7)!important}
+#combat #cb-centre .cv{font-size:calc(var(--u)*.95)!important}
+#pl-garde-place{visibility:visible!important;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:.55;color:#c9b8a0;font-family:var(--c-fell,serif);font-size:calc(var(--u)*.95);text-align:center}
+#pl-garde-place::before{content:"⛨";font-size:calc(var(--u)*4);line-height:1;filter:grayscale(1)}
+#pl-garde-place::after{content:"Garde tombée"}
+.kkw{position:absolute;z-index:3;left:4%;top:calc(var(--u)*2.6);display:flex;flex-direction:column;align-items:flex-start;gap:2px;pointer-events:none}
+.kkw b{font-size:calc(var(--u)*.72);line-height:1.2;padding:0 .4em;border-radius:.6em;background:rgba(10,8,6,.88);color:#e8d6a8;border:1px solid rgba(232,199,127,.6);white-space:nowrap}
+.kkw b.kp{background:#7a1a12;color:#fff;border-color:#ff8070}
+#combat .plelan,#combat .plhero,#combat .plrenfort,#combat .plmenace{font-family:var(--c-main,inherit)}
+#combat .plelan{top:auto;bottom:-.2em}
+#combat .plelan,#combat .plhero,#combat .plrenfort{font-size:calc(var(--u)*1)!important;font-style:normal!important;font-weight:800}
+#combat #cb-centre .cv{max-width:100%;white-space:normal!important;text-align:center;font-size:calc(var(--u)*.85)!important;line-height:1.15}
+#combat .u .mz-voie{font-size:calc(var(--u)*.55);margin-top:0;padding-top:0}
+.plpart{position:absolute;z-index:9;left:50%;transform:translateX(-50%);top:-1.2em;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#fff3da;background:#5b3a12;border:1px dashed #e8c77f;padding:0 .45em}
+.plpart:empty{display:none}
+#pl-garde-place{pointer-events:none;visibility:hidden}
+#combat .plmenace{z-index:20;white-space:normal;text-align:center;left:0;right:0;transform:none;margin:0 auto;width:fit-content;max-width:100%}
+#combat .u.vise{z-index:30!important;filter:drop-shadow(0 0 5px #fff3c8) drop-shadow(0 0 12px #e8c77f)}
+#cb-foes .u:not(.chef) .por,#cb-allies .u:not(.hero):not(.garde) .por{width:calc(var(--u)*3)!important;height:calc(var(--u)*3)!important}
+#combat .u.lourd .plaque{border-color:#a01d12!important;box-shadow:0 0 0 2px #a01d12}
+#combat .u.lourd::after{content:"LOURD";position:absolute;z-index:7;left:-.6em;bottom:-.3em;font-family:var(--c-goth,inherit);font-size:calc(var(--u)*.75);color:#fff3da;background:#8a1a10;border-radius:50%;padding:.35em .3em;transform:rotate(12deg);box-shadow:0 1px 4px #000}
+.plhero{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-1.5em;white-space:nowrap;font-size:calc(var(--u)*.9);font-weight:700;color:#ffd9a0;background:rgba(10,8,6,.9);border:1px solid #c9a45c;padding:0 .5em}
+.plhero.mortel{color:#fff;background:#7a1a12;border-color:#ff8070;animation:plvise .6s ease-in-out infinite alternate}
+.plhero:empty{display:none}
+#combat .pcase .pt{color:#f1e2c0!important;font-weight:700}
+.plelan{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-.2em;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#ffe1a8;background:rgba(30,18,4,.92);border:1px solid #c9a45c;border-radius:calc(var(--u)*.6);padding:0 .5em}
+.plelan:empty{display:none}
+#combat .u .int .voie{color:#ff8a78!important;font-weight:700}
+#combat #cb-foes .u:not(.chef) .int:not(:empty){white-space:normal!important;font-size:calc(var(--u)*.9)!important;max-width:calc(var(--u)*11);width:max-content;text-align:left;margin-left:0;margin-right:auto}
+#combat .pop{font-size:calc(var(--u)*1.7)!important;background:rgba(10,8,6,.82);padding:0 .35em;opacity:1}
+#combat .pop.mz-gros{font-size:calc(var(--u)*2.4)!important}
+#combat #cb-foes .u.lourd::after{top:-.7em!important}
+#combat #cb-aide{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;line-height:1.25}
+#combat .u.vise .plaque{box-shadow:0 0 0 3px #fff3c8,0 0 16px #e8c77f!important}
+#combat .u.vise::before{content:attr(data-apercu);position:absolute;z-index:8;left:0;top:auto;bottom:-1.3em;transform:none;font-weight:700;font-size:calc(var(--u)*.85);color:#fff3c8;background:rgba(10,8,6,.9);border:1px solid #e8c77f;padding:0 .5em;white-space:normal;width:max-content;max-width:calc(var(--u)*13);text-align:left}
+#cb-main:has(.cc:nth-child(7)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-1.6)}
+#cb-main:has(.cc:nth-child(9)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-3)}
+#cb-main .cc.f{z-index:5}
 .u.manvise .plaque{border-color:#fff3c8;box-shadow:0 0 0 3px rgba(232,199,127,.5)}
 #cb-foes .u.mort{opacity:0!important;pointer-events:none}
-#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(100% + var(--u)*.4);transform:scale(.78);transform-origin:bottom right}
+#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(var(--u)*-1.2);transform:scale(.78);transform-origin:bottom right}
 #cb-main .cc.kcarte{min-width:calc(var(--u)*7)!important}
 #cb-main .cc.man.f{transform:scale(.88)}body.manette #cb-main .cc.man::before{content:"Y"}
 `;document.head.appendChild(plCss);
@@ -3526,9 +3579,21 @@ function manInput(a,rep){const C=CB,l=surTerrain();if(!l.length){C.man=null;dess
     journal(`Où mener ${u.nom} ? ▲ ▼ la voie, ◀ ▶ arrière ou avant, OK.`);dessinerMain();majUnites()}}
 const manVise=u=>!!(CB&&CB.man&&surTerrain()[CB.man.i%Math.max(1,surTerrain().length)]===u);
 /* menace par voie, affichée sur la case d'avant de chaque voie */
-function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
-  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]||el?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]:gardeU()?'Garde':'héros'):'')+(el?(th[v]?' · ':'')+'élan '+el+' au prochain tour':'')}
-  for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u))}
+function badgesMenace(){if(!plActif())return;const th=menaces(),passes=[0,0,0];for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
+  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];const tri=!tenantVoie(v)&&qui,pi=vivants(CB.foes).some(m=>m.int&&m.int.a==='f'&&voieDe(m)===v),passe=qui&&pi?Math.max(0,th[v]-qui.pv-qui.g):0;passes[v]=passe;
+  b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]+(tri?' (Tribune)':''):gardeU()?'Garde':'héros')+(passe?' · '+passe+' passent':''):'');
+  /* interface, passe 2 : l'élan dans sa propre pastille */
+  const me=vivants(CB.foes).find(m=>m.int&&m.int.a==='c'&&voieDe(m)===v&&!m.chef),de=document.getElementById('pc-e'+v+(me?Math.min(1,rangDe(me)):0))||d;for(const r of[0,1]){const o=document.getElementById('pc-e'+v+r);if(o&&o!==de){const x=o.querySelector('.plelan');if(x)x.textContent=''}}let be=de.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';de.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
+  /* interface, passe 4 : plateau plein, l'unité qui partirait si une créature arrive */
+  {const l0=surTerrain(),plein=l0.length>=PL_MAX,l3=l0.filter(u=>u.neT!==CB.tour),l2=l3.length?l3:l0,poids=u=>(u.atk+2)*u.pv*(u.mur?1.5:1),w=plein?l2.slice().sort((p,q)=>poids(p)-poids(q))[0]:null;
+   for(const u of l0)if(u.el){let p=u.el.querySelector(':scope>.plpart');if(!p){p=document.createElement('span');p.className='plpart';u.el.appendChild(p)}p.textContent=u===w?'partira':''}}
+  /* interface, passe 2 : total des coups qui iront au héros ce tour, en rouge s'il peut tomber */
+  {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v];else dh+=passes[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
+   const h=CB.hero.el;if(h){let p=h.querySelector(':scope>.plhero');if(!p){p=document.createElement('span');p.className='plhero';h.appendChild(p)}p.textContent=dh?'coups attendus '+dh:'';p.classList.toggle('mortel',dh>=CB.hero.pv)}}
+  for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u));
+  /* interface, passe 1 : renfort annoncé sur sa case, voie du chef soulignée */
+  const chef=vivants(CB.foes).find(m=>m.chef);for(let v=0;v<3;v++){const e=document.getElementById('pc-e'+v+'1');if(e){let r=e.querySelector('.plrenfort');if(!r){r=document.createElement('span');r.className='plrenfort';e.appendChild(r)}r.textContent=CB.renfortVoie===v?'renfort au prochain tour':''}
+    for(const c of['a','e'])for(let rr=0;rr<2;rr++){const d=document.getElementById('pc-'+c+v+rr);if(d)d.classList.toggle('chefvoie',!!(chef&&chef.cv===v))}}}
 
 /* ---------- Passe 5 (20 nov.) : renforts, pour que le plateau compte jusqu'au bout ----------
    Éveil : le chef appelle un renfort aux tours 3 et 5, annoncé au tour d'avant, dans la voie qu'il vise.
@@ -3541,8 +3606,14 @@ function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.t
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7-8 : en rencontre de bas niveau (≤ 2), le renfort a 30 % de PV en moins ; le renfort du tour 5 de l'éveil est lourd (PV ×1,5, inébranlable pendant son élan) ; tous entrent en prenant leur élan, puis frappent fort */
-  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2);m.nom+=' (lourd)'}
-  C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2)}
+  C.foes.push(m);uniteEl(m,'cb-foes');if(m.lourd&&m.el)m.el.classList.add('lourd');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort${m.lourd?' lourd':''} accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort${m.lourd?' lourd':''} : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+/* interface, passe 4 : aperçu sur la cible visée (PV, et si l'hésitation prendra) */
+function hesiteRaison(m){const t=CB.tour,pl=!!CB.cases;if(pl&&m.lourd&&m.int&&m.int.a==='c')return'inébranlable';if(pl&&m.hesBloque===t)return'habitué';
+  if(pl&&m.chef&&m.hesT!=null&&m.hesT!==t&&t-m.hesT<3)return'chef : de nouveau au tour '+(m.hesT+3);if((m.chef||pl)&&m.hesT===t-1)return'habitué';return''}
+function hesitePrevu(m){return!hesiteRaison(m)}
+function apercuCible(m){let s='◆ cible · PV '+m.pv+'/'+m.max+(m.g>0?' · ⛨ '+m.g:'');const k=CB.main[CB.f],c=k&&CK[k];
+  try{const o=c&&c.ops?JSON.stringify(c.ops()):'';if(o.indexOf('"hesite"')>=0){const r=hesiteRaison(m),cond=o.indexOf('"si"')>=0&&o.indexOf('"hesite"')>o.indexOf('"si"');s+=r?' · n\'hésitera pas ✗ ('+r+')':cond?' · hésitera si la condition tient':' · hésitera ✓'}}catch(_){}return s}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
@@ -5633,6 +5704,11 @@ window.CARTES_FOND=new Set(["ANT020_m1", "ANT020_m2", "ANT020_m3", "ANT020_m4", 
    Les cartes communes restent sobres. Ce fichier redéfinit artCarte() et carteHTML() d'habillage.js, et ajoute son propre CSS.
    Données lues sur CK[k] si elles existent : ultime, pose, reveille, amb(), secret, zs (fil « Écrire les cartes de chaque pôle »). */
 (function(){
+/* interface du Plateau, passe 5 : mots-clés toujours visibles sur la carte (hésite, prix en PV) */
+function motsCles(t,kc){t=String(t||'').replace(/<[^>]*>/g,'');const k=[];let o='';try{const c=kc&&typeof CK!=='undefined'&&CK[kc];o=c&&c.ops?JSON.stringify(c.ops()):''}catch(_){}
+  /* l'hésitation se lit dans les ops (un effet), pas dans le texte (qui peut n'en faire qu'une condition) */const ih=o.indexOf('["hesite"');if(ih>=0){const isi=o.indexOf('["si"');k.push('<b class="kh">'+(isi>=0&&isi<ih?'hésite ?':'hésite')+'</b>')}
+  const p=t.match(/perd\s+(\d+)\s*PV/i);if(p&&/Prix/i.test(t))k.push('<b class="kp">−'+p[1]+' PV</b>');return k.length?'<div class="kkw">'+k.join('')+'</div>':''}
+
 const VMANA={Feu:['#b5482a','#f0a060','#3a1a12'],Glace:['#6f9bb0','#e4f1f4','#1d2c38'],Eau:['#1f5f8e','#5fd0c8','#0f2340'],
   'Sève':['#4f7f3a','#d9b22e','#1f3a1c'],Pierre:['#7a6450','#c99a5a','#2a2420'],Vent:['#5b7896','#e2d8c0','#28323e']};
 /* accents de pôle par zone [−, +] et culture des zones d'origine (brief de direction artistique) ; les autres zones dérivent leurs accents du mana */
@@ -6001,7 +6077,7 @@ window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
 const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>290?' t5':n>210?' t4':n>140?' t3':n>85?' t2':n>45?' t1':''};
 window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,uid='h'+(uidN++),txt=c.txt(k),lg=longueur(txt);
-  const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`;
+  const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`+motsCles(txt,k);
   const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">« ${amb} »</div>`:'';const txtR=texteCoupe(txt);
   /* carte de secret */
   if(c.secret||(c.zs&&!z)){const P=c.zs?infoZone(c.zs):null;
@@ -6019,7 +6095,7 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const sorte=(ART[k]&&ART[k].sorte&&P.mod!=='MAR')?ART[k].sorte:SORTE[P.mod]||'';
   const ligne=[P.mana,pw||(res?'Niv. '+nP:'')].filter(Boolean).join(' · ');
   const resH=(c.pose||c.reveille)?`<div class="kresos">${c.pose?glypheR(c.pose,1):''}${c.pose&&c.reveille?'<b></b>':''}${c.reveille?glypheR(c.reveille,0):''}</div>`:'';
-  const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`;
+  const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`+motsCles(txt,k);
   const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
   return`<div class="${cls}" style="--kb:${V[0]};--kl:${V[1]};--kd:${V[2]};--kcA:${rgba(V[0],.28)};--kcB:${rgba(V[0],.8)};--pc:${coulP}">
    ${cadreCarte(k,V[1],nP,ult)}${angles(k,nP,ult,uid)}${coZ}${crest}<div class="art">${artCarte(k)}<i class="kvitre"></i>${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
@@ -6458,7 +6534,7 @@ body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
     for(const d of document.querySelectorAll('#combat .pcase'))d.classList.toggle('occupee',occ.has(d.id))}
   function menacesSurUnites(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof occupant!=='function')return;const tient=new Map();
     for(let v=0;v<3;v++){const u=occupant(v,0),b=document.querySelector('#pc-a'+v+'0 .plmenace');
-      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.replace(/ → [^·]*/,'').replace(' au prochain tour','').trim())}
+      if(surPlateau(u)&&b&&b.textContent)tient.set(u,b.textContent.replace(' → '+u.nom.split(/[ ']/)[0]+' ',' ').replace(' → '+u.nom.split(/[ ']/)[0]+' ·',' ·').replace(new RegExp(' → '+u.nom.split(/[ ']/)[0]+'$'),'').trim())}
     for(const u of CB.allies){if(!u.el)continue;const e=u.el.querySelector(':scope>.mz-menace'),t=tient.get(u)||'';if(e){if(e.textContent!==t)e.textContent=t}else if(t)pastille(u,'mz-menace').textContent=t}}
   if(typeof dessinerCases==='function'){const dc0=dessinerCases;dessinerCases=function(){const r=dc0.apply(this,arguments);try{etiquettesVoies()}catch(_){}return r}}
   if(typeof badgesMenace==='function'){const bm0=badgesMenace;badgesMenace=function(){const r=bm0.apply(this,arguments);try{menacesSurUnites()}catch(_){}return r}}

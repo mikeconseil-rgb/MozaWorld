@@ -68,6 +68,7 @@ function coupPrevu(m){const I=m&&m.int;if(!I||'afbv'.indexOf(I.a)<0)return null;
 function menaces(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes)){const I=m.int;if(!I)continue;if(I.a==='t'){for(let v=0;v<3;v++)t[v]+=I.v+(CB.centre==='ennemi'?1:0);continue}const c=coupPrevu(m);if(c&&!c.vol)t[c.voie]+=c.v}return t}
 const vols=()=>{const t=[0,0,0];if(CB)for(const m of vivants(CB.foes)){const c=coupPrevu(m);if(c&&c.vol)t[c.voie]+=c.v}return t};
 /* élans : la frappe forte arrivera au tour suivant (affichée à part) */
+function elanDe(m){const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;return c?c.v:2*m.atk}
 function elans(){const t=[0,0,0];if(!CB)return t;for(const m of vivants(CB.foes))if(m.int&&m.int.a==='c'){
   /* passe 8 : le coup qui suit vraiment (bélier ou coup fort), échauffement compris, calculé comme coupPrevu */
   const ech=CB.cases&&CB.tour>=3?1:0,a=m.forceF===2?'b':'f',I0=m.int;m.int={a,v:a==='b'?m.atk+ech:2*(m.atk+ech)};const c=coupPrevu(m);m.int=I0;t[voieDe(m)]+=c?c.v:2*m.atk}return t}
@@ -136,10 +137,58 @@ const plCss=document.createElement('style');plCss.textContent=`
 .u.chef .por{width:calc(var(--u)*9)!important;height:calc(var(--u)*9)!important}
 .u.chef .int .voie,.u .int .voie{color:var(--laiton2)}
 .u.arriere .por{opacity:.85;transform:scale(.92)}
-.plmenace{position:absolute;z-index:6;left:-50%;right:-50%;top:-.2em;text-align:center;white-space:nowrap;line-height:1.15;font-size:calc(var(--u)*.85);font-weight:700;color:#ff9a8a;text-shadow:0 1px 4px #000}
+.plmenace{position:absolute;z-index:6;left:50%;transform:translateX(-50%);top:-.35em;white-space:nowrap;line-height:1.25;font-size:calc(var(--u)*.9);font-weight:700;color:#ffb3a6;background:rgba(24,8,8,.92);border:1px solid rgba(226,103,90,.7);border-radius:calc(var(--u)*.6);padding:0 .55em;box-shadow:0 2px 8px #000}
+.plmenace:empty{display:none}
+.plrenfort{position:absolute;z-index:6;left:50%;transform:translateX(-50%);top:30%;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#ffd0c8;background:rgba(24,8,8,.85);border:1px dashed #e2675a;border-radius:calc(var(--u)*.5);padding:.1em .5em;animation:plvise .8s ease-in-out infinite alternate}
+.plrenfort:empty{display:none}
+.pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
+#combat .pcase.chefvoie{outline:2px dashed #e2675a;outline-offset:-5px}
+#combat .plelan{display:none!important}
+#combat .u .int .elan{color:#8a1a10!important;font-weight:800}
+#combat .u .int .hab{color:#4a3a2a!important;font-style:normal}
+#combat .plhero,#combat .plrenfort,#combat .plpart{font-family:var(--c-fell,serif)!important;font-style:normal!important;font-size:calc(var(--u)*1.15)!important}
+#combat .plpart{top:auto;bottom:-1.4em;font-size:calc(var(--u)*.9)!important}
+#combat .u.lourd::after{right:-.7em!important;top:45%!important;bottom:auto!important;left:auto!important;width:auto!important;height:auto!important;line-height:1!important;border-radius:.4em!important;padding:.2em .35em!important;font-size:calc(var(--u)*.7)!important}
+#combat #cb-centre .cv{font-size:calc(var(--u)*.95)!important}
+#pl-garde-place{visibility:visible!important;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:.55;color:#c9b8a0;font-family:var(--c-fell,serif);font-size:calc(var(--u)*.95);text-align:center}
+#pl-garde-place::before{content:"⛨";font-size:calc(var(--u)*4);line-height:1;filter:grayscale(1)}
+#pl-garde-place::after{content:"Garde tombée"}
+.kkw{position:absolute;z-index:3;left:4%;top:calc(var(--u)*2.6);display:flex;flex-direction:column;align-items:flex-start;gap:2px;pointer-events:none}
+.kkw b{font-size:calc(var(--u)*.72);line-height:1.2;padding:0 .4em;border-radius:.6em;background:rgba(10,8,6,.88);color:#e8d6a8;border:1px solid rgba(232,199,127,.6);white-space:nowrap}
+.kkw b.kp{background:#7a1a12;color:#fff;border-color:#ff8070}
+#combat .plelan,#combat .plhero,#combat .plrenfort,#combat .plmenace{font-family:var(--c-main,inherit)}
+#combat .plelan{top:auto;bottom:-.2em}
+#combat .plelan,#combat .plhero,#combat .plrenfort{font-size:calc(var(--u)*1)!important;font-style:normal!important;font-weight:800}
+#combat #cb-centre .cv{max-width:100%;white-space:normal!important;text-align:center;font-size:calc(var(--u)*.85)!important;line-height:1.15}
+#combat .u .mz-voie{font-size:calc(var(--u)*.55);margin-top:0;padding-top:0}
+.plpart{position:absolute;z-index:9;left:50%;transform:translateX(-50%);top:-1.2em;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#fff3da;background:#5b3a12;border:1px dashed #e8c77f;padding:0 .45em}
+.plpart:empty{display:none}
+#pl-garde-place{pointer-events:none;visibility:hidden}
+#combat .plmenace{z-index:20;white-space:normal;text-align:center;left:0;right:0;transform:none;margin:0 auto;width:fit-content;max-width:100%}
+#combat .u.vise{z-index:30!important;filter:drop-shadow(0 0 5px #fff3c8) drop-shadow(0 0 12px #e8c77f)}
+#cb-foes .u:not(.chef) .por,#cb-allies .u:not(.hero):not(.garde) .por{width:calc(var(--u)*3)!important;height:calc(var(--u)*3)!important}
+#combat .u.lourd .plaque{border-color:#a01d12!important;box-shadow:0 0 0 2px #a01d12}
+#combat .u.lourd::after{content:"LOURD";position:absolute;z-index:7;left:-.6em;bottom:-.3em;font-family:var(--c-goth,inherit);font-size:calc(var(--u)*.75);color:#fff3da;background:#8a1a10;border-radius:50%;padding:.35em .3em;transform:rotate(12deg);box-shadow:0 1px 4px #000}
+.plhero{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-1.5em;white-space:nowrap;font-size:calc(var(--u)*.9);font-weight:700;color:#ffd9a0;background:rgba(10,8,6,.9);border:1px solid #c9a45c;padding:0 .5em}
+.plhero.mortel{color:#fff;background:#7a1a12;border-color:#ff8070;animation:plvise .6s ease-in-out infinite alternate}
+.plhero:empty{display:none}
+#combat .pcase .pt{color:#f1e2c0!important;font-weight:700}
+.plelan{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-.2em;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#ffe1a8;background:rgba(30,18,4,.92);border:1px solid #c9a45c;border-radius:calc(var(--u)*.6);padding:0 .5em}
+.plelan:empty{display:none}
+#combat .u .int .voie{color:#ff8a78!important;font-weight:700}
+#combat #cb-foes .u:not(.chef) .int:not(:empty){white-space:normal!important;font-size:calc(var(--u)*.9)!important;max-width:calc(var(--u)*11);width:max-content;text-align:left;margin-left:0;margin-right:auto}
+#combat .pop{font-size:calc(var(--u)*1.7)!important;background:rgba(10,8,6,.82);padding:0 .35em;opacity:1}
+#combat .pop.mz-gros{font-size:calc(var(--u)*2.4)!important}
+#combat #cb-foes .u.lourd::after{top:-.7em!important}
+#combat #cb-aide{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;line-height:1.25}
+#combat .u.vise .plaque{box-shadow:0 0 0 3px #fff3c8,0 0 16px #e8c77f!important}
+#combat .u.vise::before{content:attr(data-apercu);position:absolute;z-index:8;left:0;top:auto;bottom:-1.3em;transform:none;font-weight:700;font-size:calc(var(--u)*.85);color:#fff3c8;background:rgba(10,8,6,.9);border:1px solid #e8c77f;padding:0 .5em;white-space:normal;width:max-content;max-width:calc(var(--u)*13);text-align:left}
+#cb-main:has(.cc:nth-child(7)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-1.6)}
+#cb-main:has(.cc:nth-child(9)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-3)}
+#cb-main .cc.f{z-index:5}
 .u.manvise .plaque{border-color:#fff3c8;box-shadow:0 0 0 3px rgba(232,199,127,.5)}
 #cb-foes .u.mort{opacity:0!important;pointer-events:none}
-#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(100% + var(--u)*.4);transform:scale(.78);transform-origin:bottom right}
+#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(var(--u)*-1.2);transform:scale(.78);transform-origin:bottom right}
 #cb-main .cc.kcarte{min-width:calc(var(--u)*7)!important}
 #cb-main .cc.man.f{transform:scale(.88)}body.manette #cb-main .cc.man::before{content:"Y"}
 `;document.head.appendChild(plCss);
@@ -167,9 +216,21 @@ function manInput(a,rep){const C=CB,l=surTerrain();if(!l.length){C.man=null;dess
     journal(`Où mener ${u.nom} ? ▲ ▼ la voie, ◀ ▶ arrière ou avant, OK.`);dessinerMain();majUnites()}}
 const manVise=u=>!!(CB&&CB.man&&surTerrain()[CB.man.i%Math.max(1,surTerrain().length)]===u);
 /* menace par voie, affichée sur la case d'avant de chaque voie */
-function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
-  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]||el?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]:gardeU()?'Garde':'héros'):'')+(el?(th[v]?' · ':'')+'élan '+el+' au prochain tour':'')}
-  for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u))}
+function badgesMenace(){if(!plActif())return;const th=menaces(),passes=[0,0,0];for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
+  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];const tri=!tenantVoie(v)&&qui,pi=vivants(CB.foes).some(m=>m.int&&m.int.a==='f'&&voieDe(m)===v),passe=qui&&pi?Math.max(0,th[v]-qui.pv-qui.g):0;passes[v]=passe;
+  b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]+(tri?' (Tribune)':''):gardeU()?'Garde':'héros')+(passe?' · '+passe+' passent':''):'');
+  /* interface, passe 2 : l'élan dans sa propre pastille */
+  const me=vivants(CB.foes).find(m=>m.int&&m.int.a==='c'&&voieDe(m)===v&&!m.chef),de=document.getElementById('pc-e'+v+(me?Math.min(1,rangDe(me)):0))||d;for(const r of[0,1]){const o=document.getElementById('pc-e'+v+r);if(o&&o!==de){const x=o.querySelector('.plelan');if(x)x.textContent=''}}let be=de.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';de.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
+  /* interface, passe 4 : plateau plein, l'unité qui partirait si une créature arrive */
+  {const l0=surTerrain(),plein=l0.length>=PL_MAX,l3=l0.filter(u=>u.neT!==CB.tour),l2=l3.length?l3:l0,poids=u=>(u.atk+2)*u.pv*(u.mur?1.5:1),w=plein?l2.slice().sort((p,q)=>poids(p)-poids(q))[0]:null;
+   for(const u of l0)if(u.el){let p=u.el.querySelector(':scope>.plpart');if(!p){p=document.createElement('span');p.className='plpart';u.el.appendChild(p)}p.textContent=u===w?'partira':''}}
+  /* interface, passe 2 : total des coups qui iront au héros ce tour, en rouge s'il peut tomber */
+  {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v];else dh+=passes[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
+   const h=CB.hero.el;if(h){let p=h.querySelector(':scope>.plhero');if(!p){p=document.createElement('span');p.className='plhero';h.appendChild(p)}p.textContent=dh?'coups attendus '+dh:'';p.classList.toggle('mortel',dh>=CB.hero.pv)}}
+  for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u));
+  /* interface, passe 1 : renfort annoncé sur sa case, voie du chef soulignée */
+  const chef=vivants(CB.foes).find(m=>m.chef);for(let v=0;v<3;v++){const e=document.getElementById('pc-e'+v+'1');if(e){let r=e.querySelector('.plrenfort');if(!r){r=document.createElement('span');r.className='plrenfort';e.appendChild(r)}r.textContent=CB.renfortVoie===v?'renfort au prochain tour':''}
+    for(const c of['a','e'])for(let rr=0;rr<2;rr++){const d=document.getElementById('pc-'+c+v+rr);if(d)d.classList.toggle('chefvoie',!!(chef&&chef.cv===v))}}}
 
 /* ---------- Passe 5 (20 nov.) : renforts, pour que le plateau compte jusqu'au bout ----------
    Éveil : le chef appelle un renfort aux tours 3 et 5, annoncé au tour d'avant, dans la voie qu'il vise.
@@ -182,8 +243,14 @@ function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.t
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7-8 : en rencontre de bas niveau (≤ 2), le renfort a 30 % de PV en moins ; le renfort du tour 5 de l'éveil est lourd (PV ×1,5, inébranlable pendant son élan) ; tous entrent en prenant leur élan, puis frappent fort */
-  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2);m.nom+=' (lourd)'}
-  C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2)}
+  C.foes.push(m);uniteEl(m,'cb-foes');if(m.lourd&&m.el)m.el.classList.add('lourd');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort${m.lourd?' lourd':''} accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort${m.lourd?' lourd':''} : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+/* interface, passe 4 : aperçu sur la cible visée (PV, et si l'hésitation prendra) */
+function hesiteRaison(m){const t=CB.tour,pl=!!CB.cases;if(pl&&m.lourd&&m.int&&m.int.a==='c')return'inébranlable';if(pl&&m.hesBloque===t)return'habitué';
+  if(pl&&m.chef&&m.hesT!=null&&m.hesT!==t&&t-m.hesT<3)return'chef : de nouveau au tour '+(m.hesT+3);if((m.chef||pl)&&m.hesT===t-1)return'habitué';return''}
+function hesitePrevu(m){return!hesiteRaison(m)}
+function apercuCible(m){let s='◆ cible · PV '+m.pv+'/'+m.max+(m.g>0?' · ⛨ '+m.g:'');const k=CB.main[CB.f],c=k&&CK[k];
+  try{const o=c&&c.ops?JSON.stringify(c.ops()):'';if(o.indexOf('"hesite"')>=0){const r=hesiteRaison(m),cond=o.indexOf('"si"')>=0&&o.indexOf('"hesite"')>o.indexOf('"si"');s+=r?' · n\'hésitera pas ✗ ('+r+')':cond?' · hésitera si la condition tient':' · hésitera ✓'}}catch(_){}return s}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
