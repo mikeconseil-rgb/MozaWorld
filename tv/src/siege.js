@@ -23,7 +23,7 @@ function citadellesEpiques(){const g=S.graine||0;if(epiquesCache.g===g&&epiquesC
   const l=cits.length<=SIEGE_EPIQUES?cits:cits.slice().sort((a,b)=>hashSiege(a+'#'+g)-hashSiege(b+'#'+g)).slice(0,SIEGE_EPIQUES);
   epiquesCache={g,l};return l}
 const estEpique=id=>!!ZB[id]&&citadellesEpiques().indexOf(id)>=0;
-const courtS=id=>ZB[id].info.nom.split(',')[0];
+const courtS=id=>zI(id).nom.split(',')[0];
 const cyclesS=n=>n+' cycle'+(n>1?'s':'');
 
 function initSiege(){if(S.siege===undefined)S.siege=null;if(!S.siegeRepos||typeof S.siegeRepos!=='object')S.siegeRepos={};
@@ -45,7 +45,7 @@ function sourceSiege(cit){const d=typeof aPortee==='function'?aPortee(cit,12):{}
 function lancerSiege(id){initSiege();if(S.siege||S.siegeFini||!peutSieger(id)||reposSiege(id))return null;
   S.siege={cit:id,vague:0,tenues:0,brisees:0,debut:S.nc};
   /* les maisons s'écartent de la Citadelle assiégée : contestation en cours levée */
-  if(S.riv&&S.riv.c&&S.riv.c.id===id){const r=typeof RIVK!=='undefined'&&RIVK[S.riv.c.r];S.riv.c=null;if(r&&started)setTimeout(()=>toast(`${r.bl} ${r.nom} renonce à ${ZB[id].info.nom}`,'la Citadelle soutient le siège final','Aucune maison rivale ne s\'en approche tant que dure le siège.'),6000)}
+  if(S.riv&&S.riv.c&&S.riv.c.id===id){const r=typeof RIVK!=='undefined'&&RIVK[S.riv.c.r];S.riv.c=null;if(r&&started)setTimeout(()=>toast(`${r.bl} ${r.nom} renonce à ${zI(id).nom}`,'la Citadelle soutient le siège final','Aucune maison rivale ne s\'en approche tant que dure le siège.'),6000)}
   annoncerVague();return S.siege}
 function annoncerVague(){const s=S.siege;if(!s)return;s.vague++;s.arrive=S.nc+SIEGE_DELAI;s.src=sourceSiege(s.cit);s.vu=0;
   s.force=7+Math.floor((S.nc||0)/(typeof HORDE_CROIT==='number'?HORDE_CROIT:10))+SIEGE_SURCROIT[s.vague-1]+Math.floor(Math.random()*2);
@@ -58,7 +58,7 @@ function annoncerVague(){const s=S.siege;if(!s)return;s.vague++;s.arrive=S.nc+SI
     `Force ${s.force} contre votre défense ${D.total}, arrivée dans ${cyclesS(SIEGE_DELAI)} (environ ${fmt(resteSiege(s))}). ${s.vague>=SIEGE_VAGUES?'Menée par leur chef, elle dépasse vos défenses : allez la briser vous-même à la Pierre d\'éveil de la Citadelle.':'À la Pierre d\'éveil de la Citadelle, « Briser la vague » pour l\'affronter vous-même.'}`)}
 let siegeRapports=[];
 /* forcer : true = la vague est tenue, false = elle passe, absent = force contre défense */
-function vagueArrive(forcer){initSiege();const s=S.siege;if(!s)return null;const Z=ZB[s.cit],D=defenseHorde(s.cit),l=[];
+function vagueArrive(forcer){initSiege();const s=S.siege;if(!s)return null;const Z=(ZB[s.cit]||ZWB[s.cit]),D=defenseHorde(s.cit),l=[];
   const tenue=forcer===true||forcer!==false&&s.force<=D.total;
   l.push(`Vague ${s.vague} sur ${SIEGE_VAGUES}, force ${s.force}, contre ${Z.info.nom}, défense ${D.total} (${D.parts.map(p=>p[0]+' +'+p[1]).join(', ')}).`);
   if(tenue){s.tenues++;if(S.hordesBilan)S.hordesBilan.repoussees++;gagner(ZMANA[s.cit]||'Pierre',1);
@@ -70,20 +70,20 @@ function suiteSiege(l){const s=S.siege;
   annoncerVague();l.push(`La vague ${s.vague} se forme déjà : arrivée dans ${cyclesS(SIEGE_DELAI)}, force ${s.force}.`);
   siegeRapports.push({ok:true,t:'La Citadelle tient',lignes:l});montrerSiege();return{tenue:true,lignes:l}}
 function echecSiege(l,sansRapport){const s=S.siege;S.siege=null;S.siegeRepos[s.cit]=S.nc+SIEGE_REPOS;
-  l.push(`Le siège final échoue. Ramenez ${ZB[s.cit].info.nom} à ±7 : vous pourrez le relancer après ${cyclesS(SIEGE_REPOS)} de repos.`);
+  l.push(`Le siège final échoue. Ramenez ${zI(s.cit).nom} à ±7 : vous pourrez le relancer après ${cyclesS(SIEGE_REPOS)} de repos.`);
   save();hudKey='';etatHud();if(!sansRapport){siegeRapports.push({ok:false,t:'Le siège échoue',lignes:l});montrerSiege()}return{tenue:false,lignes:l}}
 function montrerSiege(){if(!siegeRapports.length||mode!=='monde')return;const r=siegeRapports.shift();if(r.victoire){if(typeof fanfare==='function')fanfare(7);ecranVictoire(r.victoire,r.lignes);return}mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
   ui('menu',{sur:'Siège final',t:r.t,corps:`<p class="petit">${r.lignes.join('<br>')}</p>`,back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}
 
 setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;initSiege();if(mode==='monde'&&siegeRapports.length)montrerSiege();const s=S.siege;if(!s)return;
   if(!ZB[s.cit]||!tient(s.cit)||Math.abs(S.lv[s.cit]||0)<7){S.siege=null;save();hudKey='';etatHud();
-    toast('Le siège est levé',ZB[s.cit]?ZB[s.cit].info.nom:'',tient(s.cit)?'La Citadelle n\'est plus à ±7 : le siège final s\'arrête. Ramenez-la à ±7 pour le relancer.':'La Citadelle n\'est plus à vous : le siège final s\'arrête. Reprenez-la et ramenez-la à ±7 pour le relancer.');return}
+    toast('Le siège est levé',ZB[s.cit]?zI(s.cit).nom:'',tient(s.cit)?'La Citadelle n\'est plus à ±7 : le siège final s\'arrête. Ramenez-la à ±7 pour le relancer.':'La Citadelle n\'est plus à vous : le siège final s\'arrête. Reprenez-la et ramenez-la à ±7 pour le relancer.');return}
   if(S.nc>=s.arrive&&!(typeof CB!=='undefined'&&CB&&CB.siege))vagueArrive();
   if(mode==='monde'&&curZ&&curZ.id===s.cit&&s.vu!==s.vague){s.vu=s.vague;
     toast(`Siège final · vague ${s.vague} sur ${SIEGE_VAGUES}`,'Elle approche de la Citadelle',`Arrivée dans environ ${fmt(resteSiege(s))}. À la Pierre, OK puis « Briser la vague » pour la combattre.`)}},1000);
 
 /* ---------- Le héros brise une vague (combat d'avant-garde de hordes.js) ---------- */
-function combatSiege(){const s=S.siege;if(!s)return;const Zc=ZB[s.cit],Zs=ZB[s.src]||Zc,liste=MON[Zs.id]||MON[Zs.mod]||MON.CIT,L=6;
+function combatSiege(){const s=S.siege;if(!s)return;const Zc=(ZB[s.cit]||ZWB[s.cit]),Zs=ZB[s.src]||Zc,liste=MON[Zs.id]||MON[Zs.mod]||MON.CIT,L=6;
   startCombat(Zc,'horde');if(!CB)return;CB.siege=s.vague;
   const mk=i=>{const m=liste[i],pv=Math.round(m.pv*(1+.4*L));return{nom:m.nom,pv,max:pv,atk:m.atk+L+s.vague-1,g:0,mv:m.mv,mi:Math.floor(Math.random()*m.mv.length),chef:m.chef,z:s.cit}};
   const idx=s.vague===1?[0,1]:s.vague===2?[0,1,Math.random()<.5?0:1]:[0,1,liste[2]?2:0];
@@ -93,7 +93,7 @@ function combatSiege(){const s=S.siege;if(!s)return;const Zc=ZB[s.cit],Zs=ZB[s.s
   journal(`La vague ${s.vague} monte à l'assaut de ${Zc.info.nom}. Brisez-la et elle ne touchera pas les murs.`);if(typeof majUnites==='function')majUnites()}
 function finSiegeCombat(ok,C){const s=S.siege;
   if(!ok){S.hurt++;sfx('fail');etatHud();if(S.hurt>=3){mort();return}save();
-    ui('menu',{sur:'Défaite',t:'La vague vous repousse',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). ${s?`La vague ${s.vague} marche toujours sur ${ZB[s.cit].info.nom}, arrivée dans environ ${fmt(resteSiege(s))}.`:''}</p><p class="petit">Vous pouvez retenter le combat à la Pierre d'éveil de la Citadelle avant son arrivée ; sinon, vos défenses la reçoivent.</p>`,
+    ui('menu',{sur:'Défaite',t:'La vague vous repousse',corps:`<p>Vous êtes blessé (${S.hurt} sur 3). ${s?`La vague ${s.vague} marche toujours sur ${zI(s.cit).nom}, arrivée dans environ ${fmt(resteSiege(s))}.`:''}</p><p class="petit">Vous pouvez retenter le combat à la Pierre d'éveil de la Citadelle avant son arrivée ; sinon, vos défenses la reçoivent.</p>`,
       back:toMonde,opts:[{l:'Repartir',ic:'◆',go:toMonde}]});return}
   if(!s||s.vague!==C.siege){toMonde();return}
   s.brisees++;if(S.hordesBilan)S.hordesBilan.brisees++;if(typeof gagnerTesselles==='function')gagnerTesselles(TESS_PRIMES.horde,'horde');
@@ -108,7 +108,7 @@ function finSiegeCombat(ok,C){const s=S.siege;
 function tempsJeu(sec){const m=Math.floor(sec/60),h=Math.floor(m/60);return h?`${h} h ${String(m%60).padStart(2,'0')} min`:`${m} min`}
 function bilanMonde(cit){const own=ZN.filter(Z=>S.own[Z.id]),B=S.hordesBilan||{brisees:0,repoussees:0,passees:0};
   const maisons=typeof RIVAUX!=='undefined'&&typeof zonesMaison==='function'?RIVAUX.map(r=>({nom:r.nom,bl:r.bl,n:zonesMaison(r.k).length})):[];
-  return{date:new Date().toISOString().slice(0,10),cit,nom:ZB[cit].info.nom,pole:(S.lv[cit]||0)>0?ZB[cit].info.pp:ZB[cit].info.pm,signe:sgn(S.lv[cit]||0),graine:S.graine,
+  return{date:new Date().toISOString().slice(0,10),cit,nom:zI(cit).nom,pole:(S.lv[cit]||0)>0?zI(cit).pp:zI(cit).pm,signe:sgn(S.lv[cit]||0),graine:S.graine,
     zones:own.length,total:ZN.length,sept:own.filter(Z=>Math.abs(S.lv[Z.id]||0)>=7).length,brisees:B.brisees,repoussees:B.repoussees,passees:B.passees,
     maisons,temps:(S.nc||0)*CYCLE+(S.tc||0),cycles:S.nc||0,morts:Math.max(0,(S.lives||1)-1),cartes:(S.deck||[]).length}}
 function lirePalmares(){try{const l=JSON.parse(localStorage.getItem(PALMARES_CLE)||'[]');return Array.isArray(l)?l:[]}catch(_){return[]}}
@@ -160,9 +160,9 @@ function optionsSiege(Z){const o=[];if(!Z||!estCIT(Z)||!estEpique(Z.id))return o
 function ficheSiege(Z){const el=$('h-mai');if(!el||!Z||!estCIT(Z)||!estEpique(Z.id))return;initSiege();const s=S.siege;
   el.innerHTML+=`<br><small><b style="color:#f0c95a">♛ Citadelle épique</b> · ${s&&s.cit===Z.id?`siège final, vague ${s.vague}/${SIEGE_VAGUES}`:S.siegeFini?'monde gagné':'victoire au siège final, à ±7'}</small>`}
 function menacesSiege(){if(typeof S==='undefined')return[];initSiege();const s=S.siege;if(!s||!ZB[s.cit])return[];
-  return[`<span class="d" title="Siège final de ${ZB[s.cit].info.nom}" style="color:#ffcf6a"><span>♛</span>${courtS(s.cit).split(' ').pop()} vague ${s.vague}/${SIEGE_VAGUES}<small> ${fmt(resteSiege(s))}</small></span>`]}
+  return[`<span class="d" title="Siège final de ${zI(s.cit).nom}" style="color:#ffcf6a"><span>♛</span>${courtS(s.cit).split(' ').pop()} vague ${s.vague}/${SIEGE_VAGUES}<small> ${fmt(resteSiege(s))}</small></span>`]}
 function dessinerSiege(mc,sc,ox,oz,T){if(typeof S==='undefined'||!S.lv)return;const s=S.siege,pulse=.55+.45*Math.sin((T||0)*4);
-  for(const id of citadellesEpiques()){const Z=ZB[id];if(!Z)continue;const x=(Z.c[0]+ox)*sc,y=(Z.c[1]+oz)*sc,siege=s&&s.cit===id;
+  for(const id of citadellesEpiques()){const Z=(ZB[id]||ZWB[id]);if(!Z)continue;const x=(Z.c[0]+ox)*sc,y=(Z.c[1]+oz)*sc,siege=s&&s.cit===id;
     mc.save();mc.strokeStyle=siege?`rgba(255,96,72,${.5+.5*pulse})`:'rgba(240,201,90,.9)';mc.fillStyle='rgba(240,201,90,.95)';mc.lineWidth=2;
     mc.beginPath();mc.arc(x,y,siege?15+5*pulse:11,0,TAU);mc.stroke();if(siege){mc.beginPath();mc.arc(x,y,21+5*pulse,0,TAU);mc.stroke()}
     mc.font='bold 13px sans-serif';mc.textAlign='center';mc.textBaseline='middle';mc.fillText('♛',x,y-(siege?30:18));
