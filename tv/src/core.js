@@ -78,10 +78,10 @@ const canvas=document.getElementById('vue');
 function rechargeAutorisee(){let L=[];try{L=JSON.parse(sessionStorage.getItem('mz-recharges')||'[]')}catch(_){}const n=Date.now();L=L.filter(t=>n-t<120000);
   if(L.length>=6)return false;L.push(n);try{sessionStorage.setItem('mz-recharges',JSON.stringify(L))}catch(_){}return true}
 function arretBoucle(pourquoi){try{sessionStorage.removeItem('mz-recharges');sessionStorage.removeItem('mz-gl-essai');
-    const q=+localStorage.getItem('mz-tv-q2');if(!(q>=0)||q>1)localStorage.setItem('mz-tv-q2','1')}catch(_){}
+    localStorage.setItem('mz-tv-q2','0')}catch(_){}
   const vo=document.getElementById('voyage');if(vo){vo.hidden=false;vo.classList.add('on');const b=vo.querySelector('b'),sp=vo.querySelector('span');
     if(b)b.textContent='La Xbox manque de mémoire graphique';
-    if(sp)sp.textContent='Le jeu a dû se recharger plusieurs fois de suite ('+pourquoi+'). Quittez Edge complètement (bouton Xbox, Edge sélectionné, bouton ≡ Menu, Quitter) ou redémarrez la console, puis rouvrez le jeu : votre partie est enregistrée et la qualité est passée à « Équilibrée ».'}
+    if(sp)sp.textContent='Le jeu a dû se recharger plusieurs fois de suite ('+pourquoi+'). Quittez Edge complètement (bouton Xbox, Edge sélectionné, bouton ≡ Menu, Quitter) ou redémarrez la console, puis rouvrez le jeu : votre partie est enregistrée et la qualité est passée à « Fluide ».'}
   const v=document.getElementById('seuil-ver');if(v)v.textContent='Carte graphique indisponible : quittez Edge puis rouvrez le jeu'}
 let GL_ESSAIS=0;try{GL_ESSAIS=+sessionStorage.getItem('mz-gl-essai')||0}catch(_){}
 const renderer=(()=>{try{const r=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
@@ -95,8 +95,10 @@ const renderer=(()=>{try{const r=new THREE.WebGLRenderer({canvas,antialias:false
 const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4},{nom:'Splendide',w:1920,sh:2048,ms:4}];
 /* 2.34 : téléphone (écran tactile, pas de manette) : « Équilibrée » par défaut, prudent pour la mémoire graphique */
 const TACTILE=!window.Android&&!/xbox/i.test(navigator.userAgent)&&(matchMedia('(pointer:coarse)').matches||/[?&]tactile=1/.test(location.search));
+/* 2.41.2 : ?qualite=fluide (ou equilibree, belle, splendide) dans l'adresse impose la qualité et la garde (Xbox qui plante avant d'atteindre le menu) */
+try{const qp=(location.search.match(/[?&]qualite=([a-zA-Zéè]+)/)||[])[1];if(qp){const n=x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),i=QUALS.findIndex(q=>n(q.nom).startsWith(n(qp).slice(0,4)));if(i>=0)localStorage.setItem('mz-tv-q2',String(i))}}catch(_){}
 let QI=window.Android?0:TACTILE?1:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}
-if(GL_ESSAIS>=2&&QI>1)QI=1;   /* 22 nov. : après deux essais ratés de la carte graphique, « Équilibrée » pour la séance */   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
+if(GL_ESSAIS>=2&&QI>0)QI=0;   /* 22 nov. : après deux essais ratés de la carte graphique, « Fluide » pour la séance (2.41.2) */   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
 const QUAL=()=>QUALS[QI];
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,QUAL().w/Math.max(320,innerWidth)));
 renderer.shadowMap.enabled=QUAL().sh>0;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
