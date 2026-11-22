@@ -26,7 +26,8 @@
     try{const r=(d.requestFullscreen||d.webkitRequestFullscreen).call(d,{navigationUI:'hide'});if(r&&r.catch)r.catch(()=>{})}catch(_){}};
   let fait=false;
   const premier=()=>{if(fait)return;fait=true;pleinEcran()};
-  addEventListener('pointerdown',premier,{capture:true,once:true});
+  /* 2.42.5 : un toucher (téléphone) est laissé à tactile.js, qui demande le plein écran à la fin du toucher */
+  addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')premier()},{capture:true});
   addEventListener('keydown',premier,{capture:true,once:true});
 
   /* ---------- Curseur ---------- */

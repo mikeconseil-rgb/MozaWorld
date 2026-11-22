@@ -1,0 +1,11 @@
+{
+  "name": "MozaWorld",
+  "short_name": "MozaWorld",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#120c07",
+  "theme_color": "#120c07",
+  "icons": [{"src": "android/res/mipmap-xhdpi/ic_launcher.png", "sizes": "192x192", "type": "image/png"}]
+}
