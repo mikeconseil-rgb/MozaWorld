@@ -1,6 +1,7 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8">
 <title>MozaWorld TV</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#120c07">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap">
 <style>
 /* Version télé : lue à trois mètres, pilotée à la télécommande. Tout est grand, rien ne dépend du survol,
@@ -6400,7 +6401,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.42.4';
+const MZ_VERSION='2.42.5';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -6799,7 +6800,8 @@ try{const mo=new MutationObserver(()=>{if(PAD.on)padTextes()});
     try{const r=(d.requestFullscreen||d.webkitRequestFullscreen).call(d,{navigationUI:'hide'});if(r&&r.catch)r.catch(()=>{})}catch(_){}};
   let fait=false;
   const premier=()=>{if(fait)return;fait=true;pleinEcran()};
-  addEventListener('pointerdown',premier,{capture:true,once:true});
+  /* 2.42.5 : un toucher (téléphone) est laissé à tactile.js, qui demande le plein écran à la fin du toucher */
+  addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')premier()},{capture:true});
   addEventListener('keydown',premier,{capture:true,once:true});
 
   /* ---------- Curseur ---------- */
@@ -9964,7 +9966,7 @@ body.tactile .hud.aide{display:none!important}
 @media (max-height:600px){body.tactile{--u:min(1.25vw,2.5vh)}
   /* combat : cartes un peu plus petites, et une marge à droite pour les sceaux */
   body.tactile.tact-combat{--u:min(1vw,2.05vh)}body.tactile.tact-combat #combat{padding-right:calc(90px + 2vw)!important}}
-#tact{position:fixed;inset:0;z-index:60;pointer-events:none;font-family:"Caveat","Segoe Script",cursive}
+#tact{position:fixed;inset:0 env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px);z-index:60;pointer-events:none;font-family:"Caveat","Segoe Script",cursive}
 #tact .sceau{position:absolute;pointer-events:auto;width:calc(var(--t)*1);height:calc(var(--t)*1);border-radius:50%;display:flex;align-items:center;justify-content:center;
   --t:clamp(42px,11vh,58px);
   background:radial-gradient(circle at 36% 30%,#d0453a,#a3231a 46%,#6d140e 78%,#4a0c08);
@@ -10068,7 +10070,19 @@ addEventListener('pointerup',haut,{capture:true});
 addEventListener('pointercancel',haut,{capture:true});
 /* pas de menu contextuel ni de loupe sur un appui long */
 addEventListener('contextmenu',e=>{if(actif)e.preventDefault()});
-/* le plein écran (xbox.js) passe aussi en paysage quand Chrome le permet */
+/* 2.42.5 : plein écran sur téléphone. Chrome Android n'accepte le plein écran qu'à la FIN d'un toucher (touchend / pointerup),
+   pas au pointerdown qu'écoute xbox.js : d'où « pas de plein écran » sur le Pixel. On le redemande à chaque toucher tant qu'il manque
+   (après un retour de l'appli, un geste « retour », etc.). Depuis l'écran d'accueil (« Ajouter à l'écran d'accueil »), le manifeste
+   ouvre le jeu directement en plein écran et en paysage. */
+let fsEnCours=false;   /* une seule demande à la fois : une 2e demande pendant la 1re la fait échouer */
+function pleinEcran(){if(!actif||fsEnCours)return;const d=document.documentElement;
+  if(document.fullscreenElement||document.webkitFullscreenElement||matchMedia('(display-mode: fullscreen)').matches)return;
+  if(navigator.userActivation&&!navigator.userActivation.isActive)return;
+  try{const f=d.requestFullscreen||d.webkitRequestFullscreen;if(!f)return;const r=f.call(d,{navigationUI:'hide'});
+    if(r&&r.then){fsEnCours=true;r.then(()=>{fsEnCours=false},()=>{fsEnCours=false})}}catch(_){fsEnCours=false}}
+addEventListener('touchend',pleinEcran,{capture:true,passive:true});
+addEventListener('pointerup',e=>{if(e.pointerType==='touch')pleinEcran()},{capture:true});
+/* le plein écran passe aussi en paysage quand Chrome le permet */
 addEventListener('fullscreenchange',()=>{if(actif&&document.fullscreenElement&&screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})});
 /* si un doigt reste « collé » (notification, changement d'appli), tout est relâché */
 addEventListener('visibilitychange',()=>{if(document.hidden){for(const[id,d]of doigts)haut({pointerId:id,type:'pointercancel'});PAD.lx=PAD.ly=0;PAD.rt=0}});
