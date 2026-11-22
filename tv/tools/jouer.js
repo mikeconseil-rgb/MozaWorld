@@ -6,6 +6,7 @@
        actions : jI = jouer la carte I de la main (jI>K : sur l'ennemi « cible K ») ; mI = manœuvre de votre unité I (ordre de « unites »), puis pV,R ; pV,R = poser l'unité en attente en voie V (0 haute,1 milieu,2 basse), rang R (0 avant, 1 arrière) ;
                  ok = garder la case proposée ; f = fin du tour
      node tv/tools/jouer.js --lot 40 --profil milieu        → 40 combats joués par le robot, statistiques
+     mode serveur (un combat, page gardée ouverte, beaucoup plus rapide) : --port 8710 [autres options] puis curl 'localhost:8710/?a=j0%20ok%20f' (actions), '/cap?f=/chemin.png' (capture), '/stop' (fin) ;
      options : --kind renc|eveil (défaut renc) · --niveau N (niveau de la zone combattue) · --noeud (ancien Nœud, pour comparer) · --capture fichier.png
    Profils : depart (paquet de départ, 6 cartes, zones à ±1) · milieu (zones de départ à ±3, cartes des paliers 1-3) · fort (±6, paliers 1-6). */
 const path=require('path'),fs=require('fs');const {chromium}=require('playwright');
@@ -59,6 +60,7 @@ const graine=+(opt('graine')||1),lot=+(opt('lot')||0),profil=opt('profil')||'dep
       st[r.issue==='victoire'?'victoires':'defaites']++;st.tours+=r.tours;st.pvPerdus+=r.pv;st.poses+=r.poses;st.arriere+=r.arr;(st.zones[id]=st.zones[id]||[0,0])[r.issue==='victoire'?0:1]++;
       await p.evaluate(()=>{S.hurt=0;mode='monde'})}
     console.log(JSON.stringify({profil,kind,noeud,combats:lot,victoires:st.victoires,taux:Math.round(100*st.victoires/lot)+'%',toursMoyens:+(st.tours/lot).toFixed(1),pvPerdusMoyens:+(st.pvPerdus/lot).toFixed(1),posesParCombat:+(st.poses/lot).toFixed(2),partArriere:st.poses?Math.round(100*st.arriere/st.poses)+'%':'-',parZone:st.zones},null,1))}
+  else if(opt('port')){await lancer(zone);await serveur()}
   else{await lancer(zone);
     const acts=String(opt('actions')||'').trim().split(/\s+/).filter(Boolean);
     for(const a of acts){const r=await p.evaluate(a=>{if(!CB)return'combat déjà fini';let m;
@@ -72,5 +74,20 @@ const graine=+(opt('graine')||1),lot=+(opt('lot')||0),profil=opt('profil')||'dep
     const e=await p.evaluate(()=>({etat:JR.etat(),journal:JR.log.slice(-14)}));
     console.log(JSON.stringify(e,null,1));
     if(opt('capture')){await p.evaluate(()=>{if(window.CB){CB.q=[];CB.busy=false;dessinerMain()}});await p.waitForTimeout(600);await p.screenshot({path:opt('capture')})}}
+  async function serveur(){const ACT=a=>{if(!CB)return'combat déjà fini';let m;
+        if(a==='f'){if(CB.pl)return'une unité attend sa case (pV,R ou ok)';finTour()}
+        else if(a==='ok'){if(!CB.pl)return'rien à poser';plInput('ok')}
+        else if(m=a.match(/^m(\d)$/)){if(CB.pl)return'une unité attend sa case';if(!manoeuvrePossible())return'manœuvre impossible';debutManoeuvre();CB.man.i=+m[1];manInput('ok')}
+        else if(m=a.match(/^p(\d),(\d)$/)){if(!CB.pl)return'rien à poser';CB.pl.v=+m[1];CB.pl.r=+m[2];plInput('ok')}
+        else if(m=a.match(/^j(\d+)(?:>(\d+))?$/)){if(CB.pl)return'une unité attend sa case (pV,R ou ok)';const k=CB.main[+m[1]];if(!k)return'pas de carte '+m[1];if(!jouable(k))return'trop cher';
+          const v=vivants(CB.foes);jouer(+m[1],CK[k].cible?v[m[2]!=null?+m[2]:0]:undefined)}
+        else return'action inconnue '+a;JR.avance();return''};
+    await new Promise(fin=>{require('http').createServer(async(rq,rs)=>{const u=new URL(rq.url,'http://x');let out='';try{
+      if(u.pathname==='/stop'){rs.end('bye');fin();return}
+      if(u.pathname==='/cap'){await p.evaluate(()=>{if(window.CB){CB.q=[];CB.busy=false;dessinerMain()}});await p.waitForTimeout(600);await p.screenshot({path:u.searchParams.get('f')});rs.end('ok\n');return}
+      const acts=String(u.searchParams.get('a')||'').trim().split(/\s+/).filter(Boolean);
+      for(const a of acts){const r=await p.evaluate(ACT,a);if(r)out+='['+a+'] '+r+'\n'}
+      const e=await p.evaluate(()=>{const r={etat:JR.etat(),journal:JR.log.slice()};JR.log=[];return r});out+=JSON.stringify(e,null,1)+'\n';
+      if(erreurs.length)out+='ERREURS JS : '+erreurs.join(' | ')+'\n'}catch(err){out+='ERR '+err+'\n'}rs.end(out)}).listen(+opt('port'),()=>console.log('pret'))})}
   if(erreurs.length)console.log('ERREURS JS : '+erreurs.slice(0,5).join(' | '));
-  await nav.close()})().catch(e=>{console.error(e);process.exit(1)});
+  await nav.close();process.exit(0)})().catch(e=>{console.error(e);process.exit(1)});

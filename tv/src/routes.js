@@ -99,7 +99,7 @@ function atoutsApres(id,k,t,ctx,avant){if(!CB)return;const at=atoutsDe(id);if(!a
     case'Poids':{const ops=CK[k].ops?CK[k].ops():[];if(ops.some(o=>/^prix|^ennemi/.test(o[0])))soigner(CB.hero,1);break}
     case'Remploi':if(!(CB.atU.remploi||{})[k]){(CB.atU.remploi=CB.atU.remploi||{})[k]=1;if(CK[k].cout>0){CB.mana++;journal('Remploi : 1 de capacité rendue.')}}break;
     case'Rafale':if(CK[k].cible&&v.length>1){const m=v.find(x=>x!==cible);if(m)frappe(m,3,CB.hero)}break;
-    case'Girouette':{const m=v.find(x=>x.int&&x.int.a==='c');if(m){m.int={a:'g',v:m.atk,ic:'⛨',t:'se garde'};pop(m,'perd son élan','g')}break}}}
+    case'Girouette':{const m=v.find(x=>x.int&&x.int.a==='c'&&!x.lourd);if(m){m.int={a:'g',v:m.atk,ic:'⛨',t:'se garde'};perdreElan(m);pop(m,'perd son élan','g')}break}}}
 /* fin du tour : Cendre chaude (carte restée en main), Conserve (une carte reste en main) */
 function atoutsFinTour(){if(!CB)return;let garde=null;
   for(const k of CB.main){const id=CK[k]&&CK[k].z;if(!id)continue;
