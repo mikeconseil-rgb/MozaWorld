@@ -6,6 +6,12 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Combat allégé et bestiaire par zone (22 novembre)
+
+- Ralentissements et plantages sur la Xbox pendant le combat : plus aucune animation permanente dans l'écran de combat (respiration des médaillons, dérive des toiles, reflet des cartes, dérive du décor plein écran). Restent seulement les gestes brefs : attaque, coup reçu, soin, mort.
+- Bestiaire par zone (`src/bestiaire.js`, `tools/images-cartes/bestiaire.json`, `generer-bestiaire.py`, `emettre-bestiaire.py`) : chaque zone reçoit trois créatures tirées de son histoire, avec leur portrait peint (`img/bestiaire/`, 256 px). Forces et gestes inchangés (ceux du type). Seules les zones dont les trois portraits existent sont branchées ; les autres gardent leurs créatures de type jusqu'à ce que leurs peintures soient prêtes. La Foire de Givrecloche est redessinée au fusain, validée par l'utilisateur (« Oui c'est bon »).
+- Les portraits ne se chargent qu'à l'entrée d'une unité en combat.
+
 ## Combat : cartes relookées (22 novembre, `src/cartes-relook.js`)
 
 Retour de l'utilisateur : « les cartes aussi auraient besoin d'un relooking semblable » (aux médaillons peints).

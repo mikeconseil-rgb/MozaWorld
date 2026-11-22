@@ -12,13 +12,13 @@ const st=document.createElement('style');st.textContent=`
 #cb-main .cc.kcarte .art{height:47%!important;max-height:none!important;overflow:hidden;border-bottom:none!important}
 #cb-main .cc.kcarte .kpeint,#cb-main .cc.kcarte .kpeint img{height:100%!important}
 #cb-main .cc.kcarte .kpeint img{width:100%;object-fit:cover;transform-origin:50% 40%}
-#cb-main .cc.kcarte.f .kpeint img,#cb-main .cc.kcarte.choisie .kpeint img{animation:krToile 9s ease-in-out infinite alternate}
+
 @keyframes krToile{from{transform:scale(1.04) translate(-1.5%,1%)}to{transform:scale(1.12) translate(1.5%,-1.5%)}}
 #cb-main .cc.kcarte .art::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
   background:linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(10,6,4,.55));box-shadow:inset 0 0 calc(var(--u)*.8) rgba(0,0,0,.7)}
 #cb-main .cc.kcarte .art::before{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;z-index:3;pointer-events:none;opacity:0;
   background:linear-gradient(100deg,transparent,rgba(255,240,200,.45),transparent)}
-#cb-main .cc.kcarte.f .art::before{animation:krReflet 4.5s ease-in-out infinite}
+
 @keyframes krReflet{0%,55%{transform:translateX(0);opacity:0}62%{opacity:1}85%,100%{transform:translateX(420%);opacity:0}}
 #cb-main .cc.kcarte .kband{display:none}
 #cb-main .cc.kcarte .cn{position:relative;z-index:4;margin:calc(var(--u)*-1.1) 6% 0!important;padding:.12em .35em!important;min-height:0!important;
