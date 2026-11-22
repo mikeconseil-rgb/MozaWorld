@@ -6,6 +6,11 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.33 : interface « Carnet sombre », étape 3, le menu pause (22 novembre, `src/carnet-menu.js`)
+- Le menu pause et ses sous-menus (paquet, grimoire, sauvegardes, rivaux, lois…) s'écrivent sur une page de carnet : parchemin déchiré aux coins brûlés, titre gothique, sceau de cire, options à l'encre, notes à la main ; l'option choisie est entourée à l'encre rouge.
+- Mêmes options, même ordre, mêmes commandes. Les cartes à jouer gardent leurs cadres. Aucune image, aucun filtre.
+- Non fait : les onglets LB/RB et le panneau « Votre royaume » de la maquette (ce serait réorganiser le menu, pas l'habiller).
+
 ## Version 2.32 : interface « Carnet sombre », étape 2, le combat (22 novembre, `src/carnet-combat.js`)
 Demandes du 21 novembre : « un champ de bataille en mosaïque », « les mosaïques doivent être collées, un damier en mosaïque », jauges tordues, parchemins usés.
 - Le Plateau devient un damier de tuiles jointives : hexagones et nœuds papillon alternés, bord à bord, 5 colonnes × 3 voies. Vos cases sont bleu nuit, celles de l'ennemi brun rouge ; chaque case spéciale garde sa couleur et son emblème Girih incrusté (Bastion bleu, Piège violet, Tanière rouge, Source turquoise, Tribune ocre). Le Centre est la tuile du milieu (verte à vous, rouge à l'ennemi), entre deux cases décoratives sombres.
