@@ -75,10 +75,10 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail!=
     ok('plafond : une maison pleine ne tente plus de prise',pla.gri===0&&pla.zones===pla.max,JSON.stringify(pla));
     /* 3. contestation annoncée, puis échéance (réussite forcée) : un palier de moins, repos */
     const ct=await p.evaluate(()=>{const S=MZ.S,r=MZ.rival('conteste');if(!r)return null;const lv0=S.lv[r.id],c=JSON.parse(JSON.stringify(S.riv.c));
-      const fin=MZ.rivalArrive(true);return{r,lv0,lv1:S.lv[r.id],c,fin,rest:S.rest[r.id]-Date.now()/1000,cNull:S.riv.c===null,own:S.own[r.id]}});
+      const own0=S.own[r.id],fin=MZ.rivalArrive(true);return{r,lv0,lv1:S.lv[r.id],c,fin,rest:S.rest[r.id]-Date.now()/1000,cNull:S.riv.c===null,own:own0,ownApres:S.own[r.id],maison:S.riv.z[r.id]||null,emp:!!S.emp[r.id]}});
     ok('une contestation est annoncée sur une de vos zones',!!ct&&ct.c.du===ct.c.de+3&&ct.own,ct&&JSON.stringify(ct.c));
-    ok('l\'échéance baisse la zone d\'un palier',!!ct&&Math.abs(ct.lv1)===Math.abs(ct.lv0)-1&&ct.cNull,ct&&ct.lv0+' → '+ct.lv1);
-    ok('la zone baissée ne se repose pas (bêta, 22 nov. : plus de repos)',!!ct&&!(ct.rest>0),ct&&Math.round(ct.rest)+' s');
+    /* 22 nov. (utilisateur) : la maison prend la zone, qui garde son palier ; si elle est au plafond, la zone redevient sauvage avec votre empreinte */
+    ok('l\'échéance : la maison prend la zone (ou la rend sauvage, au plafond), palier gardé',!!ct&&ct.cNull&&!ct.ownApres&&ct.lv1===ct.lv0&&((ct.fin.fin==='prise'&&ct.maison===ct.r.r)||(ct.fin.fin==='sauvage'&&ct.emp)),ct&&JSON.stringify({fin:ct.fin,maison:ct.maison,emp:ct.emp,lv:ct.lv0+' → '+ct.lv1}));
     /* 4. zones au repos et zone bornée : pas visables */
     const bor=await p.evaluate(()=>{const S=MZ.S;S.own.ASS155=true;S.act.ASS155=true;S.lv.ASS155=1;
       const cand=ciblesConteste().map(Z=>Z.id);const x=cand[0];S.borne=x;const apres=ciblesConteste().map(Z=>Z.id);

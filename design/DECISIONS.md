@@ -91,6 +91,7 @@ Réponses de l'utilisateur à la liste de dix réglages du dimanche 22 nov., poi
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Maisons rivales, contestation | Sans défense la maison réussit à coup sûr, 3 cycles pour intervenir ; réussie, elle PREND la zone (palier gardé ; au plafond, la zone redevient sauvage avec votre empreinte) | en vigueur (22 nov., « 5 elle le prend », « elle réussit 100 mais un délai pour intervenir », puis « 2 ») | 55 %, 2 cycles, la zone perdait un palier |
 | Citadelles épiques | Tirées une fois pour toute la carte (graine), Berestograd jamais épique : elle reste au jeu contre le monde sauvage (« non, elle devrait être gardée pour le PvE », puis carte : « Berestograd hors des épiques ») | en vigueur (22 nov.) | 5 tirées parmi les Citadelles de la région chargée ; puis Berestograd toujours comprise (20 nov., provisoire) |
 | Lot 3, réglages | Prix du pacte au moins le quart du revenu, qui suit ce quart ; 3e vague du siège au-dessus de la défense (combat obligatoire) ; Fossés, Guet, Greniers et Feux trompeurs sans effet sur les vagues ; une vague en marche menace les caravanes ; vengeance d'un pacte rompu hors Couvre-feu ; on peut rester dans le monde après la victoire | en vigueur (20 nov., « Oui à tout ») | |
 | Hordes | Une horde ne vise que les zones plus faibles de 2 ou 3 paliers | en vigueur | |

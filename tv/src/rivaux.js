@@ -5,7 +5,7 @@
        la tentative est annoncée RIV_TENTE cycles à l'avance ; à l'échéance, réussite avec une chance qui baisse avec le |palier|,
        alors la zone devient « à elle » et l'empreinte s'efface ; le joueur la fait tomber en activant la zone avant,
        ou en battant à la Pierre le champion de la maison, « Défier les gens de la maison »),
-     soit elle annonce qu'elle viendra faire l'épreuve d'une de vos zones dans RIV_DELAI cycles pour la baisser d'un palier.
+     soit elle annonce qu'elle viendra faire l'épreuve d'une de vos zones dans RIV_DELAI cycles pour vous la prendre (22 nov. : avant, elle la baissait d'un palier).
    - Défense : aller à la Pierre de la zone avant l'échéance et battre le champion de la maison (combat, sorte « rival »).
      Sinon, résolution automatique : la maison réussit avec une chance qui baisse si la zone est protégée (defenseMonde).
    - Une zone bornée (Pierre de bornage de Raak), verrouillée (Domaines) ou au repos ne peut pas être visée.
@@ -103,7 +103,7 @@ function prendre(r,Z,muet){const R=riv(),id=Z.id,avait=!!S.emp[id];
   if(started&&!muet)toast(`${r.bl} ${r.nom}`,`prend ${Z.info.nom}`,avait?'Votre empreinte sur cette zone s\'efface. Vous pourrez la reprendre en battant ses gardiens, plus coriaces.':'Vous pourrez la reprendre en battant ses gardiens à la Pierre d\'éveil ; ils seront plus coriaces.');
   return{sorte:'prise',r:r.k,id}}
 function contester(r,Z){const R=riv();R.c={r:r.k,id:Z.id,de:R.nc,du:R.nc+RIV_DELAI};R.vu[r.k]=(R.vu[r.k]||0)+1;save();
-  if(started){const ch=Math.round(chanceRival(Z.id)*100);toast(`${r.bl} ${r.nom} conteste ${Z.info.nom}`,`dans ${RIV_DELAI} cycles (${fmt(RIV_DELAI*(typeof CYCLE==='number'?CYCLE:60))})`,`Vous avez ce délai pour intervenir : allez à sa Pierre d'éveil et battez le champion de la maison. Sans défense, la zone perd un palier${ch<100?` (${ch} fois sur 100, grâce aux protections du lieu)`:''}.`)}
+  if(started){const ch=Math.round(chanceRival(Z.id)*100);toast(`${r.bl} ${r.nom} conteste ${Z.info.nom}`,`dans ${RIV_DELAI} cycles (${fmt(RIV_DELAI*(typeof CYCLE==='number'?CYCLE:60))})`,`Vous avez ce délai pour intervenir : allez à sa Pierre d'éveil et battez le champion de la maison. Sans défense, la maison prend la zone${ch<100?` (${ch} fois sur 100, grâce aux protections du lieu)`:''}.`)}
   return{sorte:'conteste',r:r.k,id:Z.id}}
 
 /* ---------- échéance d'une contestation ---------- */
@@ -111,9 +111,15 @@ function rivalArrive(gagne){const R=riv(),c=R.c;if(!c)return null;R.c=null;const
   if(!Z||!S.own[c.id]||!S.act[c.id]){res={fin:'sans objet'}}
   else if(protegeConteste(c.id)){res={fin:'protégée'};toast(`${r.bl} ${r.nom}`,`renonce à ${Z.info.nom}`,typeof borne==='function'&&borne(c.id)?'La Pierre de bornage de Raak tient : la zone ne recule pas.':typeof enSiege==='function'&&enSiege(c.id)?'La Citadelle soutient le siège final : aucune maison n\'ose s\'en approcher.':'La zone est au cœur du royaume : la maison repart les mains vides.')}
   else{const ch=chanceRival(c.id),ok=gagne===undefined?Math.random()<ch:!!gagne,lv=S.lv[c.id]||0;
-    if(ok&&lv!==0){const n=lv-Math.sign(lv);S.lv[c.id]=n;Z.lvT=n;S.rest[c.id]=now()+(typeof reposZone==='function'?reposZone(c.id):REPOS);
-      if(typeof etatRoutes==='function')etatRoutes();
-      toast(`${r.bl} ${r.nom} réussit l'épreuve`,`${Z.info.nom} recule au palier ${sgn(n)||'0'}`,(r=>r?`La zone reste à vous, mais elle se repose ${fmt(r)} avant de pouvoir évoluer.`:'La zone reste à vous : vous pouvez la faire remonter tout de suite.')(typeof reposZone==='function'?reposZone(c.id):REPOS));res={fin:'baisse',lv:n}}
+    /* 22 nov. (utilisateur, « 2 ») : la maison qui réussit PREND la zone (elle ne la baisse plus d'un palier). La zone garde son palier.
+       Si la maison tient déjà autant de zones qu'elle peut en garder, la zone redevient sauvage, avec votre empreinte. */
+    if(ok){const id=c.id;S.own[id]=false;S.act[id]=false;
+      if(typeof estRESh==='function'&&estRESh(id)&&S.routes&&S.routes[id])delete S.routes[id];
+      if(zonesMaison(r.k).length<RIV_MAX()){prendre(r,Z,true);res={fin:'prise',lv};
+        toast(`${r.bl} ${r.nom} réussit l'épreuve`,`et prend ${Z.info.nom}`,'Personne n\'est venu la défendre. Vous pourrez la reprendre en battant ses gardiens à la Pierre d\'éveil.')}
+      else{S.emp[id]=true;res={fin:'sauvage',lv};
+        toast(`${r.bl} ${r.nom} réussit l'épreuve`,`${Z.info.nom} redevient sauvage`,'La maison tient déjà autant de zones qu\'elle peut en garder : elle laisse celle-ci au monde sauvage. Votre empreinte y reste : vous la reprendrez plus facilement.')}
+      if(typeof etatRoutes==='function')etatRoutes()}
     else{toast(`${r.bl} ${r.nom} échoue`,`${Z.info.nom} tient bon`,`Votre zone garde son palier (la maison avait ${Math.round(ch*100)} chances sur 100).`);res={fin:'tient'}}}
   save();etatHud();if(typeof hudKey!=='undefined')hudKey='';return res}
 
@@ -144,7 +150,7 @@ function finRival(ok,C){const Z=C.Z,R=riv(),tk=!(R.c&&R.c.id===Z.id)&&tentativeS
       back:toMonde,opts:[{l:'Repartir explorer',ic:'◆',go:toMonde}]});return}
   if(r&&typeof gagnerTesselles==='function')gagnerTesselles(TESS_PRIMES.rival,'rival');   /* commerce.js : prime en tesselles */
   if(R.c&&R.c.id===Z.id)R.c=null;const t=ZMANA[Z.id]||'Vent';gagner(t,2);S.hurt=Math.max(0,S.hurt-1);save();etatHud();sfx('hit');
-  ui('menu',{sur:'Défense réussie',t:Z.info.nom,corps:`<p>Le champion ${r?dela(r)+' ':''}tombe devant la Pierre. La maison renonce : la zone garde son palier. Les vaincus lâchent 2 ${t}.</p>`,
+  ui('menu',{sur:'Défense réussie',t:Z.info.nom,corps:`<p>Le champion ${r?dela(r)+' ':''}tombe devant la Pierre. La maison renonce : la zone reste à vous et garde son palier. Les vaincus lâchent 2 ${t}.</p>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}
 
 function finDefi(ok,Z,k){const R=riv(),r=RIVK[k];
@@ -193,7 +199,7 @@ function menaceDe(r){const R=riv(),l=[];const tk=R.t[r.k]&&tentativeSur(R.t[r.k]
   return l.length?l.join(' ; '):'aucune menace annoncée'}
 function openRivaux(f){mode='menu';document.body.classList.add('jeu-ouvert');riv();
   ui('menu',{sur:'Pause · les maisons rivales',t:'Rivaux',f:typeof f==='number'?f:0,
-    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une annonce qu'elle tentera l'épreuve d'une zone sauvage pour la prendre (activez la zone avant elle, ou allez défier ses gens à la Pierre), ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour la baisser d'un palier. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, verrouillée par votre Citadelle (la Citadelle et ses voisines) ne peut pas être prise ; une zone bornée, au cœur du royaume${REPOS?' ou au repos':''} ne peut pas être contestée.</p>`,
+    corps:`<p class="petit">Le monde sauvage reste votre premier adversaire. Quatre maisons rivales grignotent la mosaïque, lentement : de temps à autre, l'une annonce qu'elle tentera l'épreuve d'une zone sauvage pour la prendre (activez la zone avant elle, ou allez défier ses gens à la Pierre), ou annonce qu'elle viendra faire l'épreuve d'une de vos zones pour vous la prendre. Allez alors à la Pierre de la zone et battez son champion avant l'échéance. Une zone bornée à l'Oasis de Raak, verrouillée par votre Citadelle (la Citadelle et ses voisines) ne peut pas être prise ; une zone bornée, au cœur du royaume${REPOS?' ou au repos':''} ne peut pas être contestée.</p>`,
     back:openMenu,opts:[...RIVAUX.map((r,i)=>{const z=zonesMaison(r.k);
       return{l:`${r.nom} · ${z.length} zone${z.length>1?'s':''}`,ic:`<span style="color:${r.col}">${r.bl}</span>`,d:menaceDe(r),go:()=>openMaison(r,i)}}),{l:'Retour',ic:'◆',go:()=>openMenu()}]})}
 function openMaison(r,i){const z=zonesMaison(r.k),R=riv(),cz=R.c&&R.c.r===r.k?ZB[R.c.id]:null,tz=R.t[r.k]&&tentativeSur(R.t[r.k].id)===r.k?ZB[R.t[r.k].id]:null;
