@@ -31,9 +31,20 @@ Même équipe de 4 testeurs, centrée sur ce qu'on voit et ce qu'on comprend à 
 - Portraits des unités du plateau un peu plus petits (moins de chevauchements) ; légende du Centre plus petite.
 - Correctif : un attaquant tué par une riposte ou des épines ne frappe plus la suite du coup (un chef vaincu pouvait encore tuer le héros).
 
+## Passe 4 (22 nov.)
+
+- Étiquette de cible réparée (un seul style, sous la plaque) et devenue un aperçu : « ◆ cible · PV 23/30 · ⛨ 4 · hésitera ✓ » ou « s'habitue ✗ » quand la carte fait hésiter.
+- La pastille d'élan va sur la case de l'ennemi qui prend son élan (avant ou arrière), en bas de case ; le sceau LOURD passe au coin bas gauche de la plaque.
+- Alertes (« coups attendus », élan, renfort) plus grandes, en romain gras.
+- Plateau plein : l'unité qui partirait porte « partira si une créature arrive ».
+- La place de la Garde reste tenue quand elle tombe : le plateau ne glisse plus.
+- Bouton Manœuvre sous « Fin du tour », loin du chef.
+- Légende du Centre contenue dans sa case ; ligne de terrain des unités plus discrète.
+
 ## Notes
 
 | Passe | Fonctionnel | Cartes à échanges | Défense par étages | Tactique généraliste |
 |---|---|---|---|---|
 | 1 (22 nov.) | 6,5 | 6 | 6,5 | 7 |
 | 2 (22 nov.) | 7,5 | 6,5 | 7,5 | 7,5 |
+| 3 (22 nov.) | 7 | 6,5 | 7,5 | 7,5 |

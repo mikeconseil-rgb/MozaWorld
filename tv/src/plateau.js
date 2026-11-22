@@ -143,13 +143,18 @@ const plCss=document.createElement('style');plCss.textContent=`
 .pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
 #combat .pcase.chefvoie{outline:2px dashed #e2675a;outline-offset:-5px}
 #combat .plelan,#combat .plhero,#combat .plrenfort,#combat .plmenace{font-family:var(--c-main,inherit)}
-#combat .plelan{top:-.3em;bottom:auto}
+#combat .plelan{top:auto;bottom:-.2em}
+#combat .plelan,#combat .plhero,#combat .plrenfort{font-size:calc(var(--u)*1)!important;font-style:normal!important;font-weight:800}
+#combat #cb-centre .cv{max-width:100%;white-space:normal!important;text-align:center;font-size:calc(var(--u)*.85)!important;line-height:1.15}
+#combat .u .mz-voie{font-size:calc(var(--u)*.55);margin-top:0;padding-top:0}
+.plpart{position:absolute;z-index:9;left:50%;transform:translateX(-50%);top:-1.2em;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#fff3da;background:#5b3a12;border:1px dashed #e8c77f;padding:0 .45em}
+.plpart:empty{display:none}
+#pl-garde-place{pointer-events:none;visibility:hidden}
 #combat .plmenace{z-index:20;white-space:normal;text-align:center;left:0;right:0;transform:none;margin:0 auto;width:fit-content;max-width:100%}
 #combat .u.vise{z-index:30!important;filter:drop-shadow(0 0 5px #fff3c8) drop-shadow(0 0 12px #e8c77f)}
-#combat .u.vise::before{top:auto;bottom:-1.3em}
 #cb-foes .u:not(.chef) .por,#cb-allies .u:not(.hero):not(.garde) .por{width:calc(var(--u)*3)!important;height:calc(var(--u)*3)!important}
 #combat .u.lourd .plaque{border-color:#a01d12!important;box-shadow:0 0 0 2px #a01d12}
-#combat .u.lourd::after{content:"LOURD";position:absolute;z-index:7;right:-.4em;top:-.2em;font-family:var(--c-goth,inherit);font-size:calc(var(--u)*.75);color:#fff3da;background:#8a1a10;border-radius:50%;padding:.35em .3em;transform:rotate(12deg);box-shadow:0 1px 4px #000}
+#combat .u.lourd::after{content:"LOURD";position:absolute;z-index:7;left:-.6em;bottom:-.3em;font-family:var(--c-goth,inherit);font-size:calc(var(--u)*.75);color:#fff3da;background:#8a1a10;border-radius:50%;padding:.35em .3em;transform:rotate(12deg);box-shadow:0 1px 4px #000}
 #combat #cb-centre .cv{font-size:calc(var(--u)*.7)!important;white-space:nowrap}
 .plhero{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-1.5em;white-space:nowrap;font-size:calc(var(--u)*.9);font-weight:700;color:#ffd9a0;background:rgba(10,8,6,.9);border:1px solid #c9a45c;padding:0 .5em}
 .plhero.mortel{color:#fff;background:#7a1a12;border-color:#ff8070;animation:plvise .6s ease-in-out infinite alternate}
@@ -160,13 +165,13 @@ const plCss=document.createElement('style');plCss.textContent=`
 #combat .u .int .voie{color:#ff8a78!important;font-weight:700}
 #combat #cb-aide{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;line-height:1.25}
 #combat .u.vise .plaque{box-shadow:0 0 0 3px #fff3c8,0 0 16px #e8c77f!important}
-#combat .u.vise::before{content:"◆ cible";position:absolute;z-index:8;left:50%;top:-1.1em;transform:translateX(-50%);font-weight:700;font-size:calc(var(--u)*.85);color:#fff3c8;background:rgba(10,8,6,.9);border:1px solid #e8c77f;padding:0 .5em;white-space:nowrap}
+#combat .u.vise::before{content:attr(data-apercu);position:absolute;z-index:8;left:50%;top:auto;bottom:-1.3em;transform:translateX(-50%);font-weight:700;font-size:calc(var(--u)*.85);color:#fff3c8;background:rgba(10,8,6,.9);border:1px solid #e8c77f;padding:0 .5em;white-space:nowrap}
 #cb-main:has(.cc:nth-child(7)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-1.6)}
 #cb-main:has(.cc:nth-child(9)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-3)}
 #cb-main .cc.f{z-index:5}
 .u.manvise .plaque{border-color:#fff3c8;box-shadow:0 0 0 3px rgba(232,199,127,.5)}
 #cb-foes .u.mort{opacity:0!important;pointer-events:none}
-#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(100% - var(--u)*3.5);transform:scale(.78);transform-origin:bottom right}
+#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(var(--u)*-1.2);transform:scale(.78);transform-origin:bottom right}
 #cb-main .cc.kcarte{min-width:calc(var(--u)*7)!important}
 #cb-main .cc.man.f{transform:scale(.88)}body.manette #cb-main .cc.man::before{content:"Y"}
 `;document.head.appendChild(plCss);
@@ -198,7 +203,10 @@ function badgesMenace(){if(!plActif())return;const th=menaces(),passes=[0,0,0];f
   if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];const tri=!tenantVoie(v)&&qui,pi=vivants(CB.foes).some(m=>m.int&&m.int.a==='f'&&voieDe(m)===v),passe=qui&&pi?Math.max(0,th[v]-qui.pv-qui.g):0;passes[v]=passe;
   b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]+(tri?' (Tribune)':''):gardeU()?'Garde':'héros')+(passe?' · '+passe+' passent':''):'');
   /* interface, passe 2 : l'élan dans sa propre pastille */
-  const de=document.getElementById('pc-e'+v+'0')||d;let be=de.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';de.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
+  const me=vivants(CB.foes).find(m=>m.int&&m.int.a==='c'&&voieDe(m)===v&&!m.chef),de=document.getElementById('pc-e'+v+(me?Math.min(1,rangDe(me)):0))||d;for(const r of[0,1]){const o=document.getElementById('pc-e'+v+r);if(o&&o!==de){const x=o.querySelector('.plelan');if(x)x.textContent=''}}let be=de.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';de.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
+  /* interface, passe 4 : plateau plein, l'unité qui partirait si une créature arrive */
+  {const l0=surTerrain(),plein=l0.length>=PL_MAX,l3=l0.filter(u=>u.neT!==CB.tour),l2=l3.length?l3:l0,poids=u=>(u.atk+2)*u.pv*(u.mur?1.5:1),w=plein?l2.slice().sort((p,q)=>poids(p)-poids(q))[0]:null;
+   for(const u of l0)if(u.el){let p=u.el.querySelector(':scope>.plpart');if(!p){p=document.createElement('span');p.className='plpart';u.el.appendChild(p)}p.textContent=u===w?'partira si une créature arrive':''}}
   /* interface, passe 2 : total des coups qui iront au héros ce tour, en rouge s'il peut tomber */
   {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v];else dh+=passes[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
    const h=CB.hero.el;if(h){let p=h.querySelector(':scope>.plhero');if(!p){p=document.createElement('span');p.className='plhero';h.appendChild(p)}p.textContent=dh?'coups attendus '+dh:'';p.classList.toggle('mortel',dh>=CB.hero.pv)}}
@@ -220,6 +228,11 @@ function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7-8 : en rencontre de bas niveau (≤ 2), le renfort a 30 % de PV en moins ; le renfort du tour 5 de l'éveil est lourd (PV ×1,5, inébranlable pendant son élan) ; tous entrent en prenant leur élan, puis frappent fort */
   if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2)}
   C.foes.push(m);uniteEl(m,'cb-foes');if(m.lourd&&m.el)m.el.classList.add('lourd');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort${m.lourd?' lourd':''} accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort${m.lourd?' lourd':''} : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
+/* interface, passe 4 : aperçu sur la cible visée (PV, et si l'hésitation prendra) */
+function hesitePrevu(m){const t=CB.tour,pl=!!CB.cases;if(pl&&m.hesBloque===t)return false;if(pl&&m.lourd&&m.int&&m.int.a==='c')return false;
+  if((m.chef||pl)&&(m.hesT===t-1||(pl&&m.chef&&m.hesT!=null&&m.hesT!==t&&t-m.hesT<3)))return false;return true}
+function apercuCible(m){let s='◆ cible · PV '+m.pv+'/'+m.max+(m.g>0?' · ⛨ '+m.g:'');const k=CB.main[CB.f],c=k&&CK[k];
+  try{const o=c&&c.ops?JSON.stringify(c.ops()):'';if(o.indexOf('"hesite"')>=0)s+=hesitePrevu(m)?' · hésitera ✓':' · s\'habitue ✗'}catch(_){}return s}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
 /* passe 6 : plancher d'attaque (les malus ne descendent pas un ennemi sous 60 % de son attaque, un chef sous 75 %) ; échauffement à partir du tour 4 (+1 d'attaque par tour) */
