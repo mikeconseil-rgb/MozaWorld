@@ -58,6 +58,9 @@ for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=i
   if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
+/* Décision du 20 nov. (1 a) : d'ici le 28, hordes, rivaux, pacte, siège, caravanes et lois ne jouent que dans la région de départ.
+   Loin d'elle, le monde sauvage et les maisons attendent votre retour : leurs échéances sont repoussées d'un cycle à chaque cycle (mondeAttend, economie.js). */
+const mondeIci=()=>REG_ORIG;
 /* 2.27.2 : nom et fiche d'une zone, même hors de la région chargée (ZB ne contient que la région) */
 const zI=id=>{let Z=null;try{Z=ZB[id]}catch(_){}Z=Z||ZWB[id];return(Z&&Z.info)||{nom:String(id),sur:"",pm:"Pénurie",pp:"Abondance",pal:["","","","",""]}};
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};

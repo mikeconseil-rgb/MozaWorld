@@ -210,7 +210,7 @@ function suivreLois(){const cle=S.graine+':'+(S.lives||1),cur={};
     for(const id in LOI_VU)if(!cur[id])LOI_FILE.push(['Loi endormie · '+nomAssL(id),LOI_VU[id].nom,reveilTxt(id)])}
   LOI_VU=Object.fromEntries(Object.entries(cur).map(([k,v])=>[k,{nom:v.nom,n:v.n}]));LOI_VU_CLE=cle}
 setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||typeof S==='undefined')return;initLois();
-  while(S.loisNc<(S.nc||0)){S.loisNc++;loisCycle()}
+  while(S.loisNc<(S.nc||0)){S.loisNc++;if(mondeIci())loisCycle()}
   suivreLois();
   if(mode==='monde'&&LOI_FILE.length&&(typeof toastT==='undefined'||toastT<1)){let m=LOI_FILE.shift();if(typeof m==='function')m=m();toast(...m)}},1000);
 

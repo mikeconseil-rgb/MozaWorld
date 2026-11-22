@@ -414,6 +414,9 @@ for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=i
   if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
+/* Décision du 20 nov. (1 a) : d'ici le 28, hordes, rivaux, pacte, siège, caravanes et lois ne jouent que dans la région de départ.
+   Loin d'elle, le monde sauvage et les maisons attendent votre retour : leurs échéances sont repoussées d'un cycle à chaque cycle (mondeAttend, economie.js). */
+const mondeIci=()=>REG_ORIG;
 /* 2.27.2 : nom et fiche d'une zone, même hors de la région chargée (ZB ne contient que la région) */
 const zI=id=>{let Z=null;try{Z=ZB[id]}catch(_){}Z=Z||ZWB[id];return(Z&&Z.info)||{nom:String(id),sur:"",pm:"Pénurie",pp:"Abondance",pal:["","","","",""]}};
 const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
@@ -3552,7 +3555,7 @@ const donjonAVous=()=>!!(S.act.DON&&S.own.DON);
 
 /* ---------- Cycle : production, entretien, assaut ---------- */
 let ecoRapport=[];
-function cycle(){S.nc++;const lignes=[];
+function cycle(){S.nc++;mondeAttend();const lignes=[];
   const pt=prodParType();for(const t in pt){gagner(t,pt[t]);lignes.push(`+${pt[t]} ${t} des Ressources`)}
   if(donjonAVous()&&nbPieges()&&S.ent===0){let paye=0,dorment=0;
     for(const x of S.pieges){if(!x)continue;const m=PIEGES[x.k].m;if(peutPayer(m,1)){payer(m,1);paye++;x.dort=false}else{x.dort=true;dorment++}}
@@ -3604,6 +3607,19 @@ function changerPiege(i){const cur=S.pieges[i],k0=cur?cur.k:null;
     opts:[...PORDRE.slice(1).map(k=>{const P_=PIEGES[k];return{l:P_.nom+(k===k0?' (en place)':''),ic:P_.pose,d:`${P_.pose} ${P_.m} · force ${P_.force} · ${P_.txt}`,off:k===k0||!peutPayer(P_.m,P_.pose),
       go:()=>{payer(P_.m,P_.pose);S.pieges[i]={k,u:3,dort:false};save();etatHud();sfx('hit');openDonjon(i)}}}),
       {l:'Salle vide',ic:'○',off:!cur,go:()=>{S.pieges[i]=null;save();openDonjon(i)}},{l:'Retour',ic:'◆',go:()=>openDonjon(i)}]})}
+
+/* 20 nov. : loin de la région de départ, le gameplay du monde attend (voir mondeIci, core.js) : chaque échéance repoussée d'un cycle */
+function mondeAttend(){if(mondeIci()||typeof S==='undefined')return;const up=o=>{if(o&&typeof o.du==='number'){o.du++;if(typeof o.de==='number')o.de++}};
+  if(typeof S.dernierAssaut==='number')S.dernierAssaut++;
+  for(const k in S.hordes||{}){const h=S.hordes[k];if(h&&typeof h.arrive==='number')h.arrive++}
+  if(S.siege&&typeof S.siege.arrive==='number')S.siege.arrive++;
+  for(const k in S.siegeRepos||{})if(S.siegeRepos[k]>=S.nc)S.siegeRepos[k]++;
+  for(const k in S.loisRenf||{})if(S.loisRenf[k]>=S.nc)S.loisRenf[k]++;
+  const R=S.riv;if(R){for(const k in R.t||{})up(R.t[k]);up(R.c)}
+  const p=S.pacte;if(p){up(p.cr);for(const k in p.refus||{})if(p.refus[k]>=S.nc)p.refus[k]++}}
+let mondeAttenteDit=false;
+setInterval(()=>{if(mondeAttenteDit||typeof started==='undefined'||!started||mode!=='monde'||mondeIci())return;mondeAttenteDit=true;
+  toast('Loin de la région de départ','Le monde attend votre retour','D\'ici le 28 novembre, hordes, maisons rivales, pacte, siège final, caravanes et lois ne jouent que dans la région de départ. Ici, leurs échéances sont suspendues : elles reprennent quand vous y revenez.')},1500);
 /* Pouvoirs de carte du monde des Assemblées (17 nov., validés « pour l'instant » par l'utilisateur ; regles-avancees.md, section 1 sexies).
    Une Assemblée agit sur le monde, pas en combat. Son pouvoir s'active quand elle est à vous, activée et au palier 1 ou plus.
    Le signe du palier choisit la loi quand l'Assemblée en a deux (− : premier pôle, + : second).
@@ -3680,8 +3696,11 @@ const PALMARES_CLE='mz-palmares-1';
 function hashSiege(t){let h=2166136261;for(const c of String(t))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h}
 let epiquesCache={g:null,l:[]};
 function citadellesEpiques(){const g=S.graine||0;if(epiquesCache.g===g&&epiquesCache.l.length)return epiquesCache.l;
-  const cits=ZN.filter(Z=>estCIT(Z)).map(Z=>Z.id);
-  const l=cits.length<=SIEGE_EPIQUES?cits:cits.slice().sort((a,b)=>hashSiege(a+'#'+g)-hashSiege(b+'#'+g)).slice(0,SIEGE_EPIQUES);
+  /* 20 nov. : tirées une fois pour tout le monde (ZW), plus selon la région chargée. Berestograd, Citadelle de la région de départ,
+     en est toujours une, puisque le siège ne se joue que dans cette région d'ici le 28 (provisoire) ; les autres sont tirées par la graine. */
+  const W=typeof ZW!=='undefined'?ZW:ZN,cits=W.filter(Z=>estCIT(Z)&&Z.id!=='CIT').map(Z=>Z.id);
+  const reste=SIEGE_EPIQUES-1,tir=cits.length<=reste?cits:cits.slice().sort((a,b)=>hashSiege(a+'#'+g)-hashSiege(b+'#'+g)).slice(0,reste);
+  const l=(W.some(Z=>Z.id==='CIT')?['CIT']:[]).concat(tir);
   epiquesCache={g,l};return l}
 const estEpique=id=>!!ZB[id]&&citadellesEpiques().indexOf(id)>=0;
 const courtS=id=>zI(id).nom.split(',')[0];
@@ -3736,7 +3755,7 @@ function echecSiege(l,sansRapport){const s=S.siege;S.siege=null;S.siegeRepos[s.c
 function montrerSiege(){if(!siegeRapports.length||mode!=='monde')return;const r=siegeRapports.shift();if(r.victoire){if(typeof fanfare==='function')fanfare(7);ecranVictoire(r.victoire,r.lignes);return}mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
   ui('menu',{sur:'Siège final',t:r.t,corps:`<p class="petit">${r.lignes.join('<br>')}</p>`,back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}
 
-setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;initSiege();if(mode==='monde'&&siegeRapports.length)montrerSiege();const s=S.siege;if(!s)return;
+setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;initSiege();if(mode==='monde'&&siegeRapports.length)montrerSiege();const s=S.siege;if(!s||!mondeIci())return;
   if(!ZB[s.cit]||!tient(s.cit)||Math.abs(S.lv[s.cit]||0)<7){S.siege=null;save();hudKey='';etatHud();
     toast('Le siège est levé',ZB[s.cit]?zI(s.cit).nom:'',tient(s.cit)?'La Citadelle n\'est plus à ±7 : le siège final s\'arrête. Ramenez-la à ±7 pour le relancer.':'La Citadelle n\'est plus à vous : le siège final s\'arrête. Reprenez-la et ramenez-la à ±7 pour le relancer.');return}
   if(S.nc>=s.arrive&&!(typeof CB!=='undefined'&&CB&&CB.siege))vagueArrive();
@@ -4287,7 +4306,7 @@ function hordesCycle(){initHordes();if(S.nc<HORDE_GRACE)return;
 let hordeNc=null;
 setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;initHordes();
   if(hordeNc===null||S.nc<hordeNc)hordeNc=S.nc;
-  while(hordeNc<S.nc){hordeNc++;hordesCycle()}
+  while(hordeNc<S.nc){hordeNc++;if(mondeIci())hordesCycle()}
   for(const src in S.hordes){const h=S.hordes[src];if(S.nc<h.arrive)continue;if(typeof CB!=='undefined'&&CB&&CB.horde===src)continue;hordeArrive(src)}
   if(mode==='monde'&&hordeRapports.length)montrerHorde();
   /* le héros arrive dans une zone visée : on le prévient une fois */
@@ -4478,7 +4497,7 @@ function tourRivaux(){const R=riv();
 setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre')return;const R=riv();
   verifTentatives();
   if(S.nc<R.nc)R.nc=S.nc;   /* nouvelle partie : le compteur des cycles repart de zéro */
-  while(R.nc<S.nc){R.nc++;tourRivaux()}},1000);
+  while(R.nc<S.nc){R.nc++;if(mondeIci())tourRivaux()}},1000);
 /* accélérateur de test, posé quand window.MZ existe (main.js le crée après ce fichier) */
 window.addEventListener('load',()=>{if(window.MZ)window.MZ.rivalTente=rivalTente});
 
@@ -4684,7 +4703,7 @@ function pacteMort(){const p=pac();if((S.lives||1)<=p.v)return false;p.v=S.lives
   return true}
 setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||typeof S==='undefined')return;const p=pac();pacteMort();
   /* le cycle n est traité quand le commerce l'a payé (les tesselles du cycle sont dans la bourse), quel que soit l'ordre des fichiers */
-  while(p.nc<S.nc&&(typeof S.tessNc!=='number'||S.tessNc>p.nc)){p.nc++;cyclePacte()}
+  while(p.nc<S.nc&&(typeof S.tessNc!=='number'||S.tessNc>p.nc)){p.nc++;if(mondeIci())cyclePacte()}
   rupturePacte();
   if(pacFile.length&&mode==='monde'&&!(typeof toastT!=='undefined'&&toastT>1.5)){const m=pacFile.shift();toast(m[0],m[1],m[2])}},1000);
 
@@ -4935,7 +4954,7 @@ function caravanesCycle(nc){initCaravanes();if(typeof nc!=='number')nc=S.nc;let 
 setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||typeof S==='undefined')return;initCaravanes();
   /* le commerce verse d'abord les Citadelles (commerce.js) ; si son initialisation n'a pas encore eu lieu, on la fait ici */
   if(typeof initCommerce==='function')initCommerce();
-  while(S.carNc<S.nc){S.carNc++;caravanesCycle(S.carNc)}
+  while(S.carNc<S.nc){S.carNc++;if(mondeIci())caravanesCycle(S.carNc)}
   if(mode==='monde'&&CAR_FILE.length&&(typeof toastT==='undefined'||toastT<1))toast(...CAR_FILE.shift())},1000);
 
 /* ---------- Escorte : combat court contre les pillards, dans la zone du pillage ---------- */
@@ -5224,7 +5243,7 @@ function suivreLois(){const cle=S.graine+':'+(S.lives||1),cur={};
     for(const id in LOI_VU)if(!cur[id])LOI_FILE.push(['Loi endormie · '+nomAssL(id),LOI_VU[id].nom,reveilTxt(id)])}
   LOI_VU=Object.fromEntries(Object.entries(cur).map(([k,v])=>[k,{nom:v.nom,n:v.n}]));LOI_VU_CLE=cle}
 setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||typeof S==='undefined')return;initLois();
-  while(S.loisNc<(S.nc||0)){S.loisNc++;loisCycle()}
+  while(S.loisNc<(S.nc||0)){S.loisNc++;if(mondeIci())loisCycle()}
   suivreLois();
   if(mode==='monde'&&LOI_FILE.length&&(typeof toastT==='undefined'||toastT<1)){let m=LOI_FILE.shift();if(typeof m==='function')m=m();toast(...m)}},1000);
 
@@ -6939,7 +6958,7 @@ function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;
   const dep=typeof ZONES_DEP!=='undefined'?`<span class="d" title="Territoire de départ pris (les zones autour ne cèdent qu'après)"><span>⌂</span>${departPris()}<small>/${ZONES_DEP.length}</small></span>`:'';
   const terr=`<span class="d cle" title="Zones à vous"><span>⚑</span>${ids.length}<small>/${ZN.length}</small></span>${dep}<span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}</span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}</span><i class="pt"></i>${dom}${dfe}`;
   const res=`<span class="d cle" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span>${typeof bandeauTess==='function'?bandeauTess():''}${royaume()}`;
-  const men=(typeof menacesSiege==='function'?menacesSiege():[]).concat(typeof menacesHordes==='function'?menacesHordes():[]);
+  const men=(typeof mondeIci==='function'&&!mondeIci())?['<span class="d" title="D\'ici le 28 nov., hordes, maisons rivales et siège final ne jouent que dans la région de départ : ils attendent votre retour." style="color:#c8c0a8">⏸ en attente de votre retour</span>']:(typeof menacesSiege==='function'?menacesSiege():[]).concat(typeof menacesHordes==='function'?menacesHordes():[]);
   /* boucle 1 + fils domaines, hordes, rivaux (19 nov.) : trois îlots, puis menaces et rivaux s'il y en a */
   b.innerHTML=`<div class="ilot i-mana">${mana}${prod}</div><i class="sep"></i><div class="ilot i-terr">${terr}</div><i class="sep"></i><div class="ilot i-res">${res}</div>`+
     (men.length?`<i class="sep"></i><div class="ilot i-men"><span class="titre">Menaces</span>${men.join('')}</div>`:'')+(typeof ligneRivaux==='function'?ligneRivaux():'');

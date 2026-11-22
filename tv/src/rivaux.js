@@ -125,7 +125,7 @@ function tourRivaux(){const R=riv();
 setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre')return;const R=riv();
   verifTentatives();
   if(S.nc<R.nc)R.nc=S.nc;   /* nouvelle partie : le compteur des cycles repart de zéro */
-  while(R.nc<S.nc){R.nc++;tourRivaux()}},1000);
+  while(R.nc<S.nc){R.nc++;if(mondeIci())tourRivaux()}},1000);
 /* accélérateur de test, posé quand window.MZ existe (main.js le crée après ce fichier) */
 window.addEventListener('load',()=>{if(window.MZ)window.MZ.rivalTente=rivalTente});
 
