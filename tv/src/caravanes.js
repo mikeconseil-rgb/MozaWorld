@@ -15,7 +15,9 @@
    État : S.car = {idRessource: {arret, lieu, perdu, par, qui}} (les caravanes déjà parties, pour les dire « arrêtées » si la route est coupée), S.carNc, S.carG, S.carV,
    S.carBilan = {gains, pillages, escortes}. Tous les chiffres sont provisoires. */
 const CAR_GAIN=1;                         /* tesselles par cycle et par caravane, +1 si la Ressource est au niveau 3 (provisoire) */
-const CAR_RISQUE={horde:.3,rival:.15};    /* chance de pillage par cycle (provisoire) */
+/* chance de pillage par cycle. 22 nov. (utilisateur, « 8 ok ») : pillage sûr quand une horde vise une zone du trajet, 50 % quand une horde
+   est près du trajet (sa source ou sa cible voisine d'une zone du trajet), 25 % près d'une maison rivale ; était 30 % et 15 %. */
+const CAR_RISQUE={cible:1,horde:.5,rival:.25};
 const CAR_TOUR=.5;                        /* une tour de guet sur la zone menacée multiplie le risque par .5 (provisoire) */
 const CAR_ARRET=2;                        /* cycles d'arrêt après un pillage (provisoire) */
 
@@ -62,9 +64,10 @@ function carMenace(t){let m={risque:0,lieu:null,par:null,qui:null};if(!t)return 
   const hordes=S.hordes&&typeof S.hordes==='object'?Object.values(S.hordes):[];
   const rivaux=S.riv&&S.riv.z?S.riv.z:{};
   for(const z of t){let base=0,par=null,qui=null;
-    const h=hordes.find(h=>h&&h.cible===z&&ZB[h.src]);if(h){base=CAR_RISQUE.horde;par='horde';qui=h.src}
-    /* 20 nov. (testeur, provisoire) : une vague du siège final marche sur la Citadelle ; elle menace les caravanes comme une horde */
-    if(!base&&S.siege&&S.siege.cit===z&&ZB[S.siege.src]){base=CAR_RISQUE.horde;par='horde';qui=S.siege.src}
+    const h=hordes.find(h=>h&&h.cible===z&&ZB[h.src]);if(h){base=CAR_RISQUE.cible;par='horde';qui=h.src}
+    /* 20 nov. : une vague du siège final marche sur la Citadelle ; elle menace les caravanes comme une horde qui vise le trajet */
+    if(!base&&S.siege&&S.siege.cit===z&&ZB[S.siege.src]){base=CAR_RISQUE.cible;par='horde';qui=S.siege.src}
+    if(!base){const V=VOISINES[z]||[],hp=hordes.find(h=>h&&ZB[h.src]&&(V.indexOf(h.cible)>=0||V.indexOf(h.src)>=0||h.src===z));if(hp){base=CAR_RISQUE.horde;par='horde';qui=hp.src}}
     if(!base){const v=(VOISINES[z]||[]).find(v=>rivaux[v]&&!S.own[v]);if(v){base=CAR_RISQUE.rival;par='rival';qui=rivaux[v]}}
     if(!base)continue;
     const tour=typeof defenseTours==='function'&&(defenseTours(z)||{}).bonus>0,k=base*(tour?CAR_TOUR:1);

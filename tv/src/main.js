@@ -3,7 +3,8 @@ const $=id=>document.getElementById(id);
 const IDS=ZN.map(Z=>Z.id);   /* 2.0 : les cinq zones d'origine et les tuiles de la carte agrandie */
 const MODZ=id=>{const Z=ZN.find(q=>q.id===id);return Z&&Z.mod||id};
 const ZB=Object.fromEntries(ZN.map(Z=>[Z.id,Z]));
-const REPOS=40;            /* secondes de repos d'une zone après un éveil (le « délai » du jeu complet, raccourci ici) */
+const REPOS=0;             /* 22 nov. (utilisateur, bêta) : plus de repos, on enchaîne les montées d'une même zone ; était 40. */
+const REPOS_JEU=40;        /* ancien repos d'une zone après un éveil, en secondes, gardé pour après la bêta (inutilisé) */
 const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
 
@@ -234,7 +235,6 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Charger une partie',ic:'▤',go:openCharger},
     {l:'Grimoire des cartes',ic:'✦',d:'toutes les cartes, pôle par pôle',go:()=>openGrimoire(0)},
     {l:'Paquet de combat',ic:'⚔',d:S.deck.length+' carte(s) · réserve '+resTot()+' mana',go:openCombatPaquet},
-    {l:'Entretien des pièges',ic:'⟳',d:ENTRETIEN[S.ent].nom,go:()=>{S.ent=(S.ent+1)%3;for(const x of S.pieges)if(x){x.dort=false;if(S.ent===2&&!(x.u>0))x.u=3}save();openMenu(UI.f)}},
     {l:'Blessures (prototype)',ic:'✚',d:S.sr===false?'Points de vie':'Façon Shadowrun : L, M, S, D',go:()=>{S.sr=S.sr===false;save();openMenu(UI.f)}},
     {l:'Rencontres en chemin',ic:'✶',d:RENC[S.renc][0],go:()=>{S.renc=(S.renc+1)%RENC.length;CBnext=prochaineRencontre();CBwalk=P.walked;save();openMenu(UI.f)}},
     {l:'Musique',ic:'♪',d:(soundOn?'activée':'coupée')+(typeof musiqueTitre==='function'&&curZ?' · '+musiqueTitre(curZ):''),go:()=>{toggleSound();openMenu()}},
@@ -256,7 +256,7 @@ function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',c
 <p class="petit">Manette : stick gauche marcher (pousser à fond ou gâchette RT pour courir) · stick droit caméra · A sauter (deux fois : double saut) ou agir · X marche automatique · Y paquet de combat · Vue voyager · B ou Menu : menu. En combat : stick ou LB / RB choisir, A jouer, X fin du tour, B annuler ou pause.</p>
 <p class="petit">Votre territoire de départ (12 zones) est à vous dès le début, au niveau 1 ; votre paquet, ce sont leurs cartes de palier 1. Ensuite, activez chaque nouvelle zone : à sa Pierre d'éveil, battez ses gardiens au tour par tour. Il y a six types de mana (Feu, Glace, Eau, Sève, Pierre, Vent), chacun avec sa réserve. Une carte de zone se paie avec le mana de sa zone ; sans assez de ce mana, elle se joue en mana gris, affaiblie. La capacité de dépense monte de 1 par tour (1, puis 2, puis 3…), tous types confondus ; les boosts sont rares. Les vaincus lâchent du mana de leur zone. La zone devient à vous et vous donne son pouvoir : du mana dans la réserve à chaque cycle (Ressource), une bête alliée (Antre), une attaque (Donjon), de la garde (Citadelle), de la pioche (Marché). Le Donjon activé s'aménage : posez des pièges payés en mana, le monde sauvage l'attaque tous les ${ASSAUT_CYCLES} cycles. En combat : ◀ ▶ choisir une carte, OK la jouer, ▼ fin du tour. Les monstres annoncent leur prochaine action au-dessus de leur tête. En marchant, des créatures surgissent parfois.</p>
 <p class="petit">Ensuite, éveillez la zone. Son épreuve fait bondir la zone d'un palier vers le pôle choisi, de −7 à +7, et la transforme. Plus le palier visé est loin de zéro, plus l'épreuve est dure. Chaque palier gagné ajoute à votre paquet la carte de combat de la zone (sauf les Ressources). Posséder la zone qui en contre une autre facilite son épreuve.</p>
-<p class="petit">Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
+<p class="petit">${REPOS?`Une zone éveillée se repose ${REPOS} secondes avant le prochain bond. `:'Pendant la bêta, une zone peut monter plusieurs paliers de suite, sans repos. '}Un échec coûte une blessure ; à la troisième, le héros meurt : il perd ses cartes, ses zones redeviennent sauvages mais gardent leur niveau, et il les reprend plus facilement (empreinte). Les secrets dorés n'apparaissent qu'à certains niveaux.</p>`,
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 
 /* ---------- Éveil d'une zone ---------- */
@@ -297,7 +297,7 @@ function reperage(Z){closeUI();mode='mue';const lv=S.lv[Z.id];
 /* ---------- Mue : le bond d'un palier, caméra qui tourne autour de la Pierre ---------- */
 let mue=null;
 function startMue(Z,lv){mode='mue';mue={Z,t:0,dur:7,steps:[[.8,lv,'',''],],i:0,rep:false,end:()=>{
-  const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. Elle se repose ${typeof reposZone==='function'?reposZone(Z.id):REPOS} secondes avant le prochain bond.</p>`;
+  const I=Z.info,rs=(Z.mod||Z.id)==='RES',fin=`<p class="petit" style="margin-top:1em">${I.nom} est maintenant au palier ${sgn(lv)}. ${(r=>r?`Elle se repose ${r} secondes avant le prochain bond.`:'Vous pouvez enchaîner le palier suivant.')(typeof reposZone==='function'?reposZone(Z.id):REPOS)}</p>`;
   const sc=!rs&&Z._sansCarte;Z._sansCarte=false;
   ui('menu',{sur:rs?'Mue · Ressource':sc?'Mue · vous vous êtes ravisé':'Mue · nouvelle carte',t:I.nom,corps:sc?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)||'0'}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La zone revient d'un palier vers l'autre pôle. Se raviser ne donne pas de carte, mais le monde s'en souviendra.</p>${fin}</div></div>`:rs?`<div class="mue-corps sans"><div class="txt"><div class="palier-mue">${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>La Ressource produit davantage de mana. Elle ne donne pas de carte de combat.</p>${fin}</div></div>`:`<div class="mue-corps"><div class="cartes">${carteHTML(Z.id)}</div><div class="txt"><div class="palier-mue">Palier ${sgn(lv)}<small>${lv>0?I.pp:lv<0?I.pm:'Équilibre'}</small></div><p>« ${CK[Z.id].nom()} » rejoint votre paquet.</p>${fin}</div></div>`,
     back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]});mode='menu'}};
