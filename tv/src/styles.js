@@ -102,7 +102,7 @@ if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty))
   vec3 Y=vec3(.299,.587,.114);float L=dot(c,Y);
   float ws=1.-smoothstep(0.,.42,L),wh=smoothstep(mix(.45,.62,sN),.95,L) /* à −7, seules les vraies lumières prennent la couleur haute */,wm=max(0.,1.-ws-wh);
   vec3 T=sigSh*ws+sigMi*wm+sigHi*wh,tn=min(T/max(dot(T,Y),.02),vec3(2.)),sh=min(sigSh/max(dot(sigSh,Y),.01),vec3(2.4));
-  c=mix(c,c*tn,(.28+.42*sG)*fo); /* split-toning : la teinte change, la luminance reste */
+  c=mix(c,c*tn,(.4+.3*sG)*fo); /* split-toning : la teinte change, la luminance reste. Boucle 4 (22 nov.) : .4 au niveau 0 (le zéro a sa couleur), .7 à ±7 comme avant */
   /* −7 : les ombres se relèvent (les formes du sol se lisent), le plancher prend la couleur d'ombre de la zone */
   c=mix(c,pow(max(c,0.),vec3(.62)),sN*fo*(1.-smoothstep(0.,.3,L)));
   vec3 fl=sh*mix(.012,.06,sN)*fo;c=fl+c*(1.-fl);
@@ -184,19 +184,25 @@ function styleBorder(id){const Z=ZB[id],Q=CIT;let best=null;
    et la vignette. Mise à jour une fois par image, depuis la zone de la caméra (aucun test de zone par pixel). */
 const SIG={
   /* zones d'origine */
-  CIT:{n:['#14203a','#4a5672','#d8964a'],p:['#5a78a8','#c4b49c','#ffd68a']}, /* Berestograd : ardoise / ambre */
+  CIT:{n:['#14203a','#4a5672','#d8964a'],p:['#5a78a8','#c4b49c','#ffd68a'],z:['#2a2030','#8a6a4c','#ffc27a']}, /* Berestograd : ardoise / ambre ; 0 : ambre de fin d'après-midi, ombres indigo */
   DON:{n:['#2c0a16','#6a2a30','#e8c8a0'],p:['#9a5a6a','#e8c4ac','#fff4dc']}, /* Donjon : bordeaux / crème */
   ANT:{n:['#03201c','#24584c','#a8e6c8'],p:['#3a7a8c','#a4d6cc','#f0fff4']}, /* Antre : vert abysse / écume */
   MAR:{n:['#12141c','#6a6c76','#e6e8f0'],p:['#949aaa','#d8dade','#fafbff']}, /* Givrecloche : neutre froid (noir et blanc) */
   RES:{n:['#22140e','#5a5048','#f2dca8'],p:['#4a6a9a','#a8d0c0','#fff8e8']}, /* Chinampas : terre / jade (manga) */
-  ASS:{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8']}, /* Assemblée : prune / braise, lavande / ivoire */
+  ASS:{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8'],z:['#3a2430','#a8847e','#f4dcbc']}, /* Assemblée : prune / braise, lavande / ivoire ; 0 : rose cendré et sable */
   /* familles des types des nouvelles tuiles (même parti pris que la zone d'origine du type, sans être identiques) */
-  Ressource:{n:['#022630','#1a6a72','#b4f0e0'],p:['#3a8aa8','#86dccc','#d0fff0']}, /* sarcelle / menthe : à l'opposé des Donjons */
-  Donjon:{n:['#3a0812','#7a2a22','#f4b878'],p:['#a85a78','#f0a898','#ffc8b0']},    /* bordeaux / or rose */
-  Antre:{n:['#161a04','#56561e','#e6cc7a'],p:['#4a8a6a','#d6e6a0','#fffbe0']},     /* olive / chartreuse */
-  'Assemblée':{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8']},
+  Ressource:{n:['#022630','#1a6a72','#b4f0e0'],p:['#3a8aa8','#86dccc','#d0fff0'],z:['#0e3036','#3a8a86','#e8d49a']}, /* sarcelle / menthe : à l'opposé des Donjons ; 0 : sarcelle et laiton */
+  Donjon:{n:['#3a0812','#7a2a22','#f4b878'],p:['#a85a78','#f0a898','#ffc8b0'],z:['#3a1418','#a0703a','#f8d8a0']},    /* bordeaux / or rose ; 0 : ombres garance, tons moyens ocre */
+  Antre:{n:['#161a04','#56561e','#e6cc7a'],p:['#4a8a6a','#d6e6a0','#fffbe0'],z:['#0e2a1a','#3e6a44','#d8c27a']},     /* olive / chartreuse ; 0 : vert bouteille et or terne */
+  'Assemblée':{n:['#2a1030','#6a2a48','#ff6a2a'],p:['#6a4aa0','#d8a8c0','#fff2c8'],z:['#3a2430','#a8847e','#f4dcbc']},
   'Marché':{n:['#10161e','#5a6470','#e0e6ee'],p:['#8a9ab0','#d6dce2','#fbfcff']},
   'Cité':{n:['#16243a','#4e5a70','#dca050'],p:['#6080b0','#c8b8a0','#ffd890']}};
+/* boucle 4 (22 nov. 2026) : le zéro devient un lieu. Ancre z (équilibre) propre à quelques tuiles « plus » qui se ressemblaient
+   (trois taïgas grises, deux sables crème) ; elle prime sur le z de famille et n'est pas tournée. */
+const SIG_Z0={DON045:['#1a1838','#5a5a8a','#c8c0ff'], /* heure bleue */
+  RES374:['#16302a','#6a9a88','#e8f4e0'],                  /* brume jade */
+  ASS152:['#3a1410','#a85a3c','#ffc08a'],                  /* canyon brique */
+  ANT120:['#0a2a2a','#3a8a78','#c8f0c0']};                 /* oasis turquoise et vert */
 /* ajustement léger par biome (rotation de teinte en degrés) : deux tuiles du même type ne se confondent pas */
 const SIG_BIO={'Forêt boréale':-8,'Fjord':-16,'Canyon':14,'Désert de sable':10,'Oasis':6,'Cité en ruines':0,'Récif':-12,
   'Cavernes cristallines':-22,'Lande':18,'Steppe':8,'Delta fluvial':-6,'Falaise côtière':-10,
@@ -218,16 +224,21 @@ function sigOf(Z){if(Z._sig)return Z._sig;let r=Z.plus?null:SIG[Z.id];
   if(!r&&Z.plus){const d=Z.d,[ng,ps]=(PMANA[d.mana]||PMANA.Pierre).map(sigLin),w=[1,1,1],
       man={n:[sigMx(ng,[0,0,0],.15),sigMx(ng,ps,.4),sigMx(ps,w,.1)],p:[sigMx(sigMx(ng,ps,.55),[.42,.48,.66],.35),sigMx(ps,w,.3),sigMx(ps,w,.6)]},
       fam=SIG[d.type],rot=sigRotZ(Z);
-    r={};for(const s of['n','p'])r[s]=[0,1,2].map(i=>sigRot(fam?sigMx(sigCv(fam[s][i]),man[s][i],.3):man[s][i],rot))}
+    r={};for(const s of['n','p'])r[s]=[0,1,2].map(i=>sigRot(fam?sigMx(sigCv(fam[s][i]),man[s][i],.3):man[s][i],rot));
+    /* boucle 4 (22 nov.) : z de famille mêlé au milieu du mana, tourné de sigRot×1,5 (deux tuiles du même type s'écartent plus à 0) */
+    if(fam&&fam.z)r.z=[0,1,2].map(i=>sigRot(sigMx(sigCv(fam.z[i]),sigMx(man.n[i],man.p[i],.5),.3),rot*1.5))}
   if(!r)r=SIG.MAR;
-  return Z._sig={n:r.n.map(sigCv),p:r.p.map(sigCv)}}
+  const n=r.n.map(sigCv),p=r.p.map(sigCv),z0=SIG_Z0[Z.id]||r.z;
+  /* sans z : la moyenne des deux pôles (comportement d'avant la boucle 4 au niveau 0) */
+  return Z._sig={n,p,z:z0?z0.map(sigCv):n.map((c,i)=>sigMx(c,p[i],.5))}}
 const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0};
 const _drawSig=draw;
 draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCur.t)/1000):0;sigCur.t=now;
   const Z=zoneAt(camera.position.x,camera.position.z);let f=1-Math.exp(-dt*1.6); /* fondu ~2 s, comme skM/skR */
-  if(Z){const S=sigOf(Z),k=clamp((Z.lv||0)/7,-1,1),u=(k+1)/2;
+  if(Z){const S=sigOf(Z),k=clamp((Z.lv||0)/7,-1,1),u=Math.abs(k),B=k<0?S.n:S.p;
     if(!sigCur.on)f=1; /* première image dans une zone : on part directement de ses couleurs */
-    for(const [n,i] of [['sh',0],['mi',1],['hi',2]]){const a=S.n[i],b=S.p[i],c=sigCur[n];for(let j=0;j<3;j++)c[j]=lerp(c[j],lerp(a[j],b[j],u),f)}
+    /* boucle 4 (22 nov.) : z → pôle, un septième par palier (au lieu de n → p) ; ±7 inchangés */
+    for(const [n,i] of [['sh',0],['mi',1],['hi',2]]){const a=S.z[i],b=B[i],c=sigCur[n];for(let j=0;j<3;j++)c[j]=lerp(c[j],lerp(a[j],b[j],u),f)}
     sigCur.k=lerp(sigCur.k,k,f)}
   sigCur.on=lerp(sigCur.on,Z&&STYLE_ON?1:0,f);
   const U=mFinal.uniforms;U.sigSh.value.set(sigCur.sh[0],sigCur.sh[1],sigCur.sh[2]);U.sigMi.value.set(sigCur.mi[0],sigCur.mi[1],sigCur.mi[2]);
