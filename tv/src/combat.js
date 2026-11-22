@@ -286,7 +286,7 @@ function carteHTML(k,i){const c=CK[k],z=c.z;return`<div class="cc${z?' z':''}" s
 function dessinerMain(){const C=CB;if(!C)return;const h=$('cb-main');
   h.innerHTML=C.main.map(carteHTML).join('')+`<div class="cc fin"><div class="cn">Fin du tour</div><div class="ct">Les bêtes frappent, puis les monstres agissent.</div></div>`+(typeof manoeuvreHTML==='function'?manoeuvreHTML():'');
   [...h.children].forEach((d,i)=>{d.classList.toggle('f',i===C.f&&!C.busy);if(i<C.main.length&&!jouable(C.main[i]))d.classList.add('off');if(C.sel&&i===C.f)d.classList.add('choisie')});
-  $('combat').classList.toggle('placement',!!C.pl);$('cb-aide').textContent=C.busy?'Les créatures agissent…':(C.pl||C.man)&&typeof aidePlacement==='function'?aidePlacement():C.sel?'◀ ▶ choisir la cible · OK frapper · ▼ annuler':'◀ ▶ choisir une carte · OK jouer · ▼ fin du tour'+(C.cases?' · Y manœuvre':'')+' · Retour pause';majUnites()}
+  $('combat').classList.toggle('placement',!!C.pl);$('cb-aide').textContent=C.busy?'Les créatures agissent…':(C.pl||C.man)&&typeof aidePlacement==='function'?aidePlacement():C.sel?'◀ ▶ cible · OK frapper · ▼ annuler':'◀ ▶ carte · OK jouer · ▼ fin du tour'+(C.cases?' · Y manœuvre':'')+' · Retour pause';majUnites()}
 function journal(t){const j=$('cb-log');j.textContent=t;j.classList.remove('neuf');void j.offsetWidth;j.classList.add('neuf')}
 
 /* ---------- Rencontres en se promenant ---------- */

@@ -11,7 +11,19 @@ Même équipe de 4 testeurs, centrée sur ce qu'on voit et ce qu'on comprend à 
 - Un renfort annoncé s'affiche sur sa case ennemie : « renfort au prochain tour ».
 - Le héros affiche « PV n / 12 » (et « capacité −N » sous les blessures) au lieu de « Blessures ».
 
+## Passe 2 (22 nov.)
+
+- Pastille de menace complète, aussi quand elle passe sur l'unité qui tient la voie : la cible reste écrite, « (Tribune) » quand une Tribune attire le coup, « · N passent » quand un coup qui piétine dépasse l'unité.
+- L'élan a sa propre pastille, en bas de la case.
+- Sous le héros, « coups attendus N », en rouge clignotant si le héros peut tomber.
+- Cible choisie à la manette : plaque surlignée et étiquette « ◆ cible ».
+- Barre d'aide jamais coupée (textes raccourcis, retour à la ligne).
+- Main de 7 cartes et plus resserrée, la carte en focus passe devant.
+- Voie du chef : pointillé rouge réparé, voie écrite en rouge vif ; bouton Manœuvre descendu, il ne couvre plus le chef.
+- Noms des cases écrits plus clair.
+
 ## Notes
 
 | Passe | Fonctionnel | Cartes à échanges | Défense par étages | Tactique généraliste |
 |---|---|---|---|---|
+| 1 (22 nov.) | 6,5 | 6 | 6,5 | 7 |

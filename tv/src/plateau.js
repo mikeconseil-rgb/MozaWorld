@@ -141,9 +141,23 @@ const plCss=document.createElement('style');plCss.textContent=`
 .plrenfort{position:absolute;z-index:6;left:50%;transform:translateX(-50%);top:30%;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#ffd0c8;background:rgba(24,8,8,.85);border:1px dashed #e2675a;border-radius:calc(var(--u)*.5);padding:.1em .5em;animation:plvise .8s ease-in-out infinite alternate}
 .plrenfort:empty{display:none}
 .pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
+#combat .pcase.chefvoie{outline:2px dashed #e2675a;outline-offset:-5px}
+.plhero{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-1.5em;white-space:nowrap;font-size:calc(var(--u)*.9);font-weight:700;color:#ffd9a0;background:rgba(10,8,6,.9);border:1px solid #c9a45c;padding:0 .5em}
+.plhero.mortel{color:#fff;background:#7a1a12;border-color:#ff8070;animation:plvise .6s ease-in-out infinite alternate}
+.plhero:empty{display:none}
+#combat .pcase .pt{color:#f1e2c0!important;font-weight:700}
+.plelan{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-.2em;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#ffe1a8;background:rgba(30,18,4,.92);border:1px solid #c9a45c;border-radius:calc(var(--u)*.6);padding:0 .5em}
+.plelan:empty{display:none}
+#combat .u .int .voie{color:#ff8a78!important;font-weight:700}
+#combat #cb-aide{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;line-height:1.25}
+#combat .u.vise .plaque{box-shadow:0 0 0 3px #fff3c8,0 0 16px #e8c77f!important}
+#combat .u.vise::before{content:"◆ cible";position:absolute;z-index:8;left:50%;top:-1.1em;transform:translateX(-50%);font-weight:700;font-size:calc(var(--u)*.85);color:#fff3c8;background:rgba(10,8,6,.9);border:1px solid #e8c77f;padding:0 .5em;white-space:nowrap}
+#cb-main:has(.cc:nth-child(7)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-1.6)}
+#cb-main:has(.cc:nth-child(9)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-3)}
+#cb-main .cc.f{z-index:5}
 .u.manvise .plaque{border-color:#fff3c8;box-shadow:0 0 0 3px rgba(232,199,127,.5)}
 #cb-foes .u.mort{opacity:0!important;pointer-events:none}
-#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(100% + var(--u)*.4);transform:scale(.78);transform-origin:bottom right}
+#cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(100% - var(--u)*3.5);transform:scale(.78);transform-origin:bottom right}
 #cb-main .cc.kcarte{min-width:calc(var(--u)*7)!important}
 #cb-main .cc.man.f{transform:scale(.88)}body.manette #cb-main .cc.man::before{content:"Y"}
 `;document.head.appendChild(plCss);
@@ -172,7 +186,13 @@ function manInput(a,rep){const C=CB,l=surTerrain();if(!l.length){C.man=null;dess
 const manVise=u=>!!(CB&&CB.man&&surTerrain()[CB.man.i%Math.max(1,surTerrain().length)]===u);
 /* menace par voie, affichée sur la case d'avant de chaque voie */
 function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
-  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]||el?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]:gardeU()?'Garde':'héros'):'')+(el?(th[v]?' · ':'')+'élan '+el+' au prochain tour':'')}
+  if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];const tri=!tenantVoie(v)&&qui,pi=vivants(CB.foes).some(m=>m.int&&m.int.a==='f'&&voieDe(m)===v),passe=qui&&pi?Math.max(0,th[v]-qui.pv-qui.g):0;
+  b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]+(tri?' (Tribune)':''):gardeU()?'Garde':'héros')+(passe?' · '+passe+' passent':''):'');
+  /* interface, passe 2 : l'élan dans sa propre pastille */
+  let be=d.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';d.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
+  /* interface, passe 2 : total des coups qui iront au héros ce tour, en rouge s'il peut tomber */
+  {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
+   const h=CB.hero.el;if(h){let p=h.querySelector(':scope>.plhero');if(!p){p=document.createElement('span');p.className='plhero';h.appendChild(p)}p.textContent=dh?'coups attendus '+dh:'';p.classList.toggle('mortel',dh>=CB.hero.pv)}}
   for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u));
   /* interface, passe 1 : renfort annoncé sur sa case, voie du chef soulignée */
   const chef=vivants(CB.foes).find(m=>m.chef);for(let v=0;v<3;v++){const e=document.getElementById('pc-e'+v+'1');if(e){let r=e.querySelector('.plrenfort');if(!r){r=document.createElement('span');r.className='plrenfort';e.appendChild(r)}r.textContent=CB.renfortVoie===v?'renfort au prochain tour':''}
