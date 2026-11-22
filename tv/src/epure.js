@@ -18,21 +18,37 @@ body.epure .hud.jauge{scale:.88;transform-origin:50% 100%}
 .mz-bascule{position:fixed;left:50%;top:calc(var(--u)*5.2);translate:-50% 0;z-index:40;pointer-events:none;font-size:calc(var(--u)*1.05);letter-spacing:.18em;text-transform:uppercase;
   color:var(--laiton2,#e8c77f);background:rgba(13,12,15,.72);border:1px solid rgba(201,164,92,.45);padding:calc(var(--u)*.45) calc(var(--u)*1.4);opacity:0;transition:opacity .5s}
 .mz-bascule.vu{opacity:1}
+/* boucle 4 (22 nov.) : en mode épuré, l'aide tient sur une ligne ; la plaque de nom sous la minicarte se retire
+   tant que la fiche de zone (en haut à gauche) est affichée, pour que le nom n'apparaisse qu'une fois. */
+.hud.aide .aide-une{display:none}
+body.epure .hud.aide>div:not(.aide-une){display:none}
+body.epure .hud.aide .aide-une{display:block;white-space:nowrap;font-size:.86em;letter-spacing:.02em}
+body.epure .hud.aide{padding-top:calc(var(--u)*.55);padding-bottom:calc(var(--u)*.55)}
+/* la minicarte n'a plus de fond : son flou d'arrière-plan (hérité de .cadre) ne dessinait qu'un rectangle terne, et coûtait */
+.hud.carte.mc2{backdrop-filter:none;-webkit-backdrop-filter:none}
+.hud.carte .mc-nom{transition:opacity .6s ease}
+body:not(.epure) .hud.carte .mc-nom,body.epure.zone-neuve .hud.carte .mc-nom{opacity:0}
 @media (prefers-reduced-motion:reduce){.toast.vu .t1,.toast.vu .t2,.toast.vu .t3{animation:none}}
 `;document.head.appendChild(st);
 
 let epure=true;try{epure=localStorage.getItem('mz-epure')!=='0'}catch(_){}
 const B=document.body;B.classList.toggle('epure',epure);
 const note=document.createElement('div');note.className='mz-bascule';B.appendChild(note);let noteT=null;
-function basculer(){epure=!epure;B.classList.toggle('epure',epure);try{localStorage.setItem('mz-epure',epure?'1':'0')}catch(_){}
+/* boucle 4 (22 nov.) : l'aide s'efface après 12 s sans entrée (ou 45 s de jeu au plus) ; RB ou Tab la fait revenir */
+let calme=0,joue=0;const entree=()=>{calme=0};
+function basculer(){epure=!epure;calme=0;joue=0;B.classList.remove('aide-vue');B.classList.toggle('epure',epure);try{localStorage.setItem('mz-epure',epure?'1':'0')}catch(_){}
   note.textContent=epure?'Interface épurée · RB pour tout afficher':'Interface complète · RB pour épurer';note.classList.add('vu');
   clearTimeout(noteT);noteT=setTimeout(()=>note.classList.remove('vu'),2200);if(typeof tick==='function')try{tick()}catch(_){}}
-window.addEventListener('keydown',e=>{if((e.key==='Tab'||e.key==='h'||e.key==='H')&&typeof mode!=='undefined'&&mode==='monde'){e.preventDefault();basculer()}});
-const pb0=padBouton;padBouton=function(n){if(n==='rb'&&typeof mode!=='undefined'&&mode==='monde'){basculer();return}return pb0.apply(this,arguments)};
+window.addEventListener('keydown',e=>{entree();if((e.key==='Tab'||e.key==='h'||e.key==='H')&&typeof mode!=='undefined'&&mode==='monde'){e.preventDefault();basculer()}});
+const pb0=padBouton;padBouton=function(n){entree();if(n==='rb'&&typeof mode!=='undefined'&&mode==='monde'){basculer();return}return pb0.apply(this,arguments)};
+/* boucle 4 (22 nov.) : l'aide d'une ligne, ajoutée en tête de chaque panneau d'aide (clavier/télécommande et manette) */
+for(const a of document.querySelectorAll('.hud.aide')){const d=document.createElement('div');d.className='aide-une';
+  d.innerHTML=a.classList.contains('aide-pad')?'<i>stick G</i> marcher · <i>stick D</i> tourner · <span class="bt a">A</span> agir · <span class="bt">RB</span> plus':'<i>▲▼</i> marcher · <i>◀▶</i> tourner · <i>OK</i> agir · <i>Tab</i> plus';
+  a.insertBefore(d,a.firstChild)}
 
-/* la fiche de zone reste 9 s à l'entrée d'une zone ; l'aide reste la première minute de jeu */
-let zv=null,zT=null,joue=0;
+/* la fiche de zone reste 9 s à l'entrée d'une zone ; l'aide d'une ligne s'efface après 12 s de calme (boucle 4, 22 nov.) */
+let zv=null,zT=null;window.addEventListener('pointerdown',entree);
 setInterval(()=>{if(typeof curZ==='undefined')return;
   if(curZ&&curZ!==zv){zv=curZ;B.classList.add('zone-neuve');clearTimeout(zT);zT=setTimeout(()=>B.classList.remove('zone-neuve'),9000)}
-  if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;if(joue>=60)B.classList.add('aide-vue')}},500);
+  if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;calme+=.5;if(calme>=12||joue>=45)B.classList.add('aide-vue')}},500);
 })();
