@@ -554,7 +554,6 @@ const css=document.createElement('style');css.textContent=`
   background:repeating-linear-gradient(60deg,rgba(255,255,255,.022) 0 1px,transparent 1px calc(var(--u)*.62)) padding-box,repeating-linear-gradient(-60deg,rgba(255,255,255,.022) 0 1px,transparent 1px calc(var(--u)*.62)) padding-box,
     radial-gradient(120% 60% at 50% 0%,var(--kcA),transparent 72%) padding-box,linear-gradient(180deg,#17131a,#0e0c11) padding-box,
     linear-gradient(145deg,var(--mt1) 0%,var(--mt2) 16%,var(--mt3) 34%,var(--mt1) 50%,var(--mt3) 66%,var(--mt2) 84%,var(--mt1) 100%) border-box}
-.cc.kcarte.z.L1:not(.ultime),.cc.kcarte.z.L2:not(.ultime),.cc.kcarte.z.L0:not(.ultime){box-shadow:0 10px 24px rgba(0,0,0,.65),inset 0 0 0 1px rgba(0,0,0,.85),inset 0 0 0 2px rgba(255,236,180,.2)}
 .kang{position:absolute;width:calc(var(--u)*2.3);height:calc(var(--u)*2.3);z-index:1;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}
 .kang.moyen{width:calc(var(--u)*2.7);height:calc(var(--u)*2.7)}
 .kang.grand{width:calc(var(--u)*2.9);height:calc(var(--u)*2.9);filter:drop-shadow(0 0 5px var(--kcB)) drop-shadow(0 1px 1px #000)}
@@ -575,6 +574,30 @@ const css=document.createElement('style');css.textContent=`
 .kcadre{opacity:.75}
 #cb-main .cc.kcarte.z:not(.f) .cn{padding:.16em .62em .2em;margin-left:calc(var(--u)*-.2);margin-right:calc(var(--u)*-.2);font-size:calc(var(--u)*1.22)}
 .cc.kcarte.z .kamb{padding-bottom:calc(var(--u)*.5)}
+/* ---- Léger relief 3D (21 novembre 2026, « faudrait un léger effet 3D ») ----
+   Tranche de la carte (ombres empilées), biseau du métal, cartouche en saillie, illustration en creux ;
+   la carte choisie et les cartes agrandies basculent doucement, un reflet passe sur la vitre. */
+.cc.kcarte.z{--tr:0 calc(var(--u)*.11) 0 var(--mt3),0 calc(var(--u)*.24) 0 #24160a,0 calc(var(--u)*.38) 0 #0b0704;
+  --bz:inset calc(var(--u)*.07) calc(var(--u)*.07) 0 rgba(255,244,210,.28),inset calc(var(--u)*-.07) calc(var(--u)*-.07) 0 rgba(0,0,0,.7)}
+.cc.kcarte.z:not(.ultime){box-shadow:var(--tr),0 calc(var(--u)*.9) calc(var(--u)*1.3) rgba(0,0,0,.7),var(--bz),inset 0 0 0 calc(var(--u)*.14) rgba(0,0,0,.55)}
+.cc.kcarte.z.L3:not(.ultime),.cc.kcarte.z.L4:not(.ultime){box-shadow:var(--tr),0 calc(var(--u)*.9) calc(var(--u)*1.3) rgba(0,0,0,.7),var(--bz),inset 0 0 0 calc(var(--u)*.2) var(--kd),inset 0 0 0 calc(var(--u)*.26) var(--kb)}
+.cc.kcarte.z.L5:not(.ultime),.cc.kcarte.z.L6:not(.ultime){box-shadow:var(--tr),0 calc(var(--u)*.9) calc(var(--u)*1.3) rgba(0,0,0,.7),0 0 calc(var(--u)*1) var(--kcA),var(--bz),inset 0 0 0 calc(var(--u)*.2) var(--kd),inset 0 0 0 calc(var(--u)*.26) var(--kb)}
+.cc.kcarte.z.ultime{box-shadow:var(--tr),0 calc(var(--u)*.9) calc(var(--u)*1.4) rgba(0,0,0,.75),0 0 calc(var(--u)*1.2) var(--kcB),var(--bz)}
+#cb-main .cc.kcarte.z.f{box-shadow:var(--tr),0 0 0 2px rgba(245,220,156,.6),0 calc(var(--u)*1.8) calc(var(--u)*2.4) calc(var(--u)*-.3) var(--kcB,rgba(201,164,92,.7)),0 calc(var(--u)*2.6) calc(var(--u)*3.2) rgba(0,0,0,.75),var(--bz)}
+.cc.kcarte.z .cn{box-shadow:0 calc(var(--u)*.16) calc(var(--u)*.3) rgba(0,0,0,.65),inset 0 1px 0 rgba(255,244,210,.3),inset 0 -1px 0 rgba(0,0,0,.6)}
+.cc.kcarte.z .art{box-shadow:0 0 0 1px #000,0 calc(var(--u)*.08) 0 rgba(255,244,210,.22),inset 0 calc(var(--u)*.3) calc(var(--u)*.5) rgba(0,0,0,.8)}
+.kvitre{box-shadow:inset 0 0 0 1px rgba(0,0,0,.75),inset 0 0 0 2px rgba(255,236,180,.28),inset 0 calc(var(--u)*.35) calc(var(--u)*.6) rgba(0,0,0,.7),inset 0 calc(var(--u)*-.2) calc(var(--u)*.5) rgba(0,0,0,.45);overflow:hidden}
+.cc.kcarte.z .ct{box-shadow:inset 0 calc(var(--u)*.14) calc(var(--u)*.35) rgba(0,0,0,.75),0 1px 0 rgba(255,244,210,.14)}
+.kang{filter:drop-shadow(0 calc(var(--u)*.1) calc(var(--u)*.08) rgba(0,0,0,.9))}
+.kvitre::after{content:'';position:absolute;top:-20%;bottom:-20%;left:-60%;width:45%;transform:skewX(-18deg);opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(255,250,230,.22) 45%,rgba(255,255,255,.34) 50%,rgba(255,250,230,.22) 55%,transparent)}
+#cb-main,.boite{perspective:calc(var(--u)*70)}
+#cb-main .cc.kcarte.z.f,.boite .cc.kcarte.z.f,.boite :not(.cartes)>.cc.kcarte.z{animation:k3d 6s ease-in-out infinite alternate}
+.cc.kcarte.z.ultime.f,.boite :not(.cartes)>.cc.kcarte.z.ultime{animation:kult 6s linear infinite,k3d 6s ease-in-out infinite alternate}
+#cb-main .cc.kcarte.z.f .kvitre::after,.boite .cc.kcarte.z.f .kvitre::after,.boite :not(.cartes)>.cc.kcarte.z .kvitre::after{animation:kreflet 6s ease-in-out infinite alternate}
+@keyframes k3d{from{rotate:y -7deg}to{rotate:y 7deg}}
+@keyframes kreflet{0%{left:-60%;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:115%;opacity:0}}
+@media (prefers-reduced-motion:reduce){#cb-main .cc.kcarte.z.f,.boite .cc.kcarte.z{animation:none}.kvitre::after{display:none}}
 `;document.head.appendChild(css);
 
 /* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)

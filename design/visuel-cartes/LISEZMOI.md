@@ -53,3 +53,12 @@ Verdict de l'utilisateur après test : « Visuel ok à 80 % », puis « les cadr
 - illustration sous vitre : filet doré, coins échancrés (`.kvitre`) ;
 - nom dans un cartouche à losanges, texte dans un panneau gravé.
 Les médaillons latéraux de l'ancien filet sont retirés ; secrets (kraft) et communes ne changent pas.
+
+## Cinquième passe (22 nov.) : léger relief 3D
+
+Demande de l'utilisateur après les cadres ornés : « Faudrait un léger effet 3d ». Tout est en CSS dans `tv/src/cartes-visuel.js` (bloc « Léger relief 3D »), sans image ni script de plus.
+
+- Épaisseur : une tranche sombre sous la carte (ombres empilées, variable `--tr`), plus haute aux paliers élevés.
+- Biseau : arête claire en haut à gauche et sombre en bas à droite sur le métal du cadre (`--bz`) ; cartouche du nom en saillie ; image, vitre et panneau du texte en creux.
+- Mouvement : seule la carte choisie (main de combat, carte montrée seule dans une boîte) bascule doucement de −7° à +7° en 6 s, avec un reflet qui traverse la vitre. Les grilles de cartes (Grimoire) restent immobiles pour garder la Xbox fluide.
+- `prefers-reduced-motion` coupe le basculement et le reflet ; le relief fixe reste.
