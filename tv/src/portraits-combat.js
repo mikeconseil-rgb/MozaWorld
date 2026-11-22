@@ -50,7 +50,8 @@ function peindre(u){const e=u&&u.el;if(!e||e.dataset.mzp||window.TAC_ON)return;c
   im.onload=()=>{if(!e.isConnected&&!document.body.contains(e))return;const m=document.createElement('div');m.className='mzp-m';
     m.style.setProperty('--mzc',ami?'#c9a45c':'#b8402e');
     m.appendChild(im);const v=document.createElement('i');m.appendChild(v);p.classList.add('mzp');p.appendChild(m)};
-  im.src='img/creatures/'+encodeURIComponent(SANS(k))+'.webp'}
+  const bi=typeof bestiaireImg==='function'?bestiaireImg(u):null,crea='img/creatures/'+encodeURIComponent(SANS(k))+'.webp';
+  if(bi){im.onerror=()=>{im.onerror=null;im.src=crea};im.src='img/bestiaire/'+bi+'.webp'}else im.src=crea}
 
 /* un voile bref sur le médaillon : v (coup), s (soin), a (attaque) */
 function voile(u,k,dur){if(!ANIM||!u||!u.el)return;const m=u.el.querySelector('.mzp-m');if(!m)return;const v=m.querySelector('i');v.className=k;
