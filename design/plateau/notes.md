@@ -10,6 +10,7 @@ Quatre testeurs jouent de vrais combats avec le banc `tv/tools/jouer.js` et note
 | 5 (20 nov.) | 7,5 | 7 | 7 | 7,5 | 7,2 |
 | 6 (20 nov.) | 7,5 | 7,5 | 7,5 | 7,5 | 7,5 |
 | 7 (20 nov.) | 8 | 7,5 | 7,5 | 8 | 7,7 |
+| 8 (21 nov.) | 8,5 | — | 8 | — | 8 (un seul testeur de gameplay a fini : limite d'usage) |
 
 ## Passe 1 : ce qui a été dit
 
@@ -86,3 +87,10 @@ Nouveautés (3) :
 3. **Fin de combat franche** : à partir du tour 6, plus de « se met en garde ».
 
 Réglages : tous les renforts finissent en coup fort (fin du double élan) ; −30 % de PV au renfort seulement en rencontre de niveau ≤ 2 ; Sentinelle de relève placée à la manette ; la plus faible part (attaque × PV, bloqueurs compris) ; journal du vol qui nomme la Garde ; PV payés écrits avec le total.
+
+## Passe 8 : ce qui a été dit
+
+Deux testeurs ont fini (fonctionnel 8,5, défense par étages 8) ; les deux autres ont été coupés par la limite d'usage hebdomadaire.
+- Mieux : pour la première fois, un piétinement annoncé tombe sur le mur et la ligne l'absorbe ; renforts à pleine vie qui forcent à choisir entre rafale de cartes et mur ; renfort lourd lisible ; fin de combat franche ; PV payés visibles. Les quatre bogues fonctionnels de la passe 7 sont corrigés.
+- Reste : les renforts lourds meurent juste avant leur coup (passés de ×1,5 à ×2 PV) ; rencontre en fort réglée en 3 tours ; « perd son élan » écrit à tort pour un lourd (corrigé) ; bloqueurs sans attaque évincés trop vite (poids revu).
+- Pour l'interface : chef posé sur sa rangée, badge de menace au-dessus des bulles, main de 8 cartes, « PV n/12 », choix de l'unité qui part, pictogramme « hésite », récapitulatif de fin de combat.

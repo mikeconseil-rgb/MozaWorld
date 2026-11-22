@@ -2419,7 +2419,7 @@ function atoutsApres(id,k,t,ctx,avant){if(!CB)return;const at=atoutsDe(id);if(!a
     case'Poids':{const ops=CK[k].ops?CK[k].ops():[];if(ops.some(o=>/^prix|^ennemi/.test(o[0])))soigner(CB.hero,1);break}
     case'Remploi':if(!(CB.atU.remploi||{})[k]){(CB.atU.remploi=CB.atU.remploi||{})[k]=1;if(CK[k].cout>0){CB.mana++;journal('Remploi : 1 de capacité rendue.')}}break;
     case'Rafale':if(CK[k].cible&&v.length>1){const m=v.find(x=>x!==cible);if(m)frappe(m,3,CB.hero)}break;
-    case'Girouette':{const m=v.find(x=>x.int&&x.int.a==='c');if(m){m.int={a:'g',v:m.atk,ic:'⛨',t:'se garde'};perdreElan(m);pop(m,'perd son élan','g')}break}}}
+    case'Girouette':{const m=v.find(x=>x.int&&x.int.a==='c'&&!x.lourd);if(m){m.int={a:'g',v:m.atk,ic:'⛨',t:'se garde'};perdreElan(m);pop(m,'perd son élan','g')}break}}}
 /* fin du tour : Cendre chaude (carte restée en main), Conserve (une carte reste en main) */
 function atoutsFinTour(){if(!CB)return;let garde=null;
   for(const k of CB.main){const id=CK[k]&&CK[k].z;if(!id)continue;
@@ -2950,7 +2950,7 @@ const CK={
   coup:{nom:()=>'Coup de bâton',cout:1,cible:1,txt:()=>'6 dégâts. Sur une cible qui brûle : 10.',jeu:(k,t)=>frappe(t,t&&t.br&&t.br.length?10:6)},
   garde:{nom:()=>'Pas de côté',cout:1,txt:()=>'5 de garde : la Garde se dresse devant le héros. Si elle était déjà levée, elle ne s\'effrite pas au prochain tour.',jeu:()=>{if(gardeU())CB.gardeTient=1;garder(CB.hero,5)}},
   pieu:{nom:()=>'Pieu planté',cout:1,txt:()=>'Un bloqueur de 6 PV prend place sur le terrain : il encaisse les coups et renvoie 2 dégâts à qui le frappe.',jeu:()=>invoquer({nom:'Pieu planté',pv:6,max:6,atk:0,g:0,bete:1,mur:1,epine:2})},
-  caillou:{nom:()=>'Jet de pierre',cout:0,txt:()=>'3 dégâts à l\'ennemi qui prend son élan (sinon au hasard) : il perd son élan et hésite.',jeu:()=>{const v=vivants(CB.foes);if(!v.length)return;const m=v.find(x=>x.int&&x.int.a==='c')||v[Math.floor(Math.random()*v.length)];frappe(m,3);if(m.pv>0&&m.int&&m.int.a==='c'){hesite(m);perdreElan(m);journal(m.nom+' perd son élan.')}}},
+  caillou:{nom:()=>'Jet de pierre',cout:0,txt:()=>'3 dégâts à l\'ennemi qui prend son élan (sinon au hasard) : il perd son élan et hésite.',jeu:()=>{const v=vivants(CB.foes);if(!v.length)return;const m=v.find(x=>x.int&&x.int.a==='c')||v[Math.floor(Math.random()*v.length)];frappe(m,3);if(m.pv>0&&m.int&&m.int.a==='c'){hesite(m);perdreElan(m);if(!m.lourd)journal(m.nom+' perd son élan.')}}},
   torche:{nom:()=>'Torche',cout:1,cible:1,txt:()=>'2 dégâts, puis 2 de brûlure sur 2 tours. Si la cible brûlait déjà, sa brûlure double (une fois par tour).',jeu:(k,t)=>{if(!t)return;const deja=t.br&&t.br.length;frappe(t,2);if(t.pv<=0)return;t.br=t.br||[];if(deja&&t.brDbl!==CB.tour){t.brDbl=CB.tour;t.br.forEach(b=>b[0]*=2)}t.br.push([CB.gris?1:2,2])}},
   souffle:{nom:()=>'Souffle court',cout:0,txt:()=>'Piochez 1 carte, 2 de garde.',jeu:()=>{pioche(1);garder(CB.hero,2)}},
   CIT:{z:'CIT',nom:()=>poleN('CIT','Palissade d\'oubli','Rempart de mémoire'),cout:1,
@@ -3084,7 +3084,7 @@ function garder(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(u&
 function soigner(u,n){if(CB&&CB.gris)n=Math.max(1,Math.round(n*GRIS_MALUS));if(CB&&CB.sr&&u.hero)n=Math.max(1,Math.ceil(n/3));const a=Math.min(n,u.max-u.pv);u.pv+=a;pop(u,'+'+a,'soin');majUnites()}
 function invoquer(b){const pl=typeof caseAuto==='function'&&CB.cases;
   if(!pl&&b.voie==null){const n0=CB.allies.filter(u=>u.bete&&u.pv>0&&u.voie===0).length,n1=CB.allies.filter(u=>u.bete&&u.pv>0&&u.voie===1).length;b.voie=n1<n0?1:0}
-  const nb=CB.allies.filter(u=>u.bete&&u.pv>0).length;if(nb>=(pl?PL_MAX:3)){const l0=CB.allies.filter(u=>u.bete&&u.pv>0),l3=l0.filter(u=>u.neT!==CB.tour),l2=pl&&l3.length?l3:l0,l1=pl?l2:(l0.some(u=>!u.mur)?l0.filter(u=>!u.mur):l0),poids=u=>pl?(u.atk+1)*u.pv*(u.mur?1.5:1):u.pv,w=l1.sort((p,q)=>poids(p)-poids(q))[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove();journal(w.nom+' quitte le plateau pour faire de la place.')}
+  const nb=CB.allies.filter(u=>u.bete&&u.pv>0).length;if(nb>=(pl?PL_MAX:3)){const l0=CB.allies.filter(u=>u.bete&&u.pv>0),l3=l0.filter(u=>u.neT!==CB.tour),l2=pl&&l3.length?l3:l0,l1=pl?l2:(l0.some(u=>!u.mur)?l0.filter(u=>!u.mur):l0),poids=u=>pl?(u.atk+2)*u.pv*(u.mur?1.5:1):u.pv,w=l1.sort((p,q)=>poids(p)-poids(q))[0];CB.allies.splice(CB.allies.indexOf(w),1);if(w.el)w.el.remove();journal(w.nom+' quitte le plateau pour faire de la place.')}
   /* Plateau (19 nov.) : une case libre proposée (l'avant de la voie la plus menacée) ; une carte jouée laisse ensuite choisir la case */
   if(pl){if(b.voie!=null&&b.voie<3&&!occupant(b.voie,0))b.rang=0;else if(b.voie!=null&&b.voie<3&&!occupant(b.voie,1))b.rang=1;else{const c=caseAuto(b)||[0,0];b.voie=c[0];b.rang=c[1]}}
   if(CB.enCarte)b.neCarte=(CB.nJoues||0);b.neT=CB.tour;CB.allies.push(b);uniteEl(b,'cb-allies');pop(b,'arrive','soin');journal(b.nom+' rejoint le plateau'+(pl?', voie '+PL_NOMV[b.voie]+(b.rang?' à l\'arrière':' à l\'avant'):'')+'.');
@@ -3405,7 +3405,7 @@ function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.t
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7-8 : en rencontre de bas niveau (≤ 2), le renfort a 30 % de PV en moins ; le renfort du tour 5 de l'éveil est lourd (PV ×1,5, inébranlable pendant son élan) ; tous entrent en prenant leur élan, puis frappent fort */
-  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*1.5);m.nom+=' (lourd)'}
+  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2);m.nom+=' (lourd)'}
   C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}

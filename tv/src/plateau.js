@@ -182,7 +182,7 @@ function renforts(){const C=CB;if(!plActif()||C.kind==='duel')return;const t=C.t
 /* passe 6 : un renfort annoncé vient toujours ; si ses alliés tombent avant, il arrive aussitôt ; il entre en prenant son élan */
 function arriveeRenfort(tot){const C=CB,v=C.renfortVoie;C.renfortVoie=null;
   const Z=C.Z,M=MON[Z.id]||MON[Z.mod];if(!M)return;const m=monstre(Z,Math.random()<.5?0:1,S.emp&&S.emp[Z.id]);m.voie=v;m.renfort=1;/* passe 7-8 : en rencontre de bas niveau (≤ 2), le renfort a 30 % de PV en moins ; le renfort du tour 5 de l'éveil est lourd (PV ×1,5, inébranlable pendant son élan) ; tous entrent en prenant leur élan, puis frappent fort */
-  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*1.5);m.nom+=' (lourd)'}
+  if(C.kind!=='eveil'&&Lz(Z.id)<=2)m.pv=m.max=Math.max(1,Math.round(m.max*.7));if(C.kind==='eveil'&&C.tour>=5){m.lourd=1;m.pv=m.max=Math.round(m.max*2);m.nom+=' (lourd)'}
   C.foes.push(m);uniteEl(m,'cb-foes');intention(m);if(C.kind==='eveil'||Lz(Z.id)>2){if(m.int&&m.int.a==='c'&&!m.forceF&&m.mv[m.mi%m.mv.length]==='f')m.mi++;m.forceF=1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}else if(m.int&&m.int.a!=='c'){m.forceF=m.int.a==='b'?2:1;m.int={a:'c',v:0,ic:'…',t:'prend son élan'}}m.renfort=2;pop(m,'renfort','deg');journal(tot?`Le renfort accourt : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`:`Renfort : ${m.nom} entre dans la voie ${PL_NOMV[v]}.`);if(tot){majUnites();if(typeof placerNoeud==='function')placerNoeud()}}
 /* passe 6 : un élan perdu supprime le coup fort qui devait suivre */
 function perdreElan(m){if(m.lourd)return;m.forceF=0;m.reElan=0;if(m.mv&&m.mv[m.mi%m.mv.length]==='f')m.mi++}
