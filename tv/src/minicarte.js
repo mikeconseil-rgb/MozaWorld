@@ -102,10 +102,10 @@ drawMini=function(T){if(!cv)return;const mc=cv.getContext('2d'),dt=Math.min(.2,M
   /* tuiles : couleur du type, sombre si sauvage ; joints sombres comme une mosaïque */
   for(const Z of vis){const t=TYPES[typeDe(Z)],own=S.own[Z.id],l=niv(Z),pret=!(Z.d&&Z.d.pret===false);
     tracer(mc,Z,s,ox,oz);
-    mc.fillStyle=own?rgba(t.c,.92,.95):pret?rgba(t.c,.55,.42):rgba(t.c,.3,.3);mc.fill();
+    {const r=roi(Z.id);mc.fillStyle=r?rgba(r.c,.92,pret?1:.8):pret?rgba(t.c,.55,.42):rgba(t.c,.3,.3)}mc.fill();
     if(l){mc.fillStyle=l<0?`rgba(80,140,210,${.05+.035*-l})`:`rgba(240,160,70,${.05+.035*l})`;mc.fill()}
     mc.lineJoin='round';mc.lineWidth=3;mc.strokeStyle='#0b0a0d';mc.stroke()}
-  for(const Z of vis)if(S.own[Z.id]){tracer(mc,Z,s,ox,oz);mc.lineWidth=2.4;mc.strokeStyle='rgba(255,217,138,.95)';mc.stroke()}
+  royaumes(mc,vis,s,ox,oz,3,true);   /* 2.28 : mêmes royaumes que la carte du monde, sans noms ni halo (dessinée à chaque image) */
   if(curZ){tracer(mc,curZ,s,ox,oz);mc.save();mc.shadowColor='rgba(255,255,255,.8)';mc.shadowBlur=10;mc.lineWidth=2.6;mc.strokeStyle='#fff';mc.stroke();mc.restore()}
   /* calques des autres modules (textes gardés droits) */
   const D=ctxDroit(mc,ang);
@@ -230,22 +230,22 @@ function entrelacs(c,Z,s,ox,oz){const P=Z.poly,n=P.length,k=PAS[typeDe(Z)]||2,M=
   if(typeDe(Z)==='ANT'){/* papillon : les milieux se rejoignent par le nœud central */const cx=(Z.c[0]+ox)*s,cy=(Z.c[1]+oz)*s;
     for(const m of M){c.moveTo(m[0],m[1]);c.lineTo(cx+(m[0]-cx)*.18,cy+(m[1]-cy)*.18)}c.moveTo(M[0][0],M[0][1]);for(let i=1;i<=n;i++)c.lineTo(M[i%n][0],M[i%n][1]);return}
   for(let i=0;i<n;i++){const m=M[i],q=M[(i+k)%n];c.moveTo(m[0],m[1]);c.lineTo(q[0],q[1])}}
-function royaumes(c,vis,s,ox,oz,joint){
+function royaumes(c,vis,s,ox,oz,joint,mini){
   /* 1. entrelacs : bronze pâle dans le sauvage, or vif (ou couleur de maison éclaircie) dans les royaumes */
-  if(s*350>14*K.dpr){const lw=Math.max(.6,Math.min(2.2,s*3.2));c.lineCap='round';
+  if(mini||s*350>14*K.dpr){const lw=Math.max(.6,Math.min(2.2,s*3.2));c.lineCap='round';
     c.beginPath();for(const Z of vis)if(!roi(Z.id))entrelacs(c,Z,s,ox,oz);c.lineWidth=lw;c.strokeStyle='rgba(201,164,92,.2)';c.stroke();
     const par={};for(const Z of vis){const r=roi(Z.id);if(r)(par[r.k]||(par[r.k]={r,L:[]})).L.push(Z)}
     for(const k in par){c.beginPath();for(const Z of par[k].L)entrelacs(c,Z,s,ox,oz);c.lineWidth=lw*1.25;c.strokeStyle=k==='moi'?'rgba(255,236,190,.55)':'rgba(255,245,225,.38)';c.stroke()}}
   /* 2. frontières : chaque arête entre deux maîtres différents, tracée en rempart double */
   const A=aretes(),F={};
   for(const Z of vis){const r=roi(Z.id);if(!r)continue;for(const e of A.get(Z.id)||[]){const o=e.nb&&roi(e.nb.id);if(o===r)continue;(F[r.k]||(F[r.k]={r,E:[]})).E.push(e)}}
-  const w=Math.max(2,Math.min(7,s*9))*K.dpr**.5;c.lineCap='round';c.lineJoin='round';
+  const w=mini?1.6:Math.max(2,Math.min(7,s*9))*K.dpr**.5;c.lineCap='round';c.lineJoin='round';
   for(const k in F){const {r,E}=F[k];c.beginPath();for(const e of E){c.moveTo((e.a[0]+ox)*s,(e.a[1]+oz)*s);c.lineTo((e.b[0]+ox)*s,(e.b[1]+oz)*s)}
-    c.save();c.shadowColor=k==='moi'?'rgba(255,205,120,.85)':'rgba(0,0,0,.6)';c.shadowBlur=w*(k==='moi'?4:2);c.lineWidth=w*2.2;c.strokeStyle='rgba(8,6,4,.9)';c.stroke();c.restore();
+    c.save();if(!mini){c.shadowColor=k==='moi'?'rgba(255,205,120,.85)':'rgba(0,0,0,.6)';c.shadowBlur=w*(k==='moi'?4:2)}c.lineWidth=w*2.2;c.strokeStyle='rgba(8,6,4,.9)';c.stroke();c.restore();
     c.lineWidth=w*1.15;c.strokeStyle=k==='moi'?'#e2b65e':r.trait;c.stroke();
     c.lineWidth=Math.max(.8,w*.28);c.strokeStyle=k==='moi'?'#fff3cf':'rgba(255,255,255,.7)';c.stroke()}
   /* 3. noms des royaumes : un par région d'un seul tenant (3 tuiles ou plus), au centre */
-  const vu=new Set();
+  if(mini)return;const vu=new Set();
   for(const Z of vis){const r=roi(Z.id);if(!r||vu.has(Z.id))continue;const g=[Z];vu.add(Z.id);
     for(let i=0;i<g.length;i++)for(const e of A.get(g[i].id)||[])if(e.nb&&!vu.has(e.nb.id)&&roi(e.nb.id)===r){vu.add(e.nb.id);g.push(e.nb)}
     if(g.length<3||s*350>75*K.dpr)continue;   /* de près, les noms des zones prennent le relais */let x=0,y=0;for(const q of g){x+=q.c[0];y+=q.c[1]}x=(x/g.length+ox)*s;y=(y/g.length+oz)*s;

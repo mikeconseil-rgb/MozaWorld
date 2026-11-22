@@ -6,6 +6,14 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.30 : la carte enluminée, royaumes bien délimités (22 novembre, `src/minicarte.js`)
+Demande : « une carte mosaïque plus belle où chaque royaume est bien dessiné, des zones bien délimitées dans le chaos d'une mosaïque aléatoire ».
+- Le sauvage devient une mosaïque sombre, gravée d'entrelacs Girih en bronze pâle (cordes en étoile entre les milieux des côtés : décagone {10/3}, pentagone et hexagone {n/2}, losange {4/1}, papillon noué au centre).
+- Chaque royaume (le vôtre en or champagne, chaque maison rivale à ses couleurs) est rempli à ses couleurs, avec un entrelacs doré, et sa frontière est tracée en rempart double (filet sombre, trait de couleur, liseré clair) ; le vôtre a un halo d'or.
+- Nom et blason de chaque royaume d'au moins 3 tuiles d'un seul tenant, au centre, quand on dézoome (de près, les noms des zones prennent le relais). Cadre doré à rosaces autour de la carte.
+- La minicarte reprend les mêmes royaumes et frontières, sans noms ni halo (elle est redessinée à chaque image). X (couleurs des niveaux) garde l'ancien rendu.
+- Coût : les arêtes partagées du monde (5 246) sont calculées une fois ; aucune image ni texture en plus. Captures : `node tv/tools/capture-carte.js <dossier>` (royaumes simulés en milieu de partie).
+
 ## Version 2.29 : plantages sur Xbox, mémoire (21-22 novembre, `src/memoire.js`)
 Symptôme rapporté : écran noir « comme un plantage d'Edge », en marchant ou pendant une mue, vers 10 minutes de jeu, parfois en changeant la qualité d'image.
 Mesures (banc `tv/tools/test-endurance.js`) : une région pesait ~700 Mo dans le navigateur, dont un sol d'un million de sommets ; rien ne grossissait sans fin, mais chaque voyage recharge la page.

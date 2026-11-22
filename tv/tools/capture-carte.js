@@ -18,8 +18,7 @@ const racine=path.resolve(__dirname,'..'),out=path.resolve(process.argv[2]||'car
       if(!best)return;const b=[best.id];for(const id of b){if(b.length>=4)break;for(const v of V[id]||[])if(b.length<4&&ZB[v]&&!S.own[v]&&!S.riv.z[v]&&!b.includes(v))b.push(v)}
       for(const id of b)S.riv.z[id]=k});
     for(const Z of ZN)if(Math.random()<.4&&!S.lv[Z.id])S.lv[Z.id]=Math.round((Math.random()*2-1)*6)});
-  console.log(await p.evaluate(()=>JSON.stringify(Object.entries(MZ.S.riv.z).map(([id,k])=>k+":"+id+":"+(VOISINES_MONDE[id]||[]).filter(v=>MZ.S.riv.z[v]===k).length))));
-  console.log(await p.evaluate(()=>JSON.stringify([ZN.length,Object.keys(MZ.S.riv.z).length,MZ.P.x,MZ.P.z])));
+  await p.waitForTimeout(1500);await p.screenshot({path:path.join(out,pre+'-jeu.png')});
   await p.evaluate(()=>MZ.carte());await p.waitForTimeout(800);
   for(const [n,w] of [['proche',5000],['region',9000],['large',16000],['monde',60000]]){await p.evaluate(w=>MZ.carteZoom(w),w);await p.waitForTimeout(900);
     await p.screenshot({path:path.join(out,pre+'-'+n+'.png')})}
