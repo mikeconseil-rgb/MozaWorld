@@ -30,7 +30,7 @@ Réponses de l'utilisateur à la liste de dix réglages du dimanche 22 nov., poi
 | 5. Zone contestée sans défense : la maison réussit 55 fois sur 100 | « 5 elle le prend » | Lecture de Claude : sans défense du joueur, la maison prend la zone à coup sûr ; l'effet des protections (domaines, pièges, lois) sur ce résultat reste à régler | en vigueur (à faire dans le jeu) ; remplace les 55 sur 100 |
 | 6. Hordes : arrivée 3 cycles après l'annonce | « 6 ok » | Gardé | en vigueur |
 | 7. Zone tombée à 0 sous une horde : sauvage, reprise par l'empreinte en un palier sans combat | « 7 ok » | Gardé | en vigueur |
-| 8. Caravanes : pillage 30 % près d'une horde, 15 % près d'une maison | « Plus grande. Faudrait des cas automatique » (sans numéro) | Lecture probable : risque plus élevé et cas de pillage automatique ; à confirmer | en attente, rien de changé |
+| 8. Caravanes : pillage 30 % près d'une horde, 15 % près d'une maison | « Plus grande. Faudrait des cas automatique », puis « 8 ok » à la proposition de Claude | 50 % par cycle près d'une horde, 25 % près d'une maison rivale ; pillage automatique quand la horde vise une zone du trajet (chiffres proposés par Claude, acceptés) | en vigueur (à faire dans le jeu) ; remplace 30 % et 15 % |
 | 9. Siège final : trois vagues, 3 cycles, relance après 5 cycles | « 9 ok pour l'instant » | Gardé | provisoire |
 | 10. Délai de 40 secondes avant de refaire évoluer une même zone | « 10 pour la beta non. Je dois pouvoir enchaîné les monter de compétences » | Plus de délai dans la bêta ; le délai d'un jour reste prévu pour le jeu complet | en vigueur (à retirer dans le jeu) ; remplace le délai raccourci à 40 s |
 
