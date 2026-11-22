@@ -150,11 +150,10 @@ const plCss=document.createElement('style');plCss.textContent=`
 #combat .plpart{top:auto;bottom:-1.4em;font-size:calc(var(--u)*.9)!important}
 #combat .u.lourd::after{right:-.7em!important;top:45%!important;bottom:auto!important;left:auto!important;width:auto!important;height:auto!important;line-height:1!important;border-radius:.4em!important;padding:.2em .35em!important;font-size:calc(var(--u)*.7)!important}
 #combat #cb-centre .cv{font-size:calc(var(--u)*.95)!important}
-#combat .u.vise::before{left:0;transform:none;white-space:normal;width:max-content;max-width:calc(var(--u)*13);text-align:left}
 #pl-garde-place{visibility:visible!important;display:flex;align-items:center;justify-content:center;flex-direction:column;opacity:.55;color:#c9b8a0;font-family:var(--c-fell,serif);font-size:calc(var(--u)*.95);text-align:center}
 #pl-garde-place::before{content:"⛨";font-size:calc(var(--u)*4);line-height:1;filter:grayscale(1)}
 #pl-garde-place::after{content:"Garde tombée"}
-.kkw{position:absolute;z-index:3;right:4%;top:calc(var(--u)*2.6);display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none}
+.kkw{position:absolute;z-index:3;left:4%;top:calc(var(--u)*2.6);display:flex;flex-direction:column;align-items:flex-start;gap:2px;pointer-events:none}
 .kkw b{font-size:calc(var(--u)*.72);line-height:1.2;padding:0 .4em;border-radius:.6em;background:rgba(10,8,6,.88);color:#e8d6a8;border:1px solid rgba(232,199,127,.6);white-space:nowrap}
 .kkw b.kp{background:#7a1a12;color:#fff;border-color:#ff8070}
 #combat .plelan,#combat .plhero,#combat .plrenfort,#combat .plmenace{font-family:var(--c-main,inherit)}
@@ -170,7 +169,6 @@ const plCss=document.createElement('style');plCss.textContent=`
 #cb-foes .u:not(.chef) .por,#cb-allies .u:not(.hero):not(.garde) .por{width:calc(var(--u)*3)!important;height:calc(var(--u)*3)!important}
 #combat .u.lourd .plaque{border-color:#a01d12!important;box-shadow:0 0 0 2px #a01d12}
 #combat .u.lourd::after{content:"LOURD";position:absolute;z-index:7;left:-.6em;bottom:-.3em;font-family:var(--c-goth,inherit);font-size:calc(var(--u)*.75);color:#fff3da;background:#8a1a10;border-radius:50%;padding:.35em .3em;transform:rotate(12deg);box-shadow:0 1px 4px #000}
-#combat #cb-centre .cv{font-size:calc(var(--u)*.7)!important;white-space:nowrap}
 .plhero{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-1.5em;white-space:nowrap;font-size:calc(var(--u)*.9);font-weight:700;color:#ffd9a0;background:rgba(10,8,6,.9);border:1px solid #c9a45c;padding:0 .5em}
 .plhero.mortel{color:#fff;background:#7a1a12;border-color:#ff8070;animation:plvise .6s ease-in-out infinite alternate}
 .plhero:empty{display:none}
@@ -178,9 +176,13 @@ const plCss=document.createElement('style');plCss.textContent=`
 .plelan{position:absolute;z-index:6;left:50%;transform:translateX(-50%);bottom:-.2em;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#ffe1a8;background:rgba(30,18,4,.92);border:1px solid #c9a45c;border-radius:calc(var(--u)*.6);padding:0 .5em}
 .plelan:empty{display:none}
 #combat .u .int .voie{color:#ff8a78!important;font-weight:700}
+#combat #cb-foes .u:not(.chef) .int:not(:empty){white-space:normal!important;font-size:calc(var(--u)*.9)!important;max-width:calc(var(--u)*11);width:max-content;text-align:left;margin-left:0;margin-right:auto}
+#combat .pop{font-size:calc(var(--u)*1.7)!important;background:rgba(10,8,6,.82);padding:0 .35em;opacity:1}
+#combat .pop.mz-gros{font-size:calc(var(--u)*2.4)!important}
+#combat #cb-foes .u.lourd::after{top:-.7em!important}
 #combat #cb-aide{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;line-height:1.25}
 #combat .u.vise .plaque{box-shadow:0 0 0 3px #fff3c8,0 0 16px #e8c77f!important}
-#combat .u.vise::before{content:attr(data-apercu);position:absolute;z-index:8;left:50%;top:auto;bottom:-1.3em;transform:translateX(-50%);font-weight:700;font-size:calc(var(--u)*.85);color:#fff3c8;background:rgba(10,8,6,.9);border:1px solid #e8c77f;padding:0 .5em;white-space:nowrap}
+#combat .u.vise::before{content:attr(data-apercu);position:absolute;z-index:8;left:0;top:auto;bottom:-1.3em;transform:none;font-weight:700;font-size:calc(var(--u)*.85);color:#fff3c8;background:rgba(10,8,6,.9);border:1px solid #e8c77f;padding:0 .5em;white-space:normal;width:max-content;max-width:calc(var(--u)*13);text-align:left}
 #cb-main:has(.cc:nth-child(7)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-1.6)}
 #cb-main:has(.cc:nth-child(9)) .cc:not(.fin)+.cc:not(.fin){margin-left:calc(var(--u)*-3)}
 #cb-main .cc.f{z-index:5}
@@ -221,7 +223,7 @@ function badgesMenace(){if(!plActif())return;const th=menaces(),passes=[0,0,0];f
   const me=vivants(CB.foes).find(m=>m.int&&m.int.a==='c'&&voieDe(m)===v&&!m.chef),de=document.getElementById('pc-e'+v+(me?Math.min(1,rangDe(me)):0))||d;for(const r of[0,1]){const o=document.getElementById('pc-e'+v+r);if(o&&o!==de){const x=o.querySelector('.plelan');if(x)x.textContent=''}}let be=de.querySelector('.plelan');if(!be){be=document.createElement('span');be.className='plelan';de.appendChild(be)}be.textContent=el?'élan '+el+' au prochain tour':''}
   /* interface, passe 4 : plateau plein, l'unité qui partirait si une créature arrive */
   {const l0=surTerrain(),plein=l0.length>=PL_MAX,l3=l0.filter(u=>u.neT!==CB.tour),l2=l3.length?l3:l0,poids=u=>(u.atk+2)*u.pv*(u.mur?1.5:1),w=plein?l2.slice().sort((p,q)=>poids(p)-poids(q))[0]:null;
-   for(const u of l0)if(u.el){let p=u.el.querySelector(':scope>.plpart');if(!p){p=document.createElement('span');p.className='plpart';u.el.appendChild(p)}p.textContent=u===w?'partira si une créature arrive':''}}
+   for(const u of l0)if(u.el){let p=u.el.querySelector(':scope>.plpart');if(!p){p=document.createElement('span');p.className='plpart';u.el.appendChild(p)}p.textContent=u===w?'partira':''}}
   /* interface, passe 2 : total des coups qui iront au héros ce tour, en rouge s'il peut tomber */
   {let dh=0;const gd=gardeU();for(let v=0;v<3;v++){if(!tenantVoie(v)&&!tribuneVoisine(v))dh+=th[v];else dh+=passes[v]}dh=Math.max(0,dh-(gd?gd.pv+gd.g:0)-(CB.hero.g||0));for(let v=0;v<3;v++)if(!(CB.volGarde===CB.tour&&gd))dh+=vols()[v];
    const h=CB.hero.el;if(h){let p=h.querySelector(':scope>.plhero');if(!p){p=document.createElement('span');p.className='plhero';h.appendChild(p)}p.textContent=dh?'coups attendus '+dh:'';p.classList.toggle('mortel',dh>=CB.hero.pv)}}

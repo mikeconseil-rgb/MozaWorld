@@ -50,6 +50,12 @@ Même équipe de 4 testeurs, centrée sur ce qu'on voit et ce qu'on comprend à 
 - « Garde tombée » : bouclier éteint à la place de la Garde.
 - Alertes (« coups attendus », renfort, « partira ») en romain, plus grandes ; « partira » sous la plaque.
 - Textes flottants d'une même unité qui se suivent au lieu de s'empiler.
+- Correctifs après le dernier tour des testeurs : une seule règle pour l'étiquette de cible (elle n'est plus coupée) ; « hésite » se lit dans l'effet de la carte et non plus dans son texte ; légende du Centre de nouveau lisible ; intentions ennemies plus grandes, alignées à gauche et sur deux lignes au besoin ; « partira » en un mot ; textes flottants plus petits et sur fond sombre ; sceau LOURD remonté au-dessus du nom.
+
+## Reste à faire (après le gel du 23 nov., en réglage seulement)
+
+- La Manœuvre comme le placement : case visée surlignée, « ⚔ N » sur cette case, même ordre des flèches (demandé par le testeur tactique).
+- Léger décalage du plateau quand la Garde tombe ; légende du Centre qui touche l'étiquette d'une unité.
 
 ## Notes
 
@@ -59,3 +65,4 @@ Même équipe de 4 testeurs, centrée sur ce qu'on voit et ce qu'on comprend à 
 | 2 (22 nov.) | 7,5 | 6,5 | 7,5 | 7,5 |
 | 3 (22 nov.) | 7 | 6,5 | 7,5 | 7,5 |
 | 4 (22 nov.) | — | 7 | 8 | 7,5 |
+| 5 (22 nov.) | 8 | 7,5 | 8,5 | 8 |

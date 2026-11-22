@@ -10,7 +10,8 @@
    Données lues sur CK[k] si elles existent : ultime, pose, reveille, amb(), secret, zs (fil « Écrire les cartes de chaque pôle »). */
 (function(){
 /* interface du Plateau, passe 5 : mots-clés toujours visibles sur la carte (hésite, prix en PV) */
-function motsCles(t){t=String(t||'').replace(/<[^>]*>/g,'');const k=[];if(/hésit/i.test(t)){const ph=t.split(/[.;]/).find(p=>/hésit/i.test(p))||'';k.push('<b class="kh">'+(/(^|\s)(si|s'il|s’il)\s/i.test(ph)?'hésite ?':'hésite')+'</b>')}
+function motsCles(t,kc){t=String(t||'').replace(/<[^>]*>/g,'');const k=[];let o='';try{const c=kc&&typeof CK!=='undefined'&&CK[kc];o=c&&c.ops?JSON.stringify(c.ops()):''}catch(_){}
+  /* l'hésitation se lit dans les ops (un effet), pas dans le texte (qui peut n'en faire qu'une condition) */const ih=o.indexOf('["hesite"');if(ih>=0){const isi=o.indexOf('["si"');k.push('<b class="kh">'+(isi>=0&&isi<ih?'hésite ?':'hésite')+'</b>')}
   const p=t.match(/perd\s+(\d+)\s*PV/i);if(p&&/Prix/i.test(t))k.push('<b class="kp">−'+p[1]+' PV</b>');return k.length?'<div class="kkw">'+k.join('')+'</div>':''}
 
 const VMANA={Feu:['#b5482a','#f0a060','#3a1a12'],Glace:['#6f9bb0','#e4f1f4','#1d2c38'],Eau:['#1f5f8e','#5fd0c8','#0f2340'],
@@ -381,7 +382,7 @@ window.artCarte=function(k){const c=CK[k],uid='k'+(uidN++);
 const SORTE={CIT:'Défense',DON:'Attaque',RES:'Boost',ANT:'Invocation',MAR:'Loi'};
 const longueur=t=>{const n=String(t).replace(/<[^>]+>/g,'').length;return n>290?' t5':n>210?' t4':n>140?' t3':n>85?' t2':n>45?' t1':''};
 window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?mtype(k):null,uid='h'+(uidN++),txt=c.txt(k),lg=longueur(txt);
-  const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`+motsCles(txt);
+  const gris=typeof enGris==='function'&&enGris(k),co=`<div class="co" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`+motsCles(txt,k);
   const amb=typeof c.amb==='function'?c.amb():c.amb;const ambH=amb?`<div class="kamb">« ${amb} »</div>`:'';const txtR=texteCoupe(txt);
   /* carte de secret */
   if(c.secret||(c.zs&&!z)){const P=c.zs?infoZone(c.zs):null;
@@ -399,7 +400,7 @@ window.carteHTML=function(k,i){const c=CK[k],z=c.z,mt=typeof mtype==='function'?
   const sorte=(ART[k]&&ART[k].sorte&&P.mod!=='MAR')?ART[k].sorte:SORTE[P.mod]||'';
   const ligne=[P.mana,pw||(res?'Niv. '+nP:'')].filter(Boolean).join(' · ');
   const resH=(c.pose||c.reveille)?`<div class="kresos">${c.pose?glypheR(c.pose,1):''}${c.pose&&c.reveille?'<b></b>':''}${c.reveille?glypheR(c.reveille,0):''}</div>`:'';
-  const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`+motsCles(txt);
+  const coZ=`<div class="co ${P.pole}" style="${mt&&typeof MCOL!=='undefined'?'--mc:'+MCOL[mt]:''}">${typeof coutDe==='function'?coutDe(k):c.cout}</div>`+motsCles(txt,k);
   const cls=['cc','kcarte','z','m-'+sansAcc(P.mana),'p-'+P.pole,'L'+nP,ult?'ultime':'',res?'res':'',gris?'gris':'',lg.trim()].filter(Boolean).join(' ');
   return`<div class="${cls}" style="--kb:${V[0]};--kl:${V[1]};--kd:${V[2]};--kcA:${rgba(V[0],.28)};--kcB:${rgba(V[0],.8)};--pc:${coulP}">
    ${cadreCarte(k,V[1],nP,ult)}${angles(k,nP,ult,uid)}${coZ}${crest}<div class="art">${artCarte(k)}<i class="kvitre"></i>${paliers(nP,maxP,coulP)}</div>${nP>=2||ult?bandeau(ckey(P.cult),V[1],uid):'<div class="kband vide"></div>'}${resH}
