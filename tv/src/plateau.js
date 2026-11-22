@@ -136,7 +136,11 @@ const plCss=document.createElement('style');plCss.textContent=`
 .u.chef .por{width:calc(var(--u)*9)!important;height:calc(var(--u)*9)!important}
 .u.chef .int .voie,.u .int .voie{color:var(--laiton2)}
 .u.arriere .por{opacity:.85;transform:scale(.92)}
-.plmenace{position:absolute;z-index:6;left:-50%;right:-50%;top:-.2em;text-align:center;white-space:nowrap;line-height:1.15;font-size:calc(var(--u)*.85);font-weight:700;color:#ff9a8a;text-shadow:0 1px 4px #000}
+.plmenace{position:absolute;z-index:6;left:50%;transform:translateX(-50%);top:-.35em;white-space:nowrap;line-height:1.25;font-size:calc(var(--u)*.9);font-weight:700;color:#ffb3a6;background:rgba(24,8,8,.92);border:1px solid rgba(226,103,90,.7);border-radius:calc(var(--u)*.6);padding:0 .55em;box-shadow:0 2px 8px #000}
+.plmenace:empty{display:none}
+.plrenfort{position:absolute;z-index:6;left:50%;transform:translateX(-50%);top:30%;white-space:nowrap;font-size:calc(var(--u)*.8);font-weight:700;color:#ffd0c8;background:rgba(24,8,8,.85);border:1px dashed #e2675a;border-radius:calc(var(--u)*.5);padding:.1em .5em;animation:plvise .8s ease-in-out infinite alternate}
+.plrenfort:empty{display:none}
+.pcase.chefvoie svg polygon{stroke:#ff8070;stroke-dasharray:6 4}
 .u.manvise .plaque{border-color:#fff3c8;box-shadow:0 0 0 3px rgba(232,199,127,.5)}
 #cb-foes .u.mort{opacity:0!important;pointer-events:none}
 #cb-main{position:relative}#cb-main .cc.man{border-color:rgba(143,192,111,.6);position:absolute;right:0;bottom:calc(100% + var(--u)*.4);transform:scale(.78);transform-origin:bottom right}
@@ -169,7 +173,10 @@ const manVise=u=>!!(CB&&CB.man&&surTerrain()[CB.man.i%Math.max(1,surTerrain().le
 /* menace par voie, affichée sur la case d'avant de chaque voie */
 function badgesMenace(){if(!plActif())return;const th=menaces();for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;let b=d.querySelector('.plmenace');
   if(!b){b=document.createElement('span');b.className='plmenace';d.appendChild(b)}const qui=tenantVoie(v)||tribuneVoisine(v),el=elans()[v],vo=vols()[v];b.textContent=(vo?'➶ '+vo+' → '+(CB.volGarde===CB.tour&&gardeU()?'Garde':'héros')+(th[v]||el?' · ':''):'')+(th[v]?'⚔ '+th[v]+' → '+(qui?qui.nom.split(/[ ']/)[0]:gardeU()?'Garde':'héros'):'')+(el?(th[v]?' · ':'')+'élan '+el+' au prochain tour':'')}
-  for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u))}
+  for(const u of surTerrain())if(u.el)u.el.classList.toggle('manvise',manVise(u));
+  /* interface, passe 1 : renfort annoncé sur sa case, voie du chef soulignée */
+  const chef=vivants(CB.foes).find(m=>m.chef);for(let v=0;v<3;v++){const e=document.getElementById('pc-e'+v+'1');if(e){let r=e.querySelector('.plrenfort');if(!r){r=document.createElement('span');r.className='plrenfort';e.appendChild(r)}r.textContent=CB.renfortVoie===v?'renfort au prochain tour':''}
+    for(const c of['a','e'])for(let rr=0;rr<2;rr++){const d=document.getElementById('pc-'+c+v+rr);if(d)d.classList.toggle('chefvoie',!!(chef&&chef.cv===v))}}}
 
 /* ---------- Passe 5 (20 nov.) : renforts, pour que le plateau compte jusqu'au bout ----------
    Éveil : le chef appelle un renfort aux tours 3 et 5, annoncé au tour d'avant, dans la voie qu'il vise.

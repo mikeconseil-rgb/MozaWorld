@@ -268,17 +268,17 @@ function placerNoeud(){if(!CB)return;
   if(CB.cases){/* Plateau (19 nov.) : vous, héros (col. 1), Garde (2), arrière (3), avant (4) ; l'ennemi, avant (1), arrière (2), chef (3) ; trois voies en rangées */
     if(typeof dessinerCases==='function')dessinerCases();if(typeof badgesMenace==='function')badgesMenace();
     for(const u of CB.allies){if(u.pv<=0&&!u.hero)continue;if(u.hero)pose(u,'1','1 / 4');else if(u.garde)pose(u,'2','1 / 4');else{pose(u,(u.rang||0)?'3':'4',String((u.voie||0)+1));if(u.el)u.el.classList.toggle('arriere',!!u.rang)}}
-    for(const u of CB.foes){if(u.pv<=0)continue;if(u.chef)pose(u,'3','1 / 4');else pose(u,String(rangDe(u)+1),String((u.voie||0)+1))}
+    for(const u of CB.foes){if(u.pv<=0)continue;if(u.chef)pose(u,'3',u.cv!=null?String(u.cv+1):'1 / 4');else pose(u,String(rangDe(u)+1),String((u.voie||0)+1))}
     return}
   for(const side of[CB.allies,CB.foes]){const n=[0,0];for(const u of side){if(u.pv<=0&&!u.hero)continue;
     if(side===CB.allies){if(u.hero)pose(u,'1','1 / 3');else if(u.garde)pose(u,'4','1 / 3');else{const i=n[u.voie||0]++;pose(u,String(Math.max(2,3-i)),String((u.voie||0)+1))}}
     else{if(u.chef)pose(u,'3','1 / 3');else{const i=n[u.voie||0]++;pose(u,String(Math.min(2,1+i)),String((u.voie||0)+1))}}}}}
 function majUnites(){if(!CB)return;const v=vivants(CB.foes);majCentre();placerNoeud();
   for(const u of[...CB.foes,...CB.allies]){const e=u.el;if(!e)continue;e.classList.toggle('mort',u.pv<=0);
-    e.querySelector('.bar i').style.width=(100*u.pv/u.max)+'%';e.querySelector('.bar span').textContent=CB.sr&&u.hero?`Blessures ${u.max-u.pv} / ${u.max}${srMalus()?' · −'+srMalus():''}`:u.pv+' / '+u.max;
+    e.querySelector('.bar i').style.width=(100*u.pv/u.max)+'%';e.querySelector('.bar span').textContent=CB.sr&&u.hero?`PV ${u.pv} / ${u.max}${srMalus()?' · capacité −'+Math.min(srMalus(),CB.tour<4?1:99):''}`:u.pv+' / '+u.max;
     const g=e.querySelector('.gd');g.textContent=u.g>0?'⛨ '+u.g:'';
     if(u.garde)e.querySelector('.int').textContent=CB.cases?'⛨ dernier rempart du héros':'⛨ prend les coups, s\'effrite de moitié';else if(u.mur)e.querySelector('.int').textContent='⛨ bloqueur'+(u.atk>0&&CB.cases&&typeof forceBete==='function'?' · ⚔ '+forceBete(u):'')+(u.epine?' · renvoie '+u.epine:'')+(CB.cases&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:'');else if(u.bete)e.querySelector('.int').textContent=CB.cases&&typeof forceBete==='function'?'⚔ '+forceBete(u)+((u.rang||0)?' · arrière':' · avant')+(terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''):'⚔ '+u.atk+' à chaque tour';
-    else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}${u.chef&&CB.cases&&u.cv!=null&&'afb'.indexOf(I.a)>=0?' <span class="voie">voie '+PL_NOMV[u.cv]+'</span>':''}${aPassif('lecture')&&u.mv?' · puis '+NOMACT[u.mv[u.mi%u.mv.length]]:''}${CB.cases&&typeof terrainDe==='function'&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''}`:''}
+    else if(!u.hero){const I=u.int;e.querySelector('.int').innerHTML=u.pv>0&&I?`<b>${I.ic}${I.v?' '+I.v:''}</b> ${I.t}${u.chef&&CB.cases&&u.cv!=null?' <span class="voie">voie '+PL_NOMV[u.cv]+'</span>':''}${aPassif('lecture')&&u.mv?' · puis '+NOMACT[u.mv[u.mi%u.mv.length]]:''}${CB.cases&&typeof terrainDe==='function'&&terrainDe(u)?' · '+PL_T[terrainDe(u)].nom:''}`:''}
     e.classList.toggle('vise',!!CB.sel&&u===v[CB.ti])}
   const dsp=dispo();$('cb-mana').innerHTML=`<span class="l">Ce tour</span><span class="mp">${Array.from({length:Math.min(CB.capT||0,14)},(_,i)=>`<i class="${i<dsp?'on':''}"></i>`).join('')}</span><b>${dsp} / ${CB.capT||0}</b><span class="l">${resHTML()}</span>`;
   $('cb-piles').innerHTML=`<span>Pioche <b>${CB.pile.length}</b></span><span>Défausse <b>${CB.defausse.length}</b></span><span>Tour <b>${CB.tour}</b></span>${CB.reso&&Object.keys(CB.reso).some(r=>CB.reso[r]>0)?`<span>Résonances <b>${Object.keys(CB.reso).filter(r=>CB.reso[r]>0).map(r=>r+(CB.reso[r]>1?' ×'+CB.reso[r]:'')).join(', ')}</b></span>`:''}`}
