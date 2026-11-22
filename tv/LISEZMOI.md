@@ -6,6 +6,14 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Combat : portraits peints et animés (22 novembre, `src/portraits-combat.js`)
+
+Retour de l'utilisateur après le combat à la Foire : « les persos sont trop moches. Fait de quoi qui est un peu animé ».
+- Les silhouettes du combat principal sont remplacées par les portraits peints de l'Arène (`img/creatures/`, 256 px, environ 10 ko chacun), dans un médaillon : cadre d'or pour vos unités, cadre rouge pour l'adversaire ; le héros a un cadre en arche.
+- Sur le plateau, l'unité se lit à l'horizontale : médaillon à gauche, plaque (nom, jauge, case) à droite.
+- Animations, en transform et opacité seulement (léger pour la mémoire graphique de la Xbox) : le médaillon respire et la peinture dérive lentement dans son cadre ; l'attaquant se penche vers sa cible et son cadre s'allume ; un coup reçu secoue le médaillon sous un voile rouge ; un soin passe en voile vert ; à la mort, la toile pâlit et tombe.
+- Une image manquante laisse la silhouette d'origine.
+
 ## Version 2.42 : annonces sobres (22 novembre, `src/carnet.js`)
 Demande : « Enlève les affiches lors des montées de zone et autre, ça prend trop d'espace, restons plus sobre pour l'interface tout en gardant le style ».
 - Toutes les annonces (entrée de zone, palier gagné, secret, horde, rival, caravane…) tiennent sur un petit billet de papier sous la barre du haut : une ligne de contexte, le titre, deux lignes de note au plus. Plus de grand titre au milieu de l'écran, plus de coup de pinceau ni de sceau.
