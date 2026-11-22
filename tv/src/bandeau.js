@@ -52,7 +52,7 @@ function bandeau(){const box=document.querySelector('.hud.etat');if(!box)return;
   const dep=typeof ZONES_DEP!=='undefined'?`<span class="d" title="Territoire de départ pris (les zones autour ne cèdent qu'après)"><span>⌂</span>${departPris()}<small>/${ZONES_DEP.length}</small></span>`:'';
   const terr=`<span class="d cle" title="Zones à vous"><span>⚑</span>${ids.length}<small>/${ZN.length}</small></span>${dep}<span class="d" title="Plus grand territoire d'un seul tenant"><span>▦</span>${bloc}</span><span class="d" title="Niveaux de vos zones"><span>▲</span>${niv}</span><i class="pt"></i>${dom}${dfe}`;
   const res=`<span class="d cle" title="Paquet de combat"><span>▤</span>${S.deck.length}<small> cartes</small></span>${typeof bandeauTess==='function'?bandeauTess():''}${royaume()}`;
-  const men=(typeof menacesSiege==='function'?menacesSiege():[]).concat(typeof menacesHordes==='function'?menacesHordes():[]);
+  const men=(typeof mondeIci==='function'&&!mondeIci())?['<span class="d" title="D\'ici le 28 nov., hordes, maisons rivales et siège final ne jouent que dans la région de départ : ils attendent votre retour." style="color:#c8c0a8">⏸ en attente de votre retour</span>']:(typeof menacesSiege==='function'?menacesSiege():[]).concat(typeof menacesHordes==='function'?menacesHordes():[]);
   /* boucle 1 + fils domaines, hordes, rivaux (19 nov.) : trois îlots, puis menaces et rivaux s'il y en a */
   b.innerHTML=`<div class="ilot i-mana">${mana}${prod}</div><i class="sep"></i><div class="ilot i-terr">${terr}</div><i class="sep"></i><div class="ilot i-res">${res}</div>`+
     (men.length?`<i class="sep"></i><div class="ilot i-men"><span class="titre">Menaces</span>${men.join('')}</div>`:'')+(typeof ligneRivaux==='function'?ligneRivaux():'');

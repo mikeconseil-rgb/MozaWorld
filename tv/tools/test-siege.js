@@ -21,7 +21,7 @@ const ok=(nom,cond,detail)=>{etapes.push((cond?'OK    ':'ÉCHEC ')+nom+(detail?'
     await p.evaluate(()=>{try{localStorage.removeItem('mz-palmares-1')}catch(_){}window.MZ.start()});await p.waitForTimeout(1500);
     /* 1. Citadelles épiques */
     const ep=await p.evaluate(()=>MZ.citadellesEpiques());
-    ok('la Citadelle de la carte jouée est épique',ep.length===1&&ep[0]==='CIT',JSON.stringify(ep));
+    ok('Berestograd est épique, et cinq Citadelles épiques tirées pour tout le monde',ep.length===5&&ep[0]==='CIT'&&new Set(ep).size===5,JSON.stringify(ep));
     const fiche=await p.evaluate(()=>{MZ.tp('CIT');hudKey='';hud();return document.getElementById('h-mai').textContent});
     ok('fiche : « Citadelle épique »',/Citadelle épique/.test(fiche),fiche);
     const avant7=await p.evaluate(()=>{MZ.S.lv.CIT=3;ZB.CIT.lvT=3;openEveil(ZB.CIT);return UI.opts.map(o=>o.l+' | '+(o.d||''))});

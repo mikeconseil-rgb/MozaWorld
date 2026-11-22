@@ -19,8 +19,11 @@ const PALMARES_CLE='mz-palmares-1';
 function hashSiege(t){let h=2166136261;for(const c of String(t))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;return h}
 let epiquesCache={g:null,l:[]};
 function citadellesEpiques(){const g=S.graine||0;if(epiquesCache.g===g&&epiquesCache.l.length)return epiquesCache.l;
-  const cits=ZN.filter(Z=>estCIT(Z)).map(Z=>Z.id);
-  const l=cits.length<=SIEGE_EPIQUES?cits:cits.slice().sort((a,b)=>hashSiege(a+'#'+g)-hashSiege(b+'#'+g)).slice(0,SIEGE_EPIQUES);
+  /* 20 nov. : tirées une fois pour tout le monde (ZW), plus selon la région chargée. Berestograd, Citadelle de la région de départ,
+     en est toujours une, puisque le siège ne se joue que dans cette région d'ici le 28 (provisoire) ; les autres sont tirées par la graine. */
+  const W=typeof ZW!=='undefined'?ZW:ZN,cits=W.filter(Z=>estCIT(Z)&&Z.id!=='CIT').map(Z=>Z.id);
+  const reste=SIEGE_EPIQUES-1,tir=cits.length<=reste?cits:cits.slice().sort((a,b)=>hashSiege(a+'#'+g)-hashSiege(b+'#'+g)).slice(0,reste);
+  const l=(W.some(Z=>Z.id==='CIT')?['CIT']:[]).concat(tir);
   epiquesCache={g,l};return l}
 const estEpique=id=>!!ZB[id]&&citadellesEpiques().indexOf(id)>=0;
 const courtS=id=>zI(id).nom.split(',')[0];
@@ -75,7 +78,7 @@ function echecSiege(l,sansRapport){const s=S.siege;S.siege=null;S.siegeRepos[s.c
 function montrerSiege(){if(!siegeRapports.length||mode!=='monde')return;const r=siegeRapports.shift();if(r.victoire){if(typeof fanfare==='function')fanfare(7);ecranVictoire(r.victoire,r.lignes);return}mode='menu';document.body.classList.add('jeu-ouvert');sfx(r.ok?'hit':'fail');
   ui('menu',{sur:'Siège final',t:r.t,corps:`<p class="petit">${r.lignes.join('<br>')}</p>`,back:toMonde,opts:[{l:'Continuer',ic:'◆',go:toMonde}]})}
 
-setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;initSiege();if(mode==='monde'&&siegeRapports.length)montrerSiege();const s=S.siege;if(!s)return;
+setInterval(()=>{if(!started||mode==='titre'||typeof S==='undefined')return;initSiege();if(mode==='monde'&&siegeRapports.length)montrerSiege();const s=S.siege;if(!s||!mondeIci())return;
   if(!ZB[s.cit]||!tient(s.cit)||Math.abs(S.lv[s.cit]||0)<7){S.siege=null;save();hudKey='';etatHud();
     toast('Le siège est levé',ZB[s.cit]?zI(s.cit).nom:'',tient(s.cit)?'La Citadelle n\'est plus à ±7 : le siège final s\'arrête. Ramenez-la à ±7 pour le relancer.':'La Citadelle n\'est plus à vous : le siège final s\'arrête. Reprenez-la et ramenez-la à ±7 pour le relancer.');return}
   if(S.nc>=s.arrive&&!(typeof CB!=='undefined'&&CB&&CB.siege))vagueArrive();

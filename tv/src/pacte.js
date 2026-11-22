@@ -128,7 +128,7 @@ function pacteMort(){const p=pac();if((S.lives||1)<=p.v)return false;p.v=S.lives
   return true}
 setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||typeof S==='undefined')return;const p=pac();pacteMort();
   /* le cycle n est traité quand le commerce l'a payé (les tesselles du cycle sont dans la bourse), quel que soit l'ordre des fichiers */
-  while(p.nc<S.nc&&(typeof S.tessNc!=='number'||S.tessNc>p.nc)){p.nc++;cyclePacte()}
+  while(p.nc<S.nc&&(typeof S.tessNc!=='number'||S.tessNc>p.nc)){p.nc++;if(mondeIci())cyclePacte()}
   rupturePacte();
   if(pacFile.length&&mode==='monde'&&!(typeof toastT!=='undefined'&&toastT>1.5)){const m=pacFile.shift();toast(m[0],m[1],m[2])}},1000);
 

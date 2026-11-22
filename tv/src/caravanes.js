@@ -105,7 +105,7 @@ function caravanesCycle(nc){initCaravanes();if(typeof nc!=='number')nc=S.nc;let 
 setInterval(()=>{if(typeof started==='undefined'||!started||mode==='titre'||typeof S==='undefined')return;initCaravanes();
   /* le commerce verse d'abord les Citadelles (commerce.js) ; si son initialisation n'a pas encore eu lieu, on la fait ici */
   if(typeof initCommerce==='function')initCommerce();
-  while(S.carNc<S.nc){S.carNc++;caravanesCycle(S.carNc)}
+  while(S.carNc<S.nc){S.carNc++;if(mondeIci())caravanesCycle(S.carNc)}
   if(mode==='monde'&&CAR_FILE.length&&(typeof toastT==='undefined'||toastT<1))toast(...CAR_FILE.shift())},1000);
 
 /* ---------- Escorte : combat court contre les pillards, dans la zone du pillage ---------- */
