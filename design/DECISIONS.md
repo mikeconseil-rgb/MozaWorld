@@ -19,6 +19,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
 
+## 22 novembre 2026 (téléphone)
+
+| Sujet | Décision | Statut | Version |
+|---|---|---|---|
+| Plateforme : téléphone | « On pourrait ajouter des commandes pour mon Pixel 9 Pro » : commandes tactiles (stick flottant à gauche, caméra au doigt à droite, sceaux A B X Y, carte, zoom, courir ; menus, cartes et cibles se touchent directement), en paysage, qualité « Équilibrée » par défaut. Rien ne change pour la Xbox ni le clavier | en vigueur | 2.34 |
+
 ## 21 novembre 2026 soir (interface « Carnet sombre »)
 
 | Sujet | Décision | Statut | Remplace |

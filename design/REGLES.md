@@ -9,7 +9,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 ## 1. Le cadre
 
 - Monde ouvert découpé en zones selon une mosaïque Girih qui pave tout le plan, sans trou. Le monde est tiré au hasard.
-- La version jouée est une page web (dossier `tv/`), dans Edge sur Xbox Series S, à la manette, ou au clavier sur PC. C'est le jeu pour l'instant ; Unreal Engine 5 sur PC (RTX 2070) reste la dernière étape, sans date.
+- La version jouée est une page web (dossier `tv/`), dans Edge sur Xbox Series S, à la manette, ou au clavier sur PC ; aussi jouable au doigt sur téléphone en paysage (Pixel 9 Pro, Chrome ; 2.34). C'est le jeu pour l'instant ; Unreal Engine 5 sur PC (RTX 2070) reste la dernière étape, sans date.
 - Jeu solo d'abord. Vue à la troisième personne. Français seule langue. Budget : gratuit seulement ; tout achat se demande au cas par cas.
 - L'adversaire principal est le monde sauvage. Les rivaux joués par l'ordinateur sont secondaires (18-19 nov., dans le jeu : quatre maisons, voir section 8).
 

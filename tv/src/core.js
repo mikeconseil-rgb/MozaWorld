@@ -90,7 +90,9 @@ const renderer=(()=>{try{const r=new THREE.WebGLRenderer({canvas,antialias:false
     arretBoucle('la carte graphique refuse de démarrer');throw new Error('Nouvel essai de la carte graphique : arrêt')}})();
 /* Version télé : on rend l'image à une largeur fixe (QUAL.w) puis la télé l'agrandit. Trois réglages, ajustés seuls si l'image saccade. */
 const QUALS=[{nom:'Fluide',w:800,sh:0,ms:0},{nom:'Équilibrée',w:1060,sh:1024,ms:0},{nom:'Belle',w:1400,sh:2048,ms:4},{nom:'Splendide',w:1920,sh:2048,ms:4}];
-let QI=window.Android?0:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}
+/* 2.34 : téléphone (écran tactile, pas de manette) : « Équilibrée » par défaut, prudent pour la mémoire graphique */
+const TACTILE=!window.Android&&!/xbox/i.test(navigator.userAgent)&&(matchMedia('(pointer:coarse)').matches||/[?&]tactile=1/.test(location.search));
+let QI=window.Android?0:TACTILE?1:2;try{const q=localStorage.getItem('mz-tv-q2');if(q!==null&&+q>=0&&+q<QUALS.length)QI=+q}catch(_){}
 if(GL_ESSAIS>=2&&QI>1)QI=1;   /* 22 nov. : après deux essais ratés de la carte graphique, « Équilibrée » pour la séance */   /* 2.5 : le web part en « Belle » (la Xbox est fluide) ; nouvelle clé pour ne pas garder l'ancien réglage baissé */
 const QUAL=()=>QUALS[QI];
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,QUAL().w/Math.max(320,innerWidth)));
