@@ -6398,7 +6398,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.41';
+const MZ_VERSION='2.42';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -9588,19 +9588,22 @@ body.carnet .hud.etat .i-men *{color:#7d1710!important}
 body.carnet .hud.etat .vie{border-color:var(--c-cire)!important;box-shadow:none!important}body.carnet .hud.etat .vie.on{background:var(--c-cire)!important}
 
 /* ── titre de zone et annonces : gothique blanc d'os, ombre de cire, coup de pinceau derrière ── */
-body.carnet .toast .t1{font-family:var(--c-fell);font-weight:400;color:var(--c-os);letter-spacing:.3em;text-shadow:2px 2px 0 #000}
-body.carnet .toast .t2{font-family:var(--c-goth);font-weight:600;font-size:calc(var(--u)*3.9);line-height:1.02;color:var(--c-os);text-shadow:3px 3px 0 var(--c-cire),5px 5px 0 #0a0605;
-  display:inline-block;position:relative;padding:.12em .5em .16em;margin:.2em 0 .25em}
-body.carnet .toast .t2::before{content:"";position:absolute;z-index:-1;inset:6% -1% 2%;transform:rotate(-1.2deg);
-  background:repeating-linear-gradient(2deg,rgba(255,255,255,.10) 0 3px,transparent 3px 9px,rgba(0,0,0,.18) 9px 12px,transparent 12px 21px),linear-gradient(95deg,#1c4f43,var(--c-vert) 30%,#4f9c86 55%,var(--c-vert) 80%,#1c4f43);
-  clip-path:polygon(0 38%,2% 16%,7% 22%,12% 6%,24% 12%,38% 2%,52% 9%,66% 0,80% 8%,92% 3%,97% 20%,100% 34%,98% 62%,100% 80%,94% 92%,84% 86%,70% 98%,55% 90%,40% 100%,26% 91%,13% 97%,5% 84%,1% 70%)}
-body.carnet .toast .t2::after{content:"✶";position:absolute;left:calc(var(--u)*-2.1);top:-.32em;width:calc(var(--u)*3.3);height:calc(var(--u)*3.3);border-radius:46% 54% 50% 50%/52% 47% 53% 48%;
-  display:grid;place-items:center;font:600 calc(var(--u)*1.9)/1 var(--c-fell);color:#5e0f0a;text-shadow:1px 1px 0 rgba(255,150,130,.45);transform:rotate(-14deg);
-  background:radial-gradient(circle at 36% 30%,#e0584a,var(--c-cire) 46%,#6d130d 100%);box-shadow:inset 0 0 0 calc(var(--u)*.32) rgba(109,19,13,.55),2px 3px 0 rgba(0,0,0,.7)}
-body.carnet .toast .t2.court{text-transform:uppercase;letter-spacing:.03em;font-size:calc(var(--u)*4.4)}
-body.carnet .toast .t3{font-family:var(--c-main);font-style:normal;font-weight:600;font-size:calc(var(--u)*1.75);color:var(--c-os);text-shadow:2px 2px 0 #000}
-body.carnet .toast.vu .t2{animation:cTitre .9s cubic-bezier(.2,.7,.2,1) both}
-@keyframes cTitre{from{opacity:0;transform:translateY(calc(var(--u)*1)) rotate(-1.5deg)}to{opacity:1;transform:none}}
+/* 2.42 (22 nov., « Enlève les affiches lors des montées de zone et autre, ça prend trop d'espace, restons plus sobre […] tout en gardant le style ») :
+   toutes les annonces (entrée de zone, palier, secret, horde, rival…) tiennent sur un petit billet de papier sous la barre du haut,
+   au lieu du grand titre au milieu de l'écran. Plus de coup de pinceau ni de sceau ici. */
+body.carnet .hud.toast{top:calc(var(--u)*3.6)!important;left:50%!important;transform:translateX(-50%) rotate(-.4deg)!important;width:auto!important;min-width:calc(var(--u)*16);max-width:min(calc(var(--u)*40),70vw);
+  padding:calc(var(--u)*.85) calc(var(--u)*1.8) calc(var(--u)*.95)!important;text-align:center;color:var(--c-encre);
+  background:radial-gradient(circle at 0 0,rgba(20,10,4,.7),transparent 16%),radial-gradient(circle at 100% 100%,rgba(20,10,4,.65),transparent 14%),linear-gradient(178deg,var(--c-papier),var(--c-papier2));
+  box-shadow:inset 0 0 0 2px rgba(23,16,10,.55);
+  clip-path:polygon(0 6%,7% 0,22% 5%,40% 1%,61% 6%,82% 0,100% 5%,99% 50%,100% 95%,84% 100%,63% 94%,41% 100%,20% 95%,6% 100%,1% 94%,2% 50%)}
+body.carnet .toast .t1{font-family:var(--c-fell);font-weight:400;font-size:calc(var(--u)*.95)!important;color:#6d130d!important;letter-spacing:.14em;text-shadow:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.carnet .toast .t2{font-family:var(--c-goth);font-weight:600;font-size:calc(var(--u)*1.7)!important;line-height:1.1;color:var(--c-encre)!important;text-shadow:none!important;margin:.05em 0!important;animation:none!important;filter:none!important}
+body.carnet .toast .t3{font-family:var(--c-main);font-style:normal;font-weight:600;font-size:calc(var(--u)*1.2)!important;line-height:1.15!important;color:#3a2a14!important;text-shadow:none!important;animation:none!important;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+body.carnet .toast .t3:empty{display:none}
+body.carnet .toast .t1{animation:none!important}
+/* en interface épurée, la grande fiche de zone ne s'ouvre plus à chaque entrée de zone : le billet donne le nom, RB montre la fiche */
+body.carnet.epure .hud.cart{opacity:0!important}
 
 /* ── fiche de zone (en haut à gauche) : une page épinglée ── */
 body.carnet .hud.cart{padding:calc(var(--u)*1.2) calc(var(--u)*1.4) calc(var(--u)*1.3);transform:rotate(-1deg);top:calc(var(--my) + var(--u)*3)}
@@ -9662,9 +9665,6 @@ dechire(q('.hud.cart'),{pas:18,ay:2.2,ax:1.4});
 dechire(q('.hud.jauge'),{pas:30,ay:11,ax:.8});
 dechire(q('#invite'),{pas:16,ay:12,ax:1.2});
 for(const a of document.querySelectorAll('.hud.aide'))dechire(a,{pas:16,ay:3.5,ax:1.4});
-/* un titre court (nom de zone) passe en capitales gothiques ; une phrase reste en bas de casse pour rester lisible */
-const t2=q('#t2');if(t2&&window.MutationObserver){const court=()=>t2.classList.toggle('court',t2.textContent.trim().length<=30);
-  new MutationObserver(court).observe(t2,{childList:true,characterData:true,subtree:true});court()}
 /* la minicarte et la note Xbox sont créées par d'autres fichiers, parfois plus tard : on les habille quand elles existent */
 let essais=0;const tard=setInterval(()=>{const n=q('.hud.carte .mc-nom'),x=q('#xbox-aide');
   if(n&&!n.classList.contains('c-papier'))dechire(n,{pas:12,ay:9,ax:1.6});
