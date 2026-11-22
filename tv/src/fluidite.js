@@ -109,8 +109,10 @@ function appliquerOmbre(){const sh=QUAL().sh,SM=renderer.shadowMap;SM.enabled=tr
   if(sh>0){SM.autoUpdate=true;sun.shadow.bias=-.0006;
     if(sun.shadow.mapSize.x!==sh){if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}sun.shadow.mapSize.set(sh,sh)}}
   else{SM.autoUpdate=false;sun.shadow.bias=-1;if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null}}}
-/* sur Xbox (sol allégé), l'anticrénelage multiéchantillon passe de 4 à 2 : l'image de rendu pèse deux fois moins (FXAA reste) */
-if(typeof SOL_LEGER!=='undefined'&&SOL_LEGER)for(const q of QUALS)if(q.ms>2)q.ms=2;
+/* sur Xbox (sol allégé) : l'image de rendu demi-flottante multiéchantillonnée est le plus gros bloc de la carte graphique.
+   Belle passe de ×4 à ×2 ; Splendide (1920 px, là où l'écran noir revenait le plus souvent, 22 nov.) passe à ×0 : la
+   définition reste pleine et le FXAA lisse les bords. Image de rendu : ~120 Mo → ~25 Mo en Splendide. */
+if(typeof SOL_LEGER!=='undefined'&&SOL_LEGER)for(const q of QUALS){if(q.w>=1920){q.ms=0;q.fx=1}else if(q.ms>2)q.ms=2}
 resize=function(){_resizeOmb();if(baisseAuto())return;appliquerOmbre()};
 appliquerOmbre();resize();
 /* (c) coupe selon le brouillard. FogExp2 : à 2,3/densité, il reste 0,5 % de l'objet ; +40 m de marge, entre 180 et 620 m.
