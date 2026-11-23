@@ -2771,7 +2771,9 @@ const styU={tD:{value:null},pInv:{value:camera.projectionMatrixInverse},cW:{valu
   /* boucle 2 (19 nov. 2026) : 1 quand la passe FXAA suit (Belle, Splendide) ; le grain part alors dans l'alpha */
   fxOn:{value:0},
   /* boucle 1 (19 nov. 2026) : étalonnage signature de la zone où se trouve la caméra (voir SIG plus bas) */
-  sigSh:{value:new THREE.Vector3(.1,.1,.1)},sigMi:{value:new THREE.Vector3(.5,.5,.5)},sigHi:{value:new THREE.Vector3(1,1,1)},sigK:{value:0},sigOn:{value:0}};
+  sigSh:{value:new THREE.Vector3(.1,.1,.1)},sigMi:{value:new THREE.Vector3(.5,.5,.5)},sigHi:{value:new THREE.Vector3(1,1,1)},sigK:{value:0},sigOn:{value:0},
+  /* boucle 5 (23 nov. 2026) : plafond de chroma (1 = libre) et point noir (0 = rien) des +7, par zone (voir SIG_CN) ; sigRo : rose rappelé vers l'ivoire (0 = rien) */
+  sigCh:{value:1},sigNo:{value:0},sigRo:{value:0}};
 Object.assign(mFinal.uniforms,styU);mFinal.uniforms.expo=mFinal.uniforms.exp; /* « exp » cache la fonction exp() du GLSL */
 const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
   for(int i=0;i<${n};i++){vec2 a=${u}[i],b=${u}[i+1];
@@ -2779,7 +2781,7 @@ const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
     vec2 e=b-a;float t=clamp(dot(p-a,e)/dot(e,e),0.,1.);d=min(d,length(p-a-e*t));}
   float s=smoothstep(0.,3.,d)*.5;return ins?.5+s:.5-s;}`;
 mFinal.defines={STY_DEPTH:STY_DEPTH?1:0};
-mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
+mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn,sigCh,sigNo,sigRo;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
 uniform mat4 pInv,cW;uniform vec2 pM[5],pR[7],px;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 ${polyGL('inM','pM',4)}
@@ -2862,7 +2864,23 @@ if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty))
   vec3 fl=sh*mix(.012,.06,sN)*fo;c=fl+c*(1.-fl);
   float vg=smoothstep(.04,.45,dot(q,q)*2.);c=mix(c,sigSh*mix(.8,.5,sN),vg*(.15+.2*sN-.07*sP)*fo);
   /* +7 : blancs désaturés de 10 %, ombres teintées pastel froid (le relief tient sans boucher) */
-  L=dot(c,Y);c=mix(c,vec3(L),.1*sP*wh*fo);c=mix(c,c*sh,.18*sP*ws*fo);
+  /* boucle 5 (23 nov.) : teinte pastel des ombres .18 → .06 (avec .18 les ombres des +7 tournaient au lait) */
+  L=dot(c,Y);c=mix(c,vec3(L),.1*sP*wh*fo);c=mix(c,c*sh,.06*sP*ws*fo);
+  /* boucle 5 (23 nov. 2026) : étalonnage final des +7, après la désaturation des blancs.
+     1) plafond de chroma (sigCh) : une couleur plus vive que le plafond est ramenée vers son gris, à luminance gardée
+        (fin du « bonbon » de DON et ASS152) ; moitié moins dans les hautes lumières, déjà adoucies au-dessus.
+     2) point noir (sigNo) : on retire un plancher et on réétire, les ombres trouvent un vrai noir (fin du « lait » de RES374, ANT120).
+     Pondéré par sP (rien aux pôles −, rien au niveau 0) et par fo (Givrecloche et Chinampas protégées). */
+  L=dot(c,Y);float ch=max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b));
+  /* au-dessus de 1, sigCh devient une vibrance : seules les couleurs ternes (chroma < .45) gagnent, jamais les vives */
+  float cg=sigCh<=1.?min(1.,sigCh/max(ch,1e-3)):1.+(sigCh-1.)*(1.-smoothstep(.08,.45,ch));
+  c=mix(vec3(L),c,mix(1.,cg,sP*fo*(1.-.5*wh)));
+  /* 3) rose rappelé (sigRo, DON seulement) : le rose est rouge > bleu > vert. Sa force est le plus petit des deux écarts
+        (bleu − vert, rouge − bleu) : le vert remonte, le bleu et un peu le rouge descendent, le rose bonbon devient abricot et
+        ivoire, le rose foncé terre cuite (vert +.7 seulement : à +1, il virait au kaki). Les bleus, violets et magentas (rouge ≤ bleu) ne bougent pas : le cobalt reste, sans liseré olive
+        dans les fondus rose / bleu (essai précédent, force = bleu − vert seul). */
+  float mg=max(0.,min(c.b-c.g,c.r-c.b))*sigRo*sP*fo;c+=mg*vec3(-.1,.7,-.5);
+  float nk=sigNo*sP*fo;c=max(c-vec3(nk),0.)/(1.-nk);
   c=clamp(c,0.,1.);}
 /* boucle 2 (19 nov. 2026) : avec le FXAA, le grain est posé après lui (sinon il le lisse et le brouille) ; on lui passe dans l'alpha
    la force du grain et le poids des écoles d'encre (fusain, manga), sur 4 bits chacun */
@@ -2984,8 +3002,16 @@ function sigOf(Z){if(Z._sig)return Z._sig;let r=Z.plus?null:SIG[Z.id];
   if(!r)r=SIG.MAR;
   const n=r.n.map(sigCv),p=r.p.map(sigCv),z0=SIG_Z0[Z.id]||r.z;
   /* sans z : la moyenne des deux pôles (comportement d'avant la boucle 4 au niveau 0) */
-  return Z._sig={n,p,z:z0?z0.map(sigCv):n.map((c,i)=>sigMx(c,p[i],.5))}}
-const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0};
+  /* boucle 5 (23 nov.) : pôle + remplacé (SIG_P7) APRÈS le calcul du z, pour que le niveau 0 ne bouge pas */
+  const p7=SIG_P7[Z.id];
+  return Z._sig={n,p:p7?p7.map(sigCv):p,z:z0?z0.map(sigCv):n.map((c,i)=>sigMx(c,p[i],.5))}}
+/* boucle 5 (23 nov. 2026) : plafond de chroma (ch), point noir (no) et rose rappelé (ro) des +7. Les autres zones : ch 1, no 0, ro 0 (aucun effet). */
+/* boucle 5 (23 nov. 2026) : DON +7 restait rose bonbon même plafonné ; on ramène la signature vers le cobalt (ombres)
+   et l'ivoire (tons moyens, lumières), au lieu de bordeaux pâle / crème rosée. −7 et 0 inchangés (z gardé, voir sigOf). */
+const SIG_P7={DON:['#2c4a9c','#e8e4cc','#fff8e6']};
+/* ch > 1 : vibrance des +7 laiteux (RES374, ANT120) : un noir seul les aurait rendus gris */
+const SIG_CN={DON:{ch:.45,ro:1.3},DON045:{ch:.6},ASS152:{ch:.45},RES374:{ch:1.6,no:.07},ANT120:{ch:1.8,no:.1}};
+const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0,ch:1,no:0,ro:0};
 const _drawSig=draw;
 draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCur.t)/1000):0;sigCur.t=now;
   const Z=zoneAt(camera.position.x,camera.position.z);let f=1-Math.exp(-dt*1.6); /* fondu ~2 s, comme skM/skR */
@@ -2993,10 +3019,13 @@ draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCu
     if(!sigCur.on)f=1; /* première image dans une zone : on part directement de ses couleurs */
     /* boucle 4 (22 nov.) : z → pôle, un septième par palier (au lieu de n → p) ; ±7 inchangés */
     for(const [n,i] of [['sh',0],['mi',1],['hi',2]]){const a=S.z[i],b=B[i],c=sigCur[n];for(let j=0;j<3;j++)c[j]=lerp(c[j],lerp(a[j],b[j],u),f)}
-    sigCur.k=lerp(sigCur.k,k,f)}
+    sigCur.k=lerp(sigCur.k,k,f);
+    /* boucle 5 : même fondu de 2 s que les autres champs de la signature */
+    const cn=SIG_CN[Z.id]||{};sigCur.ch=lerp(sigCur.ch,cn.ch!==undefined?cn.ch:1,f);sigCur.no=lerp(sigCur.no,cn.no||0,f);sigCur.ro=lerp(sigCur.ro,cn.ro||0,f)}
   sigCur.on=lerp(sigCur.on,Z&&STYLE_ON?1:0,f);
   const U=mFinal.uniforms;U.sigSh.value.set(sigCur.sh[0],sigCur.sh[1],sigCur.sh[2]);U.sigMi.value.set(sigCur.mi[0],sigCur.mi[1],sigCur.mi[2]);
-  U.sigHi.value.set(sigCur.hi[0],sigCur.hi[1],sigCur.hi[2]);U.sigK.value=sigCur.k;U.sigOn.value=sigCur.on;_drawSig(t)};
+  U.sigHi.value.set(sigCur.hi[0],sigCur.hi[1],sigCur.hi[2]);U.sigK.value=sigCur.k;U.sigOn.value=sigCur.on;
+  U.sigCh.value=sigCur.ch;U.sigNo.value=sigCur.no;U.sigRo.value=sigCur.ro;_drawSig(t)};
 /* ---------- Boucle 2 (19 nov. 2026) : ciel signature par zone et par pôle ----------
    Constat : toutes les zones partageaient le même ciel (dégradé + nuages), seules les couleurs changeaient ; vers +7 le ciel
    et l'horizon montaient vers le blanc (DON +7 orange brûlé, RES374 +7 voile blanc, ANT120 délavé).
@@ -3104,8 +3133,10 @@ function duoOf(Z){if(Z._duo!==undefined)return Z._duo;let r=Z.id in DUO_ZONE?DUO
     return Z._duo=r.map(h=>{const c=LIN(h);return rot&&typeof sigRot==='function'?sigRot(c,rot*1.5):c})}
   return Z._duo=r?r.map(LIN):null}
 /* exposition plafond à +7 quand le sol lui-même brille (Puits de braise : lave et motif Girih lumineux) */
-const EXP7={DON:.62},BL7={DON:.5,Glace:.45}; /* halo plafond : neige blanche + halo = voile laiteux (RES374 +7) */
+const EXP7={DON:.62},BL7={DON:.5,Glace:.3,'Sève':.3}; /* boucle 5 (23 nov. 2026) : Glace .45 → .3, Sève .3 (RES374, ANT120 +7 : moins de voile) */
+ /* halo plafond : neige blanche + halo = voile laiteux (RES374 +7) */
 const bl7=Z=>BL7[Z.id]||(Z.plus&&BL7[Z.d.mana])||.8;
+const LAIT7={RES374:{fog:.6,exp:.9},ANT120:{fog:.6,exp:.9}}; /* boucle 5 : brouillard et exposition des +7 laiteux */
 const capTo=(v,cap,k)=>v>cap?lerp(v,cap,k):v;
 
 /* ---------- Boucle 3 (20 nov. 2026) : météo et lumière signées par lieu et par pôle ----------
@@ -3203,6 +3234,11 @@ for(const Z of ZN){const a0=Z.atm;if(typeof a0!=='function')continue;
     const D=duoOf(Z);
     /* boucle 4 : la couleur du duo part de 35 % au palier 0 (lerp(.35, 1, k)) ; saturation et plafond de l'horizon suivent k */
     if(D)duo(o,D[0],D[1],lerp(.35,1,k),k);
+    /* boucle 5 (23 nov. 2026) : RES374 et ANT120 à +7 sortent du lait. Brouillard ×0,6 à +7, sa couleur (A.hor, que stepAtmo
+       recopie dans scene.fog) tirée de 10 % vers les tons moyens de la signature (sigMi) au lieu de l'horizon blanc,
+       exposition −10 %. Un septième par palier ; −7 et 0 inchangés. */
+    const LT=LAIT7[Z.id];if(LT&&typeof sigOf==='function'){const S=sigOf(Z),mi=[0,1,2].map(i=>Math.pow(lerp(S.z[1][i],S.p[1][i],k),2.2));
+      o.fog*=lerp(1,LT.fog,k);o.exp*=lerp(1,LT.exp,k);mix3(o.hor,o.hor,mi,.1*k)}
     /* le brouillard prend toujours A.hor dans stepAtmo : il se fond exactement dans l'horizon du ciel */
     return o}}
 

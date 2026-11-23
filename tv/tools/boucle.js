@@ -3,7 +3,7 @@
      node tv/tools/boucle.js <dossier de sortie> [zones séparées par des virgules]
    Produit : planche-<zone>.png (−7 | 0 | +7, sans interface, vue depuis la Pierre vers le centre de la zone),
    interface.png (exploration avec l'interface), combat.png (un combat en cours), mesures.json
-   (temps de chargement, triangles et appels de dessin par image, ombres comprises, dans chacune des zones des planches ;
+   (temps de chargement, triangles et appels de dessin par image — vraiment une seule depuis la boucle 5 —, ombres comprises, dans chacune des zones des planches ;
    boucle 3, 20 nov. 2026 : avant, trois zones fixes CIT, RES227, ASS152).
    Rendu logiciel (SwiftShader) : les chiffres servent à comparer deux versions entre elles, pas à prédire la Xbox. */
 const path=require('path'),fs=require('fs');const {chromium}=require('playwright');
@@ -13,14 +13,33 @@ const three=fs.readFileSync(path.join(racine,'android','assets','three.min.js'))
   ';(function(){const R=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){const r=new R(o);window.__R=r;return r};THREE.WebGLRenderer.prototype=R.prototype})();';
 (async()=>{const nav=await chromium.launch({args:['--no-sandbox','--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const p=await nav.newPage({viewport:{width:1280,height:720}});p.setDefaultTimeout(240000);const err=[];p.on('pageerror',e=>err.push(String(e.message)));
+  /* boucle 5 (23 nov. 2026) : hasard rejouable. Les bêtes, les passants et la météo tirent Math.random : d'un lancement à l'autre,
+     MAR passait de 280 à 339 appels selon ce qui entrait dans le champ. Le banc fixe la graine (mulberry32) ; le jeu n'est pas touché. */
+  await p.addInitScript(()=>{let a=0x5eed1234;Math.random=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}});
   await p.route('**/three.min.js',r=>r.fulfill({body:three,contentType:'application/javascript'}));
   await p.route(/^https?:\/\/(?!.*three\.min\.js)/,r=>r.abort());
   const t0=Date.now();await p.goto('file://'+path.join(racine,'index.html'));await p.waitForFunction(()=>window.MZ&&MZ.start);const charge=Date.now()-t0;
-  await p.evaluate(()=>MZ.start());await p.waitForTimeout(2500);
+  /* boucle 5 (23 nov. 2026) : la baisse automatique de qualité (main.js, autoQ) suivait les images par seconde du rendu logiciel :
+     selon la charge de la machine, les mesures tombaient en « Belle » ou en « Équilibrée » (CIT 155 ou 197 appels d'un lancement
+     à l'autre). Le banc la coupe : tout est mesuré et capturé dans la qualité de départ (« Belle » sur le web, comme sur la Xbox). */
+  await p.evaluate(()=>MZ.start());const qualite=await p.evaluate(()=>{try{autoQ=false}catch(_){}try{return QUAL().nom}catch(_){return '?'}});
+  await p.waitForTimeout(2500);
   /* mesures */
-  const mes={chargement_ms:charge,zones:{}};
-  for(const id of zones)mes.zones[id]=await p.evaluate(async id=>{MZ.tp(id);await new Promise(r=>setTimeout(r,1800));const i=__R.info;i.autoReset=false;i.reset();
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const o={triangles:i.render.triangles,appels:i.render.calls};i.autoReset=true;return o},id);
+  const mes={chargement_ms:charge,qualite,zones:{}};
+  /* boucle 5 (23 nov. 2026) : mesure PAR IMAGE. Avant, la remise à zéro tombait entre deux images et l'on lisait après deux rAF :
+     les chiffres valaient deux images (×2). Maintenant : un rAF pour se caler sur la boucle du jeu, remise à zéro, UN rAF, lecture.
+     Les rAF du jeu sont inscrits avant les nôtres : chaque rAF de la mesure contient exactement une image du jeu.
+     Après la téléportation, le décor arrive par petits lots, image après image (CIT : 167 appels, puis 233 dix images plus tard) :
+     en rendu logiciel, une attente en secondes laisse un nombre d'images variable (écarts de 20 % d'un lancement à l'autre).
+     On compte donc en images : 1,5 s pour la caméra, puis l'on mesure image par image jusqu'à ce que les 12 dernières ne
+     s'écartent plus de 2 % (au plus 240 images), et l'on rend la médiane de ces 12 images.
+     Pendant une version, on garde aussi l'ancienne lecture sur deux images (anciens_x2) pour comparer avec les boucles 1 à 5. */
+  for(const id of zones)mes.zones[id]=await p.evaluate(async id=>{MZ.tp(id);await new Promise(r=>setTimeout(r,1500));const i=__R.info,raf=()=>new Promise(r=>requestAnimationFrame(r));
+    const med=a=>a.slice().sort((x,y)=>x-y)[a.length>>1],T=[],A=[];i.autoReset=false;await raf();let n=0;
+    for(;n<240;n++){i.reset();await raf();T.push(i.render.triangles);A.push(i.render.calls);
+      if(T.length>=12){const t=T.slice(-12),a=A.slice(-12);if(Math.max(...a)-Math.min(...a)<=.02*Math.max(...a)&&Math.max(...t)-Math.min(...t)<=.02*Math.max(...t))break}}
+    i.reset();await raf();await raf();const x2={triangles:i.render.triangles,appels:i.render.calls};i.autoReset=true;
+    return{triangles:med(T.slice(-12)),appels:med(A.slice(-12)),par_image:true,images_attendues:n+1,anciens_x2:x2}},id);
   /* interface d'exploration */
   await p.evaluate(()=>MZ.tp('DON045'));await p.waitForTimeout(3000);await p.screenshot({path:path.join(out,'interface.png')});
   /* combat */

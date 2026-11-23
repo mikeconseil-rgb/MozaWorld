@@ -105,8 +105,10 @@ function duoOf(Z){if(Z._duo!==undefined)return Z._duo;let r=Z.id in DUO_ZONE?DUO
     return Z._duo=r.map(h=>{const c=LIN(h);return rot&&typeof sigRot==='function'?sigRot(c,rot*1.5):c})}
   return Z._duo=r?r.map(LIN):null}
 /* exposition plafond à +7 quand le sol lui-même brille (Puits de braise : lave et motif Girih lumineux) */
-const EXP7={DON:.62},BL7={DON:.5,Glace:.45}; /* halo plafond : neige blanche + halo = voile laiteux (RES374 +7) */
+const EXP7={DON:.62},BL7={DON:.5,Glace:.3,'Sève':.3}; /* boucle 5 (23 nov. 2026) : Glace .45 → .3, Sève .3 (RES374, ANT120 +7 : moins de voile) */
+ /* halo plafond : neige blanche + halo = voile laiteux (RES374 +7) */
 const bl7=Z=>BL7[Z.id]||(Z.plus&&BL7[Z.d.mana])||.8;
+const LAIT7={RES374:{fog:.6,exp:.9},ANT120:{fog:.6,exp:.9}}; /* boucle 5 : brouillard et exposition des +7 laiteux */
 const capTo=(v,cap,k)=>v>cap?lerp(v,cap,k):v;
 
 /* ---------- Boucle 3 (20 nov. 2026) : météo et lumière signées par lieu et par pôle ----------
@@ -204,6 +206,11 @@ for(const Z of ZN){const a0=Z.atm;if(typeof a0!=='function')continue;
     const D=duoOf(Z);
     /* boucle 4 : la couleur du duo part de 35 % au palier 0 (lerp(.35, 1, k)) ; saturation et plafond de l'horizon suivent k */
     if(D)duo(o,D[0],D[1],lerp(.35,1,k),k);
+    /* boucle 5 (23 nov. 2026) : RES374 et ANT120 à +7 sortent du lait. Brouillard ×0,6 à +7, sa couleur (A.hor, que stepAtmo
+       recopie dans scene.fog) tirée de 10 % vers les tons moyens de la signature (sigMi) au lieu de l'horizon blanc,
+       exposition −10 %. Un septième par palier ; −7 et 0 inchangés. */
+    const LT=LAIT7[Z.id];if(LT&&typeof sigOf==='function'){const S=sigOf(Z),mi=[0,1,2].map(i=>Math.pow(lerp(S.z[1][i],S.p[1][i],k),2.2));
+      o.fog*=lerp(1,LT.fog,k);o.exp*=lerp(1,LT.exp,k);mix3(o.hor,o.hor,mi,.1*k)}
     /* le brouillard prend toujours A.hor dans stepAtmo : il se fond exactement dans l'horizon du ciel */
     return o}}
 
