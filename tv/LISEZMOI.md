@@ -6,6 +6,13 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Couloir de caméra dégagé à l'arrivée (23 novembre, boucle 5, `src/zones1.js`, `src/arrivee.js`)
+
+- À chaque téléportation, plus rien ne bouche le cadre : `couloir(Z)` (zones1.js) relit la convention de `tp` (main.js, non modifié) et écarte des abords de l'arrivée les objets de pôle (poles-decor.js, mutations.js), la végétation des zones plus (zonesplus.js), la forêt de Berestograd et les palétuviers de l'Exarchat : à moins de 9 m du segment Pierre → 40 m en arrière (14 m pour un objet de plus de 4 m et pour les repères), ou dans le cône de 25° du héros vers la Pierre sur 30 m ; les objets bas (fentes, fleurs) seulement à moins de 5 m. Stèles, lutrins, inscriptions et lieux ne bougent pas.
+- Un objet écarté est retiré au sort ailleurs avec un tirage à part (`rrC`) : la suite aléatoire du monde ne change pas, chaque série garde exactement son nombre d'instances (1160 séries, 56 978 instances, avant comme après) ; le reste du monde est posé comme avant.
+- Ce que les captures d'avant montraient à ASS152 −7 (cadre violet) et sur `interface.png` (deux pics noirs devant le billet « Éveiller ») ne venait ni du relief ni d'un objet : la caméra glissait encore depuis l'ancienne zone, en ligne droite à travers collines et décors. `src/arrivee.js` enveloppe `tp` sans toucher main.js et repose la caméra derrière le héros dès la première image (même remise à zéro que le garde du voile blanc). **Pour le fil gameplay** : si `tp` change dans main.js, y mettre `camInit=false` rendrait ce fichier inutile.
+- Coût : même nombre d'objets ; à caméra posée, triangles −0,5 % (CIT), −1,3 % (ANT), +0,7 % (RES374), −1,7 % (ASS152), appels égaux ou en baisse. Les chiffres de `boucle.js` dépendent de l'instant de la mesure (1,8 s après `tp`, avant ou après le tri des objets visibles) : jusqu'à ±25 % d'une course à l'autre pour une même version.
+
 ## Paquet de combat lisible et modifiable (22 novembre, `src/paquet.js`)
 
 - L'écran du paquet (menu, ou Y à la manette) montre chaque carte en grand avec son texte entier, dans une grille qui s'adapte à la télé et au téléphone (paysage et portrait). Stick ou flèches : ▲ ▼ sautent d'une rangée ; toucher une carte marche aussi.
