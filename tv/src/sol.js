@@ -236,7 +236,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
   vec3 sc0=c,se0=solE,sCl=c;float sMq=1.,sUs=1.,sJt=0.,sGap=0.,aaM=max(.02,px*.75);   /* aaM : anti-moiré du Marché et de la Citadelle −7, à la taille du pixel */
   if(alv>=.5){
    float sS=.596-.012*(k-1.)-.045*cr;   /* ,596 · ,539 · ,527 · ,47 · ,458 · ,401 · ,389 */
-   sS-=.05*step(6.5,k)*step(.5,gr)*step(gr,1.5);   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon, saut ±6 → ±7 franc (couverture ~74 % → ~85 %) */
+   sS-=.09*step(6.5,k)*step(.5,gr)*step(gr,1.5);   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon, saut ±6 → ±7 franc (couverture ~74 % → ~90 %, reprise : ,05 → ,09) */
+   if(lv>0.&&gr>4.5)sS-=.08+.2*step(6.5,k);   /* boucle 5 (23 nov. 2026, 4.2c, reprise) : Marché +, ~45 % au palier 1, ~88 % au 6, damier continu au 7 */
    float aN=sIw*.75,e=sIl-sS,jw=.2*sIg;   /* jw : 20 cm de joint, en unités de bruit (largeur constante au sol, quelle que soit la pente du bruit) */
    if(lv>0.){   /* pôle + : de vraies plaques, bord net (filtré au pixel), joint sombre */
     sMq=smoothstep(-aN,aN,e);
@@ -245,7 +246,10 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
    else sMq=smoothstep(-.035-aN,.035+aN,e);   /* pôle − : la ruine gagne par nappes, bord fondu, sans joint */
    float u=mix(.5,B07.a,nPres)*.6+B8.a*.4+(1.-smoothstep(0.,.05,e))*.22;   /* l'usure mord surtout les bords */
    sUs=1.-.6*smoothstep(.5,.78,u);
-   if(lv>0.&&gr>4.5){sUs=1.-.3*smoothstep(.5,.78,u);sJt=0.;}   /* boucle 5 (23 nov. 2026, 4.2c) : Marché +, usure plafonnée à −30 % (elle tachait de gris), joint noir retiré (il serpentait en traits épais sur le damier) */
+   if(lv>0.&&gr>4.5){sUs=1.;sJt=0.;sGap=0.;}   /* boucle 5 (23 nov. 2026, 4.2c, reprise) : Marché +, plus d'usure du tout (mélangée vers la teinte claire, elle effaçait
+      les carrés noirs en grandes taches blanches ; à 18 %, la brume de Givrecloche en faisait encore des taches grises), joint noir retiré, et plus de bombement
+      (sa normale ombrait le bord des plaques en dégradés gris foncé) */
+   if(lv>0.&&gr>.5&&gr<1.5)sUs=1.-.15*smoothstep(.5,.78,u);   /* boucle 5 (4.2c, reprise) : Donjon +, usure légère (elle tachait le zellige de rose) */
    if(lv>0.&&gr>1.5&&gr<2.5){sJt=0.;sGap=0.;}}   /* boucle 5 (4.2c) : prairie de la Ressource +, ni joint ni bombement (une prairie n'a pas de dalles) */
   if(alv<.5){   /* (c0) niveau 0 : chaque famille garde la trace de son écriture, à faible intensité (de près seulement : rien à payer au loin) */
    if(nMoy<=0.){}
@@ -293,12 +297,12 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     vec3 cen=vec3(.2,.195,.19)*(.7+.6*B8.g)*(1.+(B07.r-.5)*.4*nPres);
     c=mix(c,mix(c*.5,cen,.55),zone*min(1.,.35+.1*k)*moP);
     vec2 w7=p+wv.rg*7.;
-    float S=.95*(1.-.15*cr);vec2 g=w7/S,id=floor(g),o=(sH2(id)-.5)*.5;float h=sH(id+5.),den=.22+.17*cr+.015*k;
+    float S=.95*(1.-.15*cr);vec2 g=w7/S,id=floor(g),o=(sH2(id)-.5)*.5;float h=sH(id+5.),den=.32+.17*cr+.015*k;   /* boucle 5 (reprise) : ,22 → ,32, jonchée plus dense (même taille d'éclats) */
     vec2 v=fract(g)-.5-o;float an=sH(id+7.)*6.283,h2=sH(id+9.);v=vec2(dot(v,vec2(cos(an),sin(an))),dot(v,vec2(-sin(an),cos(an))))*vec2(1.,2.2+2.6*h2);   /* éclats allongés (×2,2 à ×4,8), tournés au hasard */
     float dv=mix((abs(v.x)+abs(v.y))*.8,max(abs(v.x)*.9,abs(v.y)*.6+abs(v.x)*.45),step(.6,h2))*S;   /* esquilles en losange effilé, quelques-unes en lame : plus aucun disque */
     den*=.45+1.1*smoothstep(.25,.75,B8.b);   /* jonchée en traînées : dense ici, clairsemée là */
     float pt=solTrait(dv,(.045+.018*cr)*(.4+1.2*sH(id+3.)),aa)*step(h,den)*zone*nMoy*pl,braise=step(h,den*.2);
-    c=mix(c,braise>.5?c*.12:mix(c,vec3(.6,.58,.55),.6)*(.85+.3*sH(id+2.)),pt*moP*.75);   /* boucle 5 (23 nov. 2026, 4.2c) : éclats plus contrastés (,5 → ,75), toujours en losange */
+    c=mix(c,braise>.5?c*.12:mix(c,vec3(.78,.76,.72),.7)*(.85+.3*sH(id+2.)),pt*moP*.75);   /* boucle 5 (23 nov. 2026, 4.2c) : éclats plus contrastés (,5 → ,75), toujours en losange */
     float cv=smoothstep(.58,.8,sN(w7*.3+B8.r*2.));   /* la cendre couve par plaques */
     solE+=nc*(pt*braise*(.03+.006*k)*(.4+.6*B07.g)+cv*.004*k*zone)*moP*nLoin;}
    else if(gr<3.5){   /* (c−) Antre : flaques noires en miroir, qui prennent le zénith quand on regarde à ses pieds et l'horizon au ras du sol (fresnel) */
@@ -359,6 +363,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     c*=mix(vec3(1.),vec3(1.14,.96,.62),dor*moP);   /* boucle 4.2b (22 nov.) : dorure relevée, pour que le pôle se lise à +7 */solGold=max(bord,dans*.4)*on*moP;}
    else if(gr<1.5){   /* (c+) Donjon : traits Girih fins (repli « Fluide ») ou zellige khatam cobalt et blanc */
     vec3 cA=mix(vec3(0.,.08,.5),mp*.5,.05),cB=mix(vec3(.5,.55,.66),mp*.66,.05);
+    c=mix(c,vec3(Lc)*vec3(.78,.82,.95),min(1.,k/6.));   /* boucle 5 (reprise) : le mortier gris ardoise sous le zellige (voir sB plus bas) ; sinon, au bord fondu
+      de chaque carreau, la lave du DON (+6) affleurait en filets rouges le long de la grille */
     #ifdef SOL_FIN
     float S=5.2;vec2 id=floor(p/S),l=(fract(p/S)-.5)*S;
     float sa=max(abs(l.x),abs(l.y)),sb=(abs(l.x)+abs(l.y))*.7071,R=1.78,on=solPose((id+.5)*S,k),op=solOp(k)*solBord(S*.5-sa,k);
@@ -415,9 +421,10 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     /* boucle 4 (22 nov. 2026) : damier filtré (aaM, à la taille du pixel) : bord fondu sur un pixel, et le damier ne tend vers son gris moyen
        que là où le losange fait moins de ~2 pixels (fin du moiré, sans losanges gris baveux à mi-distance) */
     float lis=smoothstep(1.,2.5,f/px);bl=mix(.5,bl,smoothstep(0.,aaM,lo.x)*lis);
-    float i=min(1.,.25+.11*k)*moP*pl;
+    float i=min(1.,.4+.09*k)*moP*pl;   /* boucle 5 (reprise) : ,25+,11k → ,4+,09k, le damier se lisait à peine aux paliers 1 à 6 sous la brume blanche de Givrecloche */
     c=mix(c,vec3(.8)*(.97+.06*B8.r),i);sCl=c;   /* boucle 5 (4.2c) : la teinte claire de la plaque, vers laquelle va l'usure (jamais vers un gris) */
-    c=mix(c,vec3(.12),bl*i);
+    c=mix(c,vec3(.1),bl*min(1.,.7+.1*k)*moP*pl);   /* boucle 5 (reprise) : le noir des losanges est franc dès le palier 1 (sous l'ACES et la brume de Givrecloche,
+      un gris moyen ressortait blanc) ; la gradation tient à la couverture, au cran d'échelle et au petit losange inversé */
     c=mix(c,vec3(.45),solTrait(min(lo.x,k>4.5?abs(lo.z-.17)*f:9.),.012,aaM)*i*lis);}   /* boucle 5 (4.2c) : joint gris étroit (,025 → ,012) */
   }
   if(alv>=.5){   /* boucle 4 (22 nov. 2026) : pose en marqueterie (îlots, usure, joint) et fondu au loin, voir plus haut */
@@ -427,15 +434,20 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
    float ex=lv>0.&&(gr<.5||gr>2.5&&gr<3.5)?1.:0.;
    float wMin=lv>0.?.7*ex:(gr>2.5&&gr<3.5?.75:(gr>1.5&&gr<2.5?.6:.3));   /* boucle 5 (4.2c) : cendre de la Ressource − à 60 % entre les plaques */
    float dP=lv>0.&&gr>.5&&gr<1.5?1.:0.,mP=lv>0.&&gr>4.5?1.:0.;   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon + et Marché + */
+   /* boucle 5 (23 nov. 2026, 4.2c, reprise) : au Donjon +, le fond SOUS le zellige (sB) n'est plus le sol du biome mais un mortier gris ardoise,
+      de sa luminance (gradué, entier dès le palier 6) : entre les plaques, au DON (+7) les rivières de lave de zones1.js (couleur des sommets, Z.col) montaient en bandes rouges,
+      et au DON045 la neige en grandes taches gris-bleu plates ; l'usure, tirée vers ce sol, tachait les plaques de rose.
+      Entre les plaques, le zellige reste à 50 % sur ce mortier (80 % au palier 7) : un carrelage plus sombre, jamais un aplat. */
+   vec3 sB=sc0;if(dP>.5){sB=mix(sc0,vec3(dot(sc0,vec3(.333)))*vec3(.78,.82,.95),min(1.,k/6.));wMin=.5+.3*step(6.5,k);}   /* mortier gradué : 17 % au palier 1, entier dès le 6 ; au palier 7, le zellige tient à 80 % entre les plaques */
    float ff=smoothstep(18.,70.,dc)*(1.-ex);
    /* au loin, ton sur ton à moitié : l'écart de luminance du motif sur la teinte du sol, de 60 à 150 m seulement,
       pour que la couleur du pôle se lise encore au milieu du champ */
-   c=mix(c,sc0+vec3(dot(c-sc0,vec3(.333))),.5*smoothstep(60.,150.,dc)*(1.-ex));
+   c=mix(c,sB+vec3(dot(c-sB,vec3(.333))),.5*smoothstep(60.,150.,dc)*(1.-ex));
    c=mix(sCl,c,mix(1.,sUs,mP));   /* Marché + : l'usure éclaircit vers la teinte claire de la plaque, sans passer par sc0 */
    float W=mix(wMin,1.,sMq)*mix(sUs,1.,max(mP,max(ex,step(4.5,gr))*.5))*mix(1.,mix(.4,.7,dP),ff);   /* usure à moitié sur le Marché − (au Marché +, elle est déjà portée par sCl) ; Donjon + : le zellige tient à 70 % au loin (boucle 5, au lieu de 40) */
-   c=mix(sc0*(1.-.28*step(.5,lv)*(1.-ex)),c,W);solE=   /* au pôle +, le sol entre les plaques est un peu en retrait (plus sombre) */
+   c=mix(sB*(1.-.28*step(.5,lv)*(1.-ex)*(1.-mP)),c,W);solE=   /* au pôle +, le sol entre les plaques est un peu en retrait (plus sombre), sauf au Marché + (sol clair, boucle 5 reprise : il grisait) */
    se0+(solE-se0)*W;solH=solH*sMq+.03*sGap*nB*moP;solGold*=sMq;solLisse*=mix(wMin,1.,sMq);
-   sJt*=1.-.6*ex;c*=1.-.75*sJt*moP;   /* joint adouci sur l'ivoire de la Citadelle et la nacre de l'Antre */
+   sJt*=1.-.6*ex;c*=1.-mix(.75,.5,dP)*sJt*moP;   /* boucle 5 (reprise) : au Donjon +, joint à ,5 (il faisait une corde noire autour des creux) */   /* joint adouci sur l'ivoire de la Citadelle et la nacre de l'Antre */
    /* entre les plaques et dans le joint, la lueur propre du sol (vColor × vGlow, core.js) est retenue : sinon, au Donjon +, le sol braisé
       entre les plaques bavait en coulées orange et effaçait le joint. Boucle 5 (4.2c) : au Donjon +, elle est retirée partout (dans les plaques et entre elles) */
    solE-=vColor.rgb*max(vGlow,0.)*min(1.,.6*(1.-sMq)+.8*sJt+dP)*step(.5,lv)*(1.-ex)*moP;}

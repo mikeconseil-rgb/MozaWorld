@@ -15,6 +15,12 @@ Reprise du `sol.js` de la 4.2b (îlots, poids, anti-moiré et fondu au loin gard
 - Niveau 0 de l'Antre : la trace des écailles est ramenée à 30 %, l'écaille devient le signe du pôle +.
 Rien que du calcul dans le shader : aucune lecture de texture, aucun triangle ni appel de dessin en plus (mesures dans le bruit du banc). Captures : `boucles/boucle-5/apres-sol/`.
 
+**Reprise de la 4.2c (même jour, après le testeur)** :
+- **Marché + (damier)** : l'usure ne touche plus le damier (vers la teinte claire, elle effaçait les carrés noirs en plaques blanches ; même à 18 %, la brume de Givrecloche en refaisait des taches grises) ; plus de bombement au bord des plaques (sa normale y ombrait des dégradés gris foncé) ; le sol entre les plaques n'est plus assombri. Le noir des losanges est franc dès +1 (un gris moyen ressortait blanc sous l'ACES et la brume blanche) ; couverture ~45 % à +1, ~88 % à +6, damier continu à +7.
+- **Donjon + (DON, DON045)** : la bande rouge du DON +7 venait des rivières de lave de `zones1.js` (couleur des sommets, « larges rivières à +7 »), visibles entre les plaques ; les taches gris-bleu plates du DON045, de la neige entre les plaques ; les taches roses, de l'usure tirée vers ce sol rouge. Sous le zellige et entre les plaques, le sol du biome est remplacé par un mortier gris ardoise (gradué : entier dès +6, ce qui retire aussi les filets rouges au bord des carreaux à +6) ; entre les plaques, le zellige reste à 50 % (80 % au palier 7) ; usure à 15 % au plus ; joint adouci. Au palier 7, couverture ~90 % (au lieu de ~85 %).
+- **Ressource − (RES374)** : jonchée plus dense (seuil ,22 → ,32, même taille d'éclats, toujours en losange), éclats plus clairs sur la cendre sombre.
+- **DON045 −7 et −4 « sombres et brumeux »** : pas `sol.js`. Le banc ne recale pas la caméra : la première image de chaque planche est prise pendant que la caméra glisse encore depuis la zone précédente, à travers le brouillard ; et le brouillard de −4 est deux fois plus dense que celui de −7 (ciel et ambiance du palier). Caméra recalée, les deux paliers sont nets (captures de contrôle).
+
 ## Paquet de combat lisible et modifiable (22 novembre, `src/paquet.js`)
 
 - L'écran du paquet (menu, ou Y à la manette) montre chaque carte en grand avec son texte entier, dans une grille qui s'adapte à la télé et au téléphone (paysage et portrait). Stick ou flèches : ▲ ▼ sautent d'une rangée ; toucher une carte marche aussi.
