@@ -321,14 +321,21 @@ for(const Z of ZN)if(Z.plus)(()=>{const d=Z.d,B0=BIO[d.biome]||BIO['Steppe'],[ne
   if(ex)sortes[sortes.length-1]=[ex[0],ex[1]*S.dens[4]];   /* la sorte tirée remplace la dernière : autant de séries (d'appels de dessin) qu'avant */
   const tot0=B0.props.reduce((a,p)=>a+p[1],0),tot=sortes.reduce((a,p)=>a+p[1],0),kc=Math.min(1,tot0*1.05/tot);   /* densité plafonnée comme avant */
   Z.build=()=>{const cen=[];if(S.clust)for(let j=0;cen.length<8&&j<200;j++){const u=rr(-R,R),v=rr(-R,R);if(Z.inside(u,v,30))cen.push([u,v])}
+    /* boucle 5 (23 nov. 2026) : couloir d'arrivée (couloir, zones1.js) ; hauteur de la sorte à sa plus grande taille (îles volantes : hautes) */
+    const CL=couloir(Z);
     for(const[k,n]of sortes){const it=inst(PG[k],PLUM.has(k)?PMAT.cristal:PG[k].attributes.color?PMAT.vc:PMAT.plein);it.k=k;let t=0;
+      if(!PG[k].boundingBox)PG[k].computeBoundingBox();const hk=k==='ileflot'?99:PG[k].boundingBox.max.y*1.35*S.taille*(B.ech||1);
       const nn=Math.round(n*kc*Math.min(SC*SC,12)/4*.75);   /* 2.6 : zones agrandies, densité plafonnée pour rester fluide */
       while(it.a.length<nn&&t++<nn*30){let u,v;
         if(k==='ileflot'&&rnd()<.5){const a=rr(-.9,.9),q=rr(50,150);u=-20+Math.cos(a)*q;v=Math.sin(a)*q}   /* la moitié des îles devant la Pierre */
         else if(cen.length&&k!=='ileflot'&&rnd()<.8){const c=cen[Math.floor(rnd()*cen.length)],a=rnd()*TAU,q=Math.pow(rnd(),.7)*46;u=c[0]+Math.cos(a)*q;v=c[1]+Math.sin(a)*q}else{u=rr(-R,R);v=rr(-R,R)}
-        if(!Z.inside(u,v,12)||Math.hypot(u+20,v)<32||Math.hypot(u-S.ru,v-S.rv)<20)continue;const p=Z.w(u,v);
+        if(!Z.inside(u,v,12)||Math.hypot(u+20,v)<32||Math.hypot(u-S.ru,v-S.rv)<20)continue;let p=Z.w(u,v);
         if(!PEAU.has(k)&&base(u,v,p[0],p[1])<-.8)continue;
         if(k==='pic'&&B.mer!==undefined&&rnd()<.5&&base(u,v,p[0],p[1])>-.5)continue;   /* aiguilles : plutôt dans l'eau */
+        /* boucle 5 (23 nov.) : rien dans le couloir d'arrivée ; retiré au sort ailleurs, avec son propre tirage (ailleurs, zones1.js) */
+        if(!CL.libre(p[0],p[1],hk)){const q=ailleurs(F=>{const u2=F(-R,R),v2=F(-R,R);if(!Z.inside(u2,v2,12)||Math.hypot(u2+20,v2)<32||Math.hypot(u2-S.ru,v2-S.rv)<20)return null;
+            const p2=Z.w(u2,v2);return(PEAU.has(k)||base(u2,v2,p2[0],p2[1])>=-.8)&&CL.libre(p2[0],p2[1],hk)?[u2,v2,p2]:null});
+          if(!q)continue;u=q[0];v=q[1];p=q[2]}
         const s=rr(.75,1.35)*S.taille*(B.ech||1)*(k==='ileflot'?2:1),i=it.add(p[0],0,p[1],s,s,s,rr(0,TAU),k==='mur'||k==='colonne'?rr(-.08,.08):0,0,{u,v});
         if(k==='ileflot')it.a[i].dy=rr(8,26);}
       it.make();if(PRIGIDE.has(k))it.m.userData.vent=1;Z.props.push(it)}

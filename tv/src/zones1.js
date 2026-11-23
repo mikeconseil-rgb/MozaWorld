@@ -5,6 +5,26 @@ function inst(geo,mat,sh){const a=[];return{a,m:null,
   set(fs,fc){const m=this.m;for(let i=0;i<a.length;i++){const o=a[i];let k=fs?fs(o,i):1,kx,ky,kz;if(typeof k==='number')kx=ky=kz=k;else{kx=k[0];ky=k[1];kz=k[2]}
       put(m,i,o.x,o.y+(o.dy||0),o.z,o.sx*kx,o.sy*ky,o.sz*kz,o.ry,o.rx,o.rz);if(fc){fc(o,i,tc);tint(m,i,tc)}}done(m)}}}
 const wneg=lv=>clamp(-lv/7,0,1),wpos=lv=>clamp(lv/7,0,1);
+/* Boucle 5 (23 nov. 2026) : couloir de caméra dégagé à l'arrivée. À chaque téléportation (tp, main.js), le héros se pose 9 m
+   devant la Pierre d'éveil, face à elle, et la caméra le suit 11,5 m en arrière : plus aucun objet de pôle ni arbre du biome
+   ne doit se dresser dans cet axe. On relit la convention de main.js sans la modifier (SPOTS n'existe pas encore au build) :
+   point d'arrivée, Pierre 7 m devant lui dans l'axe, héros 9 m en deçà de la Pierre. Coordonnées monde.
+   couloir(Z).libre(x,z,h,bas) : faux si l'objet (hauteur h) est à moins de 9 m du segment Pierre → 40 m en arrière
+   (14 m s'il dépasse 4 m de haut), ou dans le cône de 25° qui va du héros vers la Pierre sur 30 m ;
+   un objet bas (fente, fleur…) n'est écarté qu'à moins de 5 m. Stèles, lutrins, inscriptions et lieux ne passent pas par ici.
+   ailleurs(tire) : un objet écarté est retiré au sort ailleurs avec son propre tirage (rrC), pas celui du monde (rnd) :
+   la suite de rnd ne bouge pas, donc tout le reste du monde est posé exactement comme avant, et chaque série garde son nombre. */
+let _sC=20261123;const rrC=(a,b)=>{_sC=(_sC*1664525+1013904223)>>>0;return a+(b-a)*_sC/4294967296};
+function ailleurs(tire){for(let j=0;j<120;j++){const q=tire(rrC);if(q)return q}return null}
+const ARRIVEE0={CIT:[-65,89,Math.atan2(.59,-.81)],DON:[-58,0],RES:[-52,-10],ANT:[-84,13],MAR:[-60,0]};
+function couloir(Z){if(Z.couloir_)return Z.couloir_;
+  let x,z,yaw;const a=ARRIVEE0[Z.id];
+  if(a&&a.length===3){x=a[0];z=a[1];yaw=a[2]}else{const s=a||[-27,0],p=Z.w(s[0],s[1]),q=Z.w(s[0]+10,s[1]);x=p[0];z=p[1];yaw=Math.atan2(q[0]-p[0],q[1]-p[1])}
+  const fx=Math.sin(yaw),fz=Math.cos(yaw),px=x+fx*7,pz=z+fz*7,hx=px-fx*9,hz=pz-fz*9,tg=Math.tan(25*D2R);
+  return Z.couloir_={px,pz,fx,fz,
+    d(x,z){const t=clamp(-((x-px)*fx+(z-pz)*fz),0,40);return Math.hypot(x-(px-fx*t),z-(pz-fz*t))},
+    cone(x,z){const dx=x-hx,dz=z-hz,l=dx*fx+dz*fz;return l>0&&l<30&&Math.hypot(dx-fx*l,dz-fz*l)<l*tg},
+    libre(x,z,h,bas){return bas&&h<=4?this.d(x,z)>=5:this.d(x,z)>=(h>4?14:9)&&!this.cone(x,z)}}}
 const onion=(()=>{const p=[[.62,0],[.9,.25],[1,.55],[.88,.9],[.55,1.3],[.25,1.65],[.08,2],[0,2.4]].map(q=>new THREE.Vector2(q[0],q[1]));return new THREE.LatheGeometry(p,10)})();
 
 /* ================= BERESTOGRAD, LA VILLE-ÉCORCE ================= */
@@ -64,8 +84,14 @@ Z.build=()=>{const gy=x=>groundZ(Z,x[0],x[1],0);
   for(let i=0;i<4;i++){const a=i*PI/2+.5;church(Math.cos(a)*31,Math.sin(a)*31,.55,false)}
   mesh(merge(stairGeo),M(0xffffff,{vertexColors:true}));
   /* forêt */
-  for(let i=0;i<340;i++){const a=rnd()*TAU,r=rr(76,152),x=Math.cos(a)*r,z=Math.sin(a)*r;if(!inPoly(Z.poly,x,z)||dPoly(Z.poly,x,z)<5)continue;
-    if(N1(x*1.7,z*1.7+30)>.48)spruce.add(x,gy([x,z])-.3,z,rr(.8,1.5),rr(.9,1.7),rr(.8,1.5),rnd()*6);
+  const CL=couloir(Z);
+  for(let i=0;i<340;i++){const a=rnd()*TAU,r=rr(76,152);let x=Math.cos(a)*r,z=Math.sin(a)*r;if(!inPoly(Z.poly,x,z)||dPoly(Z.poly,x,z)<5)continue;
+    /* boucle 5 (23 nov.) : un arbre dans le couloir d'arrivée est retiré au sort ailleurs, de la même sorte (sapin ou bouleau) */
+    const sapin=N1(x*1.7,z*1.7+30)>.48;
+    if(!CL.libre(x,z,12)){const q=ailleurs(R=>{const a2=R(0,TAU),r2=R(76,152),x2=Math.cos(a2)*r2,z2=Math.sin(a2)*r2;
+        return inPoly(Z.poly,x2,z2)&&dPoly(Z.poly,x2,z2)>=5&&(N1(x2*1.7,z2*1.7+30)>.48)===sapin&&CL.libre(x2,z2,12)?[x2,z2]:null});
+      if(!q)continue;x=q[0];z=q[1]}
+    if(sapin)spruce.add(x,gy([x,z])-.3,z,rr(.8,1.5),rr(.9,1.7),rr(.8,1.5),rnd()*6);
     else{const s=rr(.8,1.3);birch.add(x,gy([x,z])-.3,z,s,s,s,0,rr(-.06,.06),rr(-.06,.06));crown.add(x,gy([x,z])+8.2*s,z,s,s,s,rnd()*6)}}
   for(let i=0;i<26;i++){const a=rnd()*TAU,r=rr(8,52),x=Math.cos(a)*r,z=Math.sin(a)*r;shav.add(x,gy([x,z])-.2,z,rr(.5,1.2),rr(.5,1.3),rr(.5,1.2),rnd()*6)}
   for(let i=0;i<9;i++){const x=-96+rr(-7,7),z=-58+rr(-7,7);shav.add(x,gy([x,z])-.2,z,rr(.6,1.3),rr(.6,1.4),rr(.6,1.3))}

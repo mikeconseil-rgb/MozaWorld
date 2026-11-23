@@ -78,7 +78,13 @@ const typeDe=Z=>{const t=Z.plus?Z.d.type:TYPE_ORIG[Z.id];if(FAM_PAR_TYPE[t])retu
    les objets ne vont que dans la ceinture (Z.bw, mutations.js), et les repères à 70 % du rayon. */
 const MANA_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',MAR:'Glace'};
 for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?Z.d.mana:MANA_ORIG[Z.id]]||PMANA.Pierre,cN=LIN(neg),cP=LIN(pos),cBlanc=[1,1,1],tmp=[0,0,0];
-  const zi=Z.i||0,cx=Z.plus?-20:0,ok=(u,v,m)=>Z.plus?Z.inside(u,v,m)&&Math.hypot(u+20,v)>=30:Z.inside(u,v,m)&&!!Z.bw&&Z.bw(u,v)>.6;
+  const zi=Z.i||0,cx=Z.plus?-20:0,ok0=(u,v,m)=>Z.plus?Z.inside(u,v,m)&&Math.hypot(u+20,v)>=30:Z.inside(u,v,m)&&!!Z.bw&&Z.bw(u,v)>.6;
+  /* boucle 5 (23 nov. 2026) : ok tient compte du couloir d'arrivée (couloir, zones1.js) : h est la hauteur de l'objet (m),
+     bas vaut vrai pour les objets qui ne masquent rien (fentes, fleurs, champignons) ; les repères passent avec h=99 */
+  const ok=(u,v,m,h,bas)=>{if(!ok0(u,v,m))return false;const p=Z.w(u,v);return couloir(Z).libre(p[0],p[1],h===undefined?99:h,bas)};
+  /* tirage d'une place : la moitié autour de la Pierre (35 à 110 m), où le joueur regarde ; le reste partout dans la tuile */
+  const place=(R,pres,f)=>{if(Z.plus&&pres){const a=f(0,TAU),r=f(35,110);return[-20+Math.cos(a)*r,Math.sin(a)*r]}return[f(-R,R),f(-R,R)]};
+  const BAS=new Set(['fente','fleur','champignon']),HAUT=new Set(['fleche','eclat','souche','aiguille']);
   const cN2=LIN(hexMix(neg,'#ff6040',.35)),cP2=LIN(hexMix(pos,'#ffffff',.3));
   const build0=Z.build,update0=Z.update,TY=typeDe(Z),FAM=FAM_PAR_TYPE[TY],RP=REPERE_POS[TY];let fams=[];
   const LANDMARK=[['fleche','fleche',matV,-1],['tour',RP,matV,1],['couronne',RP==='tour'?'couronne':'couronne_'+RP,matB,1]];
@@ -87,12 +93,16 @@ for(const Z of ZN)if(Z.plus||MANA_ORIG[Z.id])(()=>{const [neg,pos]=PMANA[Z.plus?
     /* lanternes et poteaux partagent leurs places */
     const places={};
     for(const[k,g,mat,side,n0,sz,glow,tm]of FAM){const it=inst(geoD[g],mat,false);it.k=k;it.side=side;it.glow=glow;it.tm=tm;fams.push(it);
+      if(!geoD[g].boundingBox)geoD[g].computeBoundingBox();const hg=geoD[g].boundingBox.max.y;
       const n=Math.round(n0*Math.min(2,SC*SC/4)*(Z.plus?1:1.6)),src=k==='lanterne'?places.poteau:null;
       if(src){for(const o of src)it.add(o.x,0,o.z,1,1,1,0,0,0,{u:o.e.u,v:o.e.v,th:o.e.th});it.make();continue}
       let t=0;while(it.a.length<n&&t++<n*40){
         /* la moitié autour de la Pierre (35 à 110 m), où le joueur regarde ; le reste partout dans la tuile */
         let u,v;if(Z.plus&&it.a.length%2===0){const a=rnd()*TAU,r=rr(35,110);u=-20+Math.cos(a)*r;v=Math.sin(a)*r}else{u=rr(-R,R);v=rr(-R,R)}
-        if(!ok(u,v,10))continue;const p=Z.w(u,v),s=rr(sz[0],sz[1]);
+        if(!ok0(u,v,10))continue;const s=rr(sz[0],sz[1]),h=HAUT.has(k)?Math.max(5,hg*s):hg*s,bas=BAS.has(k);
+        /* boucle 5 : dans le couloir d'arrivée, l'objet est retiré au sort ailleurs (même nombre, même seuil de palier) */
+        if(!ok(u,v,10,h,bas)){const q=ailleurs(f=>{const c=place(R,it.a.length%2===0,f);return ok(c[0],c[1],10,h,bas)?c:null});if(!q)continue;u=q[0];v=q[1]}
+        const p=Z.w(u,v);
         it.add(p[0],0,p[1],s,s,s,rnd()*TAU,k==='ruine'||k==='souche'||k==='pieu'?rr(-.12,.12):0,k==='souche'||k==='aiguille'||k==='pieu'?rr(-.25,.25):0,{u,v,th:rnd()})}
       it.make();if(k==='poteau')places.poteau=it.a}
     /* les trois grands repères, à 120° les uns des autres autour de la Pierre : on en voit toujours un */
