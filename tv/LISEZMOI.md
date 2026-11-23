@@ -6,6 +6,10 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.43 (23 novembre) : boucle graphique 5
+
+Trois réglages acceptés par le testeur, sans nouveau système : marqueterie des sols 4.2c, couloir de caméra à l'arrivée, étalonnage des +7. Détails ci-dessous.
+
 ## Boucle graphique 5, amélioration 3 : étalonnage des +7 et banc par image (23 novembre, `src/styles.js`, `src/ciels.js`, `tools/boucle.js`)
 - **Étalonnage final des +7** (passe finale, fin du bloc signature) : plafond de chroma par zone (DON .45, DON045 .6, ASS152 .45), point noir (RES374 .07, ANT120 .10) et, pour RES374 et ANT120, une vibrance (au-dessus de 1, le même réglage ne relève que les couleurs ternes : un noir seul les aurait rendus gris). DON +7 : signature tirée vers le cobalt et l'ivoire, et le rose (rouge > bleu > vert) rappelé vers l'abricot et la terre cuite ; le cobalt n'est pas touché. Teinte pastel des ombres des +7 : .18 → .06. CIT : la neige du premier plan n'est pas brûlée, pas de point noir.
 - Tout est pondéré par le pôle + (rien aux −7 ni au niveau 0, par construction) et protégé sur Givrecloche et Chinampas. Trois réglages par zone (`sigCh`, `sigNo`, `sigRo`), fondus en 2 s comme le reste de la signature ; une seule compilation, aucune texture, aucun appel de dessin.

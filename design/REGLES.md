@@ -188,6 +188,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Chaque type de zone a sa grammaire de pôle au sol, chaque zone son ciel signature (le +7 se teinte, il ne blanchit pas) ; l'image passe par un FXAA et les ombres restent dans leur boîte (boucle 2, 19 nov.).
 - Chaque famille de zone a son écriture de pôle au sol ; la météo et la lumière suivent le lieu et le pôle (jamais de neige sur la lave) ; le décor de combat vient de la zone (boucle 3, 20 nov.).
 - Au niveau 0, chaque zone a sa propre couleur et son heure du jour ; le plateau de combat est en tesselles (boucle 4, 22 nov.).
+- Sols en marqueterie posée (plus de motifs en papier peint), caméra d'arrivée qui ne bute plus sur un décor de pôle, +7 étalonnés avec un plafond de couleur et un vrai noir (boucle 5, 23 nov., version 2.43 ; réglages seulement).
 - Le monde est animé : vent dans la végétation, braises vers −7 et lucioles vers +7, créatures qui errent (décoratives) (2.8).
 - Exploration épurée par défaut : fiche de zone quelques secondes à l'entrée, aide qui s'efface, minicarte réduite ; RB ou Tab affiche l'interface complète (2.8).
 - **Annonces sobres (22 nov., 2.42)** : demande de l'utilisateur, « enlève les affiches lors des montées de zone et autre, ça prend trop d'espace ». Les annonces tiennent sur un petit billet sous la barre du haut ; pas de grand titre au milieu de l'écran ; en interface épurée la fiche de zone ne s'ouvre plus seule (RB l'affiche).
