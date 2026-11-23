@@ -18,6 +18,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
 
+## 23 novembre 2026 (musique)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Musique | « La musique est bonne » ; ajouter un peu de médiums et de graves (version 2.42.6) | en vigueur | |
+
 ## 22 novembre 2026 (revue des dix provisoires)
 
 Réponses de l'utilisateur à la liste de dix réglages du dimanche 22 nov., point par point. Les autres provisoires sont gardés tels quels jusqu'après le 28.
