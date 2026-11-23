@@ -122,8 +122,13 @@ const canopy=inst(new THREE.IcosahedronGeometry(4.6,1).scale(1,.5,1),M(0xffffff)
   bales=inst(new THREE.BoxGeometry(1.5,1,1),M(0xb8a888,{emissive:0x30e0b8,emissiveIntensity:0}));
 const NL=280,luc=[];
 Z.build=()=>{const hw=u=>19.1+Math.abs(u)/95*30.9;
-  for(let i=0;i<260&&trees.length<125;i++){const u=rr(-92,92),v=rr(-1,1)*hw(u);if(Math.abs(v)<9.5||!Z.inside(u,v,4)||(Math.abs(u)<14))continue;
-    if(u>58&&u<84&&v<-12&&v>-34)continue;trees.push({u,v,p:Z.w(u,v),s:rr(.8,1.25)})}
+  /* boucle 5 (23 nov.) : pas de palétuvier de premier plan dans le couloir d'arrivée (couloir, zones1.js) ; un arbre écarté
+     est retiré au sort ailleurs (ailleurs, zones1.js) : même nombre d'arbres, le reste de la mangrove ne bouge pas */
+  const CL=couloir(Z),bon=(u,v)=>!(Math.abs(v)<9.5||!Z.inside(u,v,4)||(Math.abs(u)<14))&&!(u>58&&u<84&&v<-12&&v>-34);
+  for(let i=0;i<260&&trees.length<125;i++){let u=rr(-92,92),v=rr(-1,1)*hw(u);if(!bon(u,v))continue;
+    let p=Z.w(u,v);if(!CL.libre(p[0],p[1],12)){const q=ailleurs(R=>{const u2=R(-92,92),v2=R(-1,1)*hw(u2),p2=Z.w(u2,v2);return bon(u2,v2)&&CL.libre(p2[0],p2[1],12)?[u2,v2,p2]:null});
+      if(!q)continue;u=q[0];v=q[1];p=q[2]}
+    trees.push({u,v,p,s:rr(.8,1.25)})}
   const roots=Z.roots=IM(cyl(1,1.5,1,5),M(0xffffff),trees.length*7);let k=0;
   for(const T of trees){const x=T.p[0],z=T.p[1],s=T.s,y0=-1.2;for(let j=0;j<6;j++){const a=j*TAU/6+rnd(),r=rr(1.8,2.9)*s;strut(roots,k++,x+Math.cos(a)*r,y0,z+Math.sin(a)*r,x,3.8*s,z,.13*s)}
     strut(roots,k++,x,3.6*s,z,x+rr(-.4,.4),8*s,z+rr(-.4,.4),.3*s);canopy.add(x,8.8*s,z,s*rr(.85,1.2),s,s*rr(.85,1.2),rnd()*6)}

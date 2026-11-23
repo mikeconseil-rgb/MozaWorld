@@ -7,12 +7,17 @@ const easeL=lv=>clamp(Math.abs(lv)/7,0,1);
 function gradeFn(neg,pos){return(lv,o)=>{const q=lv<0?neg:pos,k=easeL(lv);
   o.s=lerp(1,q.s,k);o.c=lerp(1,q.c,k);o.k=q.k*k;o.e=lerp(1,q.e,k);const t=LIN(q.t);o.t[0]=t[0];o.t[1]=t[1];o.t[2]=t[2];return o}}
 /* population de la ceinture : chaque objet a son seuil, donc chaque palier en ajoute (ou en retire) une part */
-function family(Z,geo,mat,n,opt){const it=inst(geo,mat,opt.shadow!==false);it.opt=opt;it.n=n;Z.fams.push(it);return it}
-function placeFam(Z,f){const o=f.opt,R=Z.R;let tries=0;
+/* boucle 5 (23 nov. 2026) : chaque famille connaît sa hauteur (boîte englobante), pour le couloir d'arrivée (couloir, zones1.js) */
+function family(Z,geo,mat,n,opt){const it=inst(geo,mat,opt.shadow!==false);it.opt=opt;it.n=n;if(!geo.boundingBox)geo.computeBoundingBox();it.hg=geo.boundingBox.max.y;Z.fams.push(it);return it}
+function placeFam(Z,f){const o=f.opt,R=Z.R,CL=couloir(Z);let tries=0;
   while(f.a.length<f.n&&tries++<f.n*40){let u=rr(-R,R),v=rr(-R,R);if(o.grid){u=Math.round(u/o.grid)*o.grid;v=Math.round(v/o.grid)*o.grid}
     if(!Z.inside(u,v,8)||Z.bw(u,v)<.6)continue;
     if(o.where&&!o.where(u,v))continue;
-    const s=rr(o.s[0],o.s[1]);f.add(0,0,0,s,s*rr(o.sy?o.sy[0]:1,o.sy?o.sy[1]:1),s,o.grid?Math.round(rnd()*4)*PI/2:rnd()*TAU,rr(-(o.tilt||0),o.tilt||0),rr(-(o.tilt||0),o.tilt||0),{u,v,th:rnd()})}
+    /* un objet qui boucherait l'arrivée est retiré au sort ailleurs, avec son propre tirage (ailleurs, zones1.js) */
+    const s=rr(o.s[0],o.s[1]),h=f.hg*s*(o.sy?o.sy[1]:1)-(o.sink||0),lib=(u,v)=>{const w=Z.w(u,v);return CL.libre(w[0],w[1],h,false)};
+    if(!lib(u,v)){const q=ailleurs(F=>{let u2=F(-R,R),v2=F(-R,R);if(o.grid){u2=Math.round(u2/o.grid)*o.grid;v2=Math.round(v2/o.grid)*o.grid}
+        return Z.inside(u2,v2,8)&&Z.bw(u2,v2)>=.6&&(!o.where||o.where(u2,v2))&&lib(u2,v2)?[u2,v2]:null});if(!q)continue;u=q[0];v=q[1]}
+    f.add(0,0,0,s,s*rr(o.sy?o.sy[0]:1,o.sy?o.sy[1]:1),s,o.grid?Math.round(rnd()*4)*PI/2:rnd()*TAU,rr(-(o.tilt||0),o.tilt||0),rr(-(o.tilt||0),o.tilt||0),{u,v,th:rnd()})}
   f.make()}
 function updFam(Z,f,lv){const o=f.opt,side=o.side;let w;
   if(side<0)w=wneg(lv);else if(side>0)w=wpos(lv);else w=1-easeL(lv)*1.6;
