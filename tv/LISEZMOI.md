@@ -6,6 +6,15 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Boucle 5, version 4.2c : marqueterie des sols, reprise avec les corrections du testeur (23 novembre, `src/sol.js`)
+Reprise du `sol.js` de la 4.2b (îlots, poids, anti-moiré et fondu au loin gardés tels quels), avec quatre corrections :
+- **Donjon + (DON, DON045)** : traits du khatam ×0,7 jusqu'à 40 m (pleins à 70 m) ; le zellige tient à 70 % au loin au lieu de 40 % ; au palier 7 seulement, les plaques couvrent ~85 % au lieu de ~74 % et l'octogone central passe en ivoire (saut net entre ±6 et ±7) ; la lueur de lave (`vColor × vGlow`) est retirée partout au Donjon +, dans les plaques comme entre elles.
+- **Ressource − (RES374)** : éclats de cendre plus contrastés (poids ,5 → ,75), toujours en losange, plus aucun pois ; la cendre reste à 60 % entre les plaques (au lieu de 30 %).
+- **Marché +** : joint noir des plaques retiré, trait gris des losanges affiné (,025 → ,012), usure plafonnée à −30 % et tirée vers la teinte claire de la plaque (plus de taches grises) ; anti-moiré inchangé.
+- **Ressource + (prairie)** : ni joint ni bombement.
+- Niveau 0 de l'Antre : la trace des écailles est ramenée à 30 %, l'écaille devient le signe du pôle +.
+Rien que du calcul dans le shader : aucune lecture de texture, aucun triangle ni appel de dessin en plus (mesures dans le bruit du banc). Captures : `boucles/boucle-5/apres-sol/`.
+
 ## Paquet de combat lisible et modifiable (22 novembre, `src/paquet.js`)
 
 - L'écran du paquet (menu, ou Y à la manette) montre chaque carte en grand avec son texte entier, dans une grille qui s'adapte à la télé et au téléphone (paysage et portrait). Stick ou flèches : ▲ ▼ sautent d'une rangée ; toucher une carte marche aussi.

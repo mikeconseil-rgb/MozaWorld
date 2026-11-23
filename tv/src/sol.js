@@ -126,7 +126,8 @@ float solHexD(vec2 g){g=abs(g);return max(g.x,dot(g,vec2(.5,.8660254)));}
 float solPose(vec2 c,float k){return step(texture2D(tSolB,c*.001094+vec2(.5,.1)).b,(.12+.13*k)*step(.5,k));}
 /* boucle 2 (reprise, 19 nov. 2026) : opacité d'une pièce posée, ~0,18 au palier 1 jusqu'à ~0,96 au palier 7,
    et bord fondu (~0,45 m au palier 1, presque franc au palier 7) : aux bas paliers on devine la marqueterie, on ne voit pas des carreaux collés */
-float solOp(float k){return min(1.,.05+.13*k);}
+/* boucle 4 (22 nov. 2026) : plafonnée à ,92 (et non plus 1) : le biome se lit entre les plaques, la plaque garde son cobalt */
+float solOp(float k){return min(.92,.05+.13*k);}
 float solBord(float e,float k){return smoothstep(0.,max(.04,.5-.065*k),e);}
 `;
 /* fragment : après color_fragment (diffuseColor contient déjà la couleur du sommet) */
@@ -209,11 +210,43 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     cr = cran (0 à 3) : l'échelle ou la densité du motif saute aux paliers ±2, ±4, ±6, en plus de la couleur qui suit chaque palier.
     Marché : son écriture passe outre le style gris de Givrecloche ; elle est codée en luminance (claire sur noir à −7, sombre sur blanc à +7). */
  float gr=floor(zd.a*255.+.5),moP=gr>4.5?ef*(1.-solEau):mo;
+ float px=length(fwidth(p));   /* boucle 4 (22 nov. 2026) : taille du pixel au sol (m), prise hors de toute branche */
+ /* boucle 4 (22 nov. 2026) : bruit des îlots de marqueterie (voir (c) plus bas) et sa pente, pris hors de toute branche (dérivées sûres) :
+    en Belle, une lecture de plus, vn(p/5) mêlé au bruit de 8 m (des plaques de 4 à 8 m, plusieurs dans le champ) ;
+    en Fluide, le bruit de 8 m déjà lu, resserré pour garder la même couverture : aucune lecture en plus */
+ #ifdef SOL_FIN
+ float sIl=texture2D(tSolB,p*.003125+vec2(.61,.23)).a*.65+B8.g*.35;
+ #else
+ float sIl=(B8.g-.5)*.69+.5;
+ #endif
+ float sIw=max(fwidth(sIl),1e-6),sIg=sIw/max(px,1e-4);   /* sIw : pente par pixel ; sIg : pente par mètre */
  if(moP>.001&&nLoin>0.){
   float alv=abs(lv),k=solPal(alv),cr=floor((alv+.1)*.5),aa=.02+dc*.004,nB=1.-smoothstep(22.,60.,dc);   /* nB : relief de près seulement (sinon il scintille) */
-  vec3 wv=texture2D(tSolB,p*.001094+vec2(.5,.1)).rgb;   /* dérive du tracé (r, g) et part couverte (b), à ~14 m */
+  vec4 wv=texture2D(tSolB,p*.001094+vec2(.5,.1));   /* dérive du tracé (r, g) et part couverte (b), à ~14 m ; a : découpe des îlots (boucle 4) */
   float zone=smoothstep(.0,.06,(.12+.13*k)*step(.5,k)-wv.b);   /* part couverte : un quart au palier 1, tout au palier 7 */
   vec2 w2=p+wv.rg*3.5;float Lc=dot(c,vec3(.333)),pl=1.-smoothstep(.3,.6,pente);   /* pl : les motifs à plat s'effacent dans les fortes pentes (sinon étirés) */
+  /* boucle 4 (22 nov. 2026) : le motif de pôle est POSÉ EN MARQUETERIE au lieu d'être tiré comme un papier peint.
+     On garde le sol d'avant le motif (sc0, se0) ; à la fin de (c), le motif s'y pose selon trois poids :
+     sMq, des îlots de 4 à 8 m (bruit sIl, pris avant (c) : en Belle une lecture de bruit à ~5 m ; en Fluide B8.g, déjà lu, aucune lecture en plus) dont le seuil s baisse avec |lv|,
+       bord net (filtré au pixel) ; couverture ~29 % au palier 1, 42 % au 2, 57 % au 4, 72 % au 6, 74 % au 7, sauts aux crans ±2, ±4, ±6 ;
+     sUs, l'usure (jusqu'à −60 %, plus forte au bord des plaques ; lue dans B07 et B8, déjà lus) ;
+     sJt, un joint sombre de 20 à 30 cm au bord des plaques (largeur tenue au sol grâce à la pente du bruit), et un léger bombement de la plaque (relief, de près).
+     Reprise 4.2b : îlots plus petits (4 à 8 m au lieu de 28), joint et usure francs, plus aucun mélange au biome DANS les plaques ;
+     le tout aussi en Fluide, mais sans aucune lecture de bruit ajoutée (seulement du calcul). */
+  vec3 sc0=c,se0=solE,sCl=c;float sMq=1.,sUs=1.,sJt=0.,sGap=0.,aaM=max(.02,px*.75);   /* aaM : anti-moiré du Marché et de la Citadelle −7, à la taille du pixel */
+  if(alv>=.5){
+   float sS=.596-.012*(k-1.)-.045*cr;   /* ,596 · ,539 · ,527 · ,47 · ,458 · ,401 · ,389 */
+   sS-=.05*step(6.5,k)*step(.5,gr)*step(gr,1.5);   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon, saut ±6 → ±7 franc (couverture ~74 % → ~85 %) */
+   float aN=sIw*.75,e=sIl-sS,jw=.2*sIg;   /* jw : 20 cm de joint, en unités de bruit (largeur constante au sol, quelle que soit la pente du bruit) */
+   if(lv>0.){   /* pôle + : de vraies plaques, bord net (filtré au pixel), joint sombre */
+    sMq=smoothstep(-aN,aN,e);
+    sJt=(smoothstep(-1.5*jw-aN,-jw,e)-smoothstep(0.,aN+.3*jw,e))*(1.-smoothstep(.1,.3,px));   /* joint : une rigole sombre juste au bord de la plaque, effacée quand elle tombe sous le pixel */
+    sGap=smoothstep(-aN,2.*jw+aN,e);}   /* bombement : la plaque est posée, à peine plus haute que le sol */
+   else sMq=smoothstep(-.035-aN,.035+aN,e);   /* pôle − : la ruine gagne par nappes, bord fondu, sans joint */
+   float u=mix(.5,B07.a,nPres)*.6+B8.a*.4+(1.-smoothstep(0.,.05,e))*.22;   /* l'usure mord surtout les bords */
+   sUs=1.-.6*smoothstep(.5,.78,u);
+   if(lv>0.&&gr>4.5){sUs=1.-.3*smoothstep(.5,.78,u);sJt=0.;}   /* boucle 5 (23 nov. 2026, 4.2c) : Marché +, usure plafonnée à −30 % (elle tachait de gris), joint noir retiré (il serpentait en traits épais sur le damier) */
+   if(lv>0.&&gr>1.5&&gr<2.5){sJt=0.;sGap=0.;}}   /* boucle 5 (4.2c) : prairie de la Ressource +, ni joint ni bombement (une prairie n'a pas de dalles) */
   if(alv<.5){   /* (c0) niveau 0 : chaque famille garde la trace de son écriture, à faible intensité (de près seulement : rien à payer au loin) */
    if(nMoy<=0.){}
    else if(gr<.5){   /* Citadelle : quelques médaillons Girih à peine en relief, ton sur ton */
@@ -225,7 +258,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     vec2 g=w2/.95,id=floor(g),o=(sH2(id)-.5)*.55;float pt=solTrait(length(fract(g)-.5-o)*.95,.07,aa)*step(sH(id+5.),.3)*nMoy;
     c*=1.+(sH(id+8.)>.5?.25:-.3)*pt*moP;}
    else if(gr<3.5){   /* Antre : écailles à peine ombrées */
-    vec3 ec=solEca(p,1.7);c*=1.+(.12*ec.x-.06-.18*solTrait(ec.z,.03,aa))*nMoy*moP;solH=.012*ec.x*nB*moP;}
+    vec3 ec=solEca(p,1.7);c*=1.+(.12*ec.x-.06-.18*solTrait(ec.z,.03,aa))*nMoy*moP*.3;solH=.0036*ec.x*nB*moP;}   /* boucle 5 (23 nov. 2026) : trace ×0,3, l'écaille devient le signe du pôle + */
    else if(gr<4.5){   /* Assemblée : joints de dallage */
     vec4 dl=solDal(p,vec2(3.4,2.3));c*=1.-(.3*solTrait(dl.x,.035,aa)-(dl.y-.5)*.08)*moP;}
    else{   /* Marché : treillis de losanges, en luminance */
@@ -239,7 +272,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     float e2=abs(dot(hx.xy,fd))*S+step(.3+.2*cr,fract(hs*7.3))*9.;   /* plaques refendues : plus nombreuses à chaque cran */
     vec4 hy=solHex(wq/(S*.4)+hs*3.);float e3=(.5-solHexD(hy.xy))*S*.4+step(cr,1.5)*9.+step(.5,sH(hy.zw))*9.;   /* craquelure fine dès le palier 4 */
     float ed=min(e,e2),wc=.022+.007*k;
-    float fis=max(solTrait(ed,wc,aa),solTrait(e3,wc*.55,aa)*.85)*zone;
+    float fis=max(solTrait(ed,wc,aaM),solTrait(e3,wc*.55,aaM)*.85)*zone;
     vec3 sec=mix(vec3(Lc),c,.3)*vec3(1.,.96,.9)*(.42+.2*hs-.025*k);
     c=mix(c,sec*(1.+(B07.g-.5)*.3*nPres),zone*min(1.,.35+.1*k)*moP);
     c*=1.+.35*(1.-smoothstep(wc,wc+.12,ed))*(1.-fis)*zone*moP;   /* bords retroussés qui prennent la lumière */
@@ -256,12 +289,17 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     c*=1.-bord*(.25+.06*k)*moP;c=mix(c,vec3(.01),coeur*moP);
     solE+=nc*(coeur*(.2+.1*k)*pul+bord*bord*.012*k)*moP*nLoin;}
    else if(gr<2.5){   /* (c−) Ressource : cendres grises semées en points, quelques-uns couvent encore (faible bruit émissif) */
+    /* boucle 4 (22 nov. 2026) : une jonchée, plus des pois : cendre posée sur la teinte du sol, déformation doublée, rayons de ,4 à 1,6×, contraste ×,5 */
     vec3 cen=vec3(.2,.195,.19)*(.7+.6*B8.g)*(1.+(B07.r-.5)*.4*nPres);
-    c=mix(c,mix(vec3(Lc*.5),cen,.75),zone*min(1.,.35+.1*k)*moP);
-    float S=.95*(1.-.15*cr);vec2 g=w2/S,id=floor(g),o=(sH2(id)-.5)*.5;float h=sH(id+5.),den=.22+.17*cr+.015*k;
-    float pt=solTrait(length(fract(g)-.5-o)*S,(.045+.018*cr)*(.6+.8*sH(id+3.)),aa)*step(h,den)*zone*nMoy*pl,braise=step(h,den*.2);
-    c=mix(c,braise>.5?vec3(.03,.025,.02):vec3(.6,.58,.55)*(.85+.3*sH(id+2.)),pt*moP);
-    float cv=smoothstep(.58,.8,sN(w2*.3+B8.r*2.));   /* la cendre couve par plaques */
+    c=mix(c,mix(c*.5,cen,.55),zone*min(1.,.35+.1*k)*moP);
+    vec2 w7=p+wv.rg*7.;
+    float S=.95*(1.-.15*cr);vec2 g=w7/S,id=floor(g),o=(sH2(id)-.5)*.5;float h=sH(id+5.),den=.22+.17*cr+.015*k;
+    vec2 v=fract(g)-.5-o;float an=sH(id+7.)*6.283,h2=sH(id+9.);v=vec2(dot(v,vec2(cos(an),sin(an))),dot(v,vec2(-sin(an),cos(an))))*vec2(1.,2.2+2.6*h2);   /* éclats allongés (×2,2 à ×4,8), tournés au hasard */
+    float dv=mix((abs(v.x)+abs(v.y))*.8,max(abs(v.x)*.9,abs(v.y)*.6+abs(v.x)*.45),step(.6,h2))*S;   /* esquilles en losange effilé, quelques-unes en lame : plus aucun disque */
+    den*=.45+1.1*smoothstep(.25,.75,B8.b);   /* jonchée en traînées : dense ici, clairsemée là */
+    float pt=solTrait(dv,(.045+.018*cr)*(.4+1.2*sH(id+3.)),aa)*step(h,den)*zone*nMoy*pl,braise=step(h,den*.2);
+    c=mix(c,braise>.5?c*.12:mix(c,vec3(.6,.58,.55),.6)*(.85+.3*sH(id+2.)),pt*moP*.75);   /* boucle 5 (23 nov. 2026, 4.2c) : éclats plus contrastés (,5 → ,75), toujours en losange */
+    float cv=smoothstep(.58,.8,sN(w7*.3+B8.r*2.));   /* la cendre couve par plaques */
     solE+=nc*(pt*braise*(.03+.006*k)*(.4+.6*B07.g)+cv*.004*k*zone)*moP*nLoin;}
    else if(gr<3.5){   /* (c−) Antre : flaques noires en miroir, qui prennent le zénith quand on regarde à ses pieds et l'horizon au ras du sol (fresnel) */
     float pz=sN(w2*.085+vec2(3.1,7.7))+(B07.b-.5)*.04*nPres;
@@ -298,8 +336,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     solE+=nc*jt*zone*.002*k*pul*moP*nLoin;}
    else{   /* (c−) Marché : treillis de losanges à la craie (L ≈ ,78) sur un sol d'encre (≈ ,15) ; le losange intérieur vient au palier 4 */
     vec2 S=vec2(3.,5.)*(1.-.16*cr);vec3 lo=solLos(w2*.15+p*.85,S);float f=S.x*S.y/length(S);
-    float mot=max(solTrait(lo.x,.05+.008*k,aa),k>3.5?solTrait(abs(lo.z-.25)*f,.035,aa):0.);
-    mot=max(mot,k>5.5?solTrait(lo.z*f,.12,aa):0.);   /* palier 6 : un point au cœur */
+    float mot=max(solTrait(lo.x,.05+.008*k,aaM),k>3.5?solTrait(abs(lo.z-.25)*f,.035,aaM):0.);
+    mot=max(mot,k>5.5?solTrait(lo.z*f,.12,aaM):0.);   /* palier 6 : un point au cœur */
     float i=min(1.,.25+.11*k)*moP*pl;
     c=mix(c,vec3(.035)*(.8+.4*B8.r),i);
     c=mix(c,vec3(.6),mot*i);solE+=vec3(.42)*mot*i*nLoin;}
@@ -317,8 +355,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     c=mix(c,mix(c,vec3(Lc),.45)*1.1+vec3(.06,.05,.025),min(1.,.35+.09*k)*moP);
     float bord=1.-smoothstep(0.,wl*1.8,d);
     solH=(.07*sqrt(bord)+.02*dans)*on*nB*moP;
-    float dor=solTrait(d,wl,.02+dc*.0035)*on*(1.-nB*.6);   /* au loin, où le relief ne se voit plus, un ton sur ton à peine doré */
-    c*=mix(vec3(1.),vec3(1.06,.98,.8),dor*moP);solGold=max(bord,dans*.4)*on*moP;}
+    float dor=solTrait(d,wl,.02+dc*.0035)*on*(1.-nB*.2);   /* au loin, où le relief ne se voit plus, un ton sur ton doré */
+    c*=mix(vec3(1.),vec3(1.14,.96,.62),dor*moP);   /* boucle 4.2b (22 nov.) : dorure relevée, pour que le pôle se lise à +7 */solGold=max(bord,dans*.4)*on*moP;}
    else if(gr<1.5){   /* (c+) Donjon : traits Girih fins (repli « Fluide ») ou zellige khatam cobalt et blanc */
     vec3 cA=mix(vec3(0.,.08,.5),mp*.5,.05),cB=mix(vec3(.5,.55,.66),mp*.66,.05);
     #ifdef SOL_FIN
@@ -327,11 +365,12 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     float dd=abs(min(sa,sb)-R),ins=step(min(sa,sb),R),oct=step(max(sa,sb),R*.6)*step(4.5,k);
     if(k>2.5)dd=min(dd,S*.5-sa);
     if(k>4.5)dd=min(dd,abs(max(sa,sb)-R*.6));
-    vec3 f=mix(cA,cB,ins-oct);
+    float o7=oct*step(6.5,k);   /* boucle 5 (23 nov. 2026, 4.2c) : au palier 7 seulement, l'octogone central passe en ivoire franc */
+    vec3 f=mix(mix(cA,cB,ins-oct),cB*1.1,o7);   /* boucle 4.2b : couleurs franches dans les plaques (le biome se voit ENTRE elles) */
     c=mix(c,f*(.88+.24*sH(id+3.)),on*moP*op*mix(ins,1.,smoothstep(1.5,4.5,k)));
-    float tr=solTrait(dd,.03+.006*k,aa)*on*solOp(k);
+    float tr=solTrait(dd,(.03+.006*k)*mix(.7,1.,smoothstep(40.,70.,dc)),aa)*on*solOp(k);   /* boucle 5 (4.2c) : traits ×0,7 jusqu'à 40 m, pleins à 70 m */
     c=mix(c,cA*.45,tr*moP);solGold=on*moP*op*.3;
-    solE+=cA*(1.-ins+oct)*on*op*smoothstep(1.5,4.5,k)*.22*moP*nLoin;
+    solE+=cA*(1.-ins+oct-o7)*on*op*smoothstep(1.5,4.5,k)*.22*moP*nLoin;
     #else
     vec4 md=solMed(p,1.);float on=step(sH(md.zw+vec2(31.,17.)),.16+.12*k)*step(.5,k),dans;vec2 q;
     float d=solGirih(md.xy,min(k,3.),8.,dans,q),a2=.02+dc*.0035,wl=.02+.006*k;
@@ -367,17 +406,39 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     vec3 c1=vec3(.6,.26,.13),c2=vec3(.88,.79,.6),c3=vec3(.17,.3,.17);
     float dec=step(q.x,3.45);
     vec3 f=mix(c3,mix(c2,c1,dans),dec);if(k>4.5&&q.x<.62)f=c3;   /* palier 5 : rosace au cœur de l'étoile */
-    f*=.93+.12*sH(md.zw+floor(q*2.));
+    f*=.93+.12*sH(md.zw+floor(q*2.));   /* boucle 4.2b : couleurs franches dans les plaques (le biome se voit ENTRE elles) */
     c=mix(c,f,on*moP*min(1.,.5+.08*k));
     c=mix(c,vec3(.12,.08,.05),solTrait(d,.03+.004*k,aa)*on*moP);solGold=on*moP*.4;}
    else{   /* (c+) Marché : losanges sombres (≈ ,25) en arlequin sur un sol clair (≈ ,88), petit losange inversé au cœur dès le palier 5 */
     vec2 S=vec2(2.6,4.4)*(1.-.16*cr);vec3 lo=solLos(p,S);float f=S.x*S.y/length(S);
     float bl=lo.y;if(k>4.5&&lo.z<.17)bl=1.-bl;
+    /* boucle 4 (22 nov. 2026) : damier filtré (aaM, à la taille du pixel) : bord fondu sur un pixel, et le damier ne tend vers son gris moyen
+       que là où le losange fait moins de ~2 pixels (fin du moiré, sans losanges gris baveux à mi-distance) */
+    float lis=smoothstep(1.,2.5,f/px);bl=mix(.5,bl,smoothstep(0.,aaM,lo.x)*lis);
     float i=min(1.,.25+.11*k)*moP*pl;
-    c=mix(c,vec3(.8)*(.97+.06*B8.r),i);
-    c=mix(c,vec3(.12),bl*i*(1.-solTrait(lo.x,.03,aa)));
-    c=mix(c,vec3(.45),solTrait(min(lo.x,k>4.5?abs(lo.z-.17)*f:9.),.025,aa)*i);}
+    c=mix(c,vec3(.8)*(.97+.06*B8.r),i);sCl=c;   /* boucle 5 (4.2c) : la teinte claire de la plaque, vers laquelle va l'usure (jamais vers un gris) */
+    c=mix(c,vec3(.12),bl*i);
+    c=mix(c,vec3(.45),solTrait(min(lo.x,k>4.5?abs(lo.z-.17)*f:9.),.012,aaM)*i*lis);}   /* boucle 5 (4.2c) : joint gris étroit (,025 → ,012) */
   }
+  if(alv>=.5){   /* boucle 4 (22 nov. 2026) : pose en marqueterie (îlots, usure, joint) et fondu au loin, voir plus haut */
+   /* Citadelle + (relief doré) et Antre + (nacre) : soustraites au fondu, masque et usure adoucis, sinon le pôle ne se lit plus.
+      Entre les plaques (wMin) : le sol du biome franc au pôle + ; au pôle −, la ruine y reste à 30 % (75 % pour la boue de l'Antre,
+      sinon la signature des sommets y montait en taches cyan). */
+   float ex=lv>0.&&(gr<.5||gr>2.5&&gr<3.5)?1.:0.;
+   float wMin=lv>0.?.7*ex:(gr>2.5&&gr<3.5?.75:(gr>1.5&&gr<2.5?.6:.3));   /* boucle 5 (4.2c) : cendre de la Ressource − à 60 % entre les plaques */
+   float dP=lv>0.&&gr>.5&&gr<1.5?1.:0.,mP=lv>0.&&gr>4.5?1.:0.;   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon + et Marché + */
+   float ff=smoothstep(18.,70.,dc)*(1.-ex);
+   /* au loin, ton sur ton à moitié : l'écart de luminance du motif sur la teinte du sol, de 60 à 150 m seulement,
+      pour que la couleur du pôle se lise encore au milieu du champ */
+   c=mix(c,sc0+vec3(dot(c-sc0,vec3(.333))),.5*smoothstep(60.,150.,dc)*(1.-ex));
+   c=mix(sCl,c,mix(1.,sUs,mP));   /* Marché + : l'usure éclaircit vers la teinte claire de la plaque, sans passer par sc0 */
+   float W=mix(wMin,1.,sMq)*mix(sUs,1.,max(mP,max(ex,step(4.5,gr))*.5))*mix(1.,mix(.4,.7,dP),ff);   /* usure à moitié sur le Marché − (au Marché +, elle est déjà portée par sCl) ; Donjon + : le zellige tient à 70 % au loin (boucle 5, au lieu de 40) */
+   c=mix(sc0*(1.-.28*step(.5,lv)*(1.-ex)),c,W);solE=   /* au pôle +, le sol entre les plaques est un peu en retrait (plus sombre) */
+   se0+(solE-se0)*W;solH=solH*sMq+.03*sGap*nB*moP;solGold*=sMq;solLisse*=mix(wMin,1.,sMq);
+   sJt*=1.-.6*ex;c*=1.-.75*sJt*moP;   /* joint adouci sur l'ivoire de la Citadelle et la nacre de l'Antre */
+   /* entre les plaques et dans le joint, la lueur propre du sol (vColor × vGlow, core.js) est retenue : sinon, au Donjon +, le sol braisé
+      entre les plaques bavait en coulées orange et effaçait le joint. Boucle 5 (4.2c) : au Donjon +, elle est retirée partout (dans les plaques et entre elles) */
+   solE-=vColor.rgb*max(vGlow,0.)*min(1.,.6*(1.-sMq)+.8*sJt+dP)*step(.5,lv)*(1.-ex)*moP;}
  }
  if(solEau>.001){   /* zones-biomes : l'eau reflète le ciel au ras du regard, rides lentes, surface lisse (reflets du soleil) */
   vec3 ciel=vec3(.5,.56,.62);
