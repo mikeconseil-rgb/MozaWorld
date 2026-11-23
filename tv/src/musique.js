@@ -142,7 +142,7 @@ function musArranger(F,lv){const A=MUS_AIRS[F.air],P=musLire(A),pole=Math.sign(l
   const map=MUS_MODES[A.mode][mode]||{},ton=(musNote(A.ton+'4')%12+(MUS_ZONE[F.id]?0:(h%7)-3)+12)%12,decal=MUS_ZONE[F.id]?0:(h%7)-3;
   const mv=m=>{m+=decal;const r=((m-ton)%12+12)%12;return m+((map[r]!==undefined?map[r]:r)-r)};
   const base=(A.mode==='maj'?[0,2,4,5,7,9,11]:[0,2,3,5,7,8,10]).map(r=>(r+(map[r]!==undefined?map[r]-r:0)+ton)%12).sort((x,y)=>x-y);
-  const pas=(m,s)=>{let x=m+s;while(base.indexOf(((x%12)+12)%12)<0)x+=s;return x},tierce=(m,s)=>pas(pas(m,s),s);
+  const pas=(m,s)=>{let x=m+s;while(base.indexOf(((x%12)+12)%12)<0)x+=s;return x},tierce=(m,s)=>pas(pas(m,s),s),pasN=(m,k,s)=>{for(let i=0;i<k;i++)m=pas(m,s);return m};
   const pulse=A.pulse||A.u,ev=[],add=(t,d,m,v,voix)=>ev.push({t,d,m,v,voix});
   const octave=pole<0&&a>=6?-12:pole>0&&a>=7?12:0;
   const lead=a>=4&&pole?(pole<0?M.neg:M.pos):G.lead;
@@ -151,7 +151,13 @@ function musArranger(F,lv){const A=MUS_AIRS[F.air],P=musLire(A),pole=Math.sign(l
   for(const n of P.notes){const m=mv(n.m)+octave;add(n.t,n.d,m,vm,lead);
     if(!(a>=5&&pole<0)){let b=m-12;while(b>62)b-=12;add(n.t,n.d,b,a?.06:.08,'alto')}/* 23 nov. : la mélodie doublée plus bas, pour les médiums */
     if(a>=5)add(n.t,n.d,m+(pole<0?-12:12),.07,pole<0?'basson':'cloche');
-    if(a>=7)add(n.t,n.d,tierce(m,pole<0?-1:1),.08,pole<0?M.neg:M.pos);
+    /* 23 nov. : une harmonie de plus à chaque palier. 2 : tierce sur les temps forts ; 3 : tierce sur toute la mélodie ;
+       4 : sixte en dessous (trois voix) ; 6 : quinte au-dessus (quatre voix) ; 7 : tierce renforcée au timbre du pôle */
+    const fort=Math.abs(n.t/pulse-Math.round(n.t/pulse))<1e-6,sd=pole<0?-1:1;
+    if(a>=3||(a>=2&&fort))add(n.t,n.d,tierce(m,sd),a>=3?.05:.045,'triangle');
+    if(a>=4)add(n.t,n.d,pasN(m,5,-1),.04,'alto');
+    if(a>=6)add(n.t,n.d,pasN(m,4,1),.03,'triangle');
+    if(a>=7)add(n.t,n.d,tierce(m,sd),.06,pole<0?M.neg:M.pos);
     if(a>=6&&pole>0&&n.d>=A.u*2)add(n.t-.25,.25,pas(m,1),.06,lead);
     if(a>=6&&pole<0&&n.d>=A.u)for(let q=0;q<n.d;q+=.5)add(n.t+q,.45,m-12,.035,'scie')}
   /* accords : basse, nappe, arpège */
@@ -160,8 +166,10 @@ function musArranger(F,lv){const A=MUS_AIRS[F.air],P=musLire(A),pole=Math.sign(l
       else if(a>=3){for(let q=0;q<c.d;q+=pulse)add(c.t+q,pulse*.9,(q/pulse)%2&&c.iv.length?bas+7:bas,.13,'basse')}
       else add(c.t,c.d,bas,.14,'basse')}
     else add(c.t,c.d,bas,.14,'basse');/* 23 nov. : un fond grave dès le niveau 0 */
+    if(a===1){let q=r;while(q<50)q+=12;while(q>62)q-=12;add(c.t,c.d,q,.035,'nappe');add(c.t,c.d,q+7,.03,'nappe')}/* 1 : quinte tenue */
     if(a>=2){let v=tons.map(m=>{while(m<50)m+=12;while(m>62)m-=12;return m});
-      if(a>=5)v.push(pole<0?v[0]+13:v[0]+14);if(a>=7)v.push(pole<0?v[0]+6:v[0]+11);
+      if(a>=3&&c.iv.length<4){let s7=pasN(v[0],6,1);while(s7>64)s7-=12;v.push(s7)}/* 3 : septième */
+      if(a>=5)v.push(pole<0?v[0]+13:v[0]+14);if(a>=6)v.push(v[1]+12);if(a>=7)v.push(pole<0?v[0]+6:v[0]+11);
       for(const m of v)add(c.t,c.d,m,a>=5?.035:.045,a>=7?'choeur':'nappe')}
     if(a>=4&&!A.canon){const motif=[[0,1,2,1],[0,2,1,2],[0,1,2,3],[2,1,0,1]][h%4],st=A.u/2;let k=0;
       for(let q=0;q<c.d;q+=st,k++){const i=motif[k%4]%tons.length,o=pole>0?72:60;let m=tons[i];while(m<o)m+=12;add(c.t+q,st,m,.05,M.arp)}}}

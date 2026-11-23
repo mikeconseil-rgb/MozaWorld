@@ -22,6 +22,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Musique | Encore un peu plus d'harmonies à chaque niveau (version 2.42.7) | en vigueur | |
 | Musique | « La musique est bonne » ; ajouter un peu de médiums et de graves (version 2.42.6) | en vigueur | |
 
 ## 22 novembre 2026 (revue des dix provisoires)
