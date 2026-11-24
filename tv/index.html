@@ -6481,7 +6481,12 @@ const css=document.createElement('style');css.textContent=`
 .boite .cc.kcarte{height:auto;min-height:calc(var(--u)*15.8)}
 .boite .cc.kcarte .art{height:calc(var(--u)*6.4)}
 .boite .cc.kcarte .ct{font-size:calc(var(--u)*.88);line-height:1.26;overflow:visible}
-.cc.kcarte .kgris{bottom:auto;top:calc(var(--u)*-1.5);z-index:3}
+/* boucle 6 (24 nov.) : « Mana gris · effet −25 % » n'est plus une pastille grise en police système : une cartouche de métal terne
+   de la charte (petites capitales, filet d'acier, ombres sobres),
+   à la largeur de son texte et calée à droite : elle ne passe plus sous la pastille de coût ni ne déborde des cartes étroites. head.html garde sa règle de base, la surcharge suffit. */
+.cc.kcarte .kgris{bottom:auto;top:calc(var(--u)*-1.5);z-index:3;font-family:var(--c-main,"Cormorant Garamond",Georgia,serif);font-variant:small-caps;letter-spacing:.06em;
+  font-weight:700;font-size:calc(var(--u)*.74);line-height:1.15;padding:.1em .5em .16em;left:auto;right:5%;max-width:84%;overflow:hidden;background:linear-gradient(#3a3630,#24211d);color:#d8cfc0;border:1px solid #8d8a86;border-radius:.25em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(0,0,0,.45),0 2px 3px rgba(0,0,0,.55);text-shadow:0 1px 0 #000}
 .cc.kcarte.ultime .kamb{display:none}
 .cc.kcarte.ultime.t3 .art,.cc.kcarte.ultime.t4 .art,.cc.kcarte.ultime.t5 .art{height:calc(var(--u)*4.6)}
 .cc.kcarte .ksceau{bottom:calc(var(--u)*-.9);right:calc(var(--u)*-.9)}
@@ -9297,6 +9302,79 @@ setInterval(()=>{if(typeof curZ==='undefined')return;
   if(curZ&&curZ!==zv){zv=curZ;B.classList.add('zone-neuve');clearTimeout(zT);zT=setTimeout(()=>B.classList.remove('zone-neuve'),9000)}
   if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;calme+=.5;if(calme>=12||joue>=45)B.classList.add('aide-vue')}},500);
 })();
+
+/* boucle 6 (24 nov.) : la Pierre sans anneau d'éditeur. Le tore d'or couché autour de chaque Pierre (main.js, rayon ALT_R*.62),
+   brillant, mince et posé à plat sur un sol qui ondule (à moitié enterré par endroits), se lisait comme un « gizmo » d'éditeur 3D.
+   Il devient une incrustation au sol :
+   - matériau mat (metalness 0, roughness .8), teinté à 60 % par la couleur de la zone (ZCOL), un peu plus sombre que le sol
+     qui l'entoure (une pierre sertie, pas un trait lumineux) ; un matériau par zone au plus, en cache ;
+   - aplati au ras du sol : au lieu d'écraser le tore (scale.y ≈ .3), qui restait un fil plat enterré dès que le terrain monte,
+     on le sertit : un filet biseauté de 48 cm (bord, arête, bord), découpé en 96 tesselles aux tons inégaux (384 triangles au
+     lieu de 576), dont chaque sommet suit la hauteur du terrain (ground, core.js), 3 à 6 cm au-dessus ; décalage de profondeur
+     pour ne pas scintiller. Une bordure de mosaïque autour de la Pierre, dans l'esprit Girih du monde ;
+   - sans ombre portée, mais il reçoit l'ombre comme le sol, pour ne pas luire dans la pénombre.
+   La gemme et l'étoile du sommet restent en or : le signe de la Pierre, c'est l'or en hauteur.
+   Aucun appel de dessin en plus (le même maillage, une géométrie neuve). main.js n'est pas touché : on retrouve le tore par sa
+   forme (TorusGeometry de rayon ALT_R*.62) ; si rien n'est trouvé, on sort sans erreur. */
+(function(){
+if(typeof THREE==='undefined'||typeof ZN==='undefined'||typeof ALT_R==='undefined')return;
+const R=ALT_R*.62,W=.24,N=96,TONS=[1,.7,.9,.62,.96,.78],cache={},OR=new THREE.Color(0xc9a45c),v=new THREE.Vector3();
+const estTore=o=>o&&o.isMesh&&o.geometry&&(o.userData.mzSerti||o.geometry.type==='TorusGeometry'&&o.geometry.parameters&&Math.abs(o.geometry.parameters.radius-R)<.01);
+/* clarté du sol sous l'anneau : moyenne des couleurs de sommets du terrain (core.js) à moins de 1,2 m du cercle, dans la plage
+   de sommets de la zone. Clarté de l'anneau = .11 + 35 % de celle du sol (au plus .42) : sur les sols sombres (CIT, DON045 au
+   niveau 0, sol vers .05) un ton de pierre à .13, sur le dallage blanc du Marché (.92) un gris moyen au lieu d'un trait noir */
+const cs=new THREE.Color(),hs={};
+function clarteSol(Zs,a){try{const T=typeof terrain!=='undefined'&&terrain&&terrain.geometry;if(!T||Zs.vmin===undefined)return .14;
+  const P=T.attributes.position.array,C=T.attributes.color.array;let r=0,g=0,b=0,n=0;
+  for(let k=Zs.vmin;k<=Zs.vmax;k++){const d=Math.hypot(P[k*3]-a.x,P[k*3+2]-a.z)-R;if(d>-1.2&&d<1.2){r+=C[k*3];g+=C[k*3+1];b+=C[k*3+2];n++}}
+  if(!n)return .14;cs.setRGB(r/n,g/n,b/n).getHSL(hs);return Math.min(.42,.11+hs.l*.35)}catch(_){return .14}}
+/* un matériau par zone au plus : créé une fois, puis seulement recoloré quand le sol de la zone change (mue) */
+function matZone(Zs,l){const zc=(typeof ZCOL!=='undefined'&&ZCOL[Zs.id])||'#c9a45c';
+  /* teinté à 60 % par la zone : la teinte est celle de la zone (passer de l'or au bleu par le cercle chromatique donnait du
+     vert), la saturation mêle or et zone à 60 %, plafonnée pour rester un ton de pierre ; la clarté suit le sol : sous la
+     lumière forte du monde (soleil + ciel dépassent 2), une couleur moyenne ressortait presque blanche, comme un trait de sélection */
+  const a={},b={};OR.getHSL(a);new THREE.Color(zc).getHSL(b);
+  const m=cache[Zs.id]||(cache[Zs.id]=new THREE.MeshStandardMaterial({roughness:.8,metalness:0,flatShading:true,vertexColors:true,
+    polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+  m.color.setHSL(b.h,Math.min(.32,a.s*.4+b.s*.6),l);return m}
+/* le filet suit le terrain : sommets dans le repère de la Pierre (groupe tourné et posé au sol par placeAlt) */
+function filet(g,G0){g.updateMatrixWorld(true);const gy=g.position.y,rr=[R-W,R,R+W],dy=[.03,.06,.03],H=[];
+  for(let i=0;i<=N;i++){const a=i/N*Math.PI*2,c=Math.cos(a),s=Math.sin(a);
+    for(let j=0;j<3;j++){v.set(rr[j]*c,0,rr[j]*s);g.localToWorld(v);H.push(rr[j]*c,ground(v.x,v.z)-gy+dy[j],rr[j]*s)}}
+  /* triangles non partagés : chaque tesselle (un pas de l'anneau) a son propre ton, tiré d'une suite fixe.
+     Au re-sertissage (mue), la géométrie existante est réécrite sur place : ni allocation ni objet neuf à chaque bond de la mue */
+  const G=G0||new THREE.BufferGeometry(),neuf=!G0;
+  const P=neuf?new Float32Array(N*2*6*3):G.attributes.position.array,C=neuf?new Float32Array(N*2*6*3):null;let k=0;
+  const pt=(n,t)=>{P[k]=H[n*3];P[k+1]=H[n*3+1];P[k+2]=H[n*3+2];if(C)C[k]=C[k+1]=C[k+2]=t;k+=3};
+  for(let i=0;i<N;i++){const t=TONS[(i*7+(i>>2))%TONS.length];
+    for(let j=0;j<2;j++){const a=i*3+j,b=a+1,c=a+3,d=a+4;pt(a,t);pt(b,t);pt(c,t);pt(b,t);pt(d,t);pt(c,t)}}
+  if(neuf){G.setAttribute('position',new THREE.BufferAttribute(P,3));G.setAttribute('color',new THREE.BufferAttribute(C,3))}
+  G.computeVertexNormals();
+  /* face visible vers le ciel : si la première normale descend, on retourne chaque triangle */
+  if(G.attributes.normal.getY(0)<0){for(let q=0;q<P.length;q+=9)for(let e=0;e<3;e++){const x=P[q+3+e];P[q+3+e]=P[q+6+e];P[q+6+e]=x}G.computeVertexNormals()}
+  G.attributes.position.needsUpdate=true;G.attributes.normal.needsUpdate=true;G.boundingSphere=null;G.boundingBox=null;
+  return G}
+function incruster(Z){try{const g=Z&&Z.alt&&Z.alt.g;if(!g)return;
+  for(const o of g.children){if(!estTore(o))continue;
+    /* la couleur est celle de la zone où la Pierre se dresse : plusieurs Pierres partagent le même emplacement qu'une autre zone
+       (DON030 sur DON045, RES091 sur RES374…, données existantes) ; sans cela, l'anneau prenait la couleur d'une zone voisine */
+    const Zs=typeof zoneAt==='function'&&zoneAt(Z.alt.x,Z.alt.z)||Z;o.material=matZone(Zs,clarteSol(Zs,Z.alt));o.castShadow=false;o.receiveShadow=true;
+    if(typeof ground==='function'){if(o.userData.mzSerti)filet(g,o.geometry);else{const G=filet(g);o.geometry.dispose();o.geometry=G;o.userData.mzSerti=true}o.rotation.set(0,0,0);o.position.set(0,0,0);o.scale.set(1,1,1)}
+    else{o.scale.set(1,1,.3);o.position.y=.08}/* repli : le tore couché (rotation.x = π/2), aplati sur son axe local z, la verticale */
+  }}catch(_){}}
+/* boucle 6, reprise (24 nov.) : l'habillage ne puise plus dans le hasard du jeu. Chaque géométrie et chaque matériau three.js
+   neufs tirent quatre nombres de Math.random pour leur identifiant (uuid) : les 52 filets et 38 matériaux en tiraient 360,
+   ce qui décalait tout le hasard qui suit (bêtes, passants, météo) et faisait varier les mesures du banc d'une version à
+   l'autre (ASS152 : 221 → 256 appels sans qu'aucun objet ne soit ajouté). Pendant le sertissage, Math.random est remplacé
+   par une suite locale (Park-Miller, qui continue d'un appel à l'autre : pas deux uuid identiques), puis rendu tel quel.
+   Aucune règle ni aucun tirage du jeu n'est changé. */
+let graine=0x2b1d4f;
+const sansHasard=f=>{const r0=Math.random;Math.random=()=>(graine=graine*16807%2147483647)/2147483647;try{return f()}finally{Math.random=r0}};
+ZN.forEach(Z=>sansHasard(()=>incruster(Z)));
+/* après une mue, main.js replace la Pierre (placeAlt) sur le terrain neuf : le filet est re-serti ; si la Pierre venait à être
+   reconstruite, l'anneau neuf est repris ici de la même façon */
+if(typeof placeAlt==='function'){const pa0=placeAlt;placeAlt=function(Z){const r=pa0.apply(this,arguments);sansHasard(()=>incruster(Z));return r}}
+})();
 /* MozaWorld 2.8 : le monde bouge (18 novembre, idée 5 de l'évaluation graphique, choisie par l'utilisateur).
    1. Le vent : la végétation et tout ce qui est haut et mince ploie doucement (déformation dans le shader, aucun calcul par objet).
       Plus fort vers −7 (rafales), plus doux vers +7.
@@ -10070,7 +10148,15 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-centre svg{width:calc(var(--u)*5.2)!important;height:calc(var(--u)*5.2)!important;position:absolute;left:50%;top:50%;translate:-50% -50%}
 #combat #cb-centre svg polygon,#combat #cb-centre svg path{stroke:var(--c-os)}
 #combat #cb-centre .cl{font-family:var(--c-goth);font-size:calc(var(--u)*1.35);color:var(--c-os);text-shadow:2px 2px 0 #000;margin:0;position:relative}
-#combat #cb-centre .cv{font-family:var(--c-main);font-weight:600;font-size:calc(var(--u)*1.05);color:var(--c-os)!important;text-shadow:2px 2px 0 #000;margin:0;position:absolute;left:-40%;right:-40%;top:calc(66.667% + .2em)}
+/* boucle 6 (24 nov.) : la valeur du Centre (« à l'ennemi · ses coups +1 ») ne déborde plus de sa colonne sur la voie basse :
+   elle tient sur deux lignes, centrée dans l'hexagone, juste sous le libellé « Centre » (ruban posé à 50 % + .72u et non + 1,1u : à + 1,1u il mordait sur le joint de la voie basse).
+   Posée sur un ruban d'encre à filets d'or qui passe sur le bas du médaillon (l'octogone est trop petit pour la contenir) ;
+   corps .95u (plateau.js imposait .85u, illisible à trois mètres), coupure équilibrée sur deux lignes. */
+/* le médaillon et son libellé remontent d'une demi-unité pour laisser au ruban la place de tenir dans la rangée du milieu */
+#combat #cb-centre:has(.cv) svg{top:calc(50% - var(--u)*.55)}#combat #cb-centre:has(.cv) .cl{top:calc(var(--u)*-.55)}
+#combat #cb-centre .cv{font-family:var(--c-main);font-weight:600;font-size:calc(var(--u)*.95)!important;line-height:1.05!important;white-space:normal!important;text-wrap:balance;text-align:center;
+  color:var(--c-os)!important;text-shadow:1px 1px 0 #000;margin:0;position:absolute;left:6%;right:6%;top:calc(50% + var(--u)*.72);max-width:none!important;
+  padding:.04em .3em .1em;background:rgba(11,8,7,.86);box-shadow:0 1px 0 rgba(214,178,104,.5),0 -1px 0 rgba(214,178,104,.5)}
 
 /* ── unités : figurines à étiquette de papier, jauges tordues ── */
 #combat .u .plaque{background:linear-gradient(178deg,var(--c-papier),var(--c-papier2))!important;border:2px solid var(--c-encre)!important;border-radius:0!important;box-shadow:2px 3px 0 rgba(0,0,0,.6)!important;
@@ -10086,6 +10172,9 @@ const st=document.createElement('style');st.textContent=`
 #combat .u .mz-voie{font-family:var(--c-fell);color:#5a3a16!important;letter-spacing:.06em}
 #combat .u .int:not(:empty){font-family:var(--c-main);font-weight:600;background:var(--c-os)!important;color:var(--c-encre)!important;border:2px solid var(--c-encre)!important;border-radius:0!important;text-shadow:none!important;transform:rotate(-2deg);box-shadow:2px 2px 0 rgba(0,0,0,.6)!important}
 #combat .u .int b{color:var(--c-cire)!important}
+/* boucle 6 (24 nov.) : la bulle d'intention (bloqueur · ⚔ · voie) remonte d'un tiers d'unité et passe au-dessus des libellés :
+   elle ne mord plus sur le nom de l'unité ni sur le libellé de voie de la plaque. Décalage fixe, aucune animation. */
+#combat .u .int:not(:empty){translate:0 calc(var(--u)*-.32);z-index:6}
 #combat .u.manvise .plaque{box-shadow:0 0 0 3px #fff3c8!important}
 
 /* ── bas de l'écran : mana, pioche, aide, Fin du tour en sceau de cire ── */
@@ -10094,6 +10183,12 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-mana b{font-family:var(--c-goth)!important;color:var(--c-encre)!important}
 #combat #cb-mana .mana-p{color:#fff!important;box-shadow:0 0 0 2px var(--c-encre)}
 #combat #cb-mana .mp i{box-shadow:0 0 0 2px var(--c-encre)!important}
+/* boucle 6 (24 nov.) : les manas de « Ce tour » en petites capitales de la charte, chaque nom collé à sa pastille
+   (regroupés par la petite enveloppe de majUnites plus bas) et rangés en lignes souples : plus aucun nom orphelin. */
+#combat #cb-mana .l.mz-res{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:calc(var(--u)*.22) calc(var(--u)*.6);
+  font-family:var(--c-main)!important;font-variant:small-caps;text-transform:none;letter-spacing:.05em;line-height:1.15;font-size:calc(var(--u)*.95);max-width:calc(var(--u)*10.5);margin-top:calc(var(--u)*.25)}
+#combat #cb-mana .mz-m{display:inline-flex;align-items:center;gap:.28em;white-space:nowrap}
+#combat #cb-mana .mz-m .mana-p{font-family:var(--c-num);font-variant:normal;font-size:.8em}
 #combat #cb-piles.c-papier *{color:var(--c-encre)!important}
 #combat #cb-piles span{font-family:var(--c-fell)!important}#combat #cb-piles b{font-family:var(--c-num)!important}
 #combat #cb-mana.c-papier::before,#combat #cb-mana.c-papier::after,#combat #cb-piles.c-papier::before,#combat #cb-piles.c-papier::after{display:none!important}
@@ -10125,6 +10220,48 @@ function dech(el,n,ay,ax){if(!el)return;el.classList.add('c-papier');let g=el.id
   for(let i=4;i>0;i--)p.push((a()*ax).toFixed(2)+'% '+(i*20)+'%');
   el.style.clipPath='polygon('+p.join(',')+')'}
 dech(document.getElementById('cb-mana'),14,3,2.5);dech(document.getElementById('cb-piles'),12,3.5,3);
+/* boucle 6 (24 nov.) : après chaque mise à jour des unités, la ligne des manas (« ∞ Gris · 2 Feu · … », texte libre d'economie.js)
+   est regroupée en paires pastille + nom. Une seule passe sur six ou sept nœuds, seulement quand le panneau vient d'être réécrit. */
+if(typeof majUnites==='function'){const mu0=majUnites;majUnites=function(){const r=mu0.apply(this,arguments);try{
+  const l=document.querySelector('#cb-mana .l:last-child');if(l&&!l.classList.contains('mz-res')&&l.querySelector('.mana-p')){let h='',p=null;
+    for(const n of Array.from(l.childNodes)){if(n.nodeType===1&&n.classList.contains('mana-p')){if(p)h+='<span class="mz-m">'+p+'</span>';p=n.outerHTML}
+      else{const t=(n.textContent||'').replace(/·/g,'').trim();if(p){h+='<span class="mz-m">'+p+(t?'<span>'+t+'</span>':'')+'</span>';p=null}else if(t)h+='<span class="mz-m"><span>'+t+'</span></span>'}}
+    if(p)h+='<span class="mz-m">'+p+'</span>';l.innerHTML=h;l.classList.add('mz-res')}}catch(_){}return r}}
+/* boucle 6, reprise (24 nov.) : la menace d'une voie ne recouvre plus l'unité qui la tient.
+   Constat du testeur : sur la case d'avant occupée, « ➶ 3 → héros » (pastille .mz-menace qu'ecrin.js tire du badge .plmenace de
+   plateau.js) se posait sur le haut du portrait et mordait sur le nom de l'unité (« Luciole de nuit » coupé à 1280 × 720).
+   La case n'a pas de marge libre (unité de 74 px dans une case de 81 px à 720p) : on retient la troisième solution proposée.
+   - Sur l'unité : une pastille d'icône seule par menace (« ➶ 3 », « ⚔ 4 »), empilées au bas du portrait, à gauche :
+     jamais sur la plaque (nom, jauge, voie) ni sur la bulle d'intention, toujours au-dessus du portrait.
+   - Le texte complet (« ➶ 3 → héros », « ⚔ 4 → Luciole · 2 passent ») passe sur la case d'arrière de la même voie quand
+     elle est libre : il se lit dans la voie, du côté du héros, là où vont les coups. Sinon le total « coups attendus » du
+     héros le dit déjà.
+   Rien de plus à chaque image : on suit seulement les passages de badgesMenace (plateau.js, déjà enveloppé par ecrin.js) et
+   de dessinerCases. Le badge d'origine reste caché sur toute case occupée, même si la classe « occupee » manque encore. */
+const stM=document.createElement('style');stM.textContent=`
+#combat .pcase.mz-tenue .plmenace{display:none!important}
+#combat .u>.mz-menace{left:calc(var(--u)*-.35)!important;top:auto!important;bottom:calc(var(--u)*.1);z-index:7;display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--u)*.12);
+  padding:0!important;border:0!important;background:none!important;border-radius:0!important}
+#combat .u>.mz-menace i{font-style:normal;font-family:var(--c-num,inherit);font-weight:700;font-size:calc(var(--u)*.78);line-height:1.2;padding:0 .4em;white-space:nowrap;
+  color:#ffd3c8;background:#2a0f0c;border:1px solid #c45a4a;border-radius:.6em;box-shadow:1px 1px 0 #000}
+#combat .u>.mz-menace i.vol{color:#ffe6b0;background:#2a1d08;border-color:#c9a45c}
+#combat .pcase>.mz-voiem{position:absolute;z-index:5;left:4%;right:4%;top:calc(var(--u)*.35);margin:0 auto;width:fit-content;max-width:92%;text-align:center;pointer-events:none;
+  font-family:var(--c-main);font-weight:700;font-size:calc(var(--u)*.8);line-height:1.15;color:#ffb0a0;background:rgba(24,8,8,.9);border:1px solid rgba(226,103,90,.7);
+  border-radius:calc(var(--u)*.5);padding:.05em .5em .1em;text-shadow:1px 1px 0 #000}
+#combat .pcase>.mz-voiem:empty{display:none}
+`;document.head.appendChild(stM);
+function menacesTenues(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof occupant!=='function')return;
+  for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;const b=d.querySelector('.plmenace'),t=b?b.textContent.trim():'';
+    const u=occupant(v,0),tenue=!!(u&&u.el&&u.pv>0);d.classList.toggle('mz-tenue',tenue);
+    /* pastilles : l'icône et le nombre de chaque menace, rien d'autre */
+    if(tenue){let e=u.el.querySelector(':scope>.mz-menace');const h=t?t.split(' · ').map(x=>x.match(/^([➶⚔✶⚒])\s*(\d+)/)).filter(Boolean)
+        .map(m=>'<i'+(m[1]==='➶'?' class="vol"':'')+'>'+m[1]+' '+m[2]+'</i>').join(''):'';
+      if(h&&!e){e=document.createElement('span');e.className='mz-menace';u.el.appendChild(e)}if(e&&e.innerHTML!==h)e.innerHTML=h}
+    /* le texte complet, sur la case d'arrière libre de la voie */
+    const r=document.getElementById('pc-a'+v+'1');if(!r)continue;let w=r.querySelector(':scope>.mz-voiem');const txt=tenue&&t&&!occupant(v,1)?t:'';
+    if(txt&&!w){w=document.createElement('span');w.className='mz-voiem';r.appendChild(w)}if(w&&w.textContent!==txt)w.textContent=txt}}
+if(typeof badgesMenace==='function'){const bm1=badgesMenace;badgesMenace=function(){const r=bm1.apply(this,arguments);try{menacesTenues()}catch(_){}return r}}
+if(typeof dessinerCases==='function'){const dc1=dessinerCases;dessinerCases=function(){const r=dc1.apply(this,arguments);try{menacesTenues()}catch(_){}return r}}
 })();
 /* MozaWorld 2.33 : interface « Carnet sombre », étape 3, le menu pause et ses sous-menus (22 novembre).
    La boîte du menu devient une page de carnet : parchemin usé aux coins brûlés, titre gothique, sceau de cire,
