@@ -1888,7 +1888,11 @@ const motifDe=Z=>{if(!Z.plus)return MOTIF_ORIG[Z.id]||0;const d=Z.d,m=MOTIF_BIO[
 const manaDe=Z=>Z.plus?Math.max(0,MANA.indexOf(Z.d.mana)):(MANA_ORIG[Z.id]||0);
 /* boucle 2 (19 nov. 2026) : grammaire de pôle par type de zone ; une tuile au type inconnu en reçoit une par hachage de son nom */
 const GRAM={Citadelle:0,Donjon:1,Ressource:2,Antre:3,'Assemblée':4,'Marché':5},GRAM_ORIG={CIT:0,DON:1,RES:2,ANT:3,ASS:4,MAR:5};
-const grammaireDe=Z=>{if(!Z.plus)return GRAM_ORIG[Z.id]||0;const g=GRAM[Z.d.type];if(g!==undefined)return g;
+/* boucle 6 (24 nov. 2026, 6.2) : grammaire imposée à une zone, avant celle de son type. DON045 (la Taïga de Kobor) était la jumelle du DON
+   (même Voronoï à −7, même zellige khatam à +7) : elle prend la grammaire du Marché, qu'on ne voit jamais en couleur ailleurs (Givrecloche la passe en fusain).
+   COUL_Z : cette grammaire y est peinte en couleur (céladon et neige à +7, bleu glacier sur fond nuit à −7) ; codé +16 dans le canal a (voir gC dans le fragment). */
+const GRAM_Z={DON045:5},COUL_Z={DON045:1};
+const grammaireDe=Z=>{if(GRAM_Z[Z.id]!==undefined)return GRAM_Z[Z.id];if(!Z.plus)return GRAM_ORIG[Z.id]||0;const g=GRAM[Z.d.type];if(g!==undefined)return g;
   let h=7;for(const ch of String(Z.id))h=(h*31+ch.charCodeAt(0))>>>0;return h%6};
 /* teinte saturée du pôle positif de chaque mana, pour colorer les marqueteries de +7 (au lieu de les blanchir) */
 const POS=[[1,.5,.12],[.45,.75,1],[.12,.85,.75],[.55,.95,.15],[.95,.72,.35],[.72,.5,1]];
@@ -1896,7 +1900,7 @@ const POS=[[1,.5,.12],[.45,.75,1],[.12,.85,.75],[.55,.95,.15],[.95,.72,.35],[.72
 const data=new Uint8Array(GN*4);for(let k=0;k<GN;k++){data[k*4+1]=128;data[k*4+3]=0}
 const tex=new THREE.DataTexture(data,GW,GH,THREE.RGBAFormat,THREE.UnsignedByteType);
 tex.magFilter=tex.minFilter=THREE.NearestFilter;tex.generateMipmaps=false;tex.flipY=false;tex.needsUpdate=true;
-function ecrire(Z){const r=motifDe(Z)+(STYLEES[Z.id]?128:0),g=Math.round(clamp((Z.lv+7)/14,0,1)*255),b=manaDe(Z),a=grammaireDe(Z),V=Z.verts;
+function ecrire(Z){const r=motifDe(Z)+(STYLEES[Z.id]?128:0),g=Math.round(clamp((Z.lv+7)/14,0,1)*255),b=manaDe(Z),a=grammaireDe(Z)+(COUL_Z[Z.id]?16:0),V=Z.verts;
   for(let n=0;n<V.length;n++){const k=V[n]*4;data[k]=r;data[k+1]=g;data[k+2]=b;data[k+3]=a}tex.needsUpdate=true}
 /* rebuild est appelée par son nom (main.js, mue, MZ.set) : la réaffecter suffit à suivre chaque mue */
 const _rebuildSol=rebuild;rebuild=function(Z){_rebuildSol(Z);ecrire(Z)};
@@ -1959,6 +1963,11 @@ vec3 solEca(vec2 p,float S){vec2 u=p/S;float r0=floor(2.*u.y+1.);vec3 o=vec3(1.,
   for(int i=0;i<3;i++){float r=r0-float(i),ox=.5*mod(r,2.),cx=floor(u.x-ox+.5)+ox;float l=length(vec2(u.x-cx,u.y-r*.5))*2.;
     if(l<1.&&pris<.5){o=vec3(l,sH(vec2(cx*2.,r)+.37),(1.-l)*S*.5);pris=1.;}}
   return o;}
+/* boucle 6 (24 nov. 2026, 6.2b) : lueur (avant ACES) qui donne la couleur t à l'écran, à rebours de l'étalonnage final (core.js, mFinal :
+   ACES, gamma 2,2, saturation gs, contraste gc ; exposition et vignette supposées à 1, halo ignoré). Sert au sol de DON045 −.
+   Elle est plafonnée à ,9 (1,4 sur les fils) par l'appelant : plus haut, les fils noyaient la nuit sous leur halo (bloom). */
+vec3 solEcran(vec3 t,float gs,float gc){vec3 x=(t-.5)/gc+.5;float l=dot(x,vec3(.299,.587,.114));x=clamp(l+(x-l)/gs,0.,.99);
+  vec3 y=pow(x,vec3(2.2)),a=2.51-2.43*y,b=.03-.59*y;return (-b+sqrt(b*b+.56*a*y))/(2.*a);}
 /* losanges en arlequin (S = diagonales en m) : x = distance au bord (m), y = parité (0/1), z = « rayon » du losange (0 au centre, ,5 au bord) */
 vec3 solLos(vec2 p,vec2 S){vec2 a=vec2(p.x/S.x+p.y/S.y,p.x/S.x-p.y/S.y),id=floor(a),f=fract(a)-.5;float m=max(abs(f.x),abs(f.y));
   return vec3((.5-m)*S.x*S.y/length(S),mod(id.x+id.y,2.),m);}
@@ -1975,7 +1984,7 @@ float solBord(float e,float k){return smoothstep(0.,max(.04,.5-.065*k),e);}
 `;
 /* fragment : après color_fragment (diffuseColor contient déjà la couleur du sommet) */
 const FRAG_COL=`
-vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) qui perturbe la normale (boucle 3) */
+vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.,solMet=0.;   /* solH : relief (m) qui perturbe la normale (boucle 3) */
 {vec2 p=vSolP.xz;float dc=distance(vSolP,cameraPosition);
  vec2 zuv=(vec2((p.x-uSolG.x)*uSolG.z,(p.y-uSolG.y)*uSolG.z)+.5)/uSolN;vec4 zd=texture2D(tSol,zuv);
  float code=floor(zd.r*255.+.5),sty=step(127.5,code);code-=128.*sty;
@@ -2052,7 +2061,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     (seuls le Voronoï du Donjon et le Girih complet restent réservés à SOL_FIN). La grammaire est constante par zone : pas de divergence.
     cr = cran (0 à 3) : l'échelle ou la densité du motif saute aux paliers ±2, ±4, ±6, en plus de la couleur qui suit chaque palier.
     Marché : son écriture passe outre le style gris de Givrecloche ; elle est codée en luminance (claire sur noir à −7, sombre sur blanc à +7). */
- float gr=floor(zd.a*255.+.5),moP=gr>4.5?ef*(1.-solEau):mo;
+ float gr=floor(zd.a*255.+.5),gC=step(15.5,gr);gr-=16.*gC;   /* boucle 6 (24 nov. 2026, 6.2) : gC, grammaire peinte en couleur (DON045, voir COUL_Z) */
+ float moP=gr>4.5?ef*(1.-solEau):mo;
  float px=length(fwidth(p));   /* boucle 4 (22 nov. 2026) : taille du pixel au sol (m), prise hors de toute branche */
  /* boucle 4 (22 nov. 2026) : bruit des îlots de marqueterie (voir (c) plus bas) et sa pente, pris hors de toute branche (dérivées sûres) :
     en Belle, une lecture de plus, vn(p/5) mêlé au bruit de 8 m (des plaques de 4 à 8 m, plusieurs dans le champ) ;
@@ -2079,7 +2089,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
   vec3 sc0=c,se0=solE,sCl=c;float sMq=1.,sUs=1.,sJt=0.,sGap=0.,aaM=max(.02,px*.75);   /* aaM : anti-moiré du Marché et de la Citadelle −7, à la taille du pixel */
   if(alv>=.5){
    float sS=.596-.012*(k-1.)-.045*cr;   /* ,596 · ,539 · ,527 · ,47 · ,458 · ,401 · ,389 */
-   sS-=.09*step(6.5,k)*step(.5,gr)*step(gr,1.5);   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon, saut ±6 → ±7 franc (couverture ~74 % → ~90 %, reprise : ,05 → ,09) */
+   sS-=.09*step(6.5,k)*max(step(.5,gr)*step(gr,1.5),gC*step(lv,0.));   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon, saut ±6 → ±7 franc (couverture ~74 % → ~90 %, reprise : ,05 → ,09) */
+   if(lv>0.&&gr>3.5&&gr<4.5)sS-=.17*step(6.5,k);   /* boucle 6 (24 nov. 2026, 6.2) : Assemblée +, saut ±6 → ±7, la rosace couvre ~90 % (sans changer les paliers 1 à 6) */
    if(lv>0.&&gr>4.5)sS-=.08+.2*step(6.5,k);   /* boucle 5 (23 nov. 2026, 4.2c, reprise) : Marché +, ~45 % au palier 1, ~88 % au 6, damier continu au 7 */
    float aN=sIw*.75,e=sIl-sS,jw=.2*sIg;   /* jw : 20 cm de joint, en unités de bruit (largeur constante au sol, quelle que soit la pente du bruit) */
    if(lv>0.){   /* pôle + : de vraies plaques, bord net (filtré au pixel), joint sombre */
@@ -2093,7 +2104,9 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
       les carrés noirs en grandes taches blanches ; à 18 %, la brume de Givrecloche en faisait encore des taches grises), joint noir retiré, et plus de bombement
       (sa normale ombrait le bord des plaques en dégradés gris foncé) */
    if(lv>0.&&gr>.5&&gr<1.5)sUs=1.-.15*smoothstep(.5,.78,u);   /* boucle 5 (4.2c, reprise) : Donjon +, usure légère (elle tachait le zellige de rose) */
-   if(lv>0.&&gr>1.5&&gr<2.5){sJt=0.;sGap=0.;}}   /* boucle 5 (4.2c) : prairie de la Ressource +, ni joint ni bombement (une prairie n'a pas de dalles) */
+   if(lv>0.&&gr>1.5&&gr<2.5){sJt=0.;sGap=0.;}
+   if(lv>0.&&gr>3.5&&gr<4.5){sJt=0.;sGap=0.;sMq=smoothstep(-.04-aN,.04+aN,e);}
+   if(lv>0.&&gC>.5)sMq=smoothstep(-.07-aN,.07+aN,e);}   /* boucle 6 (24 nov. 2026, 6.2b) : DON045 +, îlots de neige au bord fondu (aux paliers bas, plus de plaques cyan à bord franc) */   /* boucle 6 (24 nov. 2026, 6.2) : Assemblée +, ni joint ni bombement (ils cernaient de brun les flaques de sable de l'ASS152 +7) ; bord fondu vers le sable */   /* boucle 5 (4.2c) : prairie de la Ressource +, ni joint ni bombement (une prairie n'a pas de dalles) */
   if(alv<.5){   /* (c0) niveau 0 : chaque famille garde la trace de son écriture, à faible intensité (de près seulement : rien à payer au loin) */
    if(nMoy<=0.){}
    else if(gr<.5){   /* Citadelle : quelques médaillons Girih à peine en relief, ton sur ton */
@@ -2108,7 +2121,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     vec3 ec=solEca(p,1.7);c*=1.+(.12*ec.x-.06-.18*solTrait(ec.z,.03,aa))*nMoy*moP*.3;solH=.0036*ec.x*nB*moP;}   /* boucle 5 (23 nov. 2026) : trace ×0,3, l'écaille devient le signe du pôle + */
    else if(gr<4.5){   /* Assemblée : joints de dallage */
     vec4 dl=solDal(p,vec2(3.4,2.3));c*=1.-(.3*solTrait(dl.x,.035,aa)-(dl.y-.5)*.08)*moP;}
-   else{   /* Marché : treillis de losanges, en luminance */
+   else if(gC<.5){   /* Marché : treillis de losanges, en luminance (boucle 6, 6.2b : pas sur DON045, dont le palier 0 reste un sol nu) */
     vec3 lo=solLos(p,vec2(3.,5.));c*=1.+(.3*solTrait(lo.x,.045,aa)-.06*lo.y)*moP;}
   }else if(lv<0.){
    vec3 nc=uSolNeg[0];if(mana>.5)nc=uSolNeg[1];if(mana>1.5)nc=uSolNeg[2];if(mana>2.5)nc=uSolNeg[3];if(mana>3.5)nc=uSolNeg[4];if(mana>4.5)nc=uSolNeg[5];
@@ -2181,6 +2194,30 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     vec2 tl=sH2(vec2(hs*91.,hs*37.+cote))-.5;
     solH=(dot(l,tl)*.12+.05*smoothstep(0.,gap+.05,e))*(1.-man)*zone*nB*moP;
     solE+=nc*jt*zone*.002*k*pul*moP*nLoin;}
+   else if(gC>.5){   /* boucle 6 (24 nov. 2026, 6.2b) : DON045 −, TRAÎNÉES DE GIVRE (plus rien du treillis du Marché) : des fils bleu glacier (#9fd4ff, lueur)
+      non fermés, ondulés et effilés aux deux bouts, couchés dans le sens du vent, sur un sol de nuit strié de sel et de suie.
+      Graduel : fils courts et fins au palier 1, plus longs et plus épais à chaque palier, resserrés aux crans ±2, ±4, ±6 ;
+      au palier 4, des ramures courtes à 50° ; au palier 6, des éclats de givre semés. Une lecture de bruit (les stries), pour cette zone seule. */
+    vec2 q=vec2(dot(w2,vec2(.8,.6)),dot(w2,vec2(-.6,.8)));   /* repère du vent : x le long des traînées */
+    float L=2.6*(1.-.14*cr),y=q.y/L+.45*sin(q.x*.09+wv.r*6.283)+(wv.g-.5)*2.,rw=floor(y+.5),dy=abs(y-rw)*L;   /* dy : distance (m) au fil le plus proche */
+    float h=sH(vec2(rw,11.)),ln=.22+.1*k,sg=fract(q.x/(7.+8.*h)+h*5.3);   /* chaque fil est coupé en traits de longueur ln (part de sa période) */
+    float tp=sin(3.1416*clamp(sg/ln,0.,1.));   /* effilé aux deux bouts */
+    float mot=solTrait(dy,(.012+.006*k)*(.25+.75*tp),aaM)*step(sg,ln);
+    if(k>3.5){vec2 q2=vec2(dot(w2,vec2(.97,-.26)),dot(w2,vec2(.26,.97)));float L2=L*1.7,y2=q2.y/L2+.3*sin(q2.x*.13+wv.g*6.283),r2=floor(y2+.5);
+     float h2=sH(vec2(r2,23.)),s2=fract(q2.x/(4.+3.*h2)+h2*3.1),l2=.14+.03*k;
+     mot=max(mot,solTrait(abs(y2-r2)*L2,.01+.003*k,aaM)*step(s2,l2)*sin(3.1416*clamp(s2/l2,0.,1.))*.8);}   /* palier 4 : ramures */
+    if(k>5.5){vec2 g=w2/1.7,id=floor(g),o=(sH2(id)-.5)*.6;mot=max(mot,solTrait(length(fract(g)-.5-o)*1.7,.05,aaM)*step(sH(id+3.),.22)*nMoy);}   /* palier 6 : éclats de givre */
+    float i=min(1.,.25+.11*k)*moP*pl;
+    /* Couleur visée À L'ÉCRAN. À −7, l'étalonnage final des zones (core.js, mFinal ; Z.grade de zonesplus.js) désature de 45 % et durcit le contraste de 12 %
+       après ACES et gamma : un bleu nuit peint en albédo sortait lilas, tiré par la lumière violette de la zone (diffus et reflet). Le sol de DON045 − est donc
+       peint par sa lueur, calculée à rebours de l'étalonnage (solEcran) ; l'albédo y tend vers zéro et le métal vers un (plus de reflet violet du ciel).
+       La lueur violette de sommet (vColor × vGlow, core.js) est retirée. Le modelé tient à la pente (déjà lue) ; au loin, la brume de la zone reprend la main. */
+    float tn=sN(vec2(q.x*.04,q.y*.35));   /* stries couchées dans le vent (25 m de long, 3 m de large) */
+    vec3 T=vec3(0.,.1,.17)*(.8+.4*B8.r);   /* nuit : bleu très sombre */
+    T=mix(T,vec3(.3,.42,.56),smoothstep(.55,.75,tn)*.85);T=mix(T,vec3(0.,.025,.07),smoothstep(.45,.28,tn));   /* traînées de sel (clair, bleuté) et de suie (noire) */
+    T*=1.-.4*pente;T=mix(T,vec3(.3,.74,1.),mot);   /* fils : bleu glacier (#9fd4ff une fois passés l'étalonnage et le halo) */
+    float gk=min(1.,-lv/7.);vec3 K=min(solEcran(T,mix(1.,.55,gk),mix(1.,1.12,gk)),vec3(.9+.5*mot));   /* (le halo du ciel violet, ajouté après, garde un peu de rouge : la nuit visée penche donc au cyan, sans rouge) */
+    c=mix(c,vec3(0.),i);solE=mix(solE,K-vColor.rgb*max(vGlow,0.),i);solMet=i;}
    else{   /* (c−) Marché : treillis de losanges à la craie (L ≈ ,78) sur un sol d'encre (≈ ,15) ; le losange intérieur vient au palier 4 */
     vec2 S=vec2(3.,5.)*(1.-.16*cr);vec3 lo=solLos(w2*.15+p*.85,S);float f=S.x*S.y/length(S);
     float mot=max(solTrait(lo.x,.05+.008*k,aaM),k>3.5?solTrait(abs(lo.z-.25)*f,.035,aaM):0.);
@@ -2258,12 +2295,27 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     f*=.93+.12*sH(md.zw+floor(q*2.));   /* boucle 4.2b : couleurs franches dans les plaques (le biome se voit ENTRE elles) */
     c=mix(c,f,on*moP*min(1.,.5+.08*k));
     c=mix(c,vec3(.12,.08,.05),solTrait(d,.03+.004*k,aa)*on*moP);solGold=on*moP*.4;}
+   else if(gC>.5){   /* boucle 6 (24 nov. 2026, 6.2b) : DON045 +, GEMMES CÉLADON EN LANCETTE sur la neige (plus de damier ni de petit losange inversé) :
+      chaque losange (couché : 5 × 2,4 m, tracé ondulé) porte une gemme céladon (#7fb8a8) émaillée, plus pâle au bord, fondue dans la neige (#eef4f2, 8 % du mana) ;
+      la gemme grandit à chaque palier (de 35 à 77 % de la case, la neige restant toujours entre elles), une étoile de givre d'argent à six branches naît en son cœur au palier 5, un filet d'argent la cerne au 7. */
+    vec2 S=vec2(5.,2.4)*(1.-.14*cr),pp=p+wv.rg*1.2,a=vec2(pp.x/S.x+pp.y/S.y,pp.x/S.x-pp.y/S.y),fa=fract(a)-.5;
+    float m=max(abs(fa.x),abs(fa.y)),f=S.x*S.y/length(S),lis=smoothstep(1.,6.,f/px),hg=sH(floor(a)+7.),m0=(.14+.035*k)*(.84+.2*hg),ae=aaM/f;   /* hg : chaque gemme a sa taille (±10 %) et sa nuance */
+    vec2 dp=vec2((fa.x+fa.y)*S.x,(fa.x-fa.y)*S.y)*.5;float r=length(dp);   /* dp : position (m) depuis le cœur de la gemme */
+    float gem=mix(4.*m0*m0,1.-smoothstep(m0-.07-ae,m0+ae,m),lis);
+    float i=min(1.,.2+.115*k)*moP*pl;   /* paliers bas : un voile, pas des plaques franches */
+    vec3 neige=mix(vec3(.86,.905,.89),mp,.08)*(.97+.06*B8.r),cel=mix(vec3(.15,.4,.32+.06*hg),vec3(.36,.62,.53),smoothstep(0.,m0,m));
+    c=mix(c,neige,i);sCl=c;c=mix(c,cel,gem*i*min(1.,.5+.075*k));
+    float ag=0.;
+    if(k>4.5){float Lr=m0*f*(.45+.08*(k-5.)),ds=r*abs(sin(3.*atan(dp.y,dp.x)));ag=solTrait(ds,.008+.022*(1.-r/Lr),aaM)*step(r,Lr)*lis;}   /* palier 5 : étoile de givre */
+    if(k>6.5)ag=max(ag,solTrait(abs(m-m0)*f,.012,aaM)*lis);   /* palier 7 : filet d'argent */
+    c=mix(c,vec3(.8,.85,.9),ag*i);solGold=ag*i*.6;}
    else{   /* (c+) Marché : losanges sombres (≈ ,25) en arlequin sur un sol clair (≈ ,88), petit losange inversé au cœur dès le palier 5 */
     vec2 S=vec2(2.6,4.4)*(1.-.16*cr);vec3 lo=solLos(p,S);float f=S.x*S.y/length(S);
     float bl=lo.y;if(k>4.5&&lo.z<.17)bl=1.-bl;
     /* boucle 4 (22 nov. 2026) : damier filtré (aaM, à la taille du pixel) : bord fondu sur un pixel, et le damier ne tend vers son gris moyen
-       que là où le losange fait moins de ~2 pixels (fin du moiré, sans losanges gris baveux à mi-distance) */
-    float lis=smoothstep(1.,2.5,f/px);bl=mix(.5,bl,smoothstep(0.,aaM,lo.x)*lis);
+       que là où le losange fait moins de ~2 pixels (fin du moiré, sans losanges gris baveux à mi-distance).
+       Boucle 6 (24 nov. 2026, 6.2) : fondu anti-moiré lointain élargi (lis : 1 à 6 pixels au lieu de 1 à 2,5), contre la ligne franche de MAR +7 vers 100 m */
+    float lis=smoothstep(1.,6.,f/px);bl=mix(.5,bl,smoothstep(0.,aaM,lo.x)*lis);
     float i=min(1.,.4+.09*k)*moP*pl;   /* boucle 5 (reprise) : ,25+,11k → ,4+,09k, le damier se lisait à peine aux paliers 1 à 6 sous la brume blanche de Givrecloche */
     c=mix(c,vec3(.8)*(.97+.06*B8.r),i);sCl=c;   /* boucle 5 (4.2c) : la teinte claire de la plaque, vers laquelle va l'usure (jamais vers un gris) */
     c=mix(c,vec3(.1),bl*min(1.,.7+.1*k)*moP*pl);   /* boucle 5 (reprise) : le noir des losanges est franc dès le palier 1 (sous l'ACES et la brume de Givrecloche,
@@ -2277,6 +2329,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
    float ex=lv>0.&&(gr<.5||gr>2.5&&gr<3.5)?1.:0.;
    float wMin=lv>0.?.7*ex:(gr>2.5&&gr<3.5?.75:(gr>1.5&&gr<2.5?.6:.3));   /* boucle 5 (4.2c) : cendre de la Ressource − à 60 % entre les plaques */
    float dP=lv>0.&&gr>.5&&gr<1.5?1.:0.,mP=lv>0.&&gr>4.5?1.:0.;   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon + et Marché + */
+   if(lv<0.&&gC>.5)wMin=.85;   /* boucle 6 (24 nov. 2026, 6.2b) : DON045 −, la nuit tient entre les nappes (sinon le sol violet de la zone y perçait en taches lie-de-vin) */
    /* boucle 5 (23 nov. 2026, 4.2c, reprise) : au Donjon +, le fond SOUS le zellige (sB) n'est plus le sol du biome mais un mortier gris ardoise,
       de sa luminance (gradué, entier dès le palier 6) : entre les plaques, au DON (+7) les rivières de lave de zones1.js (couleur des sommets, Z.col) montaient en bandes rouges,
       et au DON045 la neige en grandes taches gris-bleu plates ; l'usure, tirée vers ce sol, tachait les plaques de rose.
@@ -2289,7 +2342,7 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
    c=mix(sCl,c,mix(1.,sUs,mP));   /* Marché + : l'usure éclaircit vers la teinte claire de la plaque, sans passer par sc0 */
    float W=mix(wMin,1.,sMq)*mix(sUs,1.,max(mP,max(ex,step(4.5,gr))*.5))*mix(1.,mix(.4,.7,dP),ff);   /* usure à moitié sur le Marché − (au Marché +, elle est déjà portée par sCl) ; Donjon + : le zellige tient à 70 % au loin (boucle 5, au lieu de 40) */
    c=mix(sB*(1.-.28*step(.5,lv)*(1.-ex)*(1.-mP)),c,W);solE=   /* au pôle +, le sol entre les plaques est un peu en retrait (plus sombre), sauf au Marché + (sol clair, boucle 5 reprise : il grisait) */
-   se0+(solE-se0)*W;solH=solH*sMq+.03*sGap*nB*moP;solGold*=sMq;solLisse*=mix(wMin,1.,sMq);
+   se0+(solE-se0)*W;solH=solH*sMq+.03*sGap*nB*moP;solGold*=sMq;solLisse*=mix(wMin,1.,sMq);solMet*=W;
    sJt*=1.-.6*ex;c*=1.-mix(.75,.5,dP)*sJt*moP;   /* boucle 5 (reprise) : au Donjon +, joint à ,5 (il faisait une corde noire autour des creux) */   /* joint adouci sur l'ivoire de la Citadelle et la nacre de l'Antre */
    /* entre les plaques et dans le joint, la lueur propre du sol (vColor × vGlow, core.js) est retenue : sinon, au Donjon +, le sol braisé
       entre les plaques bavait en coulées orange et effaçait le joint. Boucle 5 (4.2c) : au Donjon +, elle est retirée partout (dans les plaques et entre elles) */
@@ -2320,6 +2373,7 @@ buildTerrain=function(){_buildSol();
     s.fragmentShader=(finCompile?'#define SOL_FIN\n':'')+FRAG_DEC+s.fragmentShader
       .replace('#include <color_fragment>','#include <color_fragment>\n'+FRAG_COL)
       .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(mix(roughnessFactor,.38,solGold),.06,solLisse);')
+      .replace('#include <metalnessmap_fragment>','#include <metalnessmap_fragment>\nmetalnessFactor=mix(metalnessFactor,1.,solMet);')
       .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+FRAG_NRM)
       .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=solE;')};
   m.customProgramCacheKey=()=>'sol'+fin();m.needsUpdate=true};
@@ -2773,7 +2827,9 @@ const styU={tD:{value:null},pInv:{value:camera.projectionMatrixInverse},cW:{valu
   /* boucle 1 (19 nov. 2026) : étalonnage signature de la zone où se trouve la caméra (voir SIG plus bas) */
   sigSh:{value:new THREE.Vector3(.1,.1,.1)},sigMi:{value:new THREE.Vector3(.5,.5,.5)},sigHi:{value:new THREE.Vector3(1,1,1)},sigK:{value:0},sigOn:{value:0},
   /* boucle 5 (23 nov. 2026) : plafond de chroma (1 = libre) et point noir (0 = rien) des +7, par zone (voir SIG_CN) ; sigRo : rose rappelé vers l'ivoire (0 = rien) */
-  sigCh:{value:1},sigNo:{value:0},sigRo:{value:0}};
+  sigCh:{value:1},sigNo:{value:0},sigRo:{value:0},
+  /* boucle 6 (24 nov. 2026) : force du contraste d'atelier du niveau 0, par zone (1 = pleine, voir SIG_CN.c0) */
+  sigC0:{value:1}};
 Object.assign(mFinal.uniforms,styU);mFinal.uniforms.expo=mFinal.uniforms.exp; /* « exp » cache la fonction exp() du GLSL */
 const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
   for(int i=0;i<${n};i++){vec2 a=${u}[i],b=${u}[i+1];
@@ -2781,7 +2837,7 @@ const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
     vec2 e=b-a;float t=clamp(dot(p-a,e)/dot(e,e),0.,1.);d=min(d,length(p-a-e*t));}
   float s=smoothstep(0.,3.,d)*.5;return ins?.5+s:.5-s;}`;
 mFinal.defines={STY_DEPTH:STY_DEPTH?1:0};
-mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn,sigCh,sigNo,sigRo;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
+mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn,sigCh,sigNo,sigRo,sigC0;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
 uniform mat4 pInv,cW;uniform vec2 pM[5],pR[7],px;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 ${polyGL('inM','pM',4)}
@@ -2799,7 +2855,7 @@ vec2 q=vUv-.5;c*=expo*(1.-dot(q,q)*.75);
 c*=1.-.12*sP;c=c/(1.+.35*sP*c); /* vers +7 : un cran d'exposition en moins et épaule douce sur les hautes lumières, avant l'unique ACES (fin du blanc brûlé) */
 c=aces(c);c=pow(c,vec3(1./2.2));
 float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,gs);c=(c-.5)*gc+.5;c=mix(c,gt*(l*1.25+.08),gk);c=clamp(c,0.,1.);
-float gr=.018,sty=0.;
+float gr=.018,sty=0.,wMg=0.,wRg=0.; /* boucle 6 (24 nov.) : poids par pixel des écoles d'encre, gardés pour le contraste d'atelier */
 if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
 #if STY_DEPTH==1
   d=texture2D(tD,vUv).r;
@@ -2821,7 +2877,7 @@ if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
     float L=dot(c,vec3(.299,.587,.114));
     float g=smoothstep(mix(.22,.05,kp),mix(1.02,.9,kp),L);g=g*g*(3.-2.*g);g=pow(g,1.+km*1.4)*mix(1.,.55,km);
     float ink=smoothstep(.05,.14,e)*far;g=mix(g,g*.25,ink*mix(.75,.95,km));
-    float fogC=mix(mix(.62,.92,kp),.14,km);
+    float fogC=mix(mix(.55,.92,kp),.14,km); /* boucle 6 (24 nov.) : .62 → .55 au palier 0 seulement, les étals se détachent du blanc */
     float nz=vn(W.xz*.035+vec2(tt*.05,tt*.02))*.6+vn(W.xz*.11-vec2(tt*.08,0.))*.4;
     float dens=mix(.035,.07,km)*(1.-kp*.5)*(.55+nz*.9);float fd=max(0.,dist-cdM);float hy=exp(-max(0.,W.y-1.)/mix(18.,9.,kp));
     float f=(1.-exp(-fd*dens*hy));f=clamp(f,0.,1.);
@@ -2848,7 +2904,7 @@ if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
     float ink=smoothstep(mix(.09,.05,km),mix(.16,.1,km),e)*mix(.25+.75*far,1.,km);
     m=mix(m,vec3(.1,.07,.14),ink*mix(.8,1.,km));}
     c=mix(c,m,wR);gr=mix(gr,.006,wR);}
-  sty=max(wM,wR);
+  sty=max(wM,wR);wMg=wM;wRg=wR;
 }
 /* --- boucle 1 (19 nov. 2026) : étalonnage signature de la zone (après l'ACES et les écoles, avant le grain) ---
    Trois tons (ombres, tons moyens, hautes lumières) propres à chaque zone et à chaque pôle, pondérés par la luminance.
@@ -2881,6 +2937,15 @@ if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty))
         dans les fondus rose / bleu (essai précédent, force = bleu − vert seul). */
   float mg=max(0.,min(c.b-c.g,c.r-c.b))*sigRo*sP*fo;c+=mg*vec3(-.1,.7,-.5);
   float nk=sigNo*sP*fo;c=max(c-vec3(nk),0.)/(1.-nk);
+  /* boucle 6 (24 nov. 2026) : contraste d'atelier du niveau 0. Là où le joueur vit, le 0 était le panneau le plus faible
+     (tons moyens boueux). Poids w0 = (1 − |k|)·fo : maximal à 0, nul aux pôles (les ±7 ne bougent pas), fondu en 2 s avec sigK.
+     1) courbe en S douce ; 2) point noir .035 (.02 si l'ombre de la signature est déjà sombre : DON045, ANT) et blanc étiré de 4 % ;
+     3) lumière clé teintée par sigHi au-dessus de L = .55. Givrecloche (wMg) et Chinampas (wRg) gardent leur école.
+     sigC0 (SIG_CN.c0) le coupe là où le 0 était déjà franc (DON : lave et ombres noires, son 0 dépassait déjà le +7 ivoire ; DON045 .5 : nuit bleue, sinon plus contrastée que son +7). */
+  float w0=(1.-sA)*fo*(1.-wMg)*(1.-wRg)*sigC0;
+  if(w0>.001){c=clamp(c,0.,1.);c=mix(c,c*c*(3.-2.*c),.35*w0);
+    float pn=(dot(sigSh,Y)<.06?.02:.035)*w0,pb=.04*w0;c=max(c-vec3(pn),0.)/(1.-pn-pb);
+    float Lk=dot(c,Y);vec3 hk=min(sigHi/max(dot(sigHi,Y),.02),vec3(2.));c=mix(c,c*hk,.08*w0*smoothstep(.55,.9,Lk));}
   c=clamp(c,0.,1.);}
 /* boucle 2 (19 nov. 2026) : avec le FXAA, le grain est posé après lui (sinon il le lisse et le brouille) ; on lui passe dans l'alpha
    la force du grain et le poids des écoles d'encre (fusain, manga), sur 4 bits chacun */
@@ -3010,8 +3075,9 @@ function sigOf(Z){if(Z._sig)return Z._sig;let r=Z.plus?null:SIG[Z.id];
    et l'ivoire (tons moyens, lumières), au lieu de bordeaux pâle / crème rosée. −7 et 0 inchangés (z gardé, voir sigOf). */
 const SIG_P7={DON:['#2c4a9c','#e8e4cc','#fff8e6']};
 /* ch > 1 : vibrance des +7 laiteux (RES374, ANT120) : un noir seul les aurait rendus gris */
-const SIG_CN={DON:{ch:.45,ro:1.3},DON045:{ch:.6},ASS152:{ch:.45},RES374:{ch:1.6,no:.07},ANT120:{ch:1.8,no:.1}};
-const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0,ch:1,no:0,ro:0};
+/* boucle 6 (24 nov.) : c0 = force du contraste d'atelier du niveau 0 (1 par défaut) */
+const SIG_CN={DON:{ch:.45,ro:1.3,c0:0},DON045:{ch:.6,c0:.5},ASS152:{ch:.45},RES374:{ch:1.6,no:.07},ANT120:{ch:1.8,no:.1}};
+const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0,ch:1,no:0,ro:0,c0:1};
 const _drawSig=draw;
 draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCur.t)/1000):0;sigCur.t=now;
   const Z=zoneAt(camera.position.x,camera.position.z);let f=1-Math.exp(-dt*1.6); /* fondu ~2 s, comme skM/skR */
@@ -3021,11 +3087,12 @@ draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCu
     for(const [n,i] of [['sh',0],['mi',1],['hi',2]]){const a=S.z[i],b=B[i],c=sigCur[n];for(let j=0;j<3;j++)c[j]=lerp(c[j],lerp(a[j],b[j],u),f)}
     sigCur.k=lerp(sigCur.k,k,f);
     /* boucle 5 : même fondu de 2 s que les autres champs de la signature */
-    const cn=SIG_CN[Z.id]||{};sigCur.ch=lerp(sigCur.ch,cn.ch!==undefined?cn.ch:1,f);sigCur.no=lerp(sigCur.no,cn.no||0,f);sigCur.ro=lerp(sigCur.ro,cn.ro||0,f)}
+    const cn=SIG_CN[Z.id]||{};sigCur.ch=lerp(sigCur.ch,cn.ch!==undefined?cn.ch:1,f);sigCur.no=lerp(sigCur.no,cn.no||0,f);sigCur.ro=lerp(sigCur.ro,cn.ro||0,f);
+    sigCur.c0=lerp(sigCur.c0,cn.c0!==undefined?cn.c0:1,f)} /* boucle 6 : même fondu de 2 s */
   sigCur.on=lerp(sigCur.on,Z&&STYLE_ON?1:0,f);
   const U=mFinal.uniforms;U.sigSh.value.set(sigCur.sh[0],sigCur.sh[1],sigCur.sh[2]);U.sigMi.value.set(sigCur.mi[0],sigCur.mi[1],sigCur.mi[2]);
   U.sigHi.value.set(sigCur.hi[0],sigCur.hi[1],sigCur.hi[2]);U.sigK.value=sigCur.k;U.sigOn.value=sigCur.on;
-  U.sigCh.value=sigCur.ch;U.sigNo.value=sigCur.no;U.sigRo.value=sigCur.ro;_drawSig(t)};
+  U.sigCh.value=sigCur.ch;U.sigNo.value=sigCur.no;U.sigRo.value=sigCur.ro;U.sigC0.value=sigCur.c0;_drawSig(t)};
 /* ---------- Boucle 2 (19 nov. 2026) : ciel signature par zone et par pôle ----------
    Constat : toutes les zones partageaient le même ciel (dégradé + nuages), seules les couleurs changeaient ; vers +7 le ciel
    et l'horizon montaient vers le blanc (DON +7 orange brûlé, RES374 +7 voile blanc, ANT120 délavé).
@@ -3136,7 +3203,7 @@ function duoOf(Z){if(Z._duo!==undefined)return Z._duo;let r=Z.id in DUO_ZONE?DUO
 const EXP7={DON:.62},BL7={DON:.5,Glace:.3,'Sève':.3}; /* boucle 5 (23 nov. 2026) : Glace .45 → .3, Sève .3 (RES374, ANT120 +7 : moins de voile) */
  /* halo plafond : neige blanche + halo = voile laiteux (RES374 +7) */
 const bl7=Z=>BL7[Z.id]||(Z.plus&&BL7[Z.d.mana])||.8;
-const LAIT7={RES374:{fog:.6,exp:.9},ANT120:{fog:.6,exp:.9}}; /* boucle 5 : brouillard et exposition des +7 laiteux */
+const LAIT7={RES374:{fog:.4,exp:.9},ANT120:{fog:.6,exp:.9}}; /* boucle 5 : brouillard et exposition des +7 laiteux ; boucle 6 (24 nov.) : RES374 .6 → .4, la nappe laiteuse quitte les collines */
 const capTo=(v,cap,k)=>v>cap?lerp(v,cap,k):v;
 
 /* ---------- Boucle 3 (20 nov. 2026) : météo et lumière signées par lieu et par pôle ----------
@@ -3184,7 +3251,7 @@ const m3=[0,0,0];let addCur=-1;
    HEURE0 donne au palier 0 une heure du jour propre : élévation du soleil (el), couleur du soleil (sun), horizon et donc
    brouillard (hor, que stepAtmo recopie dans scene.fog), facteur de brouillard (fk), d'intensité du soleil (sI), sol du ciel (hg).
    Chaque palier glisse d'un septième vers les ancres des pôles, qui ne changent pas. Aucun objet, aucune passe en plus. */
-const HEURE0={CIT:{el:16,sun:'#ffc27a',hor:'#e8b07a',sI:1.5},             /* fin d'après-midi ambrée (soleil bas : un peu plus fort, sinon le sol s'éteint) */
+const HEURE0={CIT:{el:16,sun:'#ffc27a',hor:'#e8b07a',hg:'#9a6e3c',sI:1.5}, /* boucle 6 (24 nov.) : hg, ocre de bois et de terre gelée au lieu de la boue brune */             /* fin d'après-midi ambrée (soleil bas : un peu plus fort, sinon le sol s'éteint) */
   DON045:{el:9,sun:'#b4a8ff',hor:'#6c66b4',fk:1.3},                       /* heure bleue */
   RES374:{el:26,sun:'#e4fff0',hor:'#9cc8b0',hg:'#3c8a6c',fk:1.7,sI:.75},   /* brume jade */
   ASS152:{el:62,sun:'#ffa070',hor:'#e8885a'},                             /* canyon brique sous un soleil de midi */
@@ -3208,6 +3275,10 @@ function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=
     if(H.hor)mix3(o.hor,o.hor,H.hor,.75*w);
     if(H.hg)mix3(o.hg,o.hg,atL(H.hg,Math.max(Yl(o.hg),.03),m3),.6*w);
     if(H.fk)o.fog*=lerp(H.fk,1,k);if(H.sI)o.sunI*=lerp(H.sI,1,k)}
+  /* boucle 6 (24 nov. 2026) : au palier 0, moins de ciel diffus (×.72) et un soleil plus franc (×1,15) : la lumière directe porte,
+     les ombres du héros et de la Pierre se dessinent. Un septième par palier, rien aux pôles (w = 0).
+     Sous un soleil rasant (heure bleue de DON045, 9°), le sol ne vit que du ciel : la baisse du diffus s'efface entre 16° et 8°. */
+  {const u=clamp((el0-8)/8,0,1);o.hI*=lerp(1,.72,w*u*u*(3-2*u))}o.sunI*=lerp(1,1.15,w);
   if(L<=-4){const r=(L+7)/3,e0=Math.max(eA,8);
     /* soleil rasant : un sol plat reçoit sin(él) de la lumière ; on rend au sol ce que l'abaissement lui retire, et un peu plus,
        (au plus 2,4, jamais moins qu'avant) et on baisse un peu le ciel diffus, sinon les ombres longues ne se lisent pas */
@@ -6410,7 +6481,12 @@ const css=document.createElement('style');css.textContent=`
 .boite .cc.kcarte{height:auto;min-height:calc(var(--u)*15.8)}
 .boite .cc.kcarte .art{height:calc(var(--u)*6.4)}
 .boite .cc.kcarte .ct{font-size:calc(var(--u)*.88);line-height:1.26;overflow:visible}
-.cc.kcarte .kgris{bottom:auto;top:calc(var(--u)*-1.5);z-index:3}
+/* boucle 6 (24 nov.) : « Mana gris · effet −25 % » n'est plus une pastille grise en police système : une cartouche de métal terne
+   de la charte (petites capitales, filet d'acier, ombres sobres),
+   à la largeur de son texte et calée à droite : elle ne passe plus sous la pastille de coût ni ne déborde des cartes étroites. head.html garde sa règle de base, la surcharge suffit. */
+.cc.kcarte .kgris{bottom:auto;top:calc(var(--u)*-1.5);z-index:3;font-family:var(--c-main,"Cormorant Garamond",Georgia,serif);font-variant:small-caps;letter-spacing:.06em;
+  font-weight:700;font-size:calc(var(--u)*.74);line-height:1.15;padding:.1em .5em .16em;left:auto;right:5%;max-width:84%;overflow:hidden;background:linear-gradient(#3a3630,#24211d);color:#d8cfc0;border:1px solid #8d8a86;border-radius:.25em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(0,0,0,.45),0 2px 3px rgba(0,0,0,.55);text-shadow:0 1px 0 #000}
 .cc.kcarte.ultime .kamb{display:none}
 .cc.kcarte.ultime.t3 .art,.cc.kcarte.ultime.t4 .art,.cc.kcarte.ultime.t5 .art{height:calc(var(--u)*4.6)}
 .cc.kcarte .ksceau{bottom:calc(var(--u)*-.9);right:calc(var(--u)*-.9)}
@@ -6563,7 +6639,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.43.1';
+const MZ_VERSION='2.44';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -9226,6 +9302,79 @@ setInterval(()=>{if(typeof curZ==='undefined')return;
   if(curZ&&curZ!==zv){zv=curZ;B.classList.add('zone-neuve');clearTimeout(zT);zT=setTimeout(()=>B.classList.remove('zone-neuve'),9000)}
   if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;calme+=.5;if(calme>=12||joue>=45)B.classList.add('aide-vue')}},500);
 })();
+
+/* boucle 6 (24 nov.) : la Pierre sans anneau d'éditeur. Le tore d'or couché autour de chaque Pierre (main.js, rayon ALT_R*.62),
+   brillant, mince et posé à plat sur un sol qui ondule (à moitié enterré par endroits), se lisait comme un « gizmo » d'éditeur 3D.
+   Il devient une incrustation au sol :
+   - matériau mat (metalness 0, roughness .8), teinté à 60 % par la couleur de la zone (ZCOL), un peu plus sombre que le sol
+     qui l'entoure (une pierre sertie, pas un trait lumineux) ; un matériau par zone au plus, en cache ;
+   - aplati au ras du sol : au lieu d'écraser le tore (scale.y ≈ .3), qui restait un fil plat enterré dès que le terrain monte,
+     on le sertit : un filet biseauté de 48 cm (bord, arête, bord), découpé en 96 tesselles aux tons inégaux (384 triangles au
+     lieu de 576), dont chaque sommet suit la hauteur du terrain (ground, core.js), 3 à 6 cm au-dessus ; décalage de profondeur
+     pour ne pas scintiller. Une bordure de mosaïque autour de la Pierre, dans l'esprit Girih du monde ;
+   - sans ombre portée, mais il reçoit l'ombre comme le sol, pour ne pas luire dans la pénombre.
+   La gemme et l'étoile du sommet restent en or : le signe de la Pierre, c'est l'or en hauteur.
+   Aucun appel de dessin en plus (le même maillage, une géométrie neuve). main.js n'est pas touché : on retrouve le tore par sa
+   forme (TorusGeometry de rayon ALT_R*.62) ; si rien n'est trouvé, on sort sans erreur. */
+(function(){
+if(typeof THREE==='undefined'||typeof ZN==='undefined'||typeof ALT_R==='undefined')return;
+const R=ALT_R*.62,W=.24,N=96,TONS=[1,.7,.9,.62,.96,.78],cache={},OR=new THREE.Color(0xc9a45c),v=new THREE.Vector3();
+const estTore=o=>o&&o.isMesh&&o.geometry&&(o.userData.mzSerti||o.geometry.type==='TorusGeometry'&&o.geometry.parameters&&Math.abs(o.geometry.parameters.radius-R)<.01);
+/* clarté du sol sous l'anneau : moyenne des couleurs de sommets du terrain (core.js) à moins de 1,2 m du cercle, dans la plage
+   de sommets de la zone. Clarté de l'anneau = .11 + 35 % de celle du sol (au plus .42) : sur les sols sombres (CIT, DON045 au
+   niveau 0, sol vers .05) un ton de pierre à .13, sur le dallage blanc du Marché (.92) un gris moyen au lieu d'un trait noir */
+const cs=new THREE.Color(),hs={};
+function clarteSol(Zs,a){try{const T=typeof terrain!=='undefined'&&terrain&&terrain.geometry;if(!T||Zs.vmin===undefined)return .14;
+  const P=T.attributes.position.array,C=T.attributes.color.array;let r=0,g=0,b=0,n=0;
+  for(let k=Zs.vmin;k<=Zs.vmax;k++){const d=Math.hypot(P[k*3]-a.x,P[k*3+2]-a.z)-R;if(d>-1.2&&d<1.2){r+=C[k*3];g+=C[k*3+1];b+=C[k*3+2];n++}}
+  if(!n)return .14;cs.setRGB(r/n,g/n,b/n).getHSL(hs);return Math.min(.42,.11+hs.l*.35)}catch(_){return .14}}
+/* un matériau par zone au plus : créé une fois, puis seulement recoloré quand le sol de la zone change (mue) */
+function matZone(Zs,l){const zc=(typeof ZCOL!=='undefined'&&ZCOL[Zs.id])||'#c9a45c';
+  /* teinté à 60 % par la zone : la teinte est celle de la zone (passer de l'or au bleu par le cercle chromatique donnait du
+     vert), la saturation mêle or et zone à 60 %, plafonnée pour rester un ton de pierre ; la clarté suit le sol : sous la
+     lumière forte du monde (soleil + ciel dépassent 2), une couleur moyenne ressortait presque blanche, comme un trait de sélection */
+  const a={},b={};OR.getHSL(a);new THREE.Color(zc).getHSL(b);
+  const m=cache[Zs.id]||(cache[Zs.id]=new THREE.MeshStandardMaterial({roughness:.8,metalness:0,flatShading:true,vertexColors:true,
+    polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+  m.color.setHSL(b.h,Math.min(.32,a.s*.4+b.s*.6),l);return m}
+/* le filet suit le terrain : sommets dans le repère de la Pierre (groupe tourné et posé au sol par placeAlt) */
+function filet(g,G0){g.updateMatrixWorld(true);const gy=g.position.y,rr=[R-W,R,R+W],dy=[.03,.06,.03],H=[];
+  for(let i=0;i<=N;i++){const a=i/N*Math.PI*2,c=Math.cos(a),s=Math.sin(a);
+    for(let j=0;j<3;j++){v.set(rr[j]*c,0,rr[j]*s);g.localToWorld(v);H.push(rr[j]*c,ground(v.x,v.z)-gy+dy[j],rr[j]*s)}}
+  /* triangles non partagés : chaque tesselle (un pas de l'anneau) a son propre ton, tiré d'une suite fixe.
+     Au re-sertissage (mue), la géométrie existante est réécrite sur place : ni allocation ni objet neuf à chaque bond de la mue */
+  const G=G0||new THREE.BufferGeometry(),neuf=!G0;
+  const P=neuf?new Float32Array(N*2*6*3):G.attributes.position.array,C=neuf?new Float32Array(N*2*6*3):null;let k=0;
+  const pt=(n,t)=>{P[k]=H[n*3];P[k+1]=H[n*3+1];P[k+2]=H[n*3+2];if(C)C[k]=C[k+1]=C[k+2]=t;k+=3};
+  for(let i=0;i<N;i++){const t=TONS[(i*7+(i>>2))%TONS.length];
+    for(let j=0;j<2;j++){const a=i*3+j,b=a+1,c=a+3,d=a+4;pt(a,t);pt(b,t);pt(c,t);pt(b,t);pt(d,t);pt(c,t)}}
+  if(neuf){G.setAttribute('position',new THREE.BufferAttribute(P,3));G.setAttribute('color',new THREE.BufferAttribute(C,3))}
+  G.computeVertexNormals();
+  /* face visible vers le ciel : si la première normale descend, on retourne chaque triangle */
+  if(G.attributes.normal.getY(0)<0){for(let q=0;q<P.length;q+=9)for(let e=0;e<3;e++){const x=P[q+3+e];P[q+3+e]=P[q+6+e];P[q+6+e]=x}G.computeVertexNormals()}
+  G.attributes.position.needsUpdate=true;G.attributes.normal.needsUpdate=true;G.boundingSphere=null;G.boundingBox=null;
+  return G}
+function incruster(Z){try{const g=Z&&Z.alt&&Z.alt.g;if(!g)return;
+  for(const o of g.children){if(!estTore(o))continue;
+    /* la couleur est celle de la zone où la Pierre se dresse : plusieurs Pierres partagent le même emplacement qu'une autre zone
+       (DON030 sur DON045, RES091 sur RES374…, données existantes) ; sans cela, l'anneau prenait la couleur d'une zone voisine */
+    const Zs=typeof zoneAt==='function'&&zoneAt(Z.alt.x,Z.alt.z)||Z;o.material=matZone(Zs,clarteSol(Zs,Z.alt));o.castShadow=false;o.receiveShadow=true;
+    if(typeof ground==='function'){if(o.userData.mzSerti)filet(g,o.geometry);else{const G=filet(g);o.geometry.dispose();o.geometry=G;o.userData.mzSerti=true}o.rotation.set(0,0,0);o.position.set(0,0,0);o.scale.set(1,1,1)}
+    else{o.scale.set(1,1,.3);o.position.y=.08}/* repli : le tore couché (rotation.x = π/2), aplati sur son axe local z, la verticale */
+  }}catch(_){}}
+/* boucle 6, reprise (24 nov.) : l'habillage ne puise plus dans le hasard du jeu. Chaque géométrie et chaque matériau three.js
+   neufs tirent quatre nombres de Math.random pour leur identifiant (uuid) : les 52 filets et 38 matériaux en tiraient 360,
+   ce qui décalait tout le hasard qui suit (bêtes, passants, météo) et faisait varier les mesures du banc d'une version à
+   l'autre (ASS152 : 221 → 256 appels sans qu'aucun objet ne soit ajouté). Pendant le sertissage, Math.random est remplacé
+   par une suite locale (Park-Miller, qui continue d'un appel à l'autre : pas deux uuid identiques), puis rendu tel quel.
+   Aucune règle ni aucun tirage du jeu n'est changé. */
+let graine=0x2b1d4f;
+const sansHasard=f=>{const r0=Math.random;Math.random=()=>(graine=graine*16807%2147483647)/2147483647;try{return f()}finally{Math.random=r0}};
+ZN.forEach(Z=>sansHasard(()=>incruster(Z)));
+/* après une mue, main.js replace la Pierre (placeAlt) sur le terrain neuf : le filet est re-serti ; si la Pierre venait à être
+   reconstruite, l'anneau neuf est repris ici de la même façon */
+if(typeof placeAlt==='function'){const pa0=placeAlt;placeAlt=function(Z){const r=pa0.apply(this,arguments);sansHasard(()=>incruster(Z));return r}}
+})();
 /* MozaWorld 2.8 : le monde bouge (18 novembre, idée 5 de l'évaluation graphique, choisie par l'utilisateur).
    1. Le vent : la végétation et tout ce qui est haut et mince ploie doucement (déformation dans le shader, aucun calcul par objet).
       Plus fort vers −7 (rafales), plus doux vers +7.
@@ -9999,7 +10148,15 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-centre svg{width:calc(var(--u)*5.2)!important;height:calc(var(--u)*5.2)!important;position:absolute;left:50%;top:50%;translate:-50% -50%}
 #combat #cb-centre svg polygon,#combat #cb-centre svg path{stroke:var(--c-os)}
 #combat #cb-centre .cl{font-family:var(--c-goth);font-size:calc(var(--u)*1.35);color:var(--c-os);text-shadow:2px 2px 0 #000;margin:0;position:relative}
-#combat #cb-centre .cv{font-family:var(--c-main);font-weight:600;font-size:calc(var(--u)*1.05);color:var(--c-os)!important;text-shadow:2px 2px 0 #000;margin:0;position:absolute;left:-40%;right:-40%;top:calc(66.667% + .2em)}
+/* boucle 6 (24 nov.) : la valeur du Centre (« à l'ennemi · ses coups +1 ») ne déborde plus de sa colonne sur la voie basse :
+   elle tient sur deux lignes, centrée dans l'hexagone, juste sous le libellé « Centre » (ruban posé à 50 % + .72u et non + 1,1u : à + 1,1u il mordait sur le joint de la voie basse).
+   Posée sur un ruban d'encre à filets d'or qui passe sur le bas du médaillon (l'octogone est trop petit pour la contenir) ;
+   corps .95u (plateau.js imposait .85u, illisible à trois mètres), coupure équilibrée sur deux lignes. */
+/* le médaillon et son libellé remontent d'une demi-unité pour laisser au ruban la place de tenir dans la rangée du milieu */
+#combat #cb-centre:has(.cv) svg{top:calc(50% - var(--u)*.55)}#combat #cb-centre:has(.cv) .cl{top:calc(var(--u)*-.55)}
+#combat #cb-centre .cv{font-family:var(--c-main);font-weight:600;font-size:calc(var(--u)*.95)!important;line-height:1.05!important;white-space:normal!important;text-wrap:balance;text-align:center;
+  color:var(--c-os)!important;text-shadow:1px 1px 0 #000;margin:0;position:absolute;left:6%;right:6%;top:calc(50% + var(--u)*.72);max-width:none!important;
+  padding:.04em .3em .1em;background:rgba(11,8,7,.86);box-shadow:0 1px 0 rgba(214,178,104,.5),0 -1px 0 rgba(214,178,104,.5)}
 
 /* ── unités : figurines à étiquette de papier, jauges tordues ── */
 #combat .u .plaque{background:linear-gradient(178deg,var(--c-papier),var(--c-papier2))!important;border:2px solid var(--c-encre)!important;border-radius:0!important;box-shadow:2px 3px 0 rgba(0,0,0,.6)!important;
@@ -10015,6 +10172,9 @@ const st=document.createElement('style');st.textContent=`
 #combat .u .mz-voie{font-family:var(--c-fell);color:#5a3a16!important;letter-spacing:.06em}
 #combat .u .int:not(:empty){font-family:var(--c-main);font-weight:600;background:var(--c-os)!important;color:var(--c-encre)!important;border:2px solid var(--c-encre)!important;border-radius:0!important;text-shadow:none!important;transform:rotate(-2deg);box-shadow:2px 2px 0 rgba(0,0,0,.6)!important}
 #combat .u .int b{color:var(--c-cire)!important}
+/* boucle 6 (24 nov.) : la bulle d'intention (bloqueur · ⚔ · voie) remonte d'un tiers d'unité et passe au-dessus des libellés :
+   elle ne mord plus sur le nom de l'unité ni sur le libellé de voie de la plaque. Décalage fixe, aucune animation. */
+#combat .u .int:not(:empty){translate:0 calc(var(--u)*-.32);z-index:6}
 #combat .u.manvise .plaque{box-shadow:0 0 0 3px #fff3c8!important}
 
 /* ── bas de l'écran : mana, pioche, aide, Fin du tour en sceau de cire ── */
@@ -10023,6 +10183,12 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-mana b{font-family:var(--c-goth)!important;color:var(--c-encre)!important}
 #combat #cb-mana .mana-p{color:#fff!important;box-shadow:0 0 0 2px var(--c-encre)}
 #combat #cb-mana .mp i{box-shadow:0 0 0 2px var(--c-encre)!important}
+/* boucle 6 (24 nov.) : les manas de « Ce tour » en petites capitales de la charte, chaque nom collé à sa pastille
+   (regroupés par la petite enveloppe de majUnites plus bas) et rangés en lignes souples : plus aucun nom orphelin. */
+#combat #cb-mana .l.mz-res{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:calc(var(--u)*.22) calc(var(--u)*.6);
+  font-family:var(--c-main)!important;font-variant:small-caps;text-transform:none;letter-spacing:.05em;line-height:1.15;font-size:calc(var(--u)*.95);max-width:calc(var(--u)*10.5);margin-top:calc(var(--u)*.25)}
+#combat #cb-mana .mz-m{display:inline-flex;align-items:center;gap:.28em;white-space:nowrap}
+#combat #cb-mana .mz-m .mana-p{font-family:var(--c-num);font-variant:normal;font-size:.8em}
 #combat #cb-piles.c-papier *{color:var(--c-encre)!important}
 #combat #cb-piles span{font-family:var(--c-fell)!important}#combat #cb-piles b{font-family:var(--c-num)!important}
 #combat #cb-mana.c-papier::before,#combat #cb-mana.c-papier::after,#combat #cb-piles.c-papier::before,#combat #cb-piles.c-papier::after{display:none!important}
@@ -10054,6 +10220,48 @@ function dech(el,n,ay,ax){if(!el)return;el.classList.add('c-papier');let g=el.id
   for(let i=4;i>0;i--)p.push((a()*ax).toFixed(2)+'% '+(i*20)+'%');
   el.style.clipPath='polygon('+p.join(',')+')'}
 dech(document.getElementById('cb-mana'),14,3,2.5);dech(document.getElementById('cb-piles'),12,3.5,3);
+/* boucle 6 (24 nov.) : après chaque mise à jour des unités, la ligne des manas (« ∞ Gris · 2 Feu · … », texte libre d'economie.js)
+   est regroupée en paires pastille + nom. Une seule passe sur six ou sept nœuds, seulement quand le panneau vient d'être réécrit. */
+if(typeof majUnites==='function'){const mu0=majUnites;majUnites=function(){const r=mu0.apply(this,arguments);try{
+  const l=document.querySelector('#cb-mana .l:last-child');if(l&&!l.classList.contains('mz-res')&&l.querySelector('.mana-p')){let h='',p=null;
+    for(const n of Array.from(l.childNodes)){if(n.nodeType===1&&n.classList.contains('mana-p')){if(p)h+='<span class="mz-m">'+p+'</span>';p=n.outerHTML}
+      else{const t=(n.textContent||'').replace(/·/g,'').trim();if(p){h+='<span class="mz-m">'+p+(t?'<span>'+t+'</span>':'')+'</span>';p=null}else if(t)h+='<span class="mz-m"><span>'+t+'</span></span>'}}
+    if(p)h+='<span class="mz-m">'+p+'</span>';l.innerHTML=h;l.classList.add('mz-res')}}catch(_){}return r}}
+/* boucle 6, reprise (24 nov.) : la menace d'une voie ne recouvre plus l'unité qui la tient.
+   Constat du testeur : sur la case d'avant occupée, « ➶ 3 → héros » (pastille .mz-menace qu'ecrin.js tire du badge .plmenace de
+   plateau.js) se posait sur le haut du portrait et mordait sur le nom de l'unité (« Luciole de nuit » coupé à 1280 × 720).
+   La case n'a pas de marge libre (unité de 74 px dans une case de 81 px à 720p) : on retient la troisième solution proposée.
+   - Sur l'unité : une pastille d'icône seule par menace (« ➶ 3 », « ⚔ 4 »), empilées au bas du portrait, à gauche :
+     jamais sur la plaque (nom, jauge, voie) ni sur la bulle d'intention, toujours au-dessus du portrait.
+   - Le texte complet (« ➶ 3 → héros », « ⚔ 4 → Luciole · 2 passent ») passe sur la case d'arrière de la même voie quand
+     elle est libre : il se lit dans la voie, du côté du héros, là où vont les coups. Sinon le total « coups attendus » du
+     héros le dit déjà.
+   Rien de plus à chaque image : on suit seulement les passages de badgesMenace (plateau.js, déjà enveloppé par ecrin.js) et
+   de dessinerCases. Le badge d'origine reste caché sur toute case occupée, même si la classe « occupee » manque encore. */
+const stM=document.createElement('style');stM.textContent=`
+#combat .pcase.mz-tenue .plmenace{display:none!important}
+#combat .u>.mz-menace{left:calc(var(--u)*-.35)!important;top:auto!important;bottom:calc(var(--u)*.1);z-index:7;display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--u)*.12);
+  padding:0!important;border:0!important;background:none!important;border-radius:0!important}
+#combat .u>.mz-menace i{font-style:normal;font-family:var(--c-num,inherit);font-weight:700;font-size:calc(var(--u)*.78);line-height:1.2;padding:0 .4em;white-space:nowrap;
+  color:#ffd3c8;background:#2a0f0c;border:1px solid #c45a4a;border-radius:.6em;box-shadow:1px 1px 0 #000}
+#combat .u>.mz-menace i.vol{color:#ffe6b0;background:#2a1d08;border-color:#c9a45c}
+#combat .pcase>.mz-voiem{position:absolute;z-index:5;left:4%;right:4%;top:calc(var(--u)*.35);margin:0 auto;width:fit-content;max-width:92%;text-align:center;pointer-events:none;
+  font-family:var(--c-main);font-weight:700;font-size:calc(var(--u)*.8);line-height:1.15;color:#ffb0a0;background:rgba(24,8,8,.9);border:1px solid rgba(226,103,90,.7);
+  border-radius:calc(var(--u)*.5);padding:.05em .5em .1em;text-shadow:1px 1px 0 #000}
+#combat .pcase>.mz-voiem:empty{display:none}
+`;document.head.appendChild(stM);
+function menacesTenues(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof occupant!=='function')return;
+  for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;const b=d.querySelector('.plmenace'),t=b?b.textContent.trim():'';
+    const u=occupant(v,0),tenue=!!(u&&u.el&&u.pv>0);d.classList.toggle('mz-tenue',tenue);
+    /* pastilles : l'icône et le nombre de chaque menace, rien d'autre */
+    if(tenue){let e=u.el.querySelector(':scope>.mz-menace');const h=t?t.split(' · ').map(x=>x.match(/^([➶⚔✶⚒])\s*(\d+)/)).filter(Boolean)
+        .map(m=>'<i'+(m[1]==='➶'?' class="vol"':'')+'>'+m[1]+' '+m[2]+'</i>').join(''):'';
+      if(h&&!e){e=document.createElement('span');e.className='mz-menace';u.el.appendChild(e)}if(e&&e.innerHTML!==h)e.innerHTML=h}
+    /* le texte complet, sur la case d'arrière libre de la voie */
+    const r=document.getElementById('pc-a'+v+'1');if(!r)continue;let w=r.querySelector(':scope>.mz-voiem');const txt=tenue&&t&&!occupant(v,1)?t:'';
+    if(txt&&!w){w=document.createElement('span');w.className='mz-voiem';r.appendChild(w)}if(w&&w.textContent!==txt)w.textContent=txt}}
+if(typeof badgesMenace==='function'){const bm1=badgesMenace;badgesMenace=function(){const r=bm1.apply(this,arguments);try{menacesTenues()}catch(_){}return r}}
+if(typeof dessinerCases==='function'){const dc1=dessinerCases;dessinerCases=function(){const r=dc1.apply(this,arguments);try{menacesTenues()}catch(_){}return r}}
 })();
 /* MozaWorld 2.33 : interface « Carnet sombre », étape 3, le menu pause et ses sous-menus (22 novembre).
    La boîte du menu devient une page de carnet : parchemin usé aux coins brûlés, titre gothique, sceau de cire,
