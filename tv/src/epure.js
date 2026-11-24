@@ -112,8 +112,16 @@ function incruster(Z){try{const g=Z&&Z.alt&&Z.alt.g;if(!g)return;
     if(typeof ground==='function'){if(o.userData.mzSerti)filet(g,o.geometry);else{const G=filet(g);o.geometry.dispose();o.geometry=G;o.userData.mzSerti=true}o.rotation.set(0,0,0);o.position.set(0,0,0);o.scale.set(1,1,1)}
     else{o.scale.set(1,1,.3);o.position.y=.08}/* repli : le tore couché (rotation.x = π/2), aplati sur son axe local z, la verticale */
   }}catch(_){}}
-ZN.forEach(incruster);
+/* boucle 6, reprise (24 nov.) : l'habillage ne puise plus dans le hasard du jeu. Chaque géométrie et chaque matériau three.js
+   neufs tirent quatre nombres de Math.random pour leur identifiant (uuid) : les 52 filets et 38 matériaux en tiraient 360,
+   ce qui décalait tout le hasard qui suit (bêtes, passants, météo) et faisait varier les mesures du banc d'une version à
+   l'autre (ASS152 : 221 → 256 appels sans qu'aucun objet ne soit ajouté). Pendant le sertissage, Math.random est remplacé
+   par une suite locale (Park-Miller, qui continue d'un appel à l'autre : pas deux uuid identiques), puis rendu tel quel.
+   Aucune règle ni aucun tirage du jeu n'est changé. */
+let graine=0x2b1d4f;
+const sansHasard=f=>{const r0=Math.random;Math.random=()=>(graine=graine*16807%2147483647)/2147483647;try{return f()}finally{Math.random=r0}};
+ZN.forEach(Z=>sansHasard(()=>incruster(Z)));
 /* après une mue, main.js replace la Pierre (placeAlt) sur le terrain neuf : le filet est re-serti ; si la Pierre venait à être
    reconstruite, l'anneau neuf est repris ici de la même façon */
-if(typeof placeAlt==='function'){const pa0=placeAlt;placeAlt=function(Z){const r=pa0.apply(this,arguments);incruster(Z);return r}}
+if(typeof placeAlt==='function'){const pa0=placeAlt;placeAlt=function(Z){const r=pa0.apply(this,arguments);sansHasard(()=>incruster(Z));return r}}
 })();

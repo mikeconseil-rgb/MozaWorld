@@ -173,4 +173,39 @@ if(typeof majUnites==='function'){const mu0=majUnites;majUnites=function(){const
     for(const n of Array.from(l.childNodes)){if(n.nodeType===1&&n.classList.contains('mana-p')){if(p)h+='<span class="mz-m">'+p+'</span>';p=n.outerHTML}
       else{const t=(n.textContent||'').replace(/·/g,'').trim();if(p){h+='<span class="mz-m">'+p+(t?'<span>'+t+'</span>':'')+'</span>';p=null}else if(t)h+='<span class="mz-m"><span>'+t+'</span></span>'}}
     if(p)h+='<span class="mz-m">'+p+'</span>';l.innerHTML=h;l.classList.add('mz-res')}}catch(_){}return r}}
+/* boucle 6, reprise (24 nov.) : la menace d'une voie ne recouvre plus l'unité qui la tient.
+   Constat du testeur : sur la case d'avant occupée, « ➶ 3 → héros » (pastille .mz-menace qu'ecrin.js tire du badge .plmenace de
+   plateau.js) se posait sur le haut du portrait et mordait sur le nom de l'unité (« Luciole de nuit » coupé à 1280 × 720).
+   La case n'a pas de marge libre (unité de 74 px dans une case de 81 px à 720p) : on retient la troisième solution proposée.
+   - Sur l'unité : une pastille d'icône seule par menace (« ➶ 3 », « ⚔ 4 »), empilées au bas du portrait, à gauche :
+     jamais sur la plaque (nom, jauge, voie) ni sur la bulle d'intention, toujours au-dessus du portrait.
+   - Le texte complet (« ➶ 3 → héros », « ⚔ 4 → Luciole · 2 passent ») passe sur la case d'arrière de la même voie quand
+     elle est libre : il se lit dans la voie, du côté du héros, là où vont les coups. Sinon le total « coups attendus » du
+     héros le dit déjà.
+   Rien de plus à chaque image : on suit seulement les passages de badgesMenace (plateau.js, déjà enveloppé par ecrin.js) et
+   de dessinerCases. Le badge d'origine reste caché sur toute case occupée, même si la classe « occupee » manque encore. */
+const stM=document.createElement('style');stM.textContent=`
+#combat .pcase.mz-tenue .plmenace{display:none!important}
+#combat .u>.mz-menace{left:calc(var(--u)*-.35)!important;top:auto!important;bottom:calc(var(--u)*.1);z-index:7;display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--u)*.12);
+  padding:0!important;border:0!important;background:none!important;border-radius:0!important}
+#combat .u>.mz-menace i{font-style:normal;font-family:var(--c-num,inherit);font-weight:700;font-size:calc(var(--u)*.78);line-height:1.2;padding:0 .4em;white-space:nowrap;
+  color:#ffd3c8;background:#2a0f0c;border:1px solid #c45a4a;border-radius:.6em;box-shadow:1px 1px 0 #000}
+#combat .u>.mz-menace i.vol{color:#ffe6b0;background:#2a1d08;border-color:#c9a45c}
+#combat .pcase>.mz-voiem{position:absolute;z-index:5;left:4%;right:4%;top:calc(var(--u)*.35);margin:0 auto;width:fit-content;max-width:92%;text-align:center;pointer-events:none;
+  font-family:var(--c-main);font-weight:700;font-size:calc(var(--u)*.8);line-height:1.15;color:#ffb0a0;background:rgba(24,8,8,.9);border:1px solid rgba(226,103,90,.7);
+  border-radius:calc(var(--u)*.5);padding:.05em .5em .1em;text-shadow:1px 1px 0 #000}
+#combat .pcase>.mz-voiem:empty{display:none}
+`;document.head.appendChild(stM);
+function menacesTenues(){if(typeof CB==='undefined'||!CB||!CB.cases||typeof occupant!=='function')return;
+  for(let v=0;v<3;v++){const d=document.getElementById('pc-a'+v+'0');if(!d)continue;const b=d.querySelector('.plmenace'),t=b?b.textContent.trim():'';
+    const u=occupant(v,0),tenue=!!(u&&u.el&&u.pv>0);d.classList.toggle('mz-tenue',tenue);
+    /* pastilles : l'icône et le nombre de chaque menace, rien d'autre */
+    if(tenue){let e=u.el.querySelector(':scope>.mz-menace');const h=t?t.split(' · ').map(x=>x.match(/^([➶⚔✶⚒])\s*(\d+)/)).filter(Boolean)
+        .map(m=>'<i'+(m[1]==='➶'?' class="vol"':'')+'>'+m[1]+' '+m[2]+'</i>').join(''):'';
+      if(h&&!e){e=document.createElement('span');e.className='mz-menace';u.el.appendChild(e)}if(e&&e.innerHTML!==h)e.innerHTML=h}
+    /* le texte complet, sur la case d'arrière libre de la voie */
+    const r=document.getElementById('pc-a'+v+'1');if(!r)continue;let w=r.querySelector(':scope>.mz-voiem');const txt=tenue&&t&&!occupant(v,1)?t:'';
+    if(txt&&!w){w=document.createElement('span');w.className='mz-voiem';r.appendChild(w)}if(w&&w.textContent!==txt)w.textContent=txt}}
+if(typeof badgesMenace==='function'){const bm1=badgesMenace;badgesMenace=function(){const r=bm1.apply(this,arguments);try{menacesTenues()}catch(_){}return r}}
+if(typeof dessinerCases==='function'){const dc1=dessinerCases;dessinerCases=function(){const r=dc1.apply(this,arguments);try{menacesTenues()}catch(_){}return r}}
 })();
