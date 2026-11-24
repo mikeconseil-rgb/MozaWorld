@@ -6,6 +6,10 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.44 (24 novembre) : boucle graphique 6
+
+Trois réglages acceptés par le testeur, sans nouveau système : niveau 0 contrasté (vrai noir, vraie lumière), DON045 qui ne ressemble plus à DON et rosace d'ASS152 +7 refermée, combat sans textes qui se chevauchent et Pierre sans anneau d'or d'éditeur. Détails ci-dessous.
+
 ## Boucle 6, artisan 3 : écrin du combat et Pierre sans anneau d'éditeur (24 novembre, `src/carnet-combat.js`, `src/cartes-visuel.js`, `src/epure.js`)
 - **Centre du Plateau** : « à l'ennemi · ses coups +1 » ne déborde plus sur la voie basse (il sortait de 40 % de chaque côté et touchait la bulle du bloqueur). Le texte tient dans l'hexagone (`left/right 6 %`, coupure équilibrée sur deux lignes, corps .95u au lieu de .85u), posé sur un ruban d'encre à filets d'or qui passe sur le bas du médaillon ; médaillon et libellé « Centre » remontent d'une demi-unité pour que le ruban tienne dans la rangée du milieu (à 50 % + 1,1u il mordait sur le joint). Vérifié dans les deux états (`cheros`, `cennemi`) et sans Plateau (duel, colonne étroite).
 - **Bulles d'intention** (bloqueur · ⚔ · voie) : remontées de .32u et passées au-dessus des libellés (z-index 6) ; décalage fixe, aucune animation.
