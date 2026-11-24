@@ -52,3 +52,68 @@ setInterval(()=>{if(typeof curZ==='undefined')return;
   if(curZ&&curZ!==zv){zv=curZ;B.classList.add('zone-neuve');clearTimeout(zT);zT=setTimeout(()=>B.classList.remove('zone-neuve'),9000)}
   if(typeof mode!=='undefined'&&mode==='monde'&&typeof started!=='undefined'&&started){joue+=.5;calme+=.5;if(calme>=12||joue>=45)B.classList.add('aide-vue')}},500);
 })();
+
+/* boucle 6 (24 nov.) : la Pierre sans anneau d'éditeur. Le tore d'or couché autour de chaque Pierre (main.js, rayon ALT_R*.62),
+   brillant, mince et posé à plat sur un sol qui ondule (à moitié enterré par endroits), se lisait comme un « gizmo » d'éditeur 3D.
+   Il devient une incrustation au sol :
+   - matériau mat (metalness 0, roughness .8), teinté à 60 % par la couleur de la zone (ZCOL), un peu plus sombre que le sol
+     qui l'entoure (une pierre sertie, pas un trait lumineux) ; un matériau par zone au plus, en cache ;
+   - aplati au ras du sol : au lieu d'écraser le tore (scale.y ≈ .3), qui restait un fil plat enterré dès que le terrain monte,
+     on le sertit : un filet biseauté de 48 cm (bord, arête, bord), découpé en 96 tesselles aux tons inégaux (384 triangles au
+     lieu de 576), dont chaque sommet suit la hauteur du terrain (ground, core.js), 3 à 6 cm au-dessus ; décalage de profondeur
+     pour ne pas scintiller. Une bordure de mosaïque autour de la Pierre, dans l'esprit Girih du monde ;
+   - sans ombre portée, mais il reçoit l'ombre comme le sol, pour ne pas luire dans la pénombre.
+   La gemme et l'étoile du sommet restent en or : le signe de la Pierre, c'est l'or en hauteur.
+   Aucun appel de dessin en plus (le même maillage, une géométrie neuve). main.js n'est pas touché : on retrouve le tore par sa
+   forme (TorusGeometry de rayon ALT_R*.62) ; si rien n'est trouvé, on sort sans erreur. */
+(function(){
+if(typeof THREE==='undefined'||typeof ZN==='undefined'||typeof ALT_R==='undefined')return;
+const R=ALT_R*.62,W=.24,N=96,TONS=[1,.7,.9,.62,.96,.78],cache={},OR=new THREE.Color(0xc9a45c),v=new THREE.Vector3();
+const estTore=o=>o&&o.isMesh&&o.geometry&&(o.userData.mzSerti||o.geometry.type==='TorusGeometry'&&o.geometry.parameters&&Math.abs(o.geometry.parameters.radius-R)<.01);
+/* clarté du sol sous l'anneau : moyenne des couleurs de sommets du terrain (core.js) à moins de 1,2 m du cercle, dans la plage
+   de sommets de la zone. Clarté de l'anneau = .11 + 35 % de celle du sol (au plus .42) : sur les sols sombres (CIT, DON045 au
+   niveau 0, sol vers .05) un ton de pierre à .13, sur le dallage blanc du Marché (.92) un gris moyen au lieu d'un trait noir */
+const cs=new THREE.Color(),hs={};
+function clarteSol(Zs,a){try{const T=typeof terrain!=='undefined'&&terrain&&terrain.geometry;if(!T||Zs.vmin===undefined)return .14;
+  const P=T.attributes.position.array,C=T.attributes.color.array;let r=0,g=0,b=0,n=0;
+  for(let k=Zs.vmin;k<=Zs.vmax;k++){const d=Math.hypot(P[k*3]-a.x,P[k*3+2]-a.z)-R;if(d>-1.2&&d<1.2){r+=C[k*3];g+=C[k*3+1];b+=C[k*3+2];n++}}
+  if(!n)return .14;cs.setRGB(r/n,g/n,b/n).getHSL(hs);return Math.min(.42,.11+hs.l*.35)}catch(_){return .14}}
+/* un matériau par zone au plus : créé une fois, puis seulement recoloré quand le sol de la zone change (mue) */
+function matZone(Zs,l){const zc=(typeof ZCOL!=='undefined'&&ZCOL[Zs.id])||'#c9a45c';
+  /* teinté à 60 % par la zone : la teinte est celle de la zone (passer de l'or au bleu par le cercle chromatique donnait du
+     vert), la saturation mêle or et zone à 60 %, plafonnée pour rester un ton de pierre ; la clarté suit le sol : sous la
+     lumière forte du monde (soleil + ciel dépassent 2), une couleur moyenne ressortait presque blanche, comme un trait de sélection */
+  const a={},b={};OR.getHSL(a);new THREE.Color(zc).getHSL(b);
+  const m=cache[Zs.id]||(cache[Zs.id]=new THREE.MeshStandardMaterial({roughness:.8,metalness:0,flatShading:true,vertexColors:true,
+    polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+  m.color.setHSL(b.h,Math.min(.32,a.s*.4+b.s*.6),l);return m}
+/* le filet suit le terrain : sommets dans le repère de la Pierre (groupe tourné et posé au sol par placeAlt) */
+function filet(g,G0){g.updateMatrixWorld(true);const gy=g.position.y,rr=[R-W,R,R+W],dy=[.03,.06,.03],H=[];
+  for(let i=0;i<=N;i++){const a=i/N*Math.PI*2,c=Math.cos(a),s=Math.sin(a);
+    for(let j=0;j<3;j++){v.set(rr[j]*c,0,rr[j]*s);g.localToWorld(v);H.push(rr[j]*c,ground(v.x,v.z)-gy+dy[j],rr[j]*s)}}
+  /* triangles non partagés : chaque tesselle (un pas de l'anneau) a son propre ton, tiré d'une suite fixe.
+     Au re-sertissage (mue), la géométrie existante est réécrite sur place : ni allocation ni objet neuf à chaque bond de la mue */
+  const G=G0||new THREE.BufferGeometry(),neuf=!G0;
+  const P=neuf?new Float32Array(N*2*6*3):G.attributes.position.array,C=neuf?new Float32Array(N*2*6*3):null;let k=0;
+  const pt=(n,t)=>{P[k]=H[n*3];P[k+1]=H[n*3+1];P[k+2]=H[n*3+2];if(C)C[k]=C[k+1]=C[k+2]=t;k+=3};
+  for(let i=0;i<N;i++){const t=TONS[(i*7+(i>>2))%TONS.length];
+    for(let j=0;j<2;j++){const a=i*3+j,b=a+1,c=a+3,d=a+4;pt(a,t);pt(b,t);pt(c,t);pt(b,t);pt(d,t);pt(c,t)}}
+  if(neuf){G.setAttribute('position',new THREE.BufferAttribute(P,3));G.setAttribute('color',new THREE.BufferAttribute(C,3))}
+  G.computeVertexNormals();
+  /* face visible vers le ciel : si la première normale descend, on retourne chaque triangle */
+  if(G.attributes.normal.getY(0)<0){for(let q=0;q<P.length;q+=9)for(let e=0;e<3;e++){const x=P[q+3+e];P[q+3+e]=P[q+6+e];P[q+6+e]=x}G.computeVertexNormals()}
+  G.attributes.position.needsUpdate=true;G.attributes.normal.needsUpdate=true;G.boundingSphere=null;G.boundingBox=null;
+  return G}
+function incruster(Z){try{const g=Z&&Z.alt&&Z.alt.g;if(!g)return;
+  for(const o of g.children){if(!estTore(o))continue;
+    /* la couleur est celle de la zone où la Pierre se dresse : plusieurs Pierres partagent le même emplacement qu'une autre zone
+       (DON030 sur DON045, RES091 sur RES374…, données existantes) ; sans cela, l'anneau prenait la couleur d'une zone voisine */
+    const Zs=typeof zoneAt==='function'&&zoneAt(Z.alt.x,Z.alt.z)||Z;o.material=matZone(Zs,clarteSol(Zs,Z.alt));o.castShadow=false;o.receiveShadow=true;
+    if(typeof ground==='function'){if(o.userData.mzSerti)filet(g,o.geometry);else{const G=filet(g);o.geometry.dispose();o.geometry=G;o.userData.mzSerti=true}o.rotation.set(0,0,0);o.position.set(0,0,0);o.scale.set(1,1,1)}
+    else{o.scale.set(1,1,.3);o.position.y=.08}/* repli : le tore couché (rotation.x = π/2), aplati sur son axe local z, la verticale */
+  }}catch(_){}}
+ZN.forEach(incruster);
+/* après une mue, main.js replace la Pierre (placeAlt) sur le terrain neuf : le filet est re-serti ; si la Pierre venait à être
+   reconstruite, l'anneau neuf est repris ici de la même façon */
+if(typeof placeAlt==='function'){const pa0=placeAlt;placeAlt=function(Z){const r=pa0.apply(this,arguments);incruster(Z);return r}}
+})();

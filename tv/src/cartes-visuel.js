@@ -495,7 +495,12 @@ const css=document.createElement('style');css.textContent=`
 .boite .cc.kcarte{height:auto;min-height:calc(var(--u)*15.8)}
 .boite .cc.kcarte .art{height:calc(var(--u)*6.4)}
 .boite .cc.kcarte .ct{font-size:calc(var(--u)*.88);line-height:1.26;overflow:visible}
-.cc.kcarte .kgris{bottom:auto;top:calc(var(--u)*-1.5);z-index:3}
+/* boucle 6 (24 nov.) : « Mana gris · effet −25 % » n'est plus une pastille grise en police système : une cartouche de métal terne
+   de la charte (petites capitales, filet d'acier, ombres sobres),
+   à la largeur de son texte et calée à droite : elle ne passe plus sous la pastille de coût ni ne déborde des cartes étroites. head.html garde sa règle de base, la surcharge suffit. */
+.cc.kcarte .kgris{bottom:auto;top:calc(var(--u)*-1.5);z-index:3;font-family:var(--c-main,"Cormorant Garamond",Georgia,serif);font-variant:small-caps;letter-spacing:.06em;
+  font-weight:700;font-size:calc(var(--u)*.74);line-height:1.15;padding:.1em .5em .16em;left:auto;right:5%;max-width:84%;overflow:hidden;background:linear-gradient(#3a3630,#24211d);color:#d8cfc0;border:1px solid #8d8a86;border-radius:.25em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 0 -1px 0 rgba(0,0,0,.45),0 2px 3px rgba(0,0,0,.55);text-shadow:0 1px 0 #000}
 .cc.kcarte.ultime .kamb{display:none}
 .cc.kcarte.ultime.t3 .art,.cc.kcarte.ultime.t4 .art,.cc.kcarte.ultime.t5 .art{height:calc(var(--u)*4.6)}
 .cc.kcarte .ksceau{bottom:calc(var(--u)*-.9);right:calc(var(--u)*-.9)}

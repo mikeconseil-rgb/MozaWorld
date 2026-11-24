@@ -94,7 +94,15 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-centre svg{width:calc(var(--u)*5.2)!important;height:calc(var(--u)*5.2)!important;position:absolute;left:50%;top:50%;translate:-50% -50%}
 #combat #cb-centre svg polygon,#combat #cb-centre svg path{stroke:var(--c-os)}
 #combat #cb-centre .cl{font-family:var(--c-goth);font-size:calc(var(--u)*1.35);color:var(--c-os);text-shadow:2px 2px 0 #000;margin:0;position:relative}
-#combat #cb-centre .cv{font-family:var(--c-main);font-weight:600;font-size:calc(var(--u)*1.05);color:var(--c-os)!important;text-shadow:2px 2px 0 #000;margin:0;position:absolute;left:-40%;right:-40%;top:calc(66.667% + .2em)}
+/* boucle 6 (24 nov.) : la valeur du Centre (« à l'ennemi · ses coups +1 ») ne déborde plus de sa colonne sur la voie basse :
+   elle tient sur deux lignes, centrée dans l'hexagone, juste sous le libellé « Centre » (ruban posé à 50 % + .72u et non + 1,1u : à + 1,1u il mordait sur le joint de la voie basse).
+   Posée sur un ruban d'encre à filets d'or qui passe sur le bas du médaillon (l'octogone est trop petit pour la contenir) ;
+   corps .95u (plateau.js imposait .85u, illisible à trois mètres), coupure équilibrée sur deux lignes. */
+/* le médaillon et son libellé remontent d'une demi-unité pour laisser au ruban la place de tenir dans la rangée du milieu */
+#combat #cb-centre:has(.cv) svg{top:calc(50% - var(--u)*.55)}#combat #cb-centre:has(.cv) .cl{top:calc(var(--u)*-.55)}
+#combat #cb-centre .cv{font-family:var(--c-main);font-weight:600;font-size:calc(var(--u)*.95)!important;line-height:1.05!important;white-space:normal!important;text-wrap:balance;text-align:center;
+  color:var(--c-os)!important;text-shadow:1px 1px 0 #000;margin:0;position:absolute;left:6%;right:6%;top:calc(50% + var(--u)*.72);max-width:none!important;
+  padding:.04em .3em .1em;background:rgba(11,8,7,.86);box-shadow:0 1px 0 rgba(214,178,104,.5),0 -1px 0 rgba(214,178,104,.5)}
 
 /* ── unités : figurines à étiquette de papier, jauges tordues ── */
 #combat .u .plaque{background:linear-gradient(178deg,var(--c-papier),var(--c-papier2))!important;border:2px solid var(--c-encre)!important;border-radius:0!important;box-shadow:2px 3px 0 rgba(0,0,0,.6)!important;
@@ -110,6 +118,9 @@ const st=document.createElement('style');st.textContent=`
 #combat .u .mz-voie{font-family:var(--c-fell);color:#5a3a16!important;letter-spacing:.06em}
 #combat .u .int:not(:empty){font-family:var(--c-main);font-weight:600;background:var(--c-os)!important;color:var(--c-encre)!important;border:2px solid var(--c-encre)!important;border-radius:0!important;text-shadow:none!important;transform:rotate(-2deg);box-shadow:2px 2px 0 rgba(0,0,0,.6)!important}
 #combat .u .int b{color:var(--c-cire)!important}
+/* boucle 6 (24 nov.) : la bulle d'intention (bloqueur · ⚔ · voie) remonte d'un tiers d'unité et passe au-dessus des libellés :
+   elle ne mord plus sur le nom de l'unité ni sur le libellé de voie de la plaque. Décalage fixe, aucune animation. */
+#combat .u .int:not(:empty){translate:0 calc(var(--u)*-.32);z-index:6}
 #combat .u.manvise .plaque{box-shadow:0 0 0 3px #fff3c8!important}
 
 /* ── bas de l'écran : mana, pioche, aide, Fin du tour en sceau de cire ── */
@@ -118,6 +129,12 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-mana b{font-family:var(--c-goth)!important;color:var(--c-encre)!important}
 #combat #cb-mana .mana-p{color:#fff!important;box-shadow:0 0 0 2px var(--c-encre)}
 #combat #cb-mana .mp i{box-shadow:0 0 0 2px var(--c-encre)!important}
+/* boucle 6 (24 nov.) : les manas de « Ce tour » en petites capitales de la charte, chaque nom collé à sa pastille
+   (regroupés par la petite enveloppe de majUnites plus bas) et rangés en lignes souples : plus aucun nom orphelin. */
+#combat #cb-mana .l.mz-res{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:calc(var(--u)*.22) calc(var(--u)*.6);
+  font-family:var(--c-main)!important;font-variant:small-caps;text-transform:none;letter-spacing:.05em;line-height:1.15;font-size:calc(var(--u)*.95);max-width:calc(var(--u)*10.5);margin-top:calc(var(--u)*.25)}
+#combat #cb-mana .mz-m{display:inline-flex;align-items:center;gap:.28em;white-space:nowrap}
+#combat #cb-mana .mz-m .mana-p{font-family:var(--c-num);font-variant:normal;font-size:.8em}
 #combat #cb-piles.c-papier *{color:var(--c-encre)!important}
 #combat #cb-piles span{font-family:var(--c-fell)!important}#combat #cb-piles b{font-family:var(--c-num)!important}
 #combat #cb-mana.c-papier::before,#combat #cb-mana.c-papier::after,#combat #cb-piles.c-papier::before,#combat #cb-piles.c-papier::after{display:none!important}
@@ -149,4 +166,11 @@ function dech(el,n,ay,ax){if(!el)return;el.classList.add('c-papier');let g=el.id
   for(let i=4;i>0;i--)p.push((a()*ax).toFixed(2)+'% '+(i*20)+'%');
   el.style.clipPath='polygon('+p.join(',')+')'}
 dech(document.getElementById('cb-mana'),14,3,2.5);dech(document.getElementById('cb-piles'),12,3.5,3);
+/* boucle 6 (24 nov.) : après chaque mise à jour des unités, la ligne des manas (« ∞ Gris · 2 Feu · … », texte libre d'economie.js)
+   est regroupée en paires pastille + nom. Une seule passe sur six ou sept nœuds, seulement quand le panneau vient d'être réécrit. */
+if(typeof majUnites==='function'){const mu0=majUnites;majUnites=function(){const r=mu0.apply(this,arguments);try{
+  const l=document.querySelector('#cb-mana .l:last-child');if(l&&!l.classList.contains('mz-res')&&l.querySelector('.mana-p')){let h='',p=null;
+    for(const n of Array.from(l.childNodes)){if(n.nodeType===1&&n.classList.contains('mana-p')){if(p)h+='<span class="mz-m">'+p+'</span>';p=n.outerHTML}
+      else{const t=(n.textContent||'').replace(/·/g,'').trim();if(p){h+='<span class="mz-m">'+p+(t?'<span>'+t+'</span>':'')+'</span>';p=null}else if(t)h+='<span class="mz-m"><span>'+t+'</span></span>'}}
+    if(p)h+='<span class="mz-m">'+p+'</span>';l.innerHTML=h;l.classList.add('mz-res')}}catch(_){}return r}}
 })();
