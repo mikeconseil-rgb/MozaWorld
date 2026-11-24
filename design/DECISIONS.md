@@ -18,6 +18,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
 
+## 24 novembre 2026 (musique)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Musique | Aux niveaux extrêmes, on doit continuer de reconnaître les chansons : ajouter des instruments et des harmonies, sans déformer l'air (version 2.43.1) | en vigueur | passage en mineur, phrygien ou lydien et tempo ±31 % vers ±7 (17 nov.) |
+
 ## 23 novembre 2026 (musique)
 
 | Sujet | Décision | Statut | Remplace |
