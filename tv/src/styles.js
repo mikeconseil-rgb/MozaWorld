@@ -19,7 +19,9 @@ const styU={tD:{value:null},pInv:{value:camera.projectionMatrixInverse},cW:{valu
   /* boucle 1 (19 nov. 2026) : étalonnage signature de la zone où se trouve la caméra (voir SIG plus bas) */
   sigSh:{value:new THREE.Vector3(.1,.1,.1)},sigMi:{value:new THREE.Vector3(.5,.5,.5)},sigHi:{value:new THREE.Vector3(1,1,1)},sigK:{value:0},sigOn:{value:0},
   /* boucle 5 (23 nov. 2026) : plafond de chroma (1 = libre) et point noir (0 = rien) des +7, par zone (voir SIG_CN) ; sigRo : rose rappelé vers l'ivoire (0 = rien) */
-  sigCh:{value:1},sigNo:{value:0},sigRo:{value:0}};
+  sigCh:{value:1},sigNo:{value:0},sigRo:{value:0},
+  /* boucle 6 (24 nov. 2026) : force du contraste d'atelier du niveau 0, par zone (1 = pleine, voir SIG_CN.c0) */
+  sigC0:{value:1}};
 Object.assign(mFinal.uniforms,styU);mFinal.uniforms.expo=mFinal.uniforms.exp; /* « exp » cache la fonction exp() du GLSL */
 const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
   for(int i=0;i<${n};i++){vec2 a=${u}[i],b=${u}[i+1];
@@ -27,7 +29,7 @@ const polyGL=(f,u,n)=>`float ${f}(vec2 p){bool ins=false;float d=1e9;
     vec2 e=b-a;float t=clamp(dot(p-a,e)/dot(e,e),0.,1.);d=min(d,length(p-a-e*t));}
   float s=smoothstep(0.,3.,d)*.5;return ins?.5+s:.5-s;}`;
 mFinal.defines={STY_DEPTH:STY_DEPTH?1:0};
-mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn,sigCh,sigNo,sigRo;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
+mFinal.fragmentShader=`varying vec2 vUv;uniform sampler2D t,b1,b2,tD;uniform float expo,bl,time,gs,gc,gk,lvM,lvR,cdM,cdR,skM,skR,on,tt,sigK,sigOn,fxOn,sigCh,sigNo,sigRo,sigC0;uniform vec3 gt,cP,sigSh,sigMi,sigHi;
 uniform mat4 pInv,cW;uniform vec2 pM[5],pR[7],px;
 vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 ${polyGL('inM','pM',4)}
@@ -45,7 +47,7 @@ vec2 q=vUv-.5;c*=expo*(1.-dot(q,q)*.75);
 c*=1.-.12*sP;c=c/(1.+.35*sP*c); /* vers +7 : un cran d'exposition en moins et épaule douce sur les hautes lumières, avant l'unique ACES (fin du blanc brûlé) */
 c=aces(c);c=pow(c,vec3(1./2.2));
 float l=dot(c,vec3(.299,.587,.114));c=mix(vec3(l),c,gs);c=(c-.5)*gc+.5;c=mix(c,gt*(l*1.25+.08),gk);c=clamp(c,0.,1.);
-float gr=.018,sty=0.;
+float gr=.018,sty=0.,wMg=0.,wRg=0.; /* boucle 6 (24 nov.) : poids par pixel des écoles d'encre, gardés pour le contraste d'atelier */
 if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
 #if STY_DEPTH==1
   d=texture2D(tD,vUv).r;
@@ -67,7 +69,7 @@ if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
     float L=dot(c,vec3(.299,.587,.114));
     float g=smoothstep(mix(.22,.05,kp),mix(1.02,.9,kp),L);g=g*g*(3.-2.*g);g=pow(g,1.+km*1.4)*mix(1.,.55,km);
     float ink=smoothstep(.05,.14,e)*far;g=mix(g,g*.25,ink*mix(.75,.95,km));
-    float fogC=mix(mix(.62,.92,kp),.14,km);
+    float fogC=mix(mix(.55,.92,kp),.14,km); /* boucle 6 (24 nov.) : .62 → .55 au palier 0 seulement, les étals se détachent du blanc */
     float nz=vn(W.xz*.035+vec2(tt*.05,tt*.02))*.6+vn(W.xz*.11-vec2(tt*.08,0.))*.4;
     float dens=mix(.035,.07,km)*(1.-kp*.5)*(.55+nz*.9);float fd=max(0.,dist-cdM);float hy=exp(-max(0.,W.y-1.)/mix(18.,9.,kp));
     float f=(1.-exp(-fd*dens*hy));f=clamp(f,0.,1.);
@@ -94,7 +96,7 @@ if(on>.5){float wM=skM,wR=skR,dist=1e4,d=1.;vec3 W=cP;
     float ink=smoothstep(mix(.09,.05,km),mix(.16,.1,km),e)*mix(.25+.75*far,1.,km);
     m=mix(m,vec3(.1,.07,.14),ink*mix(.8,1.,km));}
     c=mix(c,m,wR);gr=mix(gr,.006,wR);}
-  sty=max(wM,wR);
+  sty=max(wM,wR);wMg=wM;wRg=wR;
 }
 /* --- boucle 1 (19 nov. 2026) : étalonnage signature de la zone (après l'ACES et les écoles, avant le grain) ---
    Trois tons (ombres, tons moyens, hautes lumières) propres à chaque zone et à chaque pôle, pondérés par la luminance.
@@ -127,6 +129,15 @@ if(sigOn>.001){float fo=sigOn*mix(1.,.3,max(smoothstep(.3,.7,max(skM,skR)),sty))
         dans les fondus rose / bleu (essai précédent, force = bleu − vert seul). */
   float mg=max(0.,min(c.b-c.g,c.r-c.b))*sigRo*sP*fo;c+=mg*vec3(-.1,.7,-.5);
   float nk=sigNo*sP*fo;c=max(c-vec3(nk),0.)/(1.-nk);
+  /* boucle 6 (24 nov. 2026) : contraste d'atelier du niveau 0. Là où le joueur vit, le 0 était le panneau le plus faible
+     (tons moyens boueux). Poids w0 = (1 − |k|)·fo : maximal à 0, nul aux pôles (les ±7 ne bougent pas), fondu en 2 s avec sigK.
+     1) courbe en S douce ; 2) point noir .035 (.02 si l'ombre de la signature est déjà sombre : DON045, ANT) et blanc étiré de 4 % ;
+     3) lumière clé teintée par sigHi au-dessus de L = .55. Givrecloche (wMg) et Chinampas (wRg) gardent leur école.
+     sigC0 (SIG_CN.c0) le coupe là où le 0 était déjà franc (DON : lave et ombres noires, son 0 dépassait déjà le +7 ivoire ; DON045 .5 : nuit bleue, sinon plus contrastée que son +7). */
+  float w0=(1.-sA)*fo*(1.-wMg)*(1.-wRg)*sigC0;
+  if(w0>.001){c=clamp(c,0.,1.);c=mix(c,c*c*(3.-2.*c),.35*w0);
+    float pn=(dot(sigSh,Y)<.06?.02:.035)*w0,pb=.04*w0;c=max(c-vec3(pn),0.)/(1.-pn-pb);
+    float Lk=dot(c,Y);vec3 hk=min(sigHi/max(dot(sigHi,Y),.02),vec3(2.));c=mix(c,c*hk,.08*w0*smoothstep(.55,.9,Lk));}
   c=clamp(c,0.,1.);}
 /* boucle 2 (19 nov. 2026) : avec le FXAA, le grain est posé après lui (sinon il le lisse et le brouille) ; on lui passe dans l'alpha
    la force du grain et le poids des écoles d'encre (fusain, manga), sur 4 bits chacun */
@@ -256,8 +267,9 @@ function sigOf(Z){if(Z._sig)return Z._sig;let r=Z.plus?null:SIG[Z.id];
    et l'ivoire (tons moyens, lumières), au lieu de bordeaux pâle / crème rosée. −7 et 0 inchangés (z gardé, voir sigOf). */
 const SIG_P7={DON:['#2c4a9c','#e8e4cc','#fff8e6']};
 /* ch > 1 : vibrance des +7 laiteux (RES374, ANT120) : un noir seul les aurait rendus gris */
-const SIG_CN={DON:{ch:.45,ro:1.3},DON045:{ch:.6},ASS152:{ch:.45},RES374:{ch:1.6,no:.07},ANT120:{ch:1.8,no:.1}};
-const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0,ch:1,no:0,ro:0};
+/* boucle 6 (24 nov.) : c0 = force du contraste d'atelier du niveau 0 (1 par défaut) */
+const SIG_CN={DON:{ch:.45,ro:1.3,c0:0},DON045:{ch:.6,c0:.5},ASS152:{ch:.45},RES374:{ch:1.6,no:.07},ANT120:{ch:1.8,no:.1}};
+const sigCur={sh:[.1,.1,.1],mi:[.5,.5,.5],hi:[1,1,1],k:0,on:0,t:0,ch:1,no:0,ro:0,c0:1};
 const _drawSig=draw;
 draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCur.t)/1000):0;sigCur.t=now;
   const Z=zoneAt(camera.position.x,camera.position.z);let f=1-Math.exp(-dt*1.6); /* fondu ~2 s, comme skM/skR */
@@ -267,8 +279,9 @@ draw=function(t){const now=performance.now(),dt=sigCur.t?Math.min(.25,(now-sigCu
     for(const [n,i] of [['sh',0],['mi',1],['hi',2]]){const a=S.z[i],b=B[i],c=sigCur[n];for(let j=0;j<3;j++)c[j]=lerp(c[j],lerp(a[j],b[j],u),f)}
     sigCur.k=lerp(sigCur.k,k,f);
     /* boucle 5 : même fondu de 2 s que les autres champs de la signature */
-    const cn=SIG_CN[Z.id]||{};sigCur.ch=lerp(sigCur.ch,cn.ch!==undefined?cn.ch:1,f);sigCur.no=lerp(sigCur.no,cn.no||0,f);sigCur.ro=lerp(sigCur.ro,cn.ro||0,f)}
+    const cn=SIG_CN[Z.id]||{};sigCur.ch=lerp(sigCur.ch,cn.ch!==undefined?cn.ch:1,f);sigCur.no=lerp(sigCur.no,cn.no||0,f);sigCur.ro=lerp(sigCur.ro,cn.ro||0,f);
+    sigCur.c0=lerp(sigCur.c0,cn.c0!==undefined?cn.c0:1,f)} /* boucle 6 : même fondu de 2 s */
   sigCur.on=lerp(sigCur.on,Z&&STYLE_ON?1:0,f);
   const U=mFinal.uniforms;U.sigSh.value.set(sigCur.sh[0],sigCur.sh[1],sigCur.sh[2]);U.sigMi.value.set(sigCur.mi[0],sigCur.mi[1],sigCur.mi[2]);
   U.sigHi.value.set(sigCur.hi[0],sigCur.hi[1],sigCur.hi[2]);U.sigK.value=sigCur.k;U.sigOn.value=sigCur.on;
-  U.sigCh.value=sigCur.ch;U.sigNo.value=sigCur.no;U.sigRo.value=sigCur.ro;_drawSig(t)};
+  U.sigCh.value=sigCur.ch;U.sigNo.value=sigCur.no;U.sigRo.value=sigCur.ro;U.sigC0.value=sigCur.c0;_drawSig(t)};

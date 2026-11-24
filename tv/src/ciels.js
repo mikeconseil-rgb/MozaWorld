@@ -108,7 +108,7 @@ function duoOf(Z){if(Z._duo!==undefined)return Z._duo;let r=Z.id in DUO_ZONE?DUO
 const EXP7={DON:.62},BL7={DON:.5,Glace:.3,'Sève':.3}; /* boucle 5 (23 nov. 2026) : Glace .45 → .3, Sève .3 (RES374, ANT120 +7 : moins de voile) */
  /* halo plafond : neige blanche + halo = voile laiteux (RES374 +7) */
 const bl7=Z=>BL7[Z.id]||(Z.plus&&BL7[Z.d.mana])||.8;
-const LAIT7={RES374:{fog:.6,exp:.9},ANT120:{fog:.6,exp:.9}}; /* boucle 5 : brouillard et exposition des +7 laiteux */
+const LAIT7={RES374:{fog:.4,exp:.9},ANT120:{fog:.6,exp:.9}}; /* boucle 5 : brouillard et exposition des +7 laiteux ; boucle 6 (24 nov.) : RES374 .6 → .4, la nappe laiteuse quitte les collines */
 const capTo=(v,cap,k)=>v>cap?lerp(v,cap,k):v;
 
 /* ---------- Boucle 3 (20 nov. 2026) : météo et lumière signées par lieu et par pôle ----------
@@ -156,7 +156,7 @@ const m3=[0,0,0];let addCur=-1;
    HEURE0 donne au palier 0 une heure du jour propre : élévation du soleil (el), couleur du soleil (sun), horizon et donc
    brouillard (hor, que stepAtmo recopie dans scene.fog), facteur de brouillard (fk), d'intensité du soleil (sI), sol du ciel (hg).
    Chaque palier glisse d'un septième vers les ancres des pôles, qui ne changent pas. Aucun objet, aucune passe en plus. */
-const HEURE0={CIT:{el:16,sun:'#ffc27a',hor:'#e8b07a',sI:1.5},             /* fin d'après-midi ambrée (soleil bas : un peu plus fort, sinon le sol s'éteint) */
+const HEURE0={CIT:{el:16,sun:'#ffc27a',hor:'#e8b07a',hg:'#9a6e3c',sI:1.5}, /* boucle 6 (24 nov.) : hg, ocre de bois et de terre gelée au lieu de la boue brune */             /* fin d'après-midi ambrée (soleil bas : un peu plus fort, sinon le sol s'éteint) */
   DON045:{el:9,sun:'#b4a8ff',hor:'#6c66b4',fk:1.3},                       /* heure bleue */
   RES374:{el:26,sun:'#e4fff0',hor:'#9cc8b0',hg:'#3c8a6c',fk:1.7,sI:.75},   /* brume jade */
   ASS152:{el:62,sun:'#ffa070',hor:'#e8885a'},                             /* canyon brique sous un soleil de midi */
@@ -180,6 +180,10 @@ function signer(Z,lv,o){const L=Math.round(clamp(lv||0,-7,7)),k=Math.abs(L)/7,f=
     if(H.hor)mix3(o.hor,o.hor,H.hor,.75*w);
     if(H.hg)mix3(o.hg,o.hg,atL(H.hg,Math.max(Yl(o.hg),.03),m3),.6*w);
     if(H.fk)o.fog*=lerp(H.fk,1,k);if(H.sI)o.sunI*=lerp(H.sI,1,k)}
+  /* boucle 6 (24 nov. 2026) : au palier 0, moins de ciel diffus (×.72) et un soleil plus franc (×1,15) : la lumière directe porte,
+     les ombres du héros et de la Pierre se dessinent. Un septième par palier, rien aux pôles (w = 0).
+     Sous un soleil rasant (heure bleue de DON045, 9°), le sol ne vit que du ciel : la baisse du diffus s'efface entre 16° et 8°. */
+  {const u=clamp((el0-8)/8,0,1);o.hI*=lerp(1,.72,w*u*u*(3-2*u))}o.sunI*=lerp(1,1.15,w);
   if(L<=-4){const r=(L+7)/3,e0=Math.max(eA,8);
     /* soleil rasant : un sol plat reçoit sin(él) de la lumière ; on rend au sol ce que l'abaissement lui retire, et un peu plus,
        (au plus 2,4, jamais moins qu'avant) et on baisse un peu le ciel diffus, sinon les ombres longues ne se lisent pas */
