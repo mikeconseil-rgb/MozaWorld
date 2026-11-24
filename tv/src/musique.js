@@ -5,7 +5,8 @@
    Au niveau 0, on n'entend que la trame principale (la mélodie seule). À chaque palier vers +7 ou vers −7, une couche
    s'ajoute : basse (1), accords (2), percussions (3), arpège ou canon (4), accords enrichis et mélodie doublée (5),
    basse marchante, ornements ou trémolo (6), harmonie à la tierce et grand final (7).
-   Le pôle colore l'arrangement : vers −7 l'air passe en mineur puis en mode sombre (phrygien ou mineur harmonique),
+   24 nov. : l'air reste reconnaissable à tous les niveaux (mêmes notes, même hauteur, voix du dessus). Ancienne règle, retirée :
+   vers −7 l'air passait en mineur puis en mode sombre (phrygien ou mineur harmonique),
    ralentit et descend ; vers +7 il s'éclaire (dorien, majeur, lydien), accélère et monte. Le type de tuile choisit le
    rythme et l'instrument de base, le mana de la zone choisit les timbres des pôles.
    Notation des airs : NOTE+OCTAVE[:durée], durée en unités (u unités par temps), R = silence, | = barre de mesure.
@@ -138,28 +139,31 @@ function musZone(Z){const d=Z.d||{},type=Z.mod||Z.id,mana=d.mana||(typeof ZMANA!
   return{id:Z.id,type,mana,culture:d.culture||'',air}}
 /* ---------- arrangement : construit la liste d'événements d'une boucle pour une zone et un niveau ---------- */
 function musArranger(F,lv){const A=MUS_AIRS[F.air],P=musLire(A),pole=Math.sign(lv),a=Math.min(7,Math.round(Math.abs(lv))),h=musHash(F.id);
-  const G=MUS_GENRE[F.type]||MUS_GENRE.RES,M=MUS_MANA[F.mana]||MUS_MANA.Pierre,mode=musModeCible(A,pole,a,MUS_SOMBRE[F.culture]);
+  const G=MUS_GENRE[F.type]||MUS_GENRE.RES,M=MUS_MANA[F.mana]||MUS_MANA.Pierre,mode=A.mode;/* 24 nov. : l'air garde ses propres notes à tous les niveaux (avant : passage en mineur, phrygien, lydien aux extrêmes, qui le rendait méconnaissable) */
   const map=MUS_MODES[A.mode][mode]||{},ton=(musNote(A.ton+'4')%12+(MUS_ZONE[F.id]?0:(h%7)-3)+12)%12,decal=MUS_ZONE[F.id]?0:(h%7)-3;
   const mv=m=>{m+=decal;const r=((m-ton)%12+12)%12;return m+((map[r]!==undefined?map[r]:r)-r)};
   const base=(A.mode==='maj'?[0,2,4,5,7,9,11]:[0,2,3,5,7,8,10]).map(r=>(r+(map[r]!==undefined?map[r]-r:0)+ton)%12).sort((x,y)=>x-y);
   const pas=(m,s)=>{let x=m+s;while(base.indexOf(((x%12)+12)%12)<0)x+=s;return x},tierce=(m,s)=>pas(pas(m,s),s),pasN=(m,k,s)=>{for(let i=0;i<k;i++)m=pas(m,s);return m};
   const pulse=A.pulse||A.u,ev=[],add=(t,d,m,v,voix)=>ev.push({t,d,m,v,voix});
-  const octave=pole<0&&a>=6?-12:pole>0&&a>=7?12:0;
-  const lead=a>=4&&pole?(pole<0?M.neg:M.pos):G.lead;
+  const octave=0,lead=G.lead,coul=pole<0?M.neg:M.pos;/* 24 nov. : la mélodie reste à sa hauteur et sur l'instrument de la zone ; les autres instruments la doublent */
   /* 0 : la trame principale */
-  const vm=.17*(1+Math.max(0,3-a)*.45);/* seule, la trame doit s'entendre autant que l'orchestre */
-  for(const n of P.notes){const m=mv(n.m)+octave;add(n.t,n.d,m,vm,lead);
-    if(!(a>=5&&pole<0)){let b=m-12;while(b>62)b-=12;add(n.t,n.d,b,a?.06:.08,'alto')}/* 23 nov. : la mélodie doublée plus bas, pour les médiums */
-    if(a>=5)add(n.t,n.d,m+(pole<0?-12:12),.07,pole<0?'basson':'cloche');
-    /* 23 nov. : une harmonie de plus à chaque palier. 2 : tierce sur les temps forts ; 3 : tierce sur toute la mélodie ;
-       4 : sixte en dessous (trois voix) ; 6 : quinte au-dessus (quatre voix) ; 7 : tierce renforcée au timbre du pôle */
-    const fort=Math.abs(n.t/pulse-Math.round(n.t/pulse))<1e-6,sd=pole<0?-1:1;
-    if(a>=3||(a>=2&&fort))add(n.t,n.d,tierce(m,sd),a>=3?.05:.045,'triangle');
-    if(a>=4)add(n.t,n.d,pasN(m,5,-1),.04,'alto');
-    if(a>=6)add(n.t,n.d,pasN(m,4,1),.03,'triangle');
-    if(a>=7)add(n.t,n.d,tierce(m,sd),.06,pole<0?M.neg:M.pos);
-    if(a>=6&&pole>0&&n.d>=A.u*2)add(n.t-.25,.25,pas(m,1),.06,lead);
-    if(a>=6&&pole<0&&n.d>=A.u)for(let q=0;q<n.d;q+=.5)add(n.t+q,.45,m-12,.035,'scie')}
+  const vm=a>=3?.2+.012*(a-3):.17*(1+Math.max(0,3-a)*.45);/* la trame reste devant l'orchestre, même à ±7 */
+  for(const n of P.notes){const m=mv(n.m);add(n.t,n.d,m,vm,lead);
+    {let b=m-12;while(b>62)b-=12;add(n.t,n.d,b,a?.06:.08,'alto')}/* la mélodie doublée plus bas, pour les médiums */
+    /* instruments ajoutés, qui jouent tous l'air : 4 l'instrument du pôle à l'unisson, 5 une doublure à l'octave,
+       6 trémolo (vers −) ou appoggiatures (vers +), 7 un troisième instrument à l'autre octave */
+    if(a>=4&&pole)add(n.t,n.d,m,.085,coul);
+    if(a>=5)add(n.t,n.d,m+(pole<0?-12:12),.06,pole<0?'basson':'cloche');
+    if(a>=7)add(n.t,n.d,m+(pole<0?12:-12),.045,pole<0?'verre':'cuivre');
+    if(a>=6&&pole>0&&n.d>=A.u*2)add(n.t-.25,.25,pas(m,1),.05,lead);
+    if(a>=6&&pole<0&&n.d>=A.u)for(let q=0;q<n.d;q+=.5)add(n.t+q,.45,m-12,.025,'scie');
+    /* harmonies, toujours SOUS la mélodie pour qu'elle reste la voix du dessus : 2 sixte sur les temps forts,
+       3 sixte partout, 4 tierce en dessous (trois voix), 6 quarte en dessous (quatre voix), 7 sixte renforcée */
+    const fort=Math.abs(n.t/pulse-Math.round(n.t/pulse))<1e-6;
+    if(a>=3||(a>=2&&fort))add(n.t,n.d,pasN(m,5,-1),.04,'triangle');
+    if(a>=4)add(n.t,n.d,tierce(m,-1),.035,'alto');
+    if(a>=6)add(n.t,n.d,pasN(m,3,-1),.028,'triangle');
+    if(a>=7)add(n.t,n.d,pasN(m,5,-1),.035,coul)}
   /* accords : basse, nappe, arpège */
   for(const c of P.acc){const r=mv(c.r+48),tons=c.iv.map(i=>mv(c.r+i+48)),rt=((r%12)+12)%12;let bas=40+((rt-4+12)%12);/* mi 2 à ré# 3 : le grave que rendent les haut-parleurs d'une télé */
     if(a>=1){if(a>=6){for(let q=0;q<c.d;q+=A.u/2)add(c.t+q,A.u/2*.9,bas+((q/(A.u/2))%2?12:0),.12,'basse')}
@@ -169,13 +173,14 @@ function musArranger(F,lv){const A=MUS_AIRS[F.air],P=musLire(A),pole=Math.sign(l
     if(a===1){let q=r;while(q<50)q+=12;while(q>62)q-=12;add(c.t,c.d,q,.035,'nappe');add(c.t,c.d,q+7,.03,'nappe')}/* 1 : quinte tenue */
     if(a>=2){let v=tons.map(m=>{while(m<50)m+=12;while(m>62)m-=12;return m});
       if(a>=3&&c.iv.length<4){let s7=pasN(v[0],6,1);while(s7>64)s7-=12;v.push(s7)}/* 3 : septième */
-      if(a>=5)v.push(pole<0?v[0]+13:v[0]+14);if(a>=6)v.push(v[1]+12);if(a>=7)v.push(pole<0?v[0]+6:v[0]+11);
+      if(a>=5){let n9=pas(v[0],1);v.push(n9+12)}/* 5 : neuvième, dans la gamme de l'air */if(a>=6)v.push(v[1]+12);if(a>=7){let n6=pasN(v[0],5,1);while(n6>66)n6-=12;v.push(n6)}
       for(const m of v)add(c.t,c.d,m,a>=5?.035:.045,a>=7?'choeur':'nappe')}
-    if(a>=4&&!A.canon){const motif=[[0,1,2,1],[0,2,1,2],[0,1,2,3],[2,1,0,1]][h%4],st=A.u/2;let k=0;
-      for(let q=0;q<c.d;q+=st,k++){const i=motif[k%4]%tons.length,o=pole>0?72:60;let m=tons[i];while(m<o)m+=12;add(c.t+q,st,m,.05,M.arp)}}}
+    if(a>=4&&!A.canon){let sous=127;for(const n of P.notes)if(n.t<c.t+c.d&&n.t+n.d>c.t)sous=Math.min(sous,mv(n.m));/* l'arpège reste sous la mélodie du moment */
+      const motif=[[0,1,2,1],[0,2,1,2],[0,1,2,3],[2,1,0,1]][h%4],st=A.u/2;let k=0;
+      for(let q=0;q<c.d;q+=st,k++){const i=motif[k%4]%tons.length,o=Math.max(40,Math.min(pole>0?62:55,sous-12));let m=tons[i];while(m<o)m+=12;while(m>=o+12)m-=12;add(c.t+q,st,m,.04,M.arp)}}}
   /* canon : la mélodie reprise en décalé (2 voix au palier 4, 3 voix au palier 6) */
   if(a>=4&&A.canon)for(let k=1;k<=(a>=6?2:1);k++)for(const n of P.notes){const t=(n.t+A.canon*k)%P.L;
-    add(t,n.d,mv(n.m)+octave+(k===1?(pole<0?-12:12):0),.09,k===1?M.arp:M.neg)}
+    add(t,n.d,mv(n.m)-12*k,.055,k===1?M.arp:'alto')}/* les voix du canon passent sous la mélodie */
   /* 3 : percussions selon le type */
   if(a>=3){const nb=A.bar/pulse;for(let b=0;b<P.L/A.bar;b++){const t0=b*A.bar;
     for(let i=0;i<nb;i++){const t=t0+i*pulse,fort=i===0,dem=pulse/2;
@@ -187,7 +192,7 @@ function musArranger(F,lv){const A=MUS_AIRS[F.air],P=musLire(A),pole=Math.sign(l
       if(a>=5)add(t+dem,0,0,.25,'charley')}
     if(a>=7&&b===0)add(t0,0,0,1,'cymbale')}}
   ev.sort((x,y)=>x.t-y.t);
-  const bpm=A.bpm*G.tempo*(MUS_ZONE[F.id]?1:.94+(h%13)/100)*(pole>0?1+.045*a:pole<0?1-.045*a:1);
+  const bpm=A.bpm*G.tempo*(MUS_ZONE[F.id]?1:.94+(h%13)/100)*(pole>0?1+.018*a:pole<0?1-.018*a:1)/* 24 nov. : ±13 % au plus (avant ±31 %) */;
   return{ev,L:P.L,spu:60/Math.max(40,Math.min(190,bpm))/A.u,echo:pole<0?.25+.03*a:.18}}
 
 /* ---------- synthétiseur : quelques timbres façon General MIDI / 16 bits ---------- */
