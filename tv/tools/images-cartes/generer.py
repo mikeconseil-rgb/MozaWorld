@@ -34,6 +34,11 @@ def main():
     toutes = len(cartes)
     if o.seul: cartes = [c for c in cartes if c['k'] in o.seul.split(',') or c['fichier'] in o.seul.split(',')]
     a_faire = [c for c in cartes if o.refaire or not (DOSSIER / (c['fichier'] + '.webp')).exists()]
+    # Cartes écartées (le modèle y écrit du texte avec ce prompt) : une par ligne dans ecartees.txt, sautées sauf --seul.
+    ecart = Path(__file__).with_name('ecartees.txt')
+    if ecart.exists() and not o.seul:
+        sautees = set(ecart.read_text(encoding='utf8').split())
+        a_faire = [c for c in a_faire if c['fichier'] not in sautees]
     # ordre : d'abord les cartes vues en premier (paliers 1 à 3 de toutes les zones), secrets après le palier 3
     rang = lambda c: int(c['k'][-1]) if '#' in c['k'] else 3.5
     a_faire.sort(key=rang)
