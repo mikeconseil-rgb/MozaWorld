@@ -6,6 +6,12 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Boucle graphique 6, amélioration 2 : les jumeaux du Donjon défaits, la rosace d'ASS152 refermée (24 novembre, `src/sol.js`)
+- **DON045 change de grammaire de sol** : table `GRAM_Z={DON045:5}` lue en tête de `grammaireDe` ; la Taïga de Kobor prend la grammaire du Marché, peinte en couleur (`COUL_Z`, codé +16 dans le canal a de la carte des zones, lu `gC` dans le fragment). À −7 : treillis de losanges bleu glacier (#9fd4ff, en lueur) au tracé ondulé sur un sol de nuit strié de traînées de sel et de suie ; à +7 : losanges céladon (#7fb8a8) sur neige (#eef4f2, teinte du mana à 10 %), filet d'argent, fondu doux de 30 cm. Plus aucun Voronoï ni zellige khatam cobalt : DON045 ne partage plus ni motif ni palette avec DON (inchangé). Couverture graduelle conservée, saut net de 6 à 7 aussi au pôle −.
+- **ASS152 +7** : ni joint ni bombement à l'Assemblée + (ils cernaient de brun les flaques de sable), bord des plaques fondu, couverture ~90 % au palier 7 (seuil −,17). Marché, Citadelle, Donjon : joints inchangés.
+- **Marché +** : fondu anti-moiré lointain élargi (`lis`, 1 à 6 pixels au lieu de 1 à 2,5), la ligne franche du damier vers 100 m s'adoucit ; MAR et CIT sinon inchangés.
+- Mesures (banc par image, Belle) : DON045 386 926 triangles / 300 appels (avant 386 891 / 298), DON 324 228 / 209 (329 327 / 208), MAR 505 488 / 270 (502 068 / 269), CIT 416 655 / 231 (427 627 / 236), ASS152 216 043 / 227 (222 083 / 221) : inchangés au bruit près.
+
 ## Version 2.43 (23 novembre) : boucle graphique 5
 
 Trois réglages acceptés par le testeur, sans nouveau système : marqueterie des sols 4.2c, couloir de caméra à l'arrivée, étalonnage des +7. Détails ci-dessous.

@@ -45,7 +45,11 @@ const motifDe=Z=>{if(!Z.plus)return MOTIF_ORIG[Z.id]||0;const d=Z.d,m=MOTIF_BIO[
 const manaDe=Z=>Z.plus?Math.max(0,MANA.indexOf(Z.d.mana)):(MANA_ORIG[Z.id]||0);
 /* boucle 2 (19 nov. 2026) : grammaire de pôle par type de zone ; une tuile au type inconnu en reçoit une par hachage de son nom */
 const GRAM={Citadelle:0,Donjon:1,Ressource:2,Antre:3,'Assemblée':4,'Marché':5},GRAM_ORIG={CIT:0,DON:1,RES:2,ANT:3,ASS:4,MAR:5};
-const grammaireDe=Z=>{if(!Z.plus)return GRAM_ORIG[Z.id]||0;const g=GRAM[Z.d.type];if(g!==undefined)return g;
+/* boucle 6 (24 nov. 2026, 6.2) : grammaire imposée à une zone, avant celle de son type. DON045 (la Taïga de Kobor) était la jumelle du DON
+   (même Voronoï à −7, même zellige khatam à +7) : elle prend la grammaire du Marché, qu'on ne voit jamais en couleur ailleurs (Givrecloche la passe en fusain).
+   COUL_Z : cette grammaire y est peinte en couleur (céladon et neige à +7, bleu glacier sur fond nuit à −7) ; codé +16 dans le canal a (voir gC dans le fragment). */
+const GRAM_Z={DON045:5},COUL_Z={DON045:1};
+const grammaireDe=Z=>{if(GRAM_Z[Z.id]!==undefined)return GRAM_Z[Z.id];if(!Z.plus)return GRAM_ORIG[Z.id]||0;const g=GRAM[Z.d.type];if(g!==undefined)return g;
   let h=7;for(const ch of String(Z.id))h=(h*31+ch.charCodeAt(0))>>>0;return h%6};
 /* teinte saturée du pôle positif de chaque mana, pour colorer les marqueteries de +7 (au lieu de les blanchir) */
 const POS=[[1,.5,.12],[.45,.75,1],[.12,.85,.75],[.55,.95,.15],[.95,.72,.35],[.72,.5,1]];
@@ -53,7 +57,7 @@ const POS=[[1,.5,.12],[.45,.75,1],[.12,.85,.75],[.55,.95,.15],[.95,.72,.35],[.72
 const data=new Uint8Array(GN*4);for(let k=0;k<GN;k++){data[k*4+1]=128;data[k*4+3]=0}
 const tex=new THREE.DataTexture(data,GW,GH,THREE.RGBAFormat,THREE.UnsignedByteType);
 tex.magFilter=tex.minFilter=THREE.NearestFilter;tex.generateMipmaps=false;tex.flipY=false;tex.needsUpdate=true;
-function ecrire(Z){const r=motifDe(Z)+(STYLEES[Z.id]?128:0),g=Math.round(clamp((Z.lv+7)/14,0,1)*255),b=manaDe(Z),a=grammaireDe(Z),V=Z.verts;
+function ecrire(Z){const r=motifDe(Z)+(STYLEES[Z.id]?128:0),g=Math.round(clamp((Z.lv+7)/14,0,1)*255),b=manaDe(Z),a=grammaireDe(Z)+(COUL_Z[Z.id]?16:0),V=Z.verts;
   for(let n=0;n<V.length;n++){const k=V[n]*4;data[k]=r;data[k+1]=g;data[k+2]=b;data[k+3]=a}tex.needsUpdate=true}
 /* rebuild est appelée par son nom (main.js, mue, MZ.set) : la réaffecter suffit à suivre chaque mue */
 const _rebuildSol=rebuild;rebuild=function(Z){_rebuildSol(Z);ecrire(Z)};
@@ -209,7 +213,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     (seuls le Voronoï du Donjon et le Girih complet restent réservés à SOL_FIN). La grammaire est constante par zone : pas de divergence.
     cr = cran (0 à 3) : l'échelle ou la densité du motif saute aux paliers ±2, ±4, ±6, en plus de la couleur qui suit chaque palier.
     Marché : son écriture passe outre le style gris de Givrecloche ; elle est codée en luminance (claire sur noir à −7, sombre sur blanc à +7). */
- float gr=floor(zd.a*255.+.5),moP=gr>4.5?ef*(1.-solEau):mo;
+ float gr=floor(zd.a*255.+.5),gC=step(15.5,gr);gr-=16.*gC;   /* boucle 6 (24 nov. 2026, 6.2) : gC, grammaire peinte en couleur (DON045, voir COUL_Z) */
+ float moP=gr>4.5?ef*(1.-solEau):mo;
  float px=length(fwidth(p));   /* boucle 4 (22 nov. 2026) : taille du pixel au sol (m), prise hors de toute branche */
  /* boucle 4 (22 nov. 2026) : bruit des îlots de marqueterie (voir (c) plus bas) et sa pente, pris hors de toute branche (dérivées sûres) :
     en Belle, une lecture de plus, vn(p/5) mêlé au bruit de 8 m (des plaques de 4 à 8 m, plusieurs dans le champ) ;
@@ -236,7 +241,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
   vec3 sc0=c,se0=solE,sCl=c;float sMq=1.,sUs=1.,sJt=0.,sGap=0.,aaM=max(.02,px*.75);   /* aaM : anti-moiré du Marché et de la Citadelle −7, à la taille du pixel */
   if(alv>=.5){
    float sS=.596-.012*(k-1.)-.045*cr;   /* ,596 · ,539 · ,527 · ,47 · ,458 · ,401 · ,389 */
-   sS-=.09*step(6.5,k)*step(.5,gr)*step(gr,1.5);   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon, saut ±6 → ±7 franc (couverture ~74 % → ~90 %, reprise : ,05 → ,09) */
+   sS-=.09*step(6.5,k)*max(step(.5,gr)*step(gr,1.5),gC*step(lv,0.));   /* boucle 5 (23 nov. 2026, 4.2c) : Donjon, saut ±6 → ±7 franc (couverture ~74 % → ~90 %, reprise : ,05 → ,09) */
+   if(lv>0.&&gr>3.5&&gr<4.5)sS-=.17*step(6.5,k);   /* boucle 6 (24 nov. 2026, 6.2) : Assemblée +, saut ±6 → ±7, la rosace couvre ~90 % (sans changer les paliers 1 à 6) */
    if(lv>0.&&gr>4.5)sS-=.08+.2*step(6.5,k);   /* boucle 5 (23 nov. 2026, 4.2c, reprise) : Marché +, ~45 % au palier 1, ~88 % au 6, damier continu au 7 */
    float aN=sIw*.75,e=sIl-sS,jw=.2*sIg;   /* jw : 20 cm de joint, en unités de bruit (largeur constante au sol, quelle que soit la pente du bruit) */
    if(lv>0.){   /* pôle + : de vraies plaques, bord net (filtré au pixel), joint sombre */
@@ -250,7 +256,8 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
       les carrés noirs en grandes taches blanches ; à 18 %, la brume de Givrecloche en faisait encore des taches grises), joint noir retiré, et plus de bombement
       (sa normale ombrait le bord des plaques en dégradés gris foncé) */
    if(lv>0.&&gr>.5&&gr<1.5)sUs=1.-.15*smoothstep(.5,.78,u);   /* boucle 5 (4.2c, reprise) : Donjon +, usure légère (elle tachait le zellige de rose) */
-   if(lv>0.&&gr>1.5&&gr<2.5){sJt=0.;sGap=0.;}}   /* boucle 5 (4.2c) : prairie de la Ressource +, ni joint ni bombement (une prairie n'a pas de dalles) */
+   if(lv>0.&&gr>1.5&&gr<2.5){sJt=0.;sGap=0.;}
+   if(lv>0.&&gr>3.5&&gr<4.5){sJt=0.;sGap=0.;sMq=smoothstep(-.04-aN,.04+aN,e);}}   /* boucle 6 (24 nov. 2026, 6.2) : Assemblée +, ni joint ni bombement (ils cernaient de brun les flaques de sable de l'ASS152 +7) ; bord fondu vers le sable */   /* boucle 5 (4.2c) : prairie de la Ressource +, ni joint ni bombement (une prairie n'a pas de dalles) */
   if(alv<.5){   /* (c0) niveau 0 : chaque famille garde la trace de son écriture, à faible intensité (de près seulement : rien à payer au loin) */
    if(nMoy<=0.){}
    else if(gr<.5){   /* Citadelle : quelques médaillons Girih à peine en relief, ton sur ton */
@@ -339,12 +346,19 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     solH=(dot(l,tl)*.12+.05*smoothstep(0.,gap+.05,e))*(1.-man)*zone*nB*moP;
     solE+=nc*jt*zone*.002*k*pul*moP*nLoin;}
    else{   /* (c−) Marché : treillis de losanges à la craie (L ≈ ,78) sur un sol d'encre (≈ ,15) ; le losange intérieur vient au palier 4 */
-    vec2 S=vec2(3.,5.)*(1.-.16*cr);vec3 lo=solLos(w2*.15+p*.85,S);float f=S.x*S.y/length(S);
-    float mot=max(solTrait(lo.x,.05+.008*k,aaM),k>3.5?solTrait(abs(lo.z-.25)*f,.035,aaM):0.);
+    vec2 S=vec2(3.,5.)*(1.-.16*cr)*(1.+.6*gC);vec3 lo=solLos(mix(w2*.15+p*.85,w2,gC),S);float f=S.x*S.y/length(S);
+    float mot=max(solTrait(lo.x,(.05+.008*k)*(1.-.4*gC),aaM),k>3.5?solTrait(abs(lo.z-.25)*f,.035,aaM):0.);
     mot=max(mot,k>5.5?solTrait(lo.z*f,.12,aaM):0.);   /* palier 6 : un point au cœur */
     float i=min(1.,.25+.11*k)*moP*pl;
+    if(gC>.5){   /* boucle 6 (24 nov. 2026, 6.2) : DON045 −, treillis bleu glacier (#9fd4ff, lueur) sur un sol de nuit, traînées de sel et de suie (une lecture de bruit, pour cette zone seule) ;
+      losanges ×1,6, tracé ondulé (dérive w2 entière), trait ×0,6 */
+     float tn=sN(vec2(dot(w2,vec2(.8,.6))*.06,dot(w2,vec2(-.6,.8))*.9));
+     vec3 nuit=vec3(.008,.014,.036)*(.8+.4*B8.r);
+     nuit=mix(nuit,vec3(.2,.26,.36),smoothstep(.56,.8,tn)*.8);nuit*=1.-.8*smoothstep(.44,.24,tn);
+     c=mix(c,nuit,i);c=mix(c,vec3(.12,.42,1.),mot*i);solE+=vec3(.06,.3,1.)*mot*i*nLoin;}
+    else{
     c=mix(c,vec3(.035)*(.8+.4*B8.r),i);
-    c=mix(c,vec3(.6),mot*i);solE+=vec3(.42)*mot*i*nLoin;}
+    c=mix(c,vec3(.6),mot*i);solE+=vec3(.42)*mot*i*nLoin;}}
   }else{
    vec3 mp=uSolPos[0];if(mana>.5)mp=uSolPos[1];if(mana>1.5)mp=uSolPos[2];if(mana>2.5)mp=uSolPos[3];if(mana>3.5)mp=uSolPos[4];if(mana>4.5)mp=uSolPos[5];
    if(gr<.5){   /* (c+) Citadelle : Girih en relief doré, levé par la normale seule (aucun trait de couleur), sur un sol d'ivoire */
@@ -416,16 +430,20 @@ vec3 solE=vec3(0.);float solGold=0.,solLisse=0.,solH=0.;   /* solH : relief (m) 
     c=mix(c,f,on*moP*min(1.,.5+.08*k));
     c=mix(c,vec3(.12,.08,.05),solTrait(d,.03+.004*k,aa)*on*moP);solGold=on*moP*.4;}
    else{   /* (c+) Marché : losanges sombres (≈ ,25) en arlequin sur un sol clair (≈ ,88), petit losange inversé au cœur dès le palier 5 */
-    vec2 S=vec2(2.6,4.4)*(1.-.16*cr);vec3 lo=solLos(p,S);float f=S.x*S.y/length(S);
+    vec2 S=vec2(2.6,4.4)*(1.-.16*cr)*(1.+.5*gC);vec3 lo=solLos(p+wv.rg*1.2*gC,S);float f=S.x*S.y/length(S);
     float bl=lo.y;if(k>4.5&&lo.z<.17)bl=1.-bl;
     /* boucle 4 (22 nov. 2026) : damier filtré (aaM, à la taille du pixel) : bord fondu sur un pixel, et le damier ne tend vers son gris moyen
        que là où le losange fait moins de ~2 pixels (fin du moiré, sans losanges gris baveux à mi-distance) */
-    float lis=smoothstep(1.,2.5,f/px);bl=mix(.5,bl,smoothstep(0.,aaM,lo.x)*lis);
+    float lis=smoothstep(1.,6.,f/px);bl=mix(.5,bl,smoothstep(0.,aaM+.3*gC,lo.x)*lis);
     float i=min(1.,.4+.09*k)*moP*pl;   /* boucle 5 (reprise) : ,25+,11k → ,4+,09k, le damier se lisait à peine aux paliers 1 à 6 sous la brume blanche de Givrecloche */
-    c=mix(c,vec3(.8)*(.97+.06*B8.r),i);sCl=c;   /* boucle 5 (4.2c) : la teinte claire de la plaque, vers laquelle va l'usure (jamais vers un gris) */
-    c=mix(c,vec3(.1),bl*min(1.,.7+.1*k)*moP*pl);   /* boucle 5 (reprise) : le noir des losanges est franc dès le palier 1 (sous l'ACES et la brume de Givrecloche,
+    /* boucle 6 (24 nov. 2026, 6.2) : DON045 +, losanges céladon (#7fb8a8) sur neige (#eef4f2, 10 % de la teinte du mana), filet d'argent ; ×1,5, tracé ondulé,
+       fondu doux de 30 cm (pas un carrelage dur). Pour tout le Marché +, fondu anti-moiré lointain élargi (lis : 1 à 6 pixels au lieu de 1 à 2,5) */
+    vec3 cClr=vec3(.8),cSom=vec3(.1),cJt=vec3(.45);
+    if(gC>.5){cClr=mix(vec3(.85,.9,.88),mp,.1);cSom=vec3(.21,.48,.39);cJt=vec3(.62,.66,.7);}
+    c=mix(c,cClr*(.97+.06*B8.r),i);sCl=c;   /* boucle 5 (4.2c) : la teinte claire de la plaque, vers laquelle va l'usure (jamais vers un gris) */
+    c=mix(c,cSom,bl*min(1.,.7+.1*k)*moP*pl);   /* boucle 5 (reprise) : le noir des losanges est franc dès le palier 1 (sous l'ACES et la brume de Givrecloche,
       un gris moyen ressortait blanc) ; la gradation tient à la couverture, au cran d'échelle et au petit losange inversé */
-    c=mix(c,vec3(.45),solTrait(min(lo.x,k>4.5?abs(lo.z-.17)*f:9.),.012,aaM)*i*lis);}   /* boucle 5 (4.2c) : joint gris étroit (,025 → ,012) */
+    c=mix(c,cJt,solTrait(min(lo.x,k>4.5?abs(lo.z-.17)*f:9.),.012,aaM)*i*lis);}   /* boucle 5 (4.2c) : joint gris étroit (,025 → ,012) */
   }
   if(alv>=.5){   /* boucle 4 (22 nov. 2026) : pose en marqueterie (îlots, usure, joint) et fondu au loin, voir plus haut */
    /* Citadelle + (relief doré) et Antre + (nacre) : soustraites au fondu, masque et usure adoucis, sinon le pôle ne se lit plus.
