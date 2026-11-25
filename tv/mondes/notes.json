@@ -1,0 +1,830 @@
+[
+ {
+  "id": "-",
+  "tuiles": 799,
+  "ombres": 0,
+  "blanches": 0,
+  "regroupement": 0.855,
+  "opposees": 0,
+  "inutilisees": 126,
+  "score": 72.9,
+  "dep": [
+   4599,
+   2542
+  ],
+  "cap": "CIT026",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 6,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 10,
+    "MAR": 0
+   }
+  },
+  "f": "0-13.json",
+  "rosace": "0",
+  "fleurs": [
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 806,
+  "ombres": 0,
+  "blanches": 0,
+  "regroupement": 0.84,
+  "opposees": 0,
+  "inutilisees": 119,
+  "score": 72.1,
+  "dep": [
+   4599,
+   3189
+  ],
+  "cap": "CIT020",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 6,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 10,
+    "MAR": 0
+   }
+  },
+  "f": "0-10.json",
+  "rosace": "0",
+  "fleurs": [
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 791,
+  "ombres": 0,
+  "blanches": 0,
+  "regroupement": 0.851,
+  "opposees": 0,
+  "inutilisees": 134,
+  "score": 71.7,
+  "dep": [
+   3984,
+   3389
+  ],
+  "cap": "CIT035",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 6,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 10,
+    "MAR": 0
+   }
+  },
+  "f": "0-11.json",
+  "rosace": "0",
+  "fleurs": [
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 769,
+  "ombres": 1,
+  "blanches": 0,
+  "regroupement": 0.851,
+  "opposees": 0,
+  "inutilisees": 157,
+  "score": 69.25,
+  "dep": [
+   3839,
+   3589
+  ],
+  "cap": "CIT044",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 6,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 10,
+    "MAR": 0
+   }
+  },
+  "f": "0-15.json",
+  "rosace": "0",
+  "fleurs": [
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 815,
+  "ombres": 10,
+  "blanches": 0,
+  "regroupement": 0.793,
+  "opposees": 0,
+  "inutilisees": 120,
+  "score": 65.8,
+  "dep": [
+   3603,
+   3912
+  ],
+  "cap": "CIT028",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 6,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 10,
+    "MAR": 0
+   }
+  },
+  "f": "0-12.json",
+  "rosace": "0",
+  "fleurs": [
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils",
+   "Les Cinq Soleils"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 939,
+  "ombres": 128,
+  "blanches": 0,
+  "regroupement": 0.791,
+  "opposees": 0,
+  "inutilisees": 114,
+  "score": 48.5,
+  "dep": [
+   4599,
+   2542
+  ],
+  "cap": "CIT026",
+  "roy0": {
+   "n": 21,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 5,
+    "ANT": 0,
+    "MAR": 15
+   }
+  },
+  "f": "5-13.json",
+  "rosace": "5",
+  "fleurs": [
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 924,
+  "ombres": 110,
+  "blanches": 0,
+  "regroupement": 0.734,
+  "opposees": 0,
+  "inutilisees": 111,
+  "score": 45.8,
+  "dep": [
+   3603,
+   3912
+  ],
+  "cap": "CIT039",
+  "roy0": {
+   "n": 21,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 5,
+    "ANT": 0,
+    "MAR": 15
+   }
+  },
+  "f": "5-12.json",
+  "rosace": "5",
+  "fleurs": [
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 946,
+  "ombres": 138,
+  "blanches": 0,
+  "regroupement": 0.74,
+  "opposees": 0,
+  "inutilisees": 117,
+  "score": 41.6,
+  "dep": [
+   3603,
+   3912
+  ],
+  "cap": "CIT034",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "4-12.json",
+  "rosace": "4",
+  "fleurs": [
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 914,
+  "ombres": 131,
+  "blanches": 0,
+  "regroupement": 0.754,
+  "opposees": 0,
+  "inutilisees": 142,
+  "score": 41.55,
+  "dep": [
+   4219,
+   4112
+  ],
+  "cap": "CIT029",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "mix-13.json",
+  "rosace": "mix",
+  "fleurs": [
+   "La Couronne de losanges",
+   "La Grande Rosace",
+   "La Rose de sang",
+   "Les Cinq Soleils",
+   "La Corolle du Sénat"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 947,
+  "ombres": 180,
+  "blanches": 0,
+  "regroupement": 0.82,
+  "opposees": 0,
+  "inutilisees": 158,
+  "score": 39.2,
+  "dep": [
+   4599,
+   3189
+  ],
+  "cap": "CIT014",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "4-10.json",
+  "rosace": "4",
+  "fleurs": [
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 919,
+  "ombres": 145,
+  "blanches": 0,
+  "regroupement": 0.742,
+  "opposees": 0,
+  "inutilisees": 151,
+  "score": 37.35,
+  "dep": [
+   4599,
+   3189
+  ],
+  "cap": "CIT039",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 6,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 10,
+    "MAR": 0
+   }
+  },
+  "f": "mix-10.json",
+  "rosace": "mix",
+  "fleurs": [
+   "Les Cinq Soleils",
+   "La Couronne de losanges",
+   "La Rose de sang",
+   "La Grande Rosace",
+   "La Corolle du Sénat"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 941,
+  "ombres": 197,
+  "blanches": 0,
+  "regroupement": 0.835,
+  "opposees": 0,
+  "inutilisees": 181,
+  "score": 35.85,
+  "dep": [
+   3984,
+   3389
+  ],
+  "cap": "CIT044",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "2-11.json",
+  "rosace": "2",
+  "fleurs": [
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 943,
+  "ombres": 164,
+  "blanches": 0,
+  "regroupement": 0.738,
+  "opposees": 0,
+  "inutilisees": 146,
+  "score": 34.6,
+  "dep": [
+   4219,
+   3065
+  ],
+  "cap": "CIT016",
+  "roy0": {
+   "n": 21,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 10,
+    "RES": 5,
+    "ANT": 0,
+    "MAR": 5
+   }
+  },
+  "f": "1-14.json",
+  "rosace": "1",
+  "fleurs": [
+   "La Rose de sang",
+   "La Rose de sang",
+   "La Rose de sang",
+   "La Rose de sang",
+   "La Rose de sang"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 941,
+  "ombres": 213,
+  "blanches": 0,
+  "regroupement": 0.822,
+  "opposees": 0,
+  "inutilisees": 197,
+  "score": 30.55,
+  "dep": [
+   4219,
+   3065
+  ],
+  "cap": "CIT013",
+  "roy0": {
+   "n": 21,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 5,
+    "ANT": 0,
+    "MAR": 15
+   }
+  },
+  "f": "5-14.json",
+  "rosace": "5",
+  "fleurs": [
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat",
+   "La Corolle du Sénat"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 937,
+  "ombres": 180,
+  "blanches": 0,
+  "regroupement": 0.742,
+  "opposees": 0,
+  "inutilisees": 168,
+  "score": 30.4,
+  "dep": [
+   4599,
+   2542
+  ],
+  "cap": "CIT009",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "2-13.json",
+  "rosace": "2",
+  "fleurs": [
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 959,
+  "ombres": 192,
+  "blanches": 0,
+  "regroupement": 0.742,
+  "opposees": 0,
+  "inutilisees": 158,
+  "score": 29.6,
+  "dep": [
+   3984,
+   3389
+  ],
+  "cap": "CIT039",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "4-11.json",
+  "rosace": "4",
+  "fleurs": [
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 960,
+  "ombres": 199,
+  "blanches": 0,
+  "regroupement": 0.755,
+  "opposees": 0,
+  "inutilisees": 164,
+  "score": 29.25,
+  "dep": [
+   4219,
+   3065
+  ],
+  "cap": "CIT029",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "4-14.json",
+  "rosace": "4",
+  "fleurs": [
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges",
+   "La Couronne de losanges"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 945,
+  "ombres": 201,
+  "blanches": 0,
+  "regroupement": 0.753,
+  "opposees": 0,
+  "inutilisees": 181,
+  "score": 27.05,
+  "dep": [
+   3839,
+   3589
+  ],
+  "cap": "CIT015",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "2-15.json",
+  "rosace": "2",
+  "fleurs": [
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 963,
+  "ombres": 198,
+  "blanches": 0,
+  "regroupement": 0.728,
+  "opposees": 0,
+  "inutilisees": 160,
+  "score": 26.5,
+  "dep": [
+   3984,
+   3389
+  ],
+  "cap": "CIT039",
+  "roy0": {
+   "n": 21,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 10,
+    "RES": 5,
+    "ANT": 0,
+    "MAR": 5
+   }
+  },
+  "f": "mix-12.json",
+  "rosace": "mix",
+  "fleurs": [
+   "La Rose de sang",
+   "La Couronne de losanges",
+   "La Grande Rosace",
+   "Les Cinq Soleils",
+   "La Corolle du Sénat"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 939,
+  "ombres": 242,
+  "blanches": 0,
+  "regroupement": 0.821,
+  "opposees": 0,
+  "inutilisees": 228,
+  "score": 23,
+  "dep": [
+   4599,
+   3189
+  ],
+  "cap": "CIT007",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "2-10.json",
+  "rosace": "2",
+  "fleurs": [
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 953,
+  "ombres": 231,
+  "blanches": 0,
+  "regroupement": 0.776,
+  "opposees": 0,
+  "inutilisees": 203,
+  "score": 22.65,
+  "dep": [
+   4219,
+   3065
+  ],
+  "cap": "CIT029",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "2-14.json",
+  "rosace": "2",
+  "fleurs": [
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 962,
+  "ombres": 240,
+  "blanches": 0,
+  "regroupement": 0.788,
+  "opposees": 0,
+  "inutilisees": 203,
+  "score": 22.1,
+  "dep": [
+   4599,
+   3189
+  ],
+  "cap": "CIT020",
+  "roy0": {
+   "n": 21,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 10,
+    "RES": 5,
+    "ANT": 0,
+    "MAR": 5
+   }
+  },
+  "f": "1-10.json",
+  "rosace": "1",
+  "fleurs": [
+   "La Rose de sang",
+   "La Rose de sang",
+   "La Rose de sang",
+   "La Rose de sang",
+   "La Rose de sang"
+  ]
+ },
+ {
+  "id": "-",
+  "tuiles": 944,
+  "ombres": 215,
+  "blanches": 0,
+  "regroupement": 0.724,
+  "opposees": 0,
+  "inutilisees": 196,
+  "score": 20.55,
+  "dep": [
+   3603,
+   3912
+  ],
+  "cap": "CIT028",
+  "roy0": {
+   "n": 31,
+   "ombres": 0,
+   "blanches": 0,
+   "types": {
+    "CIT": 1,
+    "DON": 0,
+    "RES": 15,
+    "ANT": 5,
+    "MAR": 10
+   }
+  },
+  "f": "2-12.json",
+  "rosace": "2",
+  "fleurs": [
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace",
+   "La Grande Rosace"
+  ]
+ }
+]

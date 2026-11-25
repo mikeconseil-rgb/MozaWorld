@@ -35,9 +35,11 @@ const laM=r=>'la '+r.nom.replace(/^Maison/,'maison');   /* « la maison Grisaill
 const LaM=r=>'La '+r.nom.replace(/^Maison/,'maison');
 const dela=r=>'de la '+r.nom.replace(/^Maison/,'maison');   /* « de la maison Grisaille », « de la maison d'Ombrelieue » */
 
-function riv(){if(!S.riv||typeof S.riv!=='object')S.riv={z:{},c:null,nc:S.nc||0,vu:{}};const R=S.riv;
+function riv(){if(!S.riv||typeof S.riv!=='object'){S.riv={z:{},c:null,nc:S.nc||0,vu:{}};
+  /* 2.49 : dans un monde généré, chaque maison part avec sa fleur (royaumes 1 à 4 de la couronne) */
+  if(typeof MONDE!=='undefined'&&MONDE){const K=RIVAUX.map(r=>r.k);for(const id in MONDE.roy){const r=MONDE.roy[id];if(r>=1&&r<=4&&K[r-1])S.riv.z[id]=K[r-1]}}}const R=S.riv;
   if(!R.z||typeof R.z!=='object')R.z={};if(!R.t||typeof R.t!=='object')R.t={};if(R.c===undefined)R.c=null;if(typeof R.nc!=='number')R.nc=S.nc||0;if(!R.vu)R.vu={};
-  for(const id in R.z)if(!ZB[id]||S.own[id]||!RIVK[R.z[id]])delete R.z[id];   /* zone reprise par le joueur : elle n'est plus à la maison */
+  for(const id in R.z)if(!(ZB[id]||(typeof ZWB!=='undefined'&&ZWB[id]))||S.own[id]||!RIVK[R.z[id]])delete R.z[id];   /* 2.49 : une zone de maison hors de la région chargée reste à elle (fleurs des mondes générés) */   /* zone reprise par le joueur : elle n'est plus à la maison */
   for(const k in R.t){const t=R.t[k];if(!RIVK[k]||!t||!ZB[t.id]||R.z[t.id]||!isFinite(t.du))delete R.t[k]}   /* tentative sans objet (la zone activée avant l'échéance est traitée par verifTentatives, avec un message) */
   if(R.c&&(!ZB[R.c.id]||!S.own[R.c.id]||!RIVK[R.c.r]))R.c=null;   /* zone contestée perdue (mort du héros, horde) : la contestation tombe */
   return R}
