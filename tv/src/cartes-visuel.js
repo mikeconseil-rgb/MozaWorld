@@ -622,6 +622,41 @@ const css=document.createElement('style');css.textContent=`
 #cb-main .cc.kcarte.f .art{height:max(calc(var(--u)*4.4),calc(var(--u)*(5.4 - (1 - var(--kf,1))*8)))}
 #cb-main .cc.kcarte.f.haute{height:calc(var(--u)*21.9)}
 #cb-main .cc.kcarte.f.haute .ct,#cb-main .cc.kcarte.f.serre .ct{line-height:1.2}
+/* ---- Lecture à 3 m (24 novembre 2026) ----
+   Critique 2.44 : texte des cartes à 10 px à 720p et coupé. Utilisateur : « Je veux bien lire les cartes ».
+   Cartes non choisies : plus de texte de règle (il était coupé), la peinture et le nom en grand.
+   Carte choisie : grande (24u × 31u, soit 307 × 397 px à 720p), texte de règle entier à 22 px à 720p ; ajuster()
+   réduit la police par pas de 4 % si le texte est long. Elle déborde sur ses voisines (marges négatives) sans les pousser.
+   Sélecteurs en #combat et !important pour passer après cartes-relook.js, chargé plus tard. */
+#combat #cb-main .cc.kcarte:not(.f) .ct,#combat #cb-main .cc.kcarte:not(.f) .cz{display:none!important}
+#combat #cb-main .cc.kcarte:not(.f) .art{height:66%!important}
+#combat #cb-main .cc.kcarte:not(.f) .cn{font-size:calc(var(--u)*1.36)!important;line-height:1.08!important;margin-top:calc(var(--u)*-.9)!important}
+/* pendant le placement d'une unité ou le choix d'une cible (.choisie), la carte reste petite : on regarde le plateau */
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie){width:calc(var(--u)*24)!important;flex:0 0 calc(var(--u)*24)!important;height:calc(var(--u)*31)!important;
+  margin:calc(var(--u)*-10) calc(var(--u)*-4.2) 0!important;z-index:30;align-self:flex-end}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie).haute{height:calc(var(--u)*34)!important;margin-top:calc(var(--u)*-13)!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .art{height:36%!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie).serre .art{height:30%!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .cn{font-size:calc(var(--u)*1.8)!important;line-height:1.1!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .cz{font-size:calc(var(--u)*.95)!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .ct{font-size:calc(var(--u)*1.72*var(--kf,1))!important;line-height:1.2!important;padding:.35em .5em!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .kamb{font-size:calc(var(--u)*1.15)!important}
+#combat:not(.placement) #cb-main{position:relative;z-index:40}
+#combat:not(.placement) .cb-bas{z-index:20!important}
+#combat #cb-main .cc.kcarte:not(.f) .cn{font-size:max(11px,calc(var(--u)*1.36))!important}
+/* si la main dépasse le bas de l'écran (téléphone), ajuster() mesure le dépassement (--kdy) et la carte choisie remonte d'autant */
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie){translate:0 calc(var(--kdy,0px)*-1)}
+/* téléphone (écran bas, tactile) : la carte choisie prend presque toute la hauteur, texte à 16 px */
+@media (max-height:600px){
+body.tactile #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie),body.tactile #combat:not(.placement) #cb-main .cc.kcarte.f.haute:not(.choisie){
+  width:min(44vw,300px)!important;flex:0 0 min(44vw,300px)!important;height:88vh!important;
+  margin:calc(var(--u)*21 - 88vh) calc((var(--u)*14 - min(44vw,300px))/2) 0!important}
+body.tactile #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .art{height:30%!important}
+body.tactile #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .ct{font-size:calc(16px*var(--kf,1))!important}
+body.tactile #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .cn{font-size:18px!important}
+body.tactile #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .cz{font-size:10px!important}
+body.tactile #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .kamb{font-size:12px!important}
+}
 `;document.head.appendChild(css);
 
 /* Boucle 1 (19 novembre 2026) : ajuster(el) réduit la police du texte de la carte choisie par pas de 4 % (6 pas au plus)
@@ -634,17 +669,18 @@ const deborde=t=>t.scrollHeight>t.clientHeight+1;
 /* boucle 4 bis (22 nov.) : ordre des recours. D'abord la citation s'efface, puis la carte grandit vers le haut (la peinture
    garde ses 5,4u) ; puis la police descend (plancher 13 px) avec un peu de peinture (plancher 4,4u) ; enfin le fondu. */
 function ajuster(el){const t=el.querySelector('.ct');if(!t)return{k:1};let k=1,serre=false,haute=false;const trop=()=>deborde(t);
-  el.style.removeProperty('--kf');el.classList.remove('serre','haute');t.classList.remove('deborde');
+  el.style.removeProperty('--kf');el.style.removeProperty('--kdy');el.classList.remove('serre','haute');t.classList.remove('deborde');
   if(trop()&&el.querySelector('.kamb')){serre=true;el.classList.add('serre')}
   if(trop()){haute=true;el.classList.add('haute')}
-  for(let i=0;i<4&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
-  const fondu=deborde(t);t.classList.toggle('deborde',fondu);return{k,serre,haute,fondu}}
-function appliquer(el,r){const t=el.querySelector('.ct');if(r.k<1)el.style.setProperty('--kf',r.k.toFixed(3));el.classList.toggle('serre',!!r.serre);el.classList.toggle('haute',!!r.haute);if(t)t.classList.toggle('deborde',!!r.fondu)}
+  for(let i=0;i<8&&trop();i++){k*=.96;el.style.setProperty('--kf',k.toFixed(3))}
+  const fondu=deborde(t);t.classList.toggle('deborde',fondu);
+  const dy=Math.max(0,Math.ceil(el.getBoundingClientRect().bottom-innerHeight+6));if(dy)el.style.setProperty('--kdy',dy+'px');return{k,serre,haute,fondu,dy}}
+function appliquer(el,r){const t=el.querySelector('.ct');if(r.k<1)el.style.setProperty('--kf',r.k.toFixed(3));if(r.dy)el.style.setProperty('--kdy',r.dy+'px');el.classList.toggle('serre',!!r.serre);el.classList.toggle('haute',!!r.haute);if(t)t.classList.toggle('deborde',!!r.fondu)}
 window.ajuster=ajuster;
 const AJ={main:'',m:new Map()},hm=document.getElementById('cb-main');
 if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return;
   const cle=CB.main.join('|')+'#'+CB.tour;if(cle!==AJ.main){AJ.main=cle;AJ.m.clear()}
-  [...hm.children].forEach((el,i)=>{if(!el.classList.contains('kcarte'))return;const f=el.classList.contains('f'),id=i+'|'+(CB.main[i]||'')+(f?'|f':'');
+  [...hm.children].forEach((el,i)=>{if(!el.classList.contains('kcarte'))return;const f=el.classList.contains('f'),id=i+'|'+(CB.main[i]||'')+(f?'|f':'')+(CB.pl?'|p':'');
     const r=AJ.m.get(id);if(r){appliquer(el,r);return}
     if(f)AJ.m.set(id,ajuster(el));else{const t=el.querySelector('.ct'),fondu=!!t&&deborde(t);if(t)t.classList.toggle('deborde',fondu);AJ.m.set(id,{k:1,fondu})}})
 }).observe(hm,{childList:true});

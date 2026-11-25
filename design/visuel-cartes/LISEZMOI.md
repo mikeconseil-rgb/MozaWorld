@@ -62,3 +62,14 @@ Demande de l'utilisateur après les cadres ornés : « Faudrait un léger effet 
 - Biseau : arête claire en haut à gauche et sombre en bas à droite sur le métal du cadre (`--bz`) ; cartouche du nom en saillie ; image, vitre et panneau du texte en creux.
 - Mouvement : seule la carte choisie (main de combat, carte montrée seule dans une boîte) bascule doucement de −7° à +7° en 6 s, avec un reflet qui traverse la vitre. Les grilles de cartes (Grimoire) restent immobiles pour garder la Xbox fluide.
 - `prefers-reduced-motion` coupe le basculement et le reflet ; le relief fixe reste.
+
+## Sixième passe (24 nov.) : lire les cartes à 3 m et sur téléphone
+
+Critique graphique 2.44 : en combat, le texte des cartes faisait 10 px à 720p et il était coupé. Utilisateur, à propos du téléphone : « Je veux bien lire les cartes ». Bloc « Lecture à 3 m » à la fin du CSS de `tv/src/cartes-visuel.js`.
+
+- Cartes non choisies : plus de texte de règle (il était coupé) ni de ligne mana et vertu ; la peinture prend les deux tiers de la carte, le nom passe à 17 px à 720p.
+- Carte choisie : 24u × 31u (307 × 397 px à 720p), texte de règle entier à 22 px à 720p (33 px en 1080p). Elle déborde sur ses voisines par des marges négatives, sans les pousser, et passe devant le plateau. `ajuster()` réduit la police par pas de 4 % (8 pas au plus) pour les textes longs, après avoir caché la citation et agrandi la carte (classe `haute`, 34u).
+- Pendant le placement d'une unité ou le choix d'une cible, la carte reprend sa petite taille : on regarde le plateau.
+- Téléphone (`body.tactile`, hauteur sous 600 px) : la carte choisie fait 88 % de la hauteur, texte à 16 px. Si la main dépasse le bas de l'écran, `ajuster()` mesure le dépassement (`--kdy`) et la carte remonte d'autant.
+- Les sélecteurs sont en `#combat … !important` parce que `cartes-relook.js` est chargé après et force ses tailles.
+- Mesure : `tv/tools/test-fumee.js` ne couvre pas la lisibilité ; vérifier à 1280 × 720 que `.ct` de la carte choisie ne déborde pas (`scrollHeight <= clientHeight`).
