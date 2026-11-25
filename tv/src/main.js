@@ -18,6 +18,9 @@ const S={lv:{},own:{},emp:{},rest:{},cards:[],hurt:0,found:[],lives:1,act:{},dec
    - elles ne cèdent qu'une fois toutes les zones de départ prises et le royaume assez développé (paquet d'au moins 15 cartes). */
 const DIST_DEP={},PAQUET_ROYAUME=15;
 const ZONES_DEP=(()=>{const org=['CIT','DON','RES','ANT','MAR'],V=typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE:{},W=typeof ZWB!=='undefined'?ZWB:ZB;
+  /* 2.49 : dans un monde généré, le départ est votre fleur entière (« 2 oui », 25 nov.) */
+  if(typeof MONDE!=='undefined'&&MONDE){const dep=MONDE.dep.filter(id=>W[id]&&!estOmbre(W[id])),d={},file=[];for(const id of dep){d[id]=0;file.push(id)}
+    while(file.length){const z=file.shift();for(const v of V[z]||[])if(d[v]===undefined&&W[v]){d[v]=d[z]+1;file.push(v)}}Object.assign(DIST_DEP,d);return dep}
   /* 2.16 : le départ se tire d'abord parmi les 21 zones de la 2.0 (il reste celui d'avant), puis parmi les zones écrites proches */
   const anc=new Set(org.concat((typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[]).slice(0,16).map(d=>d.id)));
   const bfs=garde=>{const d={},file=[],ordre=[];for(const id of org){d[id]=0;file.push(id)}
@@ -29,7 +32,7 @@ const ZONES_DEP=(()=>{const org=['CIT','DON','RES','ANT','MAR'],V=typeof VOISINE
 const ESTDEP=new Set(ZONES_DEP);
 const BORD_DEP=new Set((typeof ZW!=='undefined'?ZW:ZN).filter(Z=>!ESTDEP.has(Z.id)&&((typeof VOISINES_MONDE!=='undefined'?VOISINES_MONDE[Z.id]:[])||[]).some(v=>ESTDEP.has(v))).map(Z=>Z.id));
 function nivDep(graine){const o={};for(const Z of (typeof ZW!=='undefined'?ZW:ZN)){const res=(Z.mod||Z.id)==='RES',h1=hash(Z.c[0]*.01+graine,Z.c[1]*.01),h2=hash(Z.c[1]*.013,Z.c[0]*.017+graine*1.7),sg=h1<.5?-1:1;
-  o[Z.id]=ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?6*sg:(2+Math.floor(h2*6))*sg}return o}
+  o[Z.id]=estOmbre(Z)?-7:ESTDEP.has(Z.id)?0:res?Math.floor(h2*4):BORD_DEP.has(Z.id)?6*sg:(2+Math.floor(h2*6))*sg}return o}
 let NIV_DEP=nivDep(0);
 const departPris=()=>ZONES_DEP.filter(id=>S.own[id]).length;
 const royaumeEtabli=()=>departPris()>=ZONES_DEP.length&&S.deck.length>=PAQUET_ROYAUME;
@@ -215,11 +218,11 @@ function toMonde(){closeUI();mode='monde';document.body.classList.remove('jeu-ou
 
 function titre(){mode='titre';const o=[];if($('seuil-ver'))$('seuil-ver').textContent='version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:'');
   if(hasSave)o.push({l:'Reprendre la partie',ic:'◆',go:()=>{startGame(false)}});
-  o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{startGame(true)}});
+  o.push({l:hasSave?'Nouvelle partie':'Entrer dans la mosaïque',ic:'✦',go:()=>{if(typeof MONDES_BANQUE!=='undefined'&&MONDES_BANQUE.length)choisirMonde(titre);else startGame(true)}});
   if(window.Android)o.push({l:'Quitter',ic:'✕',go:()=>window.Android.quitter()});
   ui('seuil',{opts:o})}
 /* 2.15 : régions. Voyager = enregistrer, recentrer la région sur une tuile, recharger la page ; « apres » dit quoi faire au réveil. */
-const regionOrigine=()=>dReg([0,0])<1;
+const regionOrigine=()=>dReg(DEP_C())<1;   /* 2.49 : la région de départ (Berestograd, ou le cœur de votre fleur dans un monde généré) */
 function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw];if(apres!=='neuf')save();
   if(typeof rechargeAutorisee==='function'&&!rechargeAutorisee()){if(typeof libererGPU==='function')libererGPU();arretBoucle('voyage');return}   /* 22 nov. : pas de boucle de voyages */
   try{localStorage.setItem('mz-region',JSON.stringify([Math.round(c[0]),Math.round(c[1])]));localStorage.setItem('mz-apres',apres||'jeu')}catch(_){}
@@ -227,16 +230,16 @@ function voyagerRegion(c,apres){if(started&&apres!=='neuf')S.pos=[P.x,P.z,P.yaw]
   /* 22 nov. (« manque de mémoire graphique » après un voyage, Xbox) : on rend la carte graphique AVANT de recharger, et on laisse
      une seconde à Edge pour la libérer vraiment ; sinon la nouvelle région ne trouve pas de contexte WebGL au démarrage. */
   setTimeout(()=>{if(typeof libererGPU==='function')libererGPU();setTimeout(()=>location.reload(),1000)},60)}
-function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion([0,0],'neuf');return}
+function startGame(neuf){if(neuf&&!regionOrigine()){voyagerRegion(DEP_C(),'neuf');return}
   if(neuf){for(const id in S.lv)if(!ZB[id])delete S.lv[id];for(const id of ZONES_DEP)if(!ZB[id])S.lv[id]=0;for(const k of['own','emp','rest','act'])for(const id in S[k]||{})if(!ZB[id])delete S[k][id]}
   if(neuf){const g0=S.graine;do S.graine=Math.floor(Math.random()*997)+1;while(S.graine===g0);   /* 20 nov. : une graine neuve, pour que chaque module oublie l'ancien monde */NIV_DEP=nivDep(S.graine);S.traces=[];for(const Z of ZN){const l0=NIV_DEP[Z.id]||0;S.lv[Z.id]=l0;S.own[Z.id]=false;S.emp[Z.id]=false;S.rest[Z.id]=0;Z.lv=Z.lvT=l0;rebuild(Z);Z.update(l0);placeAlt(Z)}CULL.dirty=true;
     terrainAll();
     S.cards=[];S.hurt=0;S.lives=1;S.res=RESERVE_DEPART();S.pieges=[null,null,null,null];S.nc=0;S.tc=0;S.dernierAssaut=0;S.assauts={ok:0,ko:0};S.memoire={};S.parole={};S.fatigue=0;S.riv=null;for(const id of IDS)S.act[id]=false;for(const s of secrets)s.found=false;S.found=[];S.secT={};
-    donnerDepart();CULL.dirty=true;terrainAll();save()}
-  $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?'CIT':(zoneAt(P.x,P.z)||CIT).id);
+    donnerDepart();if(typeof riv==='function')riv();CULL.dirty=true;terrainAll();save()}   /* 2.49 : les maisons prennent leur fleur dès le départ */
+  $('seuil').classList.add('parti');closeUI();$('seuil').hidden=true;started=true;initAudio();tp(neuf?DEP_ID():(zoneAt(P.x,P.z)||CIT).id);
   if(!neuf&&S.pos){P.x=S.pos[0];P.z=S.pos[1];P.yaw=S.pos[2];P.y=ground(P.x,P.z)}
   mode='monde';recaler(true);hudKey='';etatHud();
-  if(neuf)setTimeout(()=>toast('Berestograd · votre territoire','Vos 12 zones de départ sont à vous, au niveau 1','Votre paquet : leurs cartes de palier 1. Montez-les à leur Pierre d\'éveil pour gagner des cartes.'),900)}
+  if(neuf)setTimeout(()=>toast(MONDE?'Votre royaume en fleur':'Berestograd · votre territoire',`Vos ${ZONES_DEP.length} zones de départ sont à vous, au niveau 1`,'Votre paquet : leurs cartes de palier 1. Montez-les à leur Pierre d\'éveil pour gagner des cartes.'),900)}
 
 function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
   ui('menu',{sur:'Pause · version '+(typeof MZ_VERSION!=='undefined'?MZ_VERSION:''),t:'MozaWorld',f:typeof f==='number'?f:0,corps:`<p class="petit">${ZN.filter(z=>S.own[z.id]).length} zone(s) à vous · ${S.deck.length} carte(s) dans le paquet · niveau total ${ZN.reduce((a,z)=>a+Math.abs(S.lv[z.id]||0),0)} · réserve ${resHTML()} · cycle ${S.nc}, prochain dans ${fmt(CYCLE-S.tc)}</p><p class="petit">Entretien des pièges : ${ENTRETIEN[S.ent].txt}</p>`,
@@ -259,7 +262,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     {l:'Comment jouer',ic:'?',go:openAide},
     ...(window.Android?[{l:'Quitter le jeu',ic:'✕',go:()=>{save();window.Android.quitter()}}]:[]),
     {l:'Nouvelle partie',ic:'↺',d:'les sauvegardes restent',go:()=>ui('menu',{sur:'Nouvelle partie',t:'Relancer une nouvelle partie ?',corps:'<p>Toutes les zones reviennent au niveau 0, vos cartes et vos secrets repartent de zéro. Pensez à sauvegarder la partie en cours dans un emplacement si vous voulez la garder.</p>',back:openMenu,
-      opts:[{l:'Non, revenir',ic:'◆',go:openMenu},{l:'Oui, tout recommencer',ic:'↺',go:()=>{startGame(true)}}]})}]})}
+      opts:[{l:'Non, revenir',ic:'◆',go:openMenu},{l:'Oui, tout recommencer',ic:'↺',go:()=>{if(typeof MONDES_BANQUE!=='undefined'&&MONDES_BANQUE.length)choisirMonde(openMenu);else startGame(true)}}]})}]})}
 function openVoyage(){ui('menu',{sur:'Voyager',t:`Les ${ZN.length} zones`,corps:'<p class="petit">Le héros réapparaît devant la Pierre d\'éveil de la zone. Vous pouvez aussi marcher : les zones se touchent.</p>',back:openMenu,
   opts:ZN.map(Z=>({l:Z.info.nom,ic:sgn(S.lv[Z.id])||'0',cls:S.lv[Z.id]<0?'m':S.lv[Z.id]>0?'p':'',d:TYPE[Z.id].ep+(restLeft(Z)>0?' · repos '+fmt(restLeft(Z)):''),go:()=>{tp(Z.id);toMonde()}}))})}
 function openCombatPaquet(){const n={};for(const k of S.deck)n[k]=(n[k]||0)+1;
@@ -273,7 +276,7 @@ function openAide(){ui('menu',{sur:'Comment jouer',t:'Activer, puis éveiller',c
   back:openMenu,opts:[{l:'Retour',ic:'◆',go:openMenu}]})}
 
 /* ---------- Éveil d'une zone ---------- */
-function openEveil(Z,f){if(Z.d&&Z.d.pret===false){toast(Z.info.nom,'Zone pas encore écrite','Les conteurs n\'ont pas encore écrit son histoire : sa Pierre dort. Elle s\'éveillera dans une prochaine version.');return}mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ct=contrePar(Z),emp=S.emp[Z.id];
+function openEveil(Z,f){if(estOmbre(Z)){toast('Zone d\'ombre détruite','Rien ne s\'éveille ici','Le monde sauvage a tout brûlé : il n\'y a plus de Pierre, plus d\'histoire. On ne fait que la traverser.');return}if(Z.d&&Z.d.pret===false){toast(Z.info.nom,'Zone pas encore écrite','Les conteurs n\'ont pas encore écrit son histoire : sa Pierre dort. Elle s\'éveillera dans une prochaine version.');return}mode='menu';document.body.classList.add('jeu-ouvert');const lv=S.lv[Z.id],I=Z.info,T=TYPE[Z.id],r=restLeft(Z),ct=contrePar(Z),emp=S.emp[Z.id];
   const diff=t=>{const b=Math.abs(t)-(emp?1:0)-ct.pw;return'Épreuve '+['très facile','facile','facile','moyenne','dure','dure','très dure','redoutable'][clamp(b,0,7)]};
   const o=[],res=(Z.mod||Z.id)==='RES',cap=res?3:7;
   if(!S.act[Z.id]&&verrouLoin(Z)){o.push({l:'Zone scellée : elle ne cède pas encore',ic:'⛓',off:true,d:`départ pris ${departPris()}/${ZONES_DEP.length} · paquet ${S.deck.length}/${PAQUET_ROYAUME}`})}
@@ -344,7 +347,7 @@ function mort(){for(const id of Object.keys(S.own)){if(S.own[id]){S.own[id]=fals
   donnerDepart();CULL.dirty=true;terrainAll();   /* 18 nov. : l'héritier repart comme une nouvelle partie, territoire de départ au niveau 1, pôles retirés au hasard */
   S.cards=[];S.hurt=0;S.lives=(S.lives||1)+1;save();etatHud();hudKey='';
   ui('menu',{sur:'Mort du héros',t:'La mosaïque vous oublie',corps:`<p>Troisième blessure. Vous perdez vos cartes et vos zones : elles gardent leur niveau mais redeviennent sauvages. L'héritier reçoit à nouveau le territoire de départ, au niveau 1, et ses cartes de palier 1.</p><p class="petit">Votre empreinte reste : reprendre une ancienne zone à vous sera plus facile. Un héritier se lève à Berestograd.</p>`,
-    opts:[{l:'Se relever',ic:'✦',go:()=>{if(!regionOrigine()){S.pos=null;save();voyagerRegion([0,0],'jeu');return}tp('CIT');toMonde()}}]});mode='menu'}
+    opts:[{l:'Se relever',ic:'✦',go:()=>{if(!regionOrigine()){S.pos=null;save();voyagerRegion(DEP_C(),'jeu');return}tp(DEP_ID());toMonde()}}]});mode='menu'}
 function pauseEpreuve(){const keep=E;mode='menu';ui('menu',{sur:'Épreuve en pause',t:'Abandonner ?',corps:'<p class="petit">Abandonner ne blesse pas, la zone ne change pas.</p>',
   back:()=>{closeUI();mode='epreuve'},opts:[{l:'Continuer l\'épreuve',ic:'▲',go:()=>{closeUI();mode='epreuve'}},{l:'Abandonner',ic:'◆',go:()=>{if(E&&E.fin)E.fin();E=null;$('jeu').hidden=true;toMonde()}}]});$('jeu').hidden=!keep.monde?false:false}
 
