@@ -43,6 +43,15 @@ Retour de l'utilisateur : « C'est difficile de jouer. Le champ de batailles dev
   - une image par archétype (oiseau, félin, canidé…) pour les quelque 2 000 bêtes des cartes ;
   - une image pour le héros, la Garde et la Sentinelle.
 
+## Version téléphone (25 nov.)
+
+Demande de l'utilisateur : « une version spécifique pour Pixel avec les cartes présentées bien plus gros. Je veux bien lire les cartes. »
+- Adresse : `tv/arene-pixel.html`, ou l'Arène ouverte sur un écran tactile. La Xbox ne change pas.
+- La main de cartes est plus grande et toujours entière à l'écran. Le champ est au-dessus.
+- Toucher une carte l'ouvre en grand (la « loupe »), avec son texte entier et deux gros boutons : « Jouer (N mana) » et « Fermer ».
+- Pour choisir une cible, le champ passe en grand, et l'on touche l'ennemi.
+- Correctif : un combat pouvait planter quand le morceau de mosaïque n'avait pas de tuile assez large à gauche pour le héros.
+
 ## Pistes non tranchées
 
 - Construire soi-même le champ en posant des tuiles avant le combat : l'utilisateur hésite, à faire essayer dans l'Arène.

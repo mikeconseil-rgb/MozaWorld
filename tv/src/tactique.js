@@ -22,6 +22,8 @@ function tacInit(){const C=CB;if(!C)return;const P=tacPatch(C.Z),T=TAC={tiles:P.
   const ts=T.tiles,xs=ts.map(t=>t.c[0]).sort((a,b)=>a-b),xq=q=>xs[Math.floor(q*(xs.length-1))],ym=(T.vb[1]+T.vb[3]/2);
   /* le héros : à gauche, au milieu ; quelques gouffres au centre, sans couper le champ en deux */
   const gauche=ts.map((t,i)=>i).filter(i=>ts[i].c[0]<=xq(.2)&&ts[i].adj.length>=4&&ts[i].mod!=='ANT');T.heroT=gauche.sort((a,b)=>Math.abs(ts[a].c[1]-ym)-Math.abs(ts[b].c[1]-ym))[0];
+  /* 25 nov. : sans tuile assez large à gauche, la plus à gauche des tuiles qui ont le plus de voisines (le combat ne doit jamais planter) */
+  if(T.heroT==null){const g2=ts.map((t,i)=>i).filter(i=>ts[i].c[0]<=xq(.3));T.heroT=(g2.length?g2:ts.map((t,i)=>i)).sort((a,b)=>(ts[b].adj.length-ts[a].adj.length)||(ts[a].c[0]-ts[b].c[0]))[0]}
   const mil=ts.map((t,i)=>i).filter(i=>ts[i].c[0]>xq(.35)&&ts[i].c[0]<xq(.68)&&ts[i].mod!=='CIT');melange(mil);let nb=0;
   for(const i of mil){if(nb>=3)break;ts[i].bloc=1;if(tacConnexe())nb++;else ts[i].bloc=0}
   C.hero.ti=T.heroT;T.occ[T.heroT]=C.hero;for(const u of C.allies)if(!u.hero&&u.ti==null)tacPoser(u);for(const u of C.foes)tacPoser(u);
@@ -95,7 +97,8 @@ function tacOk(i){const C=CB,T=TAC;if(!C||C.busy||!T)return;const u=T.occ[i]&&T.
   if(u&&!tacAmi(u)){const I=u.int;journal(`${u.nom} : ${u.pv}/${u.max} PV${I?' · '+I.t+(I.v?' '+I.v:''):''} · avance de ${tacVit(u)} tuiles.`);return}
   if(u&&(u.tm||u.ta)){journal(`${u.nom} a déjà agi ce tour.`);return}
   const t=T.tiles[i],tt=TAC_T[t.mod];journal(t.bloc?'Gouffre : on ne peut pas y aller.':tt&&tt.txt?tt.nom+' : '+tt.txt+'.':'Dalle : rien de spécial.')}
-function tacClic(i){const C=CB;if(!C||!C.tac||C.busy||C.sel)return;C.tb=1;TAC.cur=i;tacOk(i);dessinerMain()}
+let tacClicT=0;
+function tacClic(i){const C=CB;if(!C||!C.tac||C.busy||C.sel)return;const now=performance.now();if(now-tacClicT<300)return;tacClicT=now;C.tb=1;TAC.cur=i;tacOk(i);dessinerMain()}
 function tacDir(dx,dy){const T=TAC,c0=T.tiles[T.cur].c;let best=T.cur,bs=1e9;
   T.tiles.forEach((t,i)=>{if(i===T.cur)return;const vx=t.c[0]-c0[0],vy=t.c[1]-c0[1],d=Math.hypot(vx,vy),cs=(vx*dx+vy*dy)/d;if(cs<.45)return;const s=d*(1+2.5*(1-cs));if(s<bs){bs=s;best=i}});
   if(best!==T.cur){T.cur=best;tick();tacPlacer()}}
