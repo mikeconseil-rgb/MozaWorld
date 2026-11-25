@@ -29,7 +29,11 @@ body.tactile .hud.aide{display:none!important}
 /* téléphone en paysage (~915 × 412) : l'unité de taille grossit pour que le texte reste lisible */
 @media (max-height:600px){body.tactile{--u:min(1.25vw,2.5vh)}
   /* combat : cartes un peu plus petites, et une marge à droite pour les sceaux */
-  body.tactile.tact-combat{--u:min(1vw,2.05vh)}body.tactile.tact-combat #combat{padding-right:calc(90px + 2vw)!important}}
+  body.tactile.tact-combat{--u:min(1vw,2.05vh)}body.tactile.tact-combat #combat{padding-right:calc(90px + 2vw)!important}
+  /* 2.47.1 : la main dépassait le bas de l'écran d'environ 45 px (915 × 412). La ligne d'aide (◀ ▶, A, X…) est retirée :
+     les sceaux et le toucher la remplacent ; la main est tenue dans l'écran. */
+  body.tactile.tact-combat #cb-aide{display:none!important}
+  body.tactile.tact-combat #combat{grid-template-rows:auto auto minmax(0,1fr) 0 auto!important;row-gap:calc(var(--u)*.3)!important;padding-bottom:calc(var(--u)*.4)!important}}
 #tact{position:fixed;inset:0 env(safe-area-inset-right,0px) 0 env(safe-area-inset-left,0px);z-index:60;pointer-events:none;font-family:"Caveat","Segoe Script",cursive}
 #tact .sceau{position:absolute;pointer-events:auto;width:calc(var(--t)*1);height:calc(var(--t)*1);border-radius:50%;display:flex;align-items:center;justify-content:center;
   --t:clamp(42px,11vh,58px);
@@ -128,6 +132,7 @@ function toucher(t){if(!t||!t.closest)return;
   const c=t.closest('#cb-main .cc');
   if(c&&!C.pl&&!C.man){const i=[...c.parentNode.children].indexOf(c);if(i<0)return;
     if(i===C.f)cbInput('ok',false);else{C.f=i;tick();dessinerMain()}}}
+
 addEventListener('pointerdown',bas,{capture:true,passive:false});
 addEventListener('pointermove',bouge,{capture:true,passive:false});
 addEventListener('pointerup',haut,{capture:true});
