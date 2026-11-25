@@ -32,7 +32,10 @@ const st=document.createElement('style');st.textContent=`
   background:radial-gradient(ellipse at 50% 30%,#e3d2a6,#c9b383 75%)!important;color:#1d140b!important;text-shadow:none!important;
   border:1px solid rgba(23,16,10,.7)!important;box-shadow:inset 0 0 calc(var(--u)*.6) rgba(90,60,20,.45)!important}
 #cb-main .cc.kcarte .ct{font-size:calc(var(--u)*.8)!important;line-height:1.16!important}
-#cb-main .cc.kcarte.f .art,#cb-main .cc.kcarte.choisie .art{height:40%!important}
+/* boucle 7 (25 nov. 2026) : règle séparée. La carte désignée (.f) prend un bandeau de peinture (24 %) au lieu de 40 % :
+   plus de place pour le texte, et le choc entre la carte peinte et le monde plat s'atténue. La carte .choisie garde 40 %. */
+#cb-main .cc.kcarte.f .art{height:24%!important}
+#cb-main .cc.kcarte.choisie .art{height:40%!important}
 #cb-main .cc.kcarte .ct b{color:#7a1a10!important}
 #cb-main .cc.kcarte .ct *{text-shadow:none!important}
 @media (prefers-reduced-motion:reduce){#cb-main .cc.kcarte .kpeint img,#cb-main .cc.kcarte .art::before{animation:none!important}}

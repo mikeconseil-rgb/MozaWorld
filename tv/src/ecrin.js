@@ -2,7 +2,7 @@
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.49.1';
+const MZ_VERSION='2.50';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -182,7 +182,13 @@ body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
 #combat .cb-aide:empty{visibility:hidden}
 #combat.placement #cb-main{transform:translateY(calc(var(--u)*1.2))}
 /* la carte choisie grandit depuis sa base au lieu de se soulever : elle ne monte plus sur la pastille */
-#cb-main .cc.kcarte.f{transform:scale(1.04);transform-origin:50% 100%}
+#cb-main .cc.kcarte.f{transform:scale(1.04);transform-origin:50% 100%;z-index:4}
+/* boucle 7 (25 nov. 2026) : superposition du combat. La carte désignée est à 4 dans la main, et le bas de l'écran à 0
+   hors placement (cartes-visuel.js) ; les plaques d'unités et la barre d'aide passent devant elle, à 6.
+   L'aide ne valait 6 que sur le papier : « #combat>*:not(#cb-decor) » (carnet-combat.js, deux identifiants) la ramenait à 1 ;
+   le sélecteur ci-dessous a la spécificité qu'il faut. Aucune carte ne cache plus des PV ni l'aide. */
+#combat #cb-allies .u,#combat #cb-foes .u{z-index:6}
+#combat>#cb-aide.cb-aide{z-index:6}
 #cb-main .cc.kcarte.choisie{transform:scale(1.06);transform-origin:50% 100%}
 /* unités du plateau un peu plus compactes (portrait 2,6 u, pastille d'intention mordant sur le portrait) : à trois voies,
    avec l'étiquette de case sous la jauge, elles tiennent dans leur rangée et ne chevauchent plus la voie voisine */
