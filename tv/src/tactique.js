@@ -65,7 +65,7 @@ function tacBouger(u,i,vol){const a=u.ti;if(a!=null&&TAC.occ[a]===u)delete TAC.o
   const sv=$('tac')&&$('tac').querySelector('svg');if(sv){const pts=[a,...ch].map(t=>T.tiles[t].c.join(',')).join(' '),pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');
     pl.setAttribute('points',pts);pl.setAttribute('class','trace '+(tacAmi(u)?'ami':'adv'));sv.appendChild(pl);setTimeout(()=>pl.remove(),ch.length*TAC_PAS*1000+1400)}
   return ch.length}
-const tacBonus=u=>u.ti!=null&&TAC.tiles[u.ti].mod==='CIT'?1:0;
+const tacBonus=u=>(u.ti!=null&&TAC.tiles[u.ti].mod==='CIT'?1:0)+(typeof facTerrain==='function'?facTerrain(u):0);   /* 2.47 : terrain de faction (factions-combat.js) */
 const tacRecu=(t,n)=>t.ti!=null&&TAC.tiles[t.ti].mod==='DON'?Math.max(1,n-2):n;
 /* un coup de mêlée ; la cible encore debout riposte une fois par tour, à moitié de sa force */
 function tacCoup(a,t,n){if(!a||!t||a.pv<=0||t.pv<=0)return;n=tacRecu(t,n+tacBonus(a));if(a.el){a.el.classList.remove('agit');void a.el.offsetWidth;a.el.classList.add('agit')}
