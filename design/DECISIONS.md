@@ -18,6 +18,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
 
+
+## 25 novembre 2026
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Critique littéraire | « Je trouve le critique pas assez critique... Ou pertinent » puis « Le littéraire aussi » : le critique des textes passe en v3 (design/equipe/critique_litteraire_v3.md, grille joueur / image / voix / forme / lisibilité / cohérence, refus sous 60, tableau de bord mesures_texte.py) | en vigueur | rapports lot-*/critique.md (notes de 77 à 87, aucun refus) |
 ## 24 novembre 2026 (musique)
 
 | Sujet | Décision | Statut | Remplace |
