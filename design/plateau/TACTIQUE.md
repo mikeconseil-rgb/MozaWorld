@@ -52,6 +52,15 @@ Demande de l'utilisateur : « une version spécifique pour Pixel avec les cartes
 - Pour choisir une cible, le champ passe en grand, et l'on touche l'ennemi.
 - Correctif : un combat pouvait planter quand le morceau de mosaïque n'avait pas de tuile assez large à gauche pour le héros.
 
+## Factions (25 nov., 2.48)
+
+Choix de l'utilisateur : « 2,3 et 4 », puis « A » (dans l'Arène d'abord). Code : `tv/src/factions-combat.js`. Chiffres provisoires.
+- Chaque carte a la faction de son mana, chaque bête celle de la carte qui l'invoque, chaque ennemi celle de la zone combattue. Le journal annonce la faction ennemie et son opposée au début du combat.
+- **Avantage** : un coup contre la faction opposée (Feu-Glace, Pierre-Eau, Vent-Sève) fait +50 %, arrondi au-dessus ; contre sa propre faction, −25 %, au moins 1.
+- **Alliance** : la première fois dans un tour qu'on joue une carte d'une faction alliée (voisine sur la roue Feu, Pierre, Vent, Glace, Eau, Sève) d'une carte déjà jouée ce tour, on pioche une carte.
+- **Terrain** : chaque tuile garde la faction de sa zone du monde (liseré à sa couleur). Une créature sur une tuile de sa faction gagne +1 d'attaque, −1 sur une tuile de la faction opposée.
+- Le héros, la Garde et l'escorte n'ont pas de faction.
+
 ## Pistes non tranchées
 
 - Construire soi-même le champ en posant des tuiles avant le combat : l'utilisateur hésite, à faire essayer dans l'Arène.
