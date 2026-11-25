@@ -55,7 +55,10 @@ const st=document.createElement('style');st.textContent=`
   background:radial-gradient(circle at 0 0,rgba(20,10,4,.7),transparent 22%),radial-gradient(circle at 100% 100%,rgba(20,10,4,.65),transparent 20%),linear-gradient(178deg,var(--c-papier),var(--c-papier2))!important;
   box-shadow:3px 4px 0 rgba(0,0,0,.6)!important;transform:rotate(-.6deg)!important;clip-path:polygon(0 5%,9% 0,28% 6%,50% 1%,74% 7%,100% 2%,99% 52%,100% 96%,80% 100%,58% 94%,34% 100%,12% 95%,1% 100%,2% 48%)}
 #seuil .opt .ic{background:var(--c-cire)!important;border:2px solid #5e0f0a!important;color:#fff3da!important;box-shadow:none!important}
-#seuil .opt.f{box-shadow:0 0 0 3px var(--c-cire),3px 4px 0 3px rgba(0,0,0,.6)!important}
+/* 25 nov. (2.49.1) : le clip-path du papier coupait l'anneau rouge, le choix ne se voyait pas à la manette ; on marque donc l'intérieur, et la liste défile */
+#seuil .opt.f{box-shadow:inset 0 0 0 4px var(--c-cire),3px 4px 0 3px rgba(0,0,0,.6)!important;background:linear-gradient(90deg,rgba(163,35,26,.38),rgba(163,35,26,.12) 60%),linear-gradient(178deg,var(--c-papier),var(--c-papier2))!important;transform:rotate(-.6deg) scale(1.06)!important}
+#seuil .opt.f .ic{background:#fff3da!important;color:var(--c-cire)!important}
+#seuil-choix{max-height:44vh;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:.6em 1.2em}
 #seuil .opt .d{font-family:var(--c-main)!important;font-style:normal!important;color:#4a3414!important}
 `;document.head.appendChild(st);
 /* bord déchiré de la page (un seul tirage, graine fixe) */
