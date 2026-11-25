@@ -39,6 +39,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
 | Critique littéraire | « Je trouve le critique pas assez critique... Ou pertinent » puis « Le littéraire aussi » : le critique des textes passe en v3 (design/equipe/critique_litteraire_v3.md, grille joueur / image / voix / forme / lisibilité / cohérence, refus sous 60, tableau de bord mesures_texte.py) | en vigueur | rapports lot-*/critique.md (notes de 77 à 87, aucun refus) |
+| Critique littéraire | Grille recalée sur dix notes à l'aveugle de l'utilisateur (« Notes : 1=1 2=2 … ») : une histoire claire 30, tension 20, joueur 15, image 15, voix 10, voix haute 10 ; plus de points de cohérence ; recalage si la corrélation avec ses notes passe sous 0,6 | en vigueur | grille v3 du même jour |
 ## 24 novembre 2026 (musique)
 
 | Sujet | Décision | Statut | Remplace |

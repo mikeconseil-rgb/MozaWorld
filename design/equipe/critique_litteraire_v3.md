@@ -25,18 +25,24 @@ Une éditrice de fiction de genre qui a refusé plus de manuscrits qu'elle n'en 
 5. **Les règles mécaniques en une ligne.** Format, longueurs, `ops`, budgets, conditions du moteur : c'est le validateur commun. Le critique écrit « validateur : N erreurs » et renvoie au script. Il ne passe pas son rapport à corriger des opérations.
 6. **Le droit de refuser, et l'obligation de s'en servir.** Une zone sous 60 repart à l'écriture. Un lot dont un indicateur du tableau de bord est rouge n'est pas accepté sans un plan de correction daté.
 
-## La grille (100 points)
+## La grille (100 points), recalée sur les notes de l'utilisateur (25 nov.)
+
+Le 25 nov., l'utilisateur a noté à l'aveugle dix zones de 1 à 10. Ses notes ne suivaient ni l'ancien critique (corrélation −0,27) ni la première grille v3 (−0,22) : les deux récompensaient l'allusion, l'ambiguïté et la belle image. **Ce qu'il aime :** une histoire qu'on comprend du premier coup, avec un danger ou un mystère, qui donne envie de savoir la suite (les Soupiraux d'Érikeia, la sève de l'aulne de Kaxtunil : 8/10). **Ce qu'il rejette :** le récit oblique qu'il faut décoder (la saga démentie par les sangles de Kaldbrekka : 1/10), deux versions contradictoires laissées sans réponse (l'Alcázar de Benarrúz : 2/10), les documents en fragments (inscriptions, carnets, tablettes coupées). La grille ci-dessous retrouve son classement (corrélation 0,93 sur ces dix zones ; à revérifier sur un nouvel échantillon).
 
 | Critère | Points | La question qu'il se pose |
 |---|---|---|
-| **Le joueur** | 25 | Après lecture, sais-je ce que cette zone attend de moi (bêtes à vaincre, Donjon à forcer, assemblée à gagner, place à tenir) et ce que coûte chaque pôle ? Le texte me donne-t-il envie d'y aller ? |
-| **L'image propre** | 20 | Test de l'échange : si je mets le nom d'une autre zone, le texte marche-t-il encore ? Une image qui ne peut appartenir qu'ici vaut 20 ; une image interchangeable vaut 5. |
-| **La voix** | 15 | Sans signature, reconnaîtrais-je le conteur ? A amer et archiviste, B optimiste et marchand, C retors et ludique, D étrange et cosmique. Un B amer, un C sans règle cachée, un D sans étrangeté perdent ces points. |
-| **La forme** | 15 | Le récit échappe-t-il au gabarit maison (personnage, coutume, écart, conséquence, chute ironique) ? La chute se devine-t-elle dès la deuxième phrase ? |
-| **La lisibilité en jeu** | 15 | Lu une fois à voix haute : les noms se prononcent-ils (3 noms propres au plus) ? Comprend-on sans relire ? Les `pal` se voient-elles à l'écran, ou décrivent-elles ce que le moteur ne peut pas montrer ? |
-| **La cohérence du monde** | 10 | Le mélange de culture et de biome est-il **utilisé** (l'Alcázar dans la toundra, qui ment sur lui-même) ou **plaqué** (des yourtes sur une mangrove, sans raison) ? Le type de zone est-il respecté (un Antre a ses bêtes dans le récit) ? |
+| **Une histoire claire** | 30 | Après une seule lecture, je peux redire ce qui s'est passé : qui, quoi, pourquoi, et la conséquence. Pas de chute allusive à décoder, pas de version contradictoire laissée sans réponse, pas de document en fragments (carnet, inscription, tablette, registre) ni de récit coupé. |
+| **La tension** | 20 | Il y a un danger, un mystère ou un enjeu concret, et j'ai envie de savoir la suite ou d'aller voir. |
+| **Le joueur** | 15 | Je sais ce que la zone attend de moi (bêtes, Donjon, assemblée, place à tenir) et ce que coûte chaque pôle. |
+| **L'image propre** | 15 | Test de l'échange : avec le nom d'une autre zone, le texte marcherait-il encore ? |
+| **La voix** | 10 | Sans signature, je reconnais le conteur. |
+| **La lecture à voix haute** | 10 | Les noms se prononcent (3 noms propres au plus) et la phrase se comprend sans relire. |
+
+La cohérence du monde (culture et biome, type de zone) ne rapporte plus de points : le critique la signale en une ligne si elle gêne la compréhension. L'utilisateur a noté 8/10 une cour maya dans une taïga parce que l'histoire était claire.
 
 **Échelle des notes.** 90 et plus : on la citerait dans une bande-annonce. 80 : bonne, publiable telle quelle. 70 : correcte mais interchangeable. 60 à 69 : à reprendre sur la phrase la plus faible et le critère le plus bas. Sous 60 : refusée, réécrite.
+
+**Calibrage.** À chaque nouvel essai, l'utilisateur note à l'aveugle dix zones (page « Évaluer le critique »). Si la corrélation entre ses notes et celles du critique passe sous 0,6, la grille se recale sur ses notes avant le lot suivant.
 
 **Répartition attendue.** Sur un lot d'au moins 20 zones, l'écart type des notes doit atteindre 6 points, au plus 15 % des zones ont 85 ou plus, et au moins 15 % ont 69 ou moins. Si ses notes sortent de cette répartition, le critique écrit pourquoi en une ligne (« lot exceptionnel : … ») ; sans justification, c'est son rapport qui est refusé.
 
