@@ -182,7 +182,13 @@ body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
 #combat .cb-aide:empty{visibility:hidden}
 #combat.placement #cb-main{transform:translateY(calc(var(--u)*1.2))}
 /* la carte choisie grandit depuis sa base au lieu de se soulever : elle ne monte plus sur la pastille */
-#cb-main .cc.kcarte.f{transform:scale(1.04);transform-origin:50% 100%}
+#cb-main .cc.kcarte.f{transform:scale(1.04);transform-origin:50% 100%;z-index:4}
+/* boucle 7 (25 nov. 2026) : superposition du combat. La carte désignée est à 4 dans la main, et le bas de l'écran à 0
+   hors placement (cartes-visuel.js) ; les plaques d'unités et la barre d'aide passent devant elle, à 6.
+   L'aide ne valait 6 que sur le papier : « #combat>*:not(#cb-decor) » (carnet-combat.js, deux identifiants) la ramenait à 1 ;
+   le sélecteur ci-dessous a la spécificité qu'il faut. Aucune carte ne cache plus des PV ni l'aide. */
+#combat #cb-allies .u,#combat #cb-foes .u{z-index:6}
+#combat>#cb-aide.cb-aide{z-index:6}
 #cb-main .cc.kcarte.choisie{transform:scale(1.06);transform-origin:50% 100%}
 /* unités du plateau un peu plus compactes (portrait 2,6 u, pastille d'intention mordant sur le portrait) : à trois voies,
    avec l'étiquette de case sous la jauge, elles tiennent dans leur rangée et ne chevauchent plus la voie voisine */

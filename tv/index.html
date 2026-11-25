@@ -6590,8 +6590,10 @@ const css=document.createElement('style');css.textContent=`
   mask-image:linear-gradient(180deg,#000 calc(100% - 1.75em),rgba(0,0,0,.12) calc(100% - .4em))}
 #cb-main .cc.kcarte:not(.f) .kamb,#cb-main .cc.kcarte:not(.f) .kband.bas{display:none}
 /* Carte choisie (et agrandie) : hauteur fixe, texte entier ; ajuster() réduit la police par pas de 4 % s'il le faut.
-   Elle s'écarte de ses voisines (marge latérale) et porte une ombre de la couleur de son mana, au lieu du halo uniforme. */
-#cb-main .cc.kcarte.f{height:calc(var(--u)*21);min-height:0;padding-bottom:calc(var(--u)*.75);flex:0 0 calc(var(--u)*14);width:calc(var(--u)*14);margin:0 calc(var(--u)*1.7);
+   Elle s'écarte de ses voisines (marge latérale) et porte une ombre de la couleur de son mana, au lieu du halo uniforme.
+   Boucle 7 (25 nov. 2026) : 17u au lieu de 21u et marge de 1,1u au lieu de 1,7u. Cette règle ne vaut plus que pendant le
+   placement et le choix d'une cible (ailleurs, la carte agrandie plus bas l'emporte) : on regarde alors le plateau. */
+#cb-main .cc.kcarte.f{height:calc(var(--u)*17);min-height:0;padding-bottom:calc(var(--u)*.75);flex:0 0 calc(var(--u)*14);width:calc(var(--u)*14);margin:0 calc(var(--u)*1.1);
   box-shadow:0 0 0 2px rgba(245,220,156,.6),0 calc(var(--u)*1.6) calc(var(--u)*2.4) calc(var(--u)*-.3) var(--kcB,rgba(201,164,92,.7)),0 calc(var(--u)*2.4) calc(var(--u)*3.2) rgba(0,0,0,.72),inset 0 0 0 1px rgba(255,255,255,.08)}
 #cb-main .cc.kcarte.f .ct{flex:1 1 0;min-height:0;overflow:hidden;font-size:calc(var(--u)*.86*var(--kf,1));line-height:1.26;padding:.4em .5em 0;border-bottom:.35em solid transparent}
 #cb-main .cc.kcarte.f .kamb{font-size:calc(var(--u)*.74*var(--kf,1));flex:none;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;padding-bottom:0;border-bottom:.3em solid transparent}
@@ -6672,17 +6674,40 @@ const css=document.createElement('style');css.textContent=`
 #combat #cb-main .cc.kcarte:not(.f) .art{height:66%!important}
 #combat #cb-main .cc.kcarte:not(.f) .cn{font-size:calc(var(--u)*1.36)!important;line-height:1.08!important;margin-top:calc(var(--u)*-.9)!important}
 /* pendant le placement d'une unité ou le choix d'une cible (.choisie), la carte reste petite : on regarde le plateau */
-#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie){width:calc(var(--u)*24)!important;flex:0 0 calc(var(--u)*24)!important;height:calc(var(--u)*31)!important;
-  margin:calc(var(--u)*-10) calc(var(--u)*-4.2) 0!important;z-index:30;align-self:flex-end}
-#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie).haute{height:calc(var(--u)*34)!important;margin-top:calc(var(--u)*-13)!important}
-#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .art{height:36%!important}
-#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie).serre .art{height:30%!important}
-#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .cn{font-size:calc(var(--u)*1.8)!important;line-height:1.1!important}
+/* ---- Boucle 7 (25 nov. 2026) : une carte agrandie qui ne masque ni le plateau ni l'aide ----
+   Avant : 24u × 31u (34u en « haute »), montée de 10u (13u) au-dessus de la main, z-index 40 sur la main : elle couvrait la
+   Sentinelle et ses PV, les PV et les « coups attendus » du héros et le début de la barre d'aide (« ◀ ▶ carte · OK jouer »).
+   Maintenant la carte s'élargit au lieu de monter : 36u × 20,4u, posée dans la bande de la main. Elle prend 21u dans le flux
+   (marge haute de .6u + 20,4u), comme l'ancienne (31u − 10u) : la main, la barre d'aide et le plateau ne bougent pas d'un pixel.
+   Avec l'échelle 1,04 depuis le bas (ecrin.js), son bord haut, pastille de coût et blason compris, reste sous la barre d'aide
+   (720p : 417 px contre 409 px). Elle déborde sur ses voisines (marges négatives, 15,6u dans le flux) sans les pousser ;
+   la première ne déborde qu'à droite (elle ne couvre plus le panneau « Ce tour »), la dernière qu'à gauche et l'avant-dernière
+   surtout à gauche (elles laissent « Fin du tour » et « Manœuvre »). La classe « haute » d'ajuster() ne la fait plus monter : la largeur suffit, et le corps
+   du texte reste à 21-22 px à 720p (1,72u, au pire deux pas d'ajuster(), 20,3 px).
+   L'illustration devient un bandeau (24 %, cartes-relook.js) ; le ruban du nom reste à la mesure d'un nom (marges de 17 %),
+   la ligne de type et le cadre de texte sont un peu resserrés. */
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie),#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie).haute{
+  width:calc(var(--u)*36)!important;flex:0 0 calc(var(--u)*36)!important;height:calc(var(--u)*20.4)!important;padding-bottom:calc(var(--u)*.35)!important;
+  margin:calc(var(--u)*.6) calc(var(--u)*-10.2) 0!important;z-index:4;align-self:flex-end}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie):first-child{margin:calc(var(--u)*.6) calc(var(--u)*-20.4) 0 0!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie):not(:has(~.kcarte)){margin:calc(var(--u)*.6) calc(var(--u)*.8) 0 calc(var(--u)*-21.2)!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie):not(:first-child):has(~.kcarte):not(:has(~.kcarte~.kcarte)){margin:calc(var(--u)*.6) calc(var(--u)*-6.4) 0 calc(var(--u)*-14)!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .art,#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie).serre .art{height:24%!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .cn{font-size:calc(var(--u)*1.6)!important;line-height:1.1!important;margin:calc(var(--u)*-1.5) 17% 0!important}
 #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .cz{font-size:calc(var(--u)*.95)!important}
-#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .ct{font-size:calc(var(--u)*1.72*var(--kf,1))!important;line-height:1.2!important;padding:.35em .5em!important}
+#combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .ct{font-size:calc(var(--u)*1.72*var(--kf,1))!important;line-height:1.2!important;
+  margin:.15em 4% calc(var(--u)*.3)!important;padding:.25em .6em!important}
 #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie) .kamb{font-size:calc(var(--u)*1.15)!important}
-#combat:not(.placement) #cb-main{position:relative;z-index:40}
-#combat:not(.placement) .cb-bas{z-index:20!important}
+/* superposition (boucle 7) : la main ne passe plus au-dessus de tout (40 sur la main, 20 sur le bas de l'écran).
+   Tous les enfants de #combat sont à z-index 1 (carnet-combat.js) et le bas vient après les rangées d'unités : à égalité,
+   il passait devant. Le bas descend à 0 (au-dessus du décor, à −1) ; dans la main, la carte désignée est à 4 ; les rangées
+   d'unités et la barre d'aide restent à 1 (les plaques à 6 dans leur rangée, l'aide à 6, ecrin.js) : elles passent devant
+   la carte si un écran étroit les rapproche. */
+#combat:not(.placement) #cb-main{position:relative;z-index:4}
+/* boucle 7 : la carte désignée ne fait plus que 17u pendant le placement, mais la main garde ses 21u de haut : en entrant
+   en placement, la barre d'aide et le plateau ne sautent pas (les cartes restent posées en bas, align-self:flex-end). */
+#combat.placement #cb-main{min-height:calc(var(--u)*21)}
+#combat:not(.placement) .cb-bas{z-index:0!important}
 #combat #cb-main .cc.kcarte:not(.f) .cn{font-size:max(11px,calc(var(--u)*1.36))!important}
 /* si la main dépasse le bas de l'écran (téléphone), ajuster() mesure le dépassement (--kdy) et la carte choisie remonte d'autant */
 #combat:not(.placement) #cb-main .cc.kcarte.f:not(.choisie){translate:0 calc(var(--kdy,0px)*-1)}
@@ -6909,7 +6934,13 @@ body.toast-vu .hud.cart>*{opacity:0;transition:opacity .25s ease}
 #combat .cb-aide:empty{visibility:hidden}
 #combat.placement #cb-main{transform:translateY(calc(var(--u)*1.2))}
 /* la carte choisie grandit depuis sa base au lieu de se soulever : elle ne monte plus sur la pastille */
-#cb-main .cc.kcarte.f{transform:scale(1.04);transform-origin:50% 100%}
+#cb-main .cc.kcarte.f{transform:scale(1.04);transform-origin:50% 100%;z-index:4}
+/* boucle 7 (25 nov. 2026) : superposition du combat. La carte désignée est à 4 dans la main, et le bas de l'écran à 0
+   hors placement (cartes-visuel.js) ; les plaques d'unités et la barre d'aide passent devant elle, à 6.
+   L'aide ne valait 6 que sur le papier : « #combat>*:not(#cb-decor) » (carnet-combat.js, deux identifiants) la ramenait à 1 ;
+   le sélecteur ci-dessous a la spécificité qu'il faut. Aucune carte ne cache plus des PV ni l'aide. */
+#combat #cb-allies .u,#combat #cb-foes .u{z-index:6}
+#combat>#cb-aide.cb-aide{z-index:6}
 #cb-main .cc.kcarte.choisie{transform:scale(1.06);transform-origin:50% 100%}
 /* unités du plateau un peu plus compactes (portrait 2,6 u, pastille d'intention mordant sur le portrait) : à trois voies,
    avec l'étiquette de case sous la jauge, elles tiennent dans leur rangée et ne chevauchent plus la voie voisine */
@@ -11211,7 +11242,10 @@ const st=document.createElement('style');st.textContent=`
   background:radial-gradient(ellipse at 50% 30%,#e3d2a6,#c9b383 75%)!important;color:#1d140b!important;text-shadow:none!important;
   border:1px solid rgba(23,16,10,.7)!important;box-shadow:inset 0 0 calc(var(--u)*.6) rgba(90,60,20,.45)!important}
 #cb-main .cc.kcarte .ct{font-size:calc(var(--u)*.8)!important;line-height:1.16!important}
-#cb-main .cc.kcarte.f .art,#cb-main .cc.kcarte.choisie .art{height:40%!important}
+/* boucle 7 (25 nov. 2026) : règle séparée. La carte désignée (.f) prend un bandeau de peinture (24 %) au lieu de 40 % :
+   plus de place pour le texte, et le choc entre la carte peinte et le monde plat s'atténue. La carte .choisie garde 40 %. */
+#cb-main .cc.kcarte.f .art{height:24%!important}
+#cb-main .cc.kcarte.choisie .art{height:40%!important}
 #cb-main .cc.kcarte .ct b{color:#7a1a10!important}
 #cb-main .cc.kcarte .ct *{text-shadow:none!important}
 @media (prefers-reduced-motion:reduce){#cb-main .cc.kcarte .kpeint img,#cb-main .cc.kcarte .art::before{animation:none!important}}
