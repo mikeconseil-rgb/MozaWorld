@@ -19,6 +19,14 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 
 
+## 25 novembre 2026 (factions)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Factions | « Assigner à chaque zone une faction, alignée sur les manas, plus une », puis « 1 ok. 2 parfait 3.a 4 a » (24 nov., 19 h 44 Toronto) : six factions de mana (Braisiers/Feu, Ordre du Socle/Pierre, Compagnie des Vents/Vent, Veille Blanche/Glace, Ligue des Marées/Eau, Cercle des Racines/Sève) + l'Ombre (le sauvage, zones d'ombre détruites) ; faction FIXE, d'après le mana de la zone ; affichage sur la carte d'abord (tv/src/factions.js, 2.46) ; « on va ajouter tout un gameplay autour » (après le 28) | en vigueur | — |
+| Carte des factions | « Une interface sur la carte pour voir les factions, chaque zone avec la couleur et le sigle de la faction » : X fait tourner types, niveaux, factions sur la carte du monde ; fiche de zone avec sa faction | en vigueur (2.46) | — |
+| Voisinages de factions | « Lors du placement des tuiles on mettra des tuiles de même faction plus naturellement ensemble. Certaines jamais coller » : roue Feu, Pierre, Vent, Glace, Eau, Sève ; même faction attirée, voisines sur la roue alliées, opposées jamais en contact (Feu-Glace, Pierre-Eau, Vent-Sève), l'Ombre touche tout ; pour le générateur de mondes. Sur la carte classique (925 zones), 379 contacts sur 2 346 sont entre factions opposées (tracés en rouge) | provisoire (couples opposés proposés par Claude) | — |
+
 ## 25 novembre 2026
 
 | Sujet | Décision | Statut | Remplace |
