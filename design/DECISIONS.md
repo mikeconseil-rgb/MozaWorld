@@ -44,6 +44,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
+| Musique | Korobeïniki reste l'air de la Taïga de Kobor, même s'il fait penser à Tetris (chanson russe du domaine public) | en vigueur | |
 | Musique | Aux niveaux extrêmes, on doit continuer de reconnaître les chansons : ajouter des instruments et des harmonies, sans déformer l'air (version 2.43.1) | en vigueur | passage en mineur, phrygien ou lydien et tempo ±31 % vers ±7 (17 nov.) |
 
 ## 23 novembre 2026 (musique)
