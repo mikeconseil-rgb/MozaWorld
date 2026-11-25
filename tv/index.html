@@ -6639,7 +6639,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.45';
+const MZ_VERSION='2.46';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -9472,6 +9472,52 @@ function tourne(t){requestAnimationFrame(tourne);const dt=Math.min(.05,(t-last)/
 requestAnimationFrame(tourne);
 window.MZanime={VENT,BETES,chercherVent};
 })();
+/* MozaWorld 2.46 : les factions (25 nov., demande de l'utilisateur : « assigner à chaque zone une faction, alignée sur les manas,
+   plus une » ; puis « une interface sur la carte pour voir les factions, chaque zone avec la couleur et le sigle de la faction »).
+   Noms, couleurs et sigles acceptés le 24 nov. au soir (« 1 ok ») ; voisinages proposés, PROVISOIRES.
+   - Six factions de mana : une zone appartient à la faction de son mana (champ mana de la carte, 925 zones, environ 150 par mana).
+   - Une septième, l'Ombre : le monde sauvage. Elle tient les zones d'ombre détruites du générateur de mondes (d.ombre ou mod 'OMB').
+   - Décision de l'utilisateur (24 nov. au soir, Toronto : « 1 ok. 2 parfait 3.a 4 a ») : faction FIXE, d'après le mana de la zone
+     (pas de bascule à l'Ombre au palier 7) ; affichage sur la carte d'abord ; « on va ajouter tout un gameplay autour » (après le 28).
+   - Voisinages (pour le générateur de mondes) : roue Feu, Pierre, Vent, Glace, Eau, Sève. Même faction : attirance forte ;
+     voisines sur la roue : alliées ; opposées sur la roue : JAMAIS en contact (Feu-Glace, Pierre-Eau, Vent-Sève) ; l'Ombre touche tout.
+   Affichage seulement : aucune règle de jeu ne lit la faction (gel des nouveaux systèmes jusqu'au 28 nov.). */
+const FACTIONS={
+  Feu:   {k:'Feu',   nom:'Les Braisiers',          mana:'Feu',   col:'#e0643a',dev:'Conquérants et forgerons'},
+  Pierre:{k:'Pierre',nom:'L\'Ordre du Socle',      mana:'Pierre',col:'#b9a27a',dev:'Bâtisseurs et légistes'},
+  Vent:  {k:'Vent',  nom:'La Compagnie des Vents', mana:'Vent',  col:'#cdbff0',dev:'Nomades et éclaireurs'},
+  Glace: {k:'Glace', nom:'La Veille Blanche',      mana:'Glace', col:'#9fd3f2',dev:'Gardiens des serments'},
+  Eau:   {k:'Eau',   nom:'La Ligue des Marées',    mana:'Eau',   col:'#3a96c4',dev:'Marchands navigateurs'},
+  Sève:  {k:'Sève',  nom:'Le Cercle des Racines',  mana:'Sève',  col:'#6cb54c',dev:'Éleveurs de bêtes'},
+  Ombre: {k:'Ombre', nom:'L\'Ombre',               mana:null,    col:'#8a5aa8',dev:'Le monde sauvage'}};
+const FACTION_ROUE=['Feu','Pierre','Vent','Glace','Eau','Sève'];
+/* mana des cinq zones d'origine (mêmes valeurs que monde-anime.js) */
+const FACTION_MANA_ORIG={CIT:'Glace',DON:'Feu',ANT:'Eau',MAR:'Glace',RES:'Vent'};
+function factionMana(Z){const d=Z&&Z.d;if(d&&d.mana&&FACTIONS[d.mana])return d.mana;return FACTION_MANA_ORIG[Z&&Z.id]||'Pierre'}
+function factionDe(Zid){const Z=typeof Zid==='string'?((typeof ZWB!=='undefined'&&ZWB[Zid])||(typeof ZB!=='undefined'&&ZB[Zid])):Zid;if(!Z)return null;
+  const d=Z.d||{},mod=Z.mod||d.mod||Z.id;
+  if(d.ombre||mod==='OMB')return FACTIONS.Ombre;
+  return FACTIONS[factionMana(Z)]}
+/* lien entre deux factions : 'meme', 'allie', 'neutre', 'oppose' (jamais en contact), ou 'ombre' */
+function factionLien(a,b){a=a&&a.k||a;b=b&&b.k||b;if(a===b)return'meme';if(a==='Ombre'||b==='Ombre')return'ombre';
+  const i=FACTION_ROUE.indexOf(a),j=FACTION_ROUE.indexOf(b),d=Math.abs(i-j)%6,e=Math.min(d,6-d);return e===1?'allie':e===3?'oppose':'neutre'}
+const factionsOpposees=(a,b)=>factionLien(a,b)==='oppose';
+/* sigle de faction, dessiné au trait (pas de police : les symboles manquent sur la Xbox) */
+function sigleFaction(c,k,x,y,r,fill,stroke){c.save();c.translate(x,y);c.lineJoin='round';c.lineCap='round';c.beginPath();
+  if(k==='Feu'){c.moveTo(0,-r);c.bezierCurveTo(r*.9,-r*.2,r*.75,r*.85,0,r);c.bezierCurveTo(-r*.75,r*.85,-r*.9,-r*.2,0,-r);c.moveTo(0,-r*.1);c.bezierCurveTo(r*.4,r*.25,r*.3,r*.7,0,r*.7);c.bezierCurveTo(-r*.3,r*.7,-r*.4,r*.25,0,-r*.1)}
+  else if(k==='Pierre'){c.moveTo(-r,r*.75);c.lineTo(-r*.25,-r*.7);c.lineTo(r*.15,0);c.lineTo(r*.45,-r*.35);c.lineTo(r,r*.75);c.closePath()}
+  else if(k==='Vent'){for(let i=0;i<3;i++){const yy=(i-1)*r*.6,l=r*(i===1?1:.75);c.moveTo(-r,yy);c.lineTo(l*.5,yy);c.arc(l*.5,yy-r*.22,r*.22,PI/2,-PI*.9,true)}}
+  else if(k==='Glace'){for(let i=0;i<6;i++){const a=i*PI/3,ca=Math.cos(a),sa=Math.sin(a);c.moveTo(0,0);c.lineTo(ca*r,sa*r);
+    const bx=ca*r*.55,by=sa*r*.55;c.moveTo(bx,by);c.lineTo(bx+Math.cos(a+.7)*r*.3,by+Math.sin(a+.7)*r*.3);c.moveTo(bx,by);c.lineTo(bx+Math.cos(a-.7)*r*.3,by+Math.sin(a-.7)*r*.3)}}
+  else if(k==='Eau'){c.moveTo(0,-r);c.bezierCurveTo(r*.25,-r*.4,r*.8,0,r*.8,r*.35);c.arc(0,r*.35,r*.8,0,PI);c.bezierCurveTo(-r*.8,0,-r*.25,-r*.4,0,-r);c.closePath()}
+  else if(k==='Sève'){c.moveTo(0,-r);c.quadraticCurveTo(r*1.05,0,0,r);c.quadraticCurveTo(-r*1.05,0,0,-r);c.moveTo(0,-r*.7);c.lineTo(0,r*1.05)}
+  else{c.arc(0,0,r*.9,0,TAU);c.moveTo(r*.85,-r*.1);c.arc(r*.3,-r*.1,r*.55,0,TAU,true)}   /* Ombre : éclipse */
+  const trait=k==='Glace'||k==='Vent';
+  if(stroke){c.lineWidth=Math.max(1.5,r*(trait?.5:.38));c.strokeStyle=stroke;c.stroke()}
+  if(trait){c.lineWidth=Math.max(1,r*.2);c.strokeStyle=fill;c.stroke()}else{c.fillStyle=fill;c.fill('evenodd')}
+  c.restore()}
+window.FACTIONS=FACTIONS;window.factionDe=factionDe;window.factionLien=factionLien;window.factionsOpposees=factionsOpposees;window.sigleFaction=sigleFaction;
+if(window.MZ)Object.assign(window.MZ,{factionDe:id=>{const f=factionDe(id);return f&&f.k},factionLien});
 /* MozaWorld 2.24 : minicarte et carte du monde (20 nov., « améliore encore la minimap pour qu'elle soit plus jolie et pratique »).
    Avant : un carré qui montrait toute la région (une cinquantaine de zones) en tout petit, illisible à la télé.
    1. La minicarte devient un médaillon rond centré sur le héros, qui tourne avec la caméra (le haut = là où l'on regarde,
@@ -9642,14 +9688,21 @@ const ov=document.createElement('div');ov.id='mz-monde';ov.innerHTML=`<canvas></
 const mcv=ov.querySelector('canvas'),fiche=ov.querySelector('.fiche'),leg=ov.querySelector('.lg2'),cmd=ov.querySelector('.cmd');
 const K={x:0,z:0,w:6000,cible:null,col:0,sale:true,ouverte:false,vise:null,dpr:1,fx:0,fz:0};
 let MB=null;function bornes(){if(MB)return MB;let a=1e9,b=-1e9,c=1e9,d=-1e9;for(const Z of MONDE())for(const p of Z.poly){a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);d=Math.max(d,p[1])}return MB={x0:a,x1:b,z0:c,z1:d}}
-function legende(){const L=[];for(const t in TYPES)L.push(`<span><canvas width="24" height="24" data-t="${t}"></canvas>${TYPES[t].n}</span>`);
+function legende(){const L=[];
+  if(K.col===2&&typeof FACTIONS!=='undefined'){   /* 2.46 : légende des factions, avec le nombre de zones de chacune */
+    const n={};for(const Z of MONDE()){const f=factionDe(Z);if(f)n[f.k]=(n[f.k]||0)+1}
+    for(const k in FACTIONS)L.push(`<span><canvas width="24" height="24" data-f="${k}"></canvas><b style="color:${FACTIONS[k].col}">${FACTIONS[k].nom}</b> ${n[k]||0}</span>`);
+    L.push(`<span style="color:${OR}">▢ à vous</span>`);
+    leg.innerHTML='<div class="lg2">'+L.join('')+'</div>';leg.querySelectorAll('canvas').forEach(c=>{const x=c.getContext('2d'),k=c.dataset.f;sigleFaction(x,k,12,12,9,FACTIONS[k].col,'#0b0a0d')});return}
+  for(const t in TYPES)L.push(`<span><canvas width="24" height="24" data-t="${t}"></canvas>${TYPES[t].n}</span>`);
   L.push(`<span style="color:${OR}">▢ à vous</span>`);
   if(K.col)L.push(`<span><b style="color:${MINUS}">−7</b> … <b style="color:${PLUS}">+7</b> niveaux</span>`);
   L.push(`<span style="color:#ff8a75">➤ hordes</span>`);
   leg.innerHTML=L.join('');leg.querySelectorAll('canvas').forEach(c=>{const x=c.getContext('2d'),t=c.dataset.t;icone(x,t,12,12,10,rgba(TYPES[t].c,1),'#0b0a0d')})}
+const PROCHAIN=['couleurs des niveaux','factions','couleurs des types'];   /* 2.46 : X fait tourner types, niveaux, factions */
 function commandes(){const pad=typeof PAD!=='undefined'&&PAD.on;
-  cmd.innerHTML=pad?`<i>Stick gauche</i> se déplacer · <i>LT RT</i> zoom<br><i>X</i> ${K.col?'couleurs des types':'couleurs des niveaux'} · <i>Y</i> revenir au héros<br><i>A</i> voyager · <i>B</i> fermer`
-    :`<i>Flèches</i> se déplacer · <i>+ −</i> zoom<br><i>X</i> ${K.col?'couleurs des types':'couleurs des niveaux'} · <i>Y</i> revenir au héros<br><i>Entrée</i> voyager · <i>Échap</i> fermer`}
+  cmd.innerHTML=pad?`<i>Stick gauche</i> se déplacer · <i>LT RT</i> zoom<br><i>X</i> ${PROCHAIN[K.col]} · <i>Y</i> revenir au héros<br><i>A</i> voyager · <i>B</i> fermer`
+    :`<i>Flèches</i> se déplacer · <i>+ −</i> zoom<br><i>X</i> ${PROCHAIN[K.col]} · <i>Y</i> revenir au héros<br><i>Entrée</i> voyager · <i>Échap</i> fermer`}
 function ouvrirCarte(){if(typeof mode==='undefined'||mode!=='monde'||!started)return;
   P.auto=0;mode='carte';K.ouverte=true;K.x=P.x;K.z=P.z;K.fx=K.fz=0;K.sale=true;K.w=Math.min(K.w,9000);
   document.body.classList.add('jeu-ouvert');ov.classList.add('on');legende();commandes();taille();K.vise=null;majFiche()}
@@ -9674,6 +9727,7 @@ function majFiche(){const Z=K.vise;let h='';
     const d=Math.hypot(Z.c[0]-P.x,Z.c[1]-P.z),dist=d<1000?Math.round(d/10)*10+' m':(d/1000).toFixed(1).replace('.',',')+' km';
     const L=[];
     L.push(`Niveau <i class="${cl}">${sgn(l)||'0'}</i> · ${poleNom(Z)}`);
+    const fa=typeof factionDe==='function'&&factionDe(Z);if(fa)L.push(`Faction : <b style="color:${fa.col}">${fa.nom}</b>`);
     L.push(own?`<span class="o">⚑ À vous</span>`:mais?`<span style="color:${mais.col}">${mais.bl} ${mais.nom}</span>`:S.emp&&S.emp[Z.id]?'Sauvage · votre empreinte':'Sauvage');
     if(Z.d&&Z.d.pret===false)L.push('<span class="r">Pas encore écrite</span> : sa Pierre dort');
     else if(Z.alt&&restLeft(Z)>0)L.push('Pierre au repos : '+fmt(restLeft(Z)));
@@ -9731,6 +9785,11 @@ function royaumes(c,vis,s,ox,oz,joint,mini){
     c.lineWidth=fs*.32;c.strokeStyle='rgba(8,6,4,.88)';c.strokeText(t,x,y);c.fillStyle=r.k==='moi'?'#ffe8b0':'#f4ead6';c.fillText(t,x,y);
     const tw=c.measureText(t).width/2+fs*.6;c.strokeStyle=r.trait;c.lineWidth=Math.max(1,fs*.07);c.beginPath();c.moveTo(x-tw,y+fs*.75);c.lineTo(x+tw,y+fs*.75);c.stroke();
     c.restore()}}
+/* 2.46 : frontières entre factions (trait sombre), en rouge là où deux factions opposées se touchent */
+function frontieresFactions(c,vis,s,ox,oz){const A=aretes(),E=[],X=[],w=Math.max(1.5,Math.min(5,s*6));
+  for(const Z of vis){const f=factionDe(Z);for(const e of A.get(Z.id)||[]){if(!e.nb||e.nb.id<Z.id)continue;const g=factionDe(e.nb);if(!f||!g||f===g)continue;(factionsOpposees(f,g)?X:E).push(e)}}
+  const trace=(L,lw,st)=>{if(!L.length)return;c.beginPath();for(const e of L){c.moveTo((e.a[0]+ox)*s,(e.a[1]+oz)*s);c.lineTo((e.b[0]+ox)*s,(e.b[1]+oz)*s)}c.lineWidth=lw;c.strokeStyle=st;c.stroke()};
+  c.lineCap='round';trace(E,w*1.6,'rgba(8,6,4,.9)');trace(E,w*.45,'rgba(239,231,214,.45)');trace(X,w*1.8,'rgba(8,6,4,.9)');trace(X,w*.8,'rgba(255,90,70,.85)')}
 /* cadre enluminé autour de la carte : double filet d'or, rosaces Girih aux coins */
 function cadre(c,w,h){const d=K.dpr,m=14*d;c.save();c.strokeStyle='rgba(201,164,92,.75)';c.lineWidth=2*d;c.strokeRect(m,m,w-2*m,h-2*m);
   c.strokeStyle='rgba(201,164,92,.35)';c.lineWidth=1*d;c.strokeRect(m+6*d,m+6*d,w-2*m-12*d,h-2*m-12*d);
@@ -9743,16 +9802,19 @@ function dessinerCarte(T){const c=mcv.getContext('2d'),w=mcv.width,h=mcv.height,
   for(const Z of MONDE())if(Z.c[0]>xa&&Z.c[0]<xb&&Z.c[1]>za&&Z.c[1]<zb)vis.push(Z);
   const joint=Math.max(1,Math.min(4,s*7));
   for(const Z of vis){const t=TYPES[typeDe(Z)],own=S.own[Z.id],l=niv(Z),pret=!(Z.d&&Z.d.pret===false);tracer(c,Z,s,ox,oz);
-    if(K.col){const k=Math.abs(l)/7;c.fillStyle=l<0?`rgba(${Math.round(60+20*k)},${Math.round(110+40*k)},${Math.round(150+70*k)},${.35+.55*k})`:l>0?`rgba(${Math.round(160+80*k)},${Math.round(110+60*k)},${Math.round(60+10*k)},${.35+.55*k})`:'rgba(120,112,100,.35)'}
+    if(K.col===1){const k=Math.abs(l)/7;c.fillStyle=l<0?`rgba(${Math.round(60+20*k)},${Math.round(110+40*k)},${Math.round(150+70*k)},${.35+.55*k})`:l>0?`rgba(${Math.round(160+80*k)},${Math.round(110+60*k)},${Math.round(60+10*k)},${.35+.55*k})`:'rgba(120,112,100,.35)'}
+    else if(K.col===2){const f=factionDe(Z);c.fillStyle=f?rgba(hex2(f.col),pret?.82:.5,(pret?.62:.4)*(.86+.14*((Z.c[0]*7+Z.c[1]*13)%5)/4)):'rgba(40,36,44,.6)'}
     else{const r=roi(Z.id);c.fillStyle=r?rgba(r.c,.9,(pret?1:.8)*(.86+.14*((Z.c[0]*7+Z.c[1]*13)%5)/4)):rgba(t.c,pret?.55:.32,pret?.34:.24)}
     c.fill();c.lineJoin='round';c.lineWidth=joint;c.strokeStyle=K.col?'#08070a':roi(Z.id)?'rgba(20,14,8,.55)':'#0a090c';c.stroke()}
   if(!K.col)royaumes(c,vis,s,ox,oz,joint);
-  else for(const Z of vis)if(S.own[Z.id]){tracer(c,Z,s,ox,oz);c.lineWidth=Math.max(1.5,joint*.8);c.strokeStyle='rgba(255,217,138,.95)';c.stroke()}
+  else if(K.col===2)frontieresFactions(c,vis,s,ox,oz);
+  if(K.col)for(const Z of vis)if(S.own[Z.id]){tracer(c,Z,s,ox,oz);c.lineWidth=Math.max(1.5,joint*.8);c.strokeStyle='rgba(255,217,138,.95)';c.stroke()}
   for(const f of['dessinerRoutes','dessinerRivaux','dessinerHordes','dessinerSiege','dessinerTours','dessinerCaravanes'])
     if(typeof window[f]==='function')try{window[f](c,s,ox,oz,T)}catch(_){}
   const ir=Math.max(3,Math.min(16*K.dpr,s*40));
   for(const Z of vis){const x=(Z.c[0]+ox)*s,y=(Z.c[1]+oz)*s,own=S.own[Z.id],l=niv(Z);
-    if(ir>=4)icone(c,typeDe(Z),x,y,ir,own?'#1a1410':'rgba(239,231,214,.5)',own?'rgba(255,230,170,.9)':null);
+    if(ir>=4&&K.col===2){const f=factionDe(Z);if(f)sigleFaction(c,f.k,x,y,ir*.9,f.col,'rgba(8,7,10,.9)');if(own){c.beginPath();c.arc(x,y,ir*1.35,0,TAU);c.lineWidth=Math.max(1.2,ir*.14);c.strokeStyle='rgba(255,230,170,.9)';c.stroke()}}
+    else if(ir>=4)icone(c,typeDe(Z),x,y,ir,own?'#1a1410':'rgba(239,231,214,.5)',own?'rgba(255,230,170,.9)':null);
     if(s*350>75*K.dpr){c.font=`600 ${Math.round(13*K.dpr)}px Georgia,serif`;c.textAlign='center';c.textBaseline='top';c.lineWidth=3*K.dpr;c.strokeStyle='rgba(8,7,10,.85)';
       const n=nomCourt(Z);c.strokeText(n,x,y+ir+4*K.dpr);c.fillStyle=own?'#ffe3a6':'rgba(239,231,214,.85)';c.fillText(n,x,y+ir+4*K.dpr);
       const tx=sgn(l)||'0';c.font=`700 ${Math.round(12*K.dpr)}px sans-serif`;c.strokeText(tx,x,y+ir+20*K.dpr);c.fillStyle=l<0?MINUS:l>0?PLUS:'#d8cdb4';c.fillText(tx,x,y+ir+20*K.dpr)}}
@@ -9792,7 +9854,7 @@ const act0=act;act=function(a,rep){
 const pb0=padBouton;padBouton=function(n){
   if(typeof mode!=='undefined'&&mode==='carte'){
     if(n==='select'||n==='b'||n==='start'){fermerCarte();return}
-    if(n==='x'){K.col=K.col?0:1;K.sale=true;legende();commandes();return}
+    if(n==='x'){K.col=(K.col+1)%3;K.sale=true;legende();commandes();return}
     if(n==='y'){K.x=P.x;K.z=P.z;K.sale=true;return}
     if(n==='a'){act('ok',false);return}
     if(n==='lb'||n==='rb'){K.w=clamp(K.w*(n==='lb'?1.5:1/1.5),1200,30000);K.sale=true;return}return}
@@ -9806,7 +9868,7 @@ addEventListener('keydown',e=>{if(typeof mode==='undefined')return;const k=e.key
   if(e.code==='KeyC'&&!e.repeat){e.preventDefault();fermerCarte()}
   else if(k==='+'||k==='='||e.code==='NumpadAdd'||e.code==='KeyE'||k==='PageUp'){e.preventDefault();K.zk=-1}
   else if(k==='-'||e.code==='NumpadSubtract'||e.code==='KeyQ'||k==='PageDown'){e.preventDefault();K.zk=1}
-  else if(e.code==='KeyX'&&!e.repeat){K.col=K.col?0:1;K.sale=true;legende();commandes()}
+  else if(e.code==='KeyX'&&!e.repeat){K.col=(K.col+1)%3;K.sale=true;legende();commandes()}
   else if(e.code==='KeyY'&&!e.repeat){K.x=P.x;K.z=P.z;K.sale=true}});
 addEventListener('keyup',e=>{const k=e.key;if(k==='+'||k==='='||k==='-'||k==='PageUp'||k==='PageDown'||/Numpad(Add|Subtract)|Key[EQ]/.test(e.code))K.zk=0});
 

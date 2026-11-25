@@ -168,14 +168,21 @@ const ov=document.createElement('div');ov.id='mz-monde';ov.innerHTML=`<canvas></
 const mcv=ov.querySelector('canvas'),fiche=ov.querySelector('.fiche'),leg=ov.querySelector('.lg2'),cmd=ov.querySelector('.cmd');
 const K={x:0,z:0,w:6000,cible:null,col:0,sale:true,ouverte:false,vise:null,dpr:1,fx:0,fz:0};
 let MB=null;function bornes(){if(MB)return MB;let a=1e9,b=-1e9,c=1e9,d=-1e9;for(const Z of MONDE())for(const p of Z.poly){a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);d=Math.max(d,p[1])}return MB={x0:a,x1:b,z0:c,z1:d}}
-function legende(){const L=[];for(const t in TYPES)L.push(`<span><canvas width="24" height="24" data-t="${t}"></canvas>${TYPES[t].n}</span>`);
+function legende(){const L=[];
+  if(K.col===2&&typeof FACTIONS!=='undefined'){   /* 2.46 : légende des factions, avec le nombre de zones de chacune */
+    const n={};for(const Z of MONDE()){const f=factionDe(Z);if(f)n[f.k]=(n[f.k]||0)+1}
+    for(const k in FACTIONS)L.push(`<span><canvas width="24" height="24" data-f="${k}"></canvas><b style="color:${FACTIONS[k].col}">${FACTIONS[k].nom}</b> ${n[k]||0}</span>`);
+    L.push(`<span style="color:${OR}">▢ à vous</span>`);
+    leg.innerHTML='<div class="lg2">'+L.join('')+'</div>';leg.querySelectorAll('canvas').forEach(c=>{const x=c.getContext('2d'),k=c.dataset.f;sigleFaction(x,k,12,12,9,FACTIONS[k].col,'#0b0a0d')});return}
+  for(const t in TYPES)L.push(`<span><canvas width="24" height="24" data-t="${t}"></canvas>${TYPES[t].n}</span>`);
   L.push(`<span style="color:${OR}">▢ à vous</span>`);
   if(K.col)L.push(`<span><b style="color:${MINUS}">−7</b> … <b style="color:${PLUS}">+7</b> niveaux</span>`);
   L.push(`<span style="color:#ff8a75">➤ hordes</span>`);
   leg.innerHTML=L.join('');leg.querySelectorAll('canvas').forEach(c=>{const x=c.getContext('2d'),t=c.dataset.t;icone(x,t,12,12,10,rgba(TYPES[t].c,1),'#0b0a0d')})}
+const PROCHAIN=['couleurs des niveaux','factions','couleurs des types'];   /* 2.46 : X fait tourner types, niveaux, factions */
 function commandes(){const pad=typeof PAD!=='undefined'&&PAD.on;
-  cmd.innerHTML=pad?`<i>Stick gauche</i> se déplacer · <i>LT RT</i> zoom<br><i>X</i> ${K.col?'couleurs des types':'couleurs des niveaux'} · <i>Y</i> revenir au héros<br><i>A</i> voyager · <i>B</i> fermer`
-    :`<i>Flèches</i> se déplacer · <i>+ −</i> zoom<br><i>X</i> ${K.col?'couleurs des types':'couleurs des niveaux'} · <i>Y</i> revenir au héros<br><i>Entrée</i> voyager · <i>Échap</i> fermer`}
+  cmd.innerHTML=pad?`<i>Stick gauche</i> se déplacer · <i>LT RT</i> zoom<br><i>X</i> ${PROCHAIN[K.col]} · <i>Y</i> revenir au héros<br><i>A</i> voyager · <i>B</i> fermer`
+    :`<i>Flèches</i> se déplacer · <i>+ −</i> zoom<br><i>X</i> ${PROCHAIN[K.col]} · <i>Y</i> revenir au héros<br><i>Entrée</i> voyager · <i>Échap</i> fermer`}
 function ouvrirCarte(){if(typeof mode==='undefined'||mode!=='monde'||!started)return;
   P.auto=0;mode='carte';K.ouverte=true;K.x=P.x;K.z=P.z;K.fx=K.fz=0;K.sale=true;K.w=Math.min(K.w,9000);
   document.body.classList.add('jeu-ouvert');ov.classList.add('on');legende();commandes();taille();K.vise=null;majFiche()}
@@ -200,6 +207,7 @@ function majFiche(){const Z=K.vise;let h='';
     const d=Math.hypot(Z.c[0]-P.x,Z.c[1]-P.z),dist=d<1000?Math.round(d/10)*10+' m':(d/1000).toFixed(1).replace('.',',')+' km';
     const L=[];
     L.push(`Niveau <i class="${cl}">${sgn(l)||'0'}</i> · ${poleNom(Z)}`);
+    const fa=typeof factionDe==='function'&&factionDe(Z);if(fa)L.push(`Faction : <b style="color:${fa.col}">${fa.nom}</b>`);
     L.push(own?`<span class="o">⚑ À vous</span>`:mais?`<span style="color:${mais.col}">${mais.bl} ${mais.nom}</span>`:S.emp&&S.emp[Z.id]?'Sauvage · votre empreinte':'Sauvage');
     if(Z.d&&Z.d.pret===false)L.push('<span class="r">Pas encore écrite</span> : sa Pierre dort');
     else if(Z.alt&&restLeft(Z)>0)L.push('Pierre au repos : '+fmt(restLeft(Z)));
@@ -257,6 +265,11 @@ function royaumes(c,vis,s,ox,oz,joint,mini){
     c.lineWidth=fs*.32;c.strokeStyle='rgba(8,6,4,.88)';c.strokeText(t,x,y);c.fillStyle=r.k==='moi'?'#ffe8b0':'#f4ead6';c.fillText(t,x,y);
     const tw=c.measureText(t).width/2+fs*.6;c.strokeStyle=r.trait;c.lineWidth=Math.max(1,fs*.07);c.beginPath();c.moveTo(x-tw,y+fs*.75);c.lineTo(x+tw,y+fs*.75);c.stroke();
     c.restore()}}
+/* 2.46 : frontières entre factions (trait sombre), en rouge là où deux factions opposées se touchent */
+function frontieresFactions(c,vis,s,ox,oz){const A=aretes(),E=[],X=[],w=Math.max(1.5,Math.min(5,s*6));
+  for(const Z of vis){const f=factionDe(Z);for(const e of A.get(Z.id)||[]){if(!e.nb||e.nb.id<Z.id)continue;const g=factionDe(e.nb);if(!f||!g||f===g)continue;(factionsOpposees(f,g)?X:E).push(e)}}
+  const trace=(L,lw,st)=>{if(!L.length)return;c.beginPath();for(const e of L){c.moveTo((e.a[0]+ox)*s,(e.a[1]+oz)*s);c.lineTo((e.b[0]+ox)*s,(e.b[1]+oz)*s)}c.lineWidth=lw;c.strokeStyle=st;c.stroke()};
+  c.lineCap='round';trace(E,w*1.6,'rgba(8,6,4,.9)');trace(E,w*.45,'rgba(239,231,214,.45)');trace(X,w*1.8,'rgba(8,6,4,.9)');trace(X,w*.8,'rgba(255,90,70,.85)')}
 /* cadre enluminé autour de la carte : double filet d'or, rosaces Girih aux coins */
 function cadre(c,w,h){const d=K.dpr,m=14*d;c.save();c.strokeStyle='rgba(201,164,92,.75)';c.lineWidth=2*d;c.strokeRect(m,m,w-2*m,h-2*m);
   c.strokeStyle='rgba(201,164,92,.35)';c.lineWidth=1*d;c.strokeRect(m+6*d,m+6*d,w-2*m-12*d,h-2*m-12*d);
@@ -269,16 +282,19 @@ function dessinerCarte(T){const c=mcv.getContext('2d'),w=mcv.width,h=mcv.height,
   for(const Z of MONDE())if(Z.c[0]>xa&&Z.c[0]<xb&&Z.c[1]>za&&Z.c[1]<zb)vis.push(Z);
   const joint=Math.max(1,Math.min(4,s*7));
   for(const Z of vis){const t=TYPES[typeDe(Z)],own=S.own[Z.id],l=niv(Z),pret=!(Z.d&&Z.d.pret===false);tracer(c,Z,s,ox,oz);
-    if(K.col){const k=Math.abs(l)/7;c.fillStyle=l<0?`rgba(${Math.round(60+20*k)},${Math.round(110+40*k)},${Math.round(150+70*k)},${.35+.55*k})`:l>0?`rgba(${Math.round(160+80*k)},${Math.round(110+60*k)},${Math.round(60+10*k)},${.35+.55*k})`:'rgba(120,112,100,.35)'}
+    if(K.col===1){const k=Math.abs(l)/7;c.fillStyle=l<0?`rgba(${Math.round(60+20*k)},${Math.round(110+40*k)},${Math.round(150+70*k)},${.35+.55*k})`:l>0?`rgba(${Math.round(160+80*k)},${Math.round(110+60*k)},${Math.round(60+10*k)},${.35+.55*k})`:'rgba(120,112,100,.35)'}
+    else if(K.col===2){const f=factionDe(Z);c.fillStyle=f?rgba(hex2(f.col),pret?.82:.5,(pret?.62:.4)*(.86+.14*((Z.c[0]*7+Z.c[1]*13)%5)/4)):'rgba(40,36,44,.6)'}
     else{const r=roi(Z.id);c.fillStyle=r?rgba(r.c,.9,(pret?1:.8)*(.86+.14*((Z.c[0]*7+Z.c[1]*13)%5)/4)):rgba(t.c,pret?.55:.32,pret?.34:.24)}
     c.fill();c.lineJoin='round';c.lineWidth=joint;c.strokeStyle=K.col?'#08070a':roi(Z.id)?'rgba(20,14,8,.55)':'#0a090c';c.stroke()}
   if(!K.col)royaumes(c,vis,s,ox,oz,joint);
-  else for(const Z of vis)if(S.own[Z.id]){tracer(c,Z,s,ox,oz);c.lineWidth=Math.max(1.5,joint*.8);c.strokeStyle='rgba(255,217,138,.95)';c.stroke()}
+  else if(K.col===2)frontieresFactions(c,vis,s,ox,oz);
+  if(K.col)for(const Z of vis)if(S.own[Z.id]){tracer(c,Z,s,ox,oz);c.lineWidth=Math.max(1.5,joint*.8);c.strokeStyle='rgba(255,217,138,.95)';c.stroke()}
   for(const f of['dessinerRoutes','dessinerRivaux','dessinerHordes','dessinerSiege','dessinerTours','dessinerCaravanes'])
     if(typeof window[f]==='function')try{window[f](c,s,ox,oz,T)}catch(_){}
   const ir=Math.max(3,Math.min(16*K.dpr,s*40));
   for(const Z of vis){const x=(Z.c[0]+ox)*s,y=(Z.c[1]+oz)*s,own=S.own[Z.id],l=niv(Z);
-    if(ir>=4)icone(c,typeDe(Z),x,y,ir,own?'#1a1410':'rgba(239,231,214,.5)',own?'rgba(255,230,170,.9)':null);
+    if(ir>=4&&K.col===2){const f=factionDe(Z);if(f)sigleFaction(c,f.k,x,y,ir*.9,f.col,'rgba(8,7,10,.9)');if(own){c.beginPath();c.arc(x,y,ir*1.35,0,TAU);c.lineWidth=Math.max(1.2,ir*.14);c.strokeStyle='rgba(255,230,170,.9)';c.stroke()}}
+    else if(ir>=4)icone(c,typeDe(Z),x,y,ir,own?'#1a1410':'rgba(239,231,214,.5)',own?'rgba(255,230,170,.9)':null);
     if(s*350>75*K.dpr){c.font=`600 ${Math.round(13*K.dpr)}px Georgia,serif`;c.textAlign='center';c.textBaseline='top';c.lineWidth=3*K.dpr;c.strokeStyle='rgba(8,7,10,.85)';
       const n=nomCourt(Z);c.strokeText(n,x,y+ir+4*K.dpr);c.fillStyle=own?'#ffe3a6':'rgba(239,231,214,.85)';c.fillText(n,x,y+ir+4*K.dpr);
       const tx=sgn(l)||'0';c.font=`700 ${Math.round(12*K.dpr)}px sans-serif`;c.strokeText(tx,x,y+ir+20*K.dpr);c.fillStyle=l<0?MINUS:l>0?PLUS:'#d8cdb4';c.fillText(tx,x,y+ir+20*K.dpr)}}
@@ -318,7 +334,7 @@ const act0=act;act=function(a,rep){
 const pb0=padBouton;padBouton=function(n){
   if(typeof mode!=='undefined'&&mode==='carte'){
     if(n==='select'||n==='b'||n==='start'){fermerCarte();return}
-    if(n==='x'){K.col=K.col?0:1;K.sale=true;legende();commandes();return}
+    if(n==='x'){K.col=(K.col+1)%3;K.sale=true;legende();commandes();return}
     if(n==='y'){K.x=P.x;K.z=P.z;K.sale=true;return}
     if(n==='a'){act('ok',false);return}
     if(n==='lb'||n==='rb'){K.w=clamp(K.w*(n==='lb'?1.5:1/1.5),1200,30000);K.sale=true;return}return}
@@ -332,7 +348,7 @@ addEventListener('keydown',e=>{if(typeof mode==='undefined')return;const k=e.key
   if(e.code==='KeyC'&&!e.repeat){e.preventDefault();fermerCarte()}
   else if(k==='+'||k==='='||e.code==='NumpadAdd'||e.code==='KeyE'||k==='PageUp'){e.preventDefault();K.zk=-1}
   else if(k==='-'||e.code==='NumpadSubtract'||e.code==='KeyQ'||k==='PageDown'){e.preventDefault();K.zk=1}
-  else if(e.code==='KeyX'&&!e.repeat){K.col=K.col?0:1;K.sale=true;legende();commandes()}
+  else if(e.code==='KeyX'&&!e.repeat){K.col=(K.col+1)%3;K.sale=true;legende();commandes()}
   else if(e.code==='KeyY'&&!e.repeat){K.x=P.x;K.z=P.z;K.sale=true}});
 addEventListener('keyup',e=>{const k=e.key;if(k==='+'||k==='='||k==='-'||k==='PageUp'||k==='PageDown'||/Numpad(Add|Subtract)|Key[EQ]/.test(e.code))K.zk=0});
 
