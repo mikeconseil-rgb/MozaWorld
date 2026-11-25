@@ -2,7 +2,11 @@
 
 *Essai de la fiche `critique_litteraire_v3.md` sur dix zones des lots 1 à 13 : les cinq que l'ancien critique a le mieux notées (86 et 87) et cinq tirées au hasard. Tableau de bord : `python3 design/equipe/mesures_texte.py`, sur les 566 zones à cartes.*
 
-## Verdict
+## Recalage du même soir (notes de l'utilisateur)
+
+L'utilisateur a noté ces dix zones à l'aveugle. Il préférait les histoires claires à suspense (Érikeia 8, Kaxtunil 8) et rejetait les récits allusifs ou ambigus (Kaldbrekka 1, Benarrúz 2, le Col numéroté 2, Sharga-Bulag 2). Corrélation avec l'ancien critique : −0,27 ; avec la grille v3 ci-dessous : −0,22 ; avec la grille recalée : 0,93. Notes recalées : Érikeia 82, Kaxtunil 74, Shüüs-Aral 71, Thermokleia 70, Ukkusiksalik 62, Larsabba 54, Benarrúz 53, Kaldbrekka 52, Sharga-Bulag 48, le Col numéroté 43. Le tableau ci-dessous est la première lecture, gardée pour mémoire.
+
+## Verdict (première lecture, avant recalage)
 
 **Les dix zones avaient 83,3 de moyenne (écart type 3,0) ; elles ont 68 avec la v3 (écart type 8,7). Trois sont renvoyées à l'écriture (sous 60), dont deux que l'ancien critique avait acceptées sans correction de texte.** Les meilleures restent les meilleures (l'Alcázar de Benarrúz est première dans les deux cas), mais la note sépare enfin une zone qu'on citerait d'une zone qu'on oublie.
 
