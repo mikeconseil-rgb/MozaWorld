@@ -107,6 +107,21 @@ body.carnet .hud.aide .bt{box-shadow:0 0 0 2px var(--c-encre)}
 body.carnet #xbox-aide.c-papier{font-family:var(--c-fell);border:0!important}
 body.carnet #xbox-aide.c-papier b{color:var(--c-cire)!important}
 body.carnet .mz-bascule{font-family:var(--c-fell);background:var(--c-encre);border:2px solid var(--c-papier2);color:var(--c-os)}
+
+/* ── 2.45 (24 nov.) : lisibilité à 3 m d'une télé (constat du critique : chiffres de la barre trop petits, tampon « FAIBLE » sans sujet) ── */
+html body.carnet .hud.etat .bandeau .m,html body.carnet .hud.etat .bandeau .d,html body.carnet .hud.etat .bandeau .d.cle,html body.carnet .hud.etat .fixe b{font-size:calc(var(--u)*1.9)!important}
+html body.carnet .hud.etat .bandeau .d small,html body.carnet .hud.etat .bandeau .d.cle small,html body.carnet .hud.etat .l,html body.carnet .hud.etat .titre{font-size:calc(var(--u)*1.45)!important;opacity:1}
+html body.carnet .hud.etat .dg{font-size:calc(var(--u)*1.5)!important;padding:.05em .45em!important}
+html body.carnet .hud.etat .dg::before{content:"Danger ";font-family:var(--c-fell);font-size:.78em;letter-spacing:0}
+html body.carnet .hud.etat .vie{width:calc(var(--u)*1.35)!important;height:calc(var(--u)*1.35)!important;border-width:3px!important}
+html body.carnet .hud.etat .vies{gap:calc(var(--u)*.7)!important}
+html body.carnet .hud.etat .sep::before{font-size:calc(var(--u)*1.3)}
+html body.carnet .hud.toast{top:calc(var(--u)*4.7)!important}
+html body.carnet .toast .t1{font-size:calc(var(--u)*1.15)!important}
+html body.carnet .toast .t2{font-size:calc(var(--u)*1.95)!important}
+html body.carnet .toast .t3{font-size:calc(var(--u)*1.4)!important}
+html body.carnet .hud.carte.mc2 .mc-nom b{font-size:calc(var(--u)*1.6)!important}
+html body.carnet .hud.carte.mc2 .mc-nom span{font-size:calc(var(--u)*1.15)!important}
 `;document.head.appendChild(st);
 const B=document.body;B.classList.add('carnet');
 const bougie=document.createElement('div');bougie.className='c-bougie';B.appendChild(bougie);

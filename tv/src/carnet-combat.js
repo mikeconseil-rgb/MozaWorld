@@ -157,6 +157,18 @@ const st=document.createElement('style');st.textContent=`
 #combat #cb-main .cc.fin.man{width:calc(var(--u)*5);height:calc(var(--u)*5);transform:none}#combat #cb-main .cc.fin.man.f{transform:scale(1.08)}
 #combat #cb-main .cc.fin.man .cn{font-size:calc(var(--u)*.84);letter-spacing:.02em;color:#e8c983!important;text-shadow:0 1px 0 #000!important}
 #combat #cb-main .cc.fin.man.f{box-shadow:inset 0 0 0 2px #e8c77f,inset 0 0 0 calc(var(--u)*.38) #17110c,inset 0 0 0 calc(var(--u)*.38 + 1px) rgba(232,199,127,.7),0 0 0 2px #17100a,0 0 0 4px #d9b56a!important}
+
+/* ── 2.45 (24 nov.) : lisibilité à 3 m (constat du critique : « Tribune », « Bastion », « Source », l'aide illisibles) ── */
+html body #combat .pcase .pt{font-size:calc(var(--u)*1.4)!important;letter-spacing:.03em!important}
+html body #combat .plmenace{font-size:calc(var(--u)*1.3)!important}
+html body #combat #cb-centre .cl{font-size:calc(var(--u)*1.6)!important}
+html body #combat #cb-centre .cv{font-size:calc(var(--u)*1.25)!important;line-height:1.1}
+html body #combat #cb-allies .u .int,html body #combat #cb-foes .u .int{font-size:calc(var(--u)*1.05)!important}
+html body #combat #cb-allies .u:not(.hero):not(.garde) .un,html body #combat #cb-foes .u:not(.chef) .un{font-size:calc(var(--u)*.9)!important;line-height:1.05;letter-spacing:-.02em}
+html body #combat .u .bar span{font-size:calc(var(--u)*1)!important}
+html body #combat .u .mz-voie{display:none!important}
+html body #combat #cb-aide{font-size:calc(var(--u)*1.3)!important}
+html body #combat #cb-log{font-size:calc(var(--u)*1.7)!important}
 `;document.head.appendChild(st);
 /* papier déchiré pour les deux panneaux du bas (même tirage que carnet.js : classe c-papier + clip-path) */
 function dech(el,n,ay,ax){if(!el)return;el.classList.add('c-papier');let g=el.id.length*7919+17;const a=()=>(g=(g*1664525+1013904223)>>>0)/4294967296,p=[];
