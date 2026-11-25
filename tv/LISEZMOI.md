@@ -6,6 +6,10 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.50 (25 novembre) : boucle graphique 7
+
+Première boucle avec le critique durci et le contre-expert à l'aveugle. Un seul réglage accepté : en combat, la carte agrandie ne masque plus le plateau ni la barre d'aide. Refusés (la ressemblance entre zones montait) : séparation des zones par la couleur, ombres du relief retirées ; branches boucle-7-1b et boucle-7-2b gardées pour la boucle 8.
+
 ## Boucle 7, artisan 3 : une carte agrandie qui ne masque ni le plateau ni l'aide (25 novembre, `src/cartes-visuel.js`, `src/cartes-relook.js`, `src/ecrin.js`)
 Constat sur `combat.png` : la carte désignée (24u × 31u, montée de 10u au-dessus de la main, 34u et 13u en « haute ») couvrait la Sentinelle et ses PV, les PV et les « coups attendus » du héros et le début de la barre d'aide. CSS seulement : ni le texte des cartes, ni `carnet-combat.js`, ni le portrait du héros.
 - **La carte s'élargit au lieu de monter** : 36u × 20,4u, posée dans la bande de la main (marge haute .6u : elle prend 21u dans le flux, comme avant, si bien que la main, l'aide et le plateau ne bougent pas d'un pixel). Avec l'échelle 1,04 depuis le bas (gardée), son bord haut, pastille de coût et blason compris, est à 417 px en 720p, sous l'aide (409 px). Elle déborde sur ses voisines sans les pousser ; la première ne déborde qu'à droite (le panneau « Ce tour » reste visible), la dernière et l'avant-dernière vers la gauche (« Fin du tour » et « Manœuvre » restent visibles). La classe « haute » d'ajuster() ne la fait plus monter.
