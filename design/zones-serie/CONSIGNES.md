@@ -1,6 +1,6 @@
 # Production des zones en série : consignes des conteurs (lots)
 
-But : faire entrer beaucoup de nouvelles zones dans le jeu web, **sans zone au rabais**. Chaque zone est unique : son nom, son histoire, ses deux pôles, ses 14 cartes. Le critique relit chaque lot avant l'intégration.
+But : faire entrer beaucoup de nouvelles zones dans le jeu web, **sans zone au rabais**. Chaque zone est unique : son nom, son histoire, ses deux pôles, ses 14 cartes. Le critique relit chaque lot avant l'intégration. **Depuis le 25 nov., il suit `design/equipe/critique_litteraire_v3.md` et lance `python3 design/equipe/mesures_texte.py` avant de lire.**
 
 ## À lire avant d'écrire (dans cet ordre)
 1. Ton profil et ta voix : `/home/user/MozaWorld/design/equipe/profils_agents.md`, puis ton fichier `agent_X_v2.md` (même dossier) et `consignes_conteurs.md`.
