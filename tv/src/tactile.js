@@ -51,9 +51,6 @@ body.tactile .hud.aide{display:none!important}
 #tact .stick.on{opacity:.9}
 #tact .stick i{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;
   background:radial-gradient(circle at 38% 32%,#e9dcbc,#b59d6c 60%,#7d6640);box-shadow:0 2px 6px rgba(0,0,0,.6),inset 0 0 0 2px rgba(23,16,10,.6)}
-#tact-loupe{position:absolute;left:50%;top:3vh;transform:translateX(-50%);pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2}
-#tact-loupe .lb{position:relative;filter:drop-shadow(0 8px 22px rgba(0,0,0,.8))}
-#tact-loupe .la{background:rgba(18,12,7,.88);padding:1px 12px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(181,157,108,.5);font-family:"Caveat",cursive;font-weight:600;font-size:17px;color:#efe1c2;text-shadow:0 1px 3px #000,0 0 8px #000;white-space:nowrap}
 #tact-tourne{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px;
   background:#120c07;color:#e9dcbc;font-family:"IM Fell English","Cormorant Garamond",Georgia,serif;font-size:22px}
 #tact-tourne b{font-family:"Grenze Gotisch",Georgia,serif;font-size:34px;color:#d0453a;font-weight:600}
@@ -92,7 +89,7 @@ function libelles(){if(!actif)return;
   else if(m==='carte')Object.assign(L,{b:'Fermer',x:'Couleurs',y:'Centrer',lb:'Loin',rb:'Près'});
   else if(libre)Object.assign(L,{a:'Agir',b:'Pause',rt:'Courir'});
   document.body.classList.toggle('tact-combat',m==='combat');
-  for(const k in L)montrer(k,L[k]);verifLoupe()}
+  for(const k in L)montrer(k,L[k])}
 
 /* ---------- Toucher ---------- */
 const doigts=new Map();   /* pointerId → {k:'stick'|'cam'|'btn'|'tap', ...} */
@@ -105,7 +102,6 @@ function appuyer(id,d){
 function estInteractif(t){return t&&t.closest&&t.closest('.choix .opt, #cb-main .cc, #combat .unite, #combat [class*="u-"], #combat .foe, #loupe, #tac g.tt, #tac .u')}
 function bas(e){if(e.pointerType==='mouse'&&!FORCE)return;
   if(!actif){if((e.pointerType!=='touch'||manetteBranchee())&&!FORCE)return;monter()}
-  if(e.target.closest&&e.target.closest('#tact-loupe')){e.preventDefault();doigts.set(e.pointerId,{k:'tap',x:e.clientX,y:e.clientY,t:e.target});return}
   const s=sceauSous(e.target);
   if(s){e.preventDefault();const id=idDe(s);s.classList.add('on');doigts.set(e.pointerId,{k:'btn',id,el:s});appuyer(id,true);return}
   if(estInteractif(e.target)||e.target.closest&&e.target.closest('.choix')){doigts.set(e.pointerId,{k:'tap',x:e.clientX,y:e.clientY,t:e.target});return}
@@ -125,8 +121,6 @@ function haut(e){const d=doigts.get(e.pointerId);if(!d)return;doigts.delete(e.po
   else if(e.type==='pointerup'&&(d.k==='tap'||d.k==='cam')&&Math.hypot(e.clientX-(d.x0??d.x),e.clientY-(d.y0??d.y))<14)toucher(d.t)}
 /* un toucher bref sur un élément de l'interface */
 function toucher(t){if(!t||!t.closest)return;
-  if(t.closest('#tact-loupe')){cacherLoupe();if(typeof CB!=='undefined'&&CB&&!CB.busy)cbInput('ok',false);return}
-  if(!t.closest('#cb-main .cc'))cacherLoupe();
   /* choix de menu : le toucher le valide */
   const o=t.closest('.choix .opt');
   if(o&&typeof UI!=='undefined'&&UI){const box=o.parentNode,i=[...box.children].indexOf(o);
@@ -137,24 +131,8 @@ function toucher(t){if(!t||!t.closest)return;
   /* carte de la main : 1er toucher = la choisir, 2e = la jouer */
   const c=t.closest('#cb-main .cc');
   if(c&&!C.pl&&!C.man){const i=[...c.parentNode.children].indexOf(c);if(i<0)return;
-    if(i===C.f){cacherLoupe();cbInput('ok',false)}else{C.f=i;tick();dessinerMain();if(i<C.main.length)montrerLoupe(i)}}}
+    if(i===C.f)cbInput('ok',false);else{C.f=i;tick();dessinerMain()}}}
 
-/* ---------- Loupe (2.47.1, « Je veux bien lire les cartes ») ----------
-   Sur téléphone, la carte touchée s'affiche en grand au milieu de l'écran, texte entier lisible.
-   Toucher la loupe (ou la carte une 2e fois) la joue ; toucher ailleurs la referme. L'Arène a sa propre loupe (pixel.js). */
-let loupe=null,loupeI=-1;
-function cacherLoupe(){loupeI=-1;if(loupe){loupe.remove();loupe=null}}
-function montrerLoupe(i){cacherLoupe();if(window.MZ_ARENE||innerHeight>600)return;
-  const src=document.querySelectorAll('#cb-main .cc')[i];if(!src)return;
-  const r=src.getBoundingClientRect(),w=src.offsetWidth||r.width,h=src.offsetHeight||r.height;if(!w||!h)return;
-  const k=Math.min(2.6,innerHeight*.74/h,(innerWidth*.42)/w);
-  loupe=document.createElement('div');loupe.id='tact-loupe';
-  const c=src.cloneNode(true);c.classList.remove('f','choisie');c.style.cssText+=`;width:${w}px;height:${h}px;transform:scale(${k});transform-origin:top left;margin:0;position:absolute;left:0;top:0`;
-  const boite=document.createElement('div');boite.className='lb';boite.style.cssText=`width:${w*k}px;height:${h*k}px`;boite.appendChild(c);
-  const aide=document.createElement('div');aide.className='la';aide.textContent=src.classList.contains('off')?'Pas assez de mana ce tour · toucher ailleurs pour fermer':'Toucher la carte pour la jouer · ailleurs pour fermer';
-  loupe.appendChild(boite);loupe.appendChild(aide);racine.appendChild(loupe);loupeI=i}
-function verifLoupe(){if(loupeI<0)return;const C=typeof CB!=='undefined'?CB:null;
-  if(!C||mode!=='combat'||C.busy||C.sel||C.pl||C.man||C.f!==loupeI||loupeI>=C.main.length)cacherLoupe()}
 addEventListener('pointerdown',bas,{capture:true,passive:false});
 addEventListener('pointermove',bouge,{capture:true,passive:false});
 addEventListener('pointerup',haut,{capture:true});
