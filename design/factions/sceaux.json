@@ -1,0 +1,537 @@
+{
+ "Feu": {
+  "seuil": "zones des Braisiers tenues",
+  "I": {
+   "nom": "Le Soufflet du camp",
+   "cout": 1,
+   "cible": 1,
+   "effet": "6 dégâts à la cible, qui brûle 2 pendant 2 tours.",
+   "ops": [
+    [
+     "deg",
+     "cible",
+     6
+    ],
+    [
+     "brulure",
+     "cible",
+     2,
+     2
+    ]
+   ],
+   "ambiance": "Au camp, on ne range jamais le soufflet : la forge suit l'armée, et l'armée suit la forge.",
+   "seuil": 3,
+   "faction": "Feu"
+  },
+  "II": {
+   "nom": "Marteaux en cadence",
+   "cout": 2,
+   "cible": 1,
+   "effet": "4 dégâts à tous les ennemis. Si la cible brûlait déjà, elle prend 4 dégâts de plus.",
+   "ops": [
+    [
+     "si",
+     "brule",
+     [
+      [
+       "deg",
+       "cible",
+       4
+      ]
+     ]
+    ],
+    [
+     "deg",
+     "tous",
+     4
+    ]
+   ],
+   "ambiance": "Cent marteaux frappent ensemble, et l'ennemi entend venir l'enclume avant l'armée.",
+   "seuil": 6,
+   "faction": "Feu"
+  },
+  "III": {
+   "nom": "La Coulée des Braisiers",
+   "cout": 3,
+   "cible": 0,
+   "effet": "10 dégâts à tous les ennemis, qui brûlent 3 pendant 3 tours. Pose Braise. Prix : le héros perd 3 PV.",
+   "ops": [
+    [
+     "deg",
+     "tous",
+     10
+    ],
+    [
+     "brulure",
+     "tous",
+     3,
+     3
+    ],
+    [
+     "pose",
+     "Braise"
+    ],
+    [
+     "prixPV",
+     3
+    ]
+   ],
+   "ambiance": "Les Braisiers ouvrent le flanc du volcan et laissent la montagne finir la guerre à leur place.",
+   "seuil": 10,
+   "faction": "Feu"
+  }
+ },
+ "Pierre": {
+  "seuil": "zones de l'Ordre du Socle tenues",
+  "I": {
+   "nom": "Première pierre",
+   "cout": 1,
+   "cible": 0,
+   "effet": "Le héros gagne 6 de garde. Jusqu'au prochain tour, chaque coup reçu renvoie 2 dégâts.",
+   "ops": [
+    [
+     "garde",
+     "heros",
+     6
+    ],
+    [
+     "riposte",
+     2
+    ]
+   ],
+   "ambiance": "On pose la première pierre en public, devant témoins : ce qui est bâti ainsi ne se défait plus.",
+   "seuil": 3,
+   "faction": "Pierre"
+  },
+  "II": {
+   "nom": "Le Mur de l'édit",
+   "cout": 2,
+   "cible": 0,
+   "effet": "Invoque un Mur de l'édit (14 PV, 0 attaque). Vous et vos bêtes gagnez 4 de garde.",
+   "ops": [
+    [
+     "invoque",
+     "Mur de l'édit",
+     14,
+     0
+    ],
+    [
+     "garde",
+     "allies",
+     4
+    ]
+   ],
+   "ambiance": "L'édit tient en une ligne gravée sur le mur. Le mur, lui, tient en mille pierres.",
+   "seuil": 6,
+   "faction": "Pierre"
+  },
+  "III": {
+   "nom": "La Charte du Socle",
+   "cout": 3,
+   "cible": 0,
+   "effet": "Vous et vos bêtes gagnez 10 de garde. Tous les ennemis perdent 2 d'attaque pour le combat. Pose Sceau.",
+   "ops": [
+    [
+     "garde",
+     "allies",
+     10
+    ],
+    [
+     "affaiblit",
+     "tous",
+     2
+    ],
+    [
+     "pose",
+     "Sceau"
+    ]
+   ],
+   "ambiance": "Quand la Charte est lue, même l'ennemi baisse la voix : on ne frappe pas fort dans une salle d'audience.",
+   "seuil": 10,
+   "faction": "Pierre"
+  }
+ },
+ "Vent": {
+  "seuil": "zones de la Compagnie des Vents tenues",
+  "I": {
+   "nom": "Éclaireur en avant",
+   "cout": 0,
+   "cible": 0,
+   "effet": "Piochez 2 cartes. La prochaine carte reprise de la défausse est gratuite.",
+   "ops": [
+    [
+     "pioche",
+     2
+    ],
+    [
+     "gratuit"
+    ]
+   ],
+   "ambiance": "L'éclaireur revient toujours avant la tempête, et c'est à son visage qu'on sait s'il faut fuir.",
+   "seuil": 3,
+   "faction": "Vent"
+  },
+  "II": {
+   "nom": "Changer de piste",
+   "cout": 1,
+   "cible": 0,
+   "effet": "Tous les ennemis hésitent. Un ennemi qui vole par-dessus frappera la Garde. Piochez 1 carte.",
+   "ops": [
+    [
+     "hesite",
+     "tous"
+    ],
+    [
+     "volGarde"
+    ],
+    [
+     "pioche",
+     1
+    ]
+   ],
+   "ambiance": "La Compagnie ne se bat pas sur le terrain choisi par l'ennemi : elle lève le camp, et l'ennemi se retrouve seul.",
+   "seuil": 6,
+   "faction": "Vent"
+  },
+  "III": {
+   "nom": "La Grande Transhumance",
+   "cout": 2,
+   "cible": 0,
+   "effet": "Piochez 3 cartes et gagnez 1 mana de plus ce tour. La prochaine carte de zone de ce tour compte double.",
+   "ops": [
+    [
+     "pioche",
+     3
+    ],
+    [
+     "boost"
+    ],
+    [
+     "echo"
+    ]
+   ],
+   "ambiance": "Une fois par génération, toute la Compagnie se met en route. Sur son passage, les frontières se déplacent.",
+   "seuil": 10,
+   "faction": "Vent"
+  }
+ },
+ "Glace": {
+  "seuil": "zones de la Veille Blanche tenues",
+  "I": {
+   "nom": "Le Serment du guet",
+   "cout": 1,
+   "cible": 1,
+   "effet": "La cible hésite et perd sa garde. Le héros gagne 4 de garde.",
+   "ops": [
+    [
+     "hesite",
+     "cible"
+    ],
+    [
+     "briseGarde",
+     "cible"
+    ],
+    [
+     "garde",
+     "heros",
+     4
+    ]
+   ],
+   "ambiance": "La Veille Blanche jure une seule chose : ne pas dormir. Ceux qui l'attaquent de nuit l'apprennent vite.",
+   "seuil": 3,
+   "faction": "Glace"
+  },
+  "II": {
+   "nom": "Givre sur les lances",
+   "cout": 2,
+   "cible": 0,
+   "effet": "Tous les ennemis perdent 1 d'attaque pour le combat et subissent 4 dégâts. Pose Givre.",
+   "ops": [
+    [
+     "affaiblit",
+     "tous",
+     1
+    ],
+    [
+     "deg",
+     "tous",
+     4
+    ],
+    [
+     "pose",
+     "Givre"
+    ]
+   ],
+   "ambiance": "Au matin, les lances de l'ennemi sont soudées à leurs fourreaux par le gel. Il faut une heure pour les dégager.",
+   "seuil": 6,
+   "faction": "Glace"
+  },
+  "III": {
+   "nom": "La Longue Nuit blanche",
+   "cout": 3,
+   "cible": 0,
+   "effet": "Tous les ennemis hésitent, perdent leur garde et deviennent vulnérables 3. Si Givre est posé : 8 dégâts à tous.",
+   "ops": [
+    [
+     "hesite",
+     "tous"
+    ],
+    [
+     "briseGarde",
+     "tous"
+    ],
+    [
+     "vulnerable",
+     "tous",
+     3
+    ],
+    [
+     "si",
+     "Givre",
+     [
+      [
+       "deg",
+       "tous",
+       8
+      ]
+     ]
+    ]
+   ],
+   "ambiance": "Pendant la Longue Nuit, la Veille ne dort pas. L'ennemi, lui, finit toujours par s'endormir.",
+   "seuil": 10,
+   "faction": "Glace"
+  }
+ },
+ "Eau": {
+  "seuil": "zones de la Ligue des Marées tenues",
+  "I": {
+   "nom": "Le Contrat de fret",
+   "cout": 0,
+   "cible": 0,
+   "effet": "Gagnez 1 mana d'Eau pour ce combat. Piochez 1 carte.",
+   "ops": [
+    [
+     "mana",
+     "Eau",
+     1
+    ],
+    [
+     "pioche",
+     1
+    ]
+   ],
+   "ambiance": "Un contrat de la Ligue se signe sur le pont, à marée haute : à marée basse, le prix aurait changé.",
+   "seuil": 3,
+   "faction": "Eau"
+  },
+  "II": {
+   "nom": "Retour de cargaison",
+   "cout": 1,
+   "cible": 0,
+   "effet": "Reprenez en main la dernière carte de votre défausse. Le héros récupère 5 PV.",
+   "ops": [
+    [
+     "recup"
+    ],
+    [
+     "soin",
+     "heros",
+     5
+    ]
+   ],
+   "ambiance": "La Ligue ne perd jamais une cargaison. Elle la retrouve, parfois sur un autre navire, parfois chez un autre client.",
+   "seuil": 6,
+   "faction": "Eau"
+  },
+  "III": {
+   "nom": "La Grande Marée",
+   "cout": 3,
+   "cible": 0,
+   "effet": "8 dégâts à tous les ennemis. Gagnez 2 mana d'Eau pour ce combat. Vous et vos bêtes récupérez 6 PV.",
+   "ops": [
+    [
+     "deg",
+     "tous",
+     8
+    ],
+    [
+     "mana",
+     "Eau",
+     2
+    ],
+    [
+     "soin",
+     "allies",
+     6
+    ]
+   ],
+   "ambiance": "Quand la Ligue ouvre les écluses, la mer rentre dans le port, et l'ennemi en ressort sans ses bateaux.",
+   "seuil": 10,
+   "faction": "Eau"
+  }
+ },
+ "Sève": {
+  "seuil": "zones du Cercle des Racines tenues",
+  "I": {
+   "nom": "Le Petit de la portée",
+   "cout": 1,
+   "cible": 0,
+   "effet": "Invoque un Louveteau du Cercle (7 PV, 2 attaque). Le héros récupère 3 PV.",
+   "ops": [
+    [
+     "invoque",
+     "Louveteau du Cercle",
+     7,
+     2
+    ],
+    [
+     "soin",
+     "heros",
+     3
+    ]
+   ],
+   "ambiance": "Au Cercle, chaque enfant reçoit une bête née la même saison. Ils grandissent ensemble, et se battent ensemble.",
+   "seuil": 3,
+   "faction": "Sève"
+  },
+  "II": {
+   "nom": "Le Rappel de la meute",
+   "cout": 2,
+   "cible": 0,
+   "effet": "Invoque deux Loups des racines (8 PV, 3 attaque). Si vous aviez déjà une bête : vos bêtes récupèrent 4 PV.",
+   "ops": [
+    [
+     "si",
+     "bete",
+     [
+      [
+       "soin",
+       "allies",
+       4
+      ]
+     ]
+    ],
+    [
+     "invoque",
+     "Loup des racines",
+     8,
+     3
+    ],
+    [
+     "invoque",
+     "Loup des racines",
+     8,
+     3
+    ]
+   ],
+   "ambiance": "Un sifflement long, puis deux courts. Dans toute la jungle, les loups du Cercle relèvent la tête.",
+   "seuil": 6,
+   "faction": "Sève"
+  },
+  "III": {
+   "nom": "La Mère des Racines",
+   "cout": 3,
+   "cible": 0,
+   "effet": "Invoque la Mère des Racines (20 PV, 5 attaque). Vous et vos bêtes récupérez 6 PV. Pose Racine.",
+   "ops": [
+    [
+     "invoque",
+     "Mère des Racines",
+     20,
+     5
+    ],
+    [
+     "soin",
+     "allies",
+     6
+    ],
+    [
+     "pose",
+     "Racine"
+    ]
+   ],
+   "ambiance": "On ne l'appelle qu'en dernier recours. Elle est plus vieille que le Cercle, et le Cercle le sait.",
+   "seuil": 10,
+   "faction": "Sève"
+  }
+ },
+ "Ombre": {
+  "seuil": "hordes brisées",
+  "I": {
+   "nom": "Ce que la horde a laissé",
+   "cout": 1,
+   "cible": 1,
+   "effet": "La cible devient vulnérable 2 et subit 5 dégâts. Vol de vie.",
+   "ops": [
+    [
+     "vulnerable",
+     "cible",
+     2
+    ],
+    [
+     "deg",
+     "cible",
+     5
+    ],
+    [
+     "volVie"
+    ]
+   ],
+   "ambiance": "Après le passage d'une horde, il reste une odeur, et ceux qui la suivent finissent par lui ressembler.",
+   "seuil": 3,
+   "faction": "Ombre"
+  },
+  "II": {
+   "nom": "Le Pacte du sauvage",
+   "cout": 1,
+   "cible": 0,
+   "effet": "Gagnez 1 mana de plus ce tour et piochez 2 cartes. Prix : le héros perd 4 PV.",
+   "ops": [
+    [
+     "boost"
+    ],
+    [
+     "pioche",
+     2
+    ],
+    [
+     "prixPV",
+     4
+    ]
+   ],
+   "ambiance": "Le sauvage ne vend rien. Il prête, et il revient toujours chercher son dû.",
+   "seuil": 6,
+   "faction": "Ombre"
+  },
+  "III": {
+   "nom": "La Nuit sans sceau",
+   "cout": 2,
+   "cible": 0,
+   "effet": "14 dégâts à tous les ennemis, en ignorant la garde. Pose Abîme. Prix : le héros perd 6 PV ; exil.",
+   "ops": [
+    [
+     "ignoreGarde"
+    ],
+    [
+     "deg",
+     "tous",
+     14
+    ],
+    [
+     "pose",
+     "Abîme"
+    ],
+    [
+     "prixPV",
+     6
+    ],
+    [
+     "exil"
+    ]
+   ],
+   "ambiance": "Il existe une nuit où aucune faction ne monte la garde. L'Ombre l'attend depuis le premier jour.",
+   "seuil": 10,
+   "faction": "Ombre"
+  }
+ }
+}
