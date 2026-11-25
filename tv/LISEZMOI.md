@@ -6,6 +6,13 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.45 : lisibilité à 3 m (24 novembre, `src/carnet.js`, `src/carnet-combat.js`)
+Constat du critique graphique (2.44) : chiffres de la barre du haut trop petits, tampon « FAIBLE » sans sujet, noms des cases du combat et aide illisibles depuis le canapé.
+- Barre du haut : chiffres et pastilles de mana agrandis de moitié (1,3 → 1,9 unité), losanges des blessures plus gros, tampon « Danger faible / réel / mortel ».
+- Billet d'annonce, étiquette de la minicarte : texte un cran plus gros.
+- Combat : noms des cases (Bastion, Tribune, Source, Piège, Tanière) et du Centre, menaces de voie, intentions, journal et aide des commandes agrandis ; le rappel de case en tout petit sous chaque unité est retiré (le nom est écrit sur la case).
+- Non traité ici (autres fichiers) : la taille du texte des cartes à jouer et le portrait du héros en combat.
+
 ## Version 2.44 (24 novembre) : boucle graphique 6
 
 Trois réglages acceptés par le testeur, sans nouveau système : niveau 0 contrasté (vrai noir, vraie lumière), DON045 qui ne ressemble plus à DON et rosace d'ASS152 +7 refermée, combat sans textes qui se chevauchent et Pierre sans anneau d'or d'éditeur. Détails ci-dessous.
