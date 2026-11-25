@@ -95,7 +95,7 @@ function idDe(s){for(const k in lab)if(lab[k]===s)return k;return null}
 function appuyer(id,d){
   if(id==='rt'){PAD.rt=d?1:0;PAD.b.rt=d;return}
   MZpad.btn(id,d)}
-function estInteractif(t){return t&&t.closest&&t.closest('.choix .opt, #cb-main .cc, #combat .unite, #combat [class*="u-"], #combat .foe')}
+function estInteractif(t){return t&&t.closest&&t.closest('.choix .opt, #cb-main .cc, #combat .unite, #combat [class*="u-"], #combat .foe, #loupe, #tac g.tt, #tac .u')}
 function bas(e){if(e.pointerType==='mouse'&&!FORCE)return;
   if(!actif){if((e.pointerType!=='touch'||manetteBranchee())&&!FORCE)return;monter()}
   const s=sceauSous(e.target);
