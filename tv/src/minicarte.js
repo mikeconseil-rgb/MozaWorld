@@ -252,7 +252,8 @@ function royaumes(c,vis,s,ox,oz,joint,mini){
     if(!mini&&k==='moi'){c.lineWidth=w*4.5;c.strokeStyle='rgba(255,205,120,.16)';c.stroke()}   /* halo : un trait large et pâle, pas de shadowBlur (trop lourd pour Edge sur Xbox) */
     c.lineWidth=w*2.2;c.strokeStyle='rgba(8,6,4,.9)';c.stroke();
     c.lineWidth=w*1.15;c.strokeStyle=k==='moi'?'#e2b65e':r.trait;c.stroke();
-    c.lineWidth=Math.max(.8,w*.28);c.strokeStyle=k==='moi'?'#fff3cf':'rgba(255,255,255,.7)';c.stroke()}
+    c.lineWidth=Math.max(.8,w*.28);c.strokeStyle=k==='moi'?'#fff3cf':'rgba(255,255,255,.7)';c.stroke();
+    if(!mini)rempartCarte(c,E,s,ox,oz,w,k==='moi'?'#e2b65e':r.trait)}
   /* 3. noms des royaumes : un par région d'un seul tenant (3 tuiles ou plus), au centre */
   if(mini)return;const vu=new Set();
   for(const Z of vis){const r=roi(Z.id);if(!r||vu.has(Z.id))continue;const g=[Z];vu.add(Z.id);
@@ -270,6 +271,20 @@ function frontieresFactions(c,vis,s,ox,oz){const A=aretes(),E=[],X=[],w=Math.max
   for(const Z of vis){const f=factionDe(Z);for(const e of A.get(Z.id)||[]){if(!e.nb||e.nb.id<Z.id)continue;const g=factionDe(e.nb);if(!f||!g||f===g)continue;(factionsOpposees(f,g)?X:E).push(e)}}
   const trace=(L,lw,st)=>{if(!L.length)return;c.beginPath();for(const e of L){c.moveTo((e.a[0]+ox)*s,(e.a[1]+oz)*s);c.lineTo((e.b[0]+ox)*s,(e.b[1]+oz)*s)}c.lineWidth=lw;c.strokeStyle=st;c.stroke()};
   c.lineCap='round';trace(E,w*1.6,'rgba(8,6,4,.9)');trace(E,w*.45,'rgba(239,231,214,.45)');trace(X,w*1.8,'rgba(8,6,4,.9)');trace(X,w*.8,'rgba(255,90,70,.85)')}
+/* 2.47 (25 nov., les remparts dans le jeu) : sur la carte, la frontière devient un rempart dessiné comme dans le monde :
+   créneaux, une tour à chaque sommet, une porte au milieu de chaque arête (le passage en noir entre deux tours). */
+function rempartCarte(c,E,s,ox,oz,w,col){if(s*400<26)return;const P=p=>[(p[0]+ox)*s,(p[1]+oz)*s],t=Math.max(2,w*1.05);
+  c.save();c.beginPath();for(const e of E){const a=P(e.a),b=P(e.b);c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1])}
+  c.setLineDash([t*1.2,t]);c.lineCap='butt';c.lineWidth=w*3.1;c.strokeStyle=col;c.stroke();c.setLineDash([]);
+  const vus=new Set(),tour=(x,y,r)=>{c.moveTo(x+r,y);c.arc(x,y,r,0,TAU)};c.beginPath();
+  for(const e of E){const a=P(e.a),b=P(e.b),L=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    for(const q of[a,b]){const k=Math.round(q[0])+','+Math.round(q[1]);if(!vus.has(k)){vus.add(k);tour(q[0],q[1],w*2.1)}}
+    if(L>w*10){const ux=(b[0]-a[0])/L,uy=(b[1]-a[1])/L,g=Math.max(w*1.6,15*s),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+      tour(mx-ux*g,my-uy*g,w*1.5);tour(mx+ux*g,my+uy*g,w*1.5)}}
+  c.fillStyle=col;c.fill();c.lineWidth=Math.max(1,w*.45);c.strokeStyle='rgba(8,6,4,.95)';c.stroke();
+  c.beginPath();for(const e of E){const a=P(e.a),b=P(e.b),L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<=w*10)continue;
+    const ux=(b[0]-a[0])/L,uy=(b[1]-a[1])/L,g=Math.max(w*1.6,15*s)-w*1.2,mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;c.moveTo(mx-ux*g,my-uy*g);c.lineTo(mx+ux*g,my+uy*g)}
+  c.lineWidth=w*3;c.strokeStyle='#0b0907';c.stroke();c.restore()}
 /* cadre enluminé autour de la carte : double filet d'or, rosaces Girih aux coins */
 function cadre(c,w,h){const d=K.dpr,m=14*d;c.save();c.strokeStyle='rgba(201,164,92,.75)';c.lineWidth=2*d;c.strokeRect(m,m,w-2*m,h-2*m);
   c.strokeStyle='rgba(201,164,92,.35)';c.lineWidth=1*d;c.strokeRect(m+6*d,m+6*d,w-2*m-12*d,h-2*m-12*d);

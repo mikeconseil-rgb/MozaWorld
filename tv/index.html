@@ -6639,7 +6639,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.46';
+const MZ_VERSION='2.47';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -9772,7 +9772,8 @@ function royaumes(c,vis,s,ox,oz,joint,mini){
     if(!mini&&k==='moi'){c.lineWidth=w*4.5;c.strokeStyle='rgba(255,205,120,.16)';c.stroke()}   /* halo : un trait large et pâle, pas de shadowBlur (trop lourd pour Edge sur Xbox) */
     c.lineWidth=w*2.2;c.strokeStyle='rgba(8,6,4,.9)';c.stroke();
     c.lineWidth=w*1.15;c.strokeStyle=k==='moi'?'#e2b65e':r.trait;c.stroke();
-    c.lineWidth=Math.max(.8,w*.28);c.strokeStyle=k==='moi'?'#fff3cf':'rgba(255,255,255,.7)';c.stroke()}
+    c.lineWidth=Math.max(.8,w*.28);c.strokeStyle=k==='moi'?'#fff3cf':'rgba(255,255,255,.7)';c.stroke();
+    if(!mini)rempartCarte(c,E,s,ox,oz,w,k==='moi'?'#e2b65e':r.trait)}
   /* 3. noms des royaumes : un par région d'un seul tenant (3 tuiles ou plus), au centre */
   if(mini)return;const vu=new Set();
   for(const Z of vis){const r=roi(Z.id);if(!r||vu.has(Z.id))continue;const g=[Z];vu.add(Z.id);
@@ -9790,6 +9791,20 @@ function frontieresFactions(c,vis,s,ox,oz){const A=aretes(),E=[],X=[],w=Math.max
   for(const Z of vis){const f=factionDe(Z);for(const e of A.get(Z.id)||[]){if(!e.nb||e.nb.id<Z.id)continue;const g=factionDe(e.nb);if(!f||!g||f===g)continue;(factionsOpposees(f,g)?X:E).push(e)}}
   const trace=(L,lw,st)=>{if(!L.length)return;c.beginPath();for(const e of L){c.moveTo((e.a[0]+ox)*s,(e.a[1]+oz)*s);c.lineTo((e.b[0]+ox)*s,(e.b[1]+oz)*s)}c.lineWidth=lw;c.strokeStyle=st;c.stroke()};
   c.lineCap='round';trace(E,w*1.6,'rgba(8,6,4,.9)');trace(E,w*.45,'rgba(239,231,214,.45)');trace(X,w*1.8,'rgba(8,6,4,.9)');trace(X,w*.8,'rgba(255,90,70,.85)')}
+/* 2.47 (25 nov., les remparts dans le jeu) : sur la carte, la frontière devient un rempart dessiné comme dans le monde :
+   créneaux, une tour à chaque sommet, une porte au milieu de chaque arête (le passage en noir entre deux tours). */
+function rempartCarte(c,E,s,ox,oz,w,col){if(s*400<26)return;const P=p=>[(p[0]+ox)*s,(p[1]+oz)*s],t=Math.max(2,w*1.05);
+  c.save();c.beginPath();for(const e of E){const a=P(e.a),b=P(e.b);c.moveTo(a[0],a[1]);c.lineTo(b[0],b[1])}
+  c.setLineDash([t*1.2,t]);c.lineCap='butt';c.lineWidth=w*3.1;c.strokeStyle=col;c.stroke();c.setLineDash([]);
+  const vus=new Set(),tour=(x,y,r)=>{c.moveTo(x+r,y);c.arc(x,y,r,0,TAU)};c.beginPath();
+  for(const e of E){const a=P(e.a),b=P(e.b),L=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    for(const q of[a,b]){const k=Math.round(q[0])+','+Math.round(q[1]);if(!vus.has(k)){vus.add(k);tour(q[0],q[1],w*2.1)}}
+    if(L>w*10){const ux=(b[0]-a[0])/L,uy=(b[1]-a[1])/L,g=Math.max(w*1.6,15*s),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+      tour(mx-ux*g,my-uy*g,w*1.5);tour(mx+ux*g,my+uy*g,w*1.5)}}
+  c.fillStyle=col;c.fill();c.lineWidth=Math.max(1,w*.45);c.strokeStyle='rgba(8,6,4,.95)';c.stroke();
+  c.beginPath();for(const e of E){const a=P(e.a),b=P(e.b),L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<=w*10)continue;
+    const ux=(b[0]-a[0])/L,uy=(b[1]-a[1])/L,g=Math.max(w*1.6,15*s)-w*1.2,mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;c.moveTo(mx-ux*g,my-uy*g);c.lineTo(mx+ux*g,my+uy*g)}
+  c.lineWidth=w*3;c.strokeStyle='#0b0907';c.stroke();c.restore()}
 /* cadre enluminé autour de la carte : double filet d'or, rosaces Girih aux coins */
 function cadre(c,w,h){const d=K.dpr,m=14*d;c.save();c.strokeStyle='rgba(201,164,92,.75)';c.lineWidth=2*d;c.strokeRect(m,m,w-2*m,h-2*m);
   c.strokeStyle='rgba(201,164,92,.35)';c.lineWidth=1*d;c.strokeRect(m+6*d,m+6*d,w-2*m-12*d,h-2*m-12*d);
@@ -9877,6 +9892,70 @@ if(typeof draw==='function'){const draw0=draw;draw=function(){if(K.ouverte)retur
 window.ouvrirCarte=ouvrirCarte;window.fermerCarte=fermerCarte;
 if(window.MZ)Object.assign(window.MZ,{carte:ouvrirCarte,fermerCarte,carteEtat:()=>({ouverte:K.ouverte,x:K.x,z:K.z,w:K.w,vise:K.vise&&K.vise.id,col:K.col}),
   carteVise:(id)=>{const Z=MONDE().find(q=>q.id===id);if(Z){K.x=Z.c[0];K.z=Z.c[1];K.sale=true}return!!Z},carteZoom:w=>{K.w=w;K.sale=true},miniZoom:i=>{zi=i;zr=ZOOMS[i].r}});
+})();
+/* MozaWorld 2.47 : les remparts dans le monde (25 nov., « Faudrait ajouter le rempart in game… graphiquement parlant »).
+   Chaque frontière d'un royaume (le vôtre, en pierre blonde et bannières or ; chaque maison rivale, en pierre sombre à ses couleurs)
+   se dresse en vrai mur crénelé le long des arêtes de la mosaïque : une tour à chaque sommet, une porte au milieu de chaque arête
+   (deux tours de porte et un linteau), des bannières. Le mur arrête le héros ; on passe par les portes.
+   Tout est dessiné en maillages instanciés (5 maillages pour toute la région), refaits seulement quand un royaume change. */
+(function(){
+const H=9,EP=3.4,PORTE=30,TR=5.5,TH=15,TP=4.2,TPH=13,PAS_C=3.6;   /* hauteur, épaisseur, largeur de porte, tours */
+const MAT={
+  mur:M(0xffffff,{roughness:.93}),cren:M(0xffffff,{roughness:.93}),
+  tour:M(0xffffff,{roughness:.9}),toit:M(0xffffff,{roughness:.7}),ban:M(0xffffff,{roughness:.8,side:THREE.DoubleSide})};
+const GEO={mur:new THREE.BoxGeometry(1,1,1).translate(0,.5,0),cren:new THREE.BoxGeometry(1.6,1.5,1).translate(0,.75,0),
+  tour:new THREE.CylinderGeometry(1,1.08,1,10).translate(0,.5,0),toit:new THREE.ConeGeometry(1,1,10).translate(0,.5,0),
+  ban:new THREE.BoxGeometry(.12,1,1).translate(0,-.5,.5)};
+const PIERRE={moi:LIN('#a89a80'),riv:LIN('#5b554e')},PIERRE2={moi:LIN('#7d705c'),riv:LIN('#3e3a35')};
+let MS=null,SOL=[],CLE='',PORTES=[];
+function roiDe(id){if(S.own[id])return{k:'moi',c:'#e2b65e'};const m=typeof maisonDe==='function'?maisonDe(id):null;return m?{k:m.k,c:m.col}:null}
+function vider(){if(MS)for(const k in MS){scene.remove(MS[k]);MS[k].dispose&&MS[k].dispose()}MS=null;
+  for(const s of SOL){s.on=false;const i=solids.indexOf(s);if(i>=0)solids.splice(i,1)}SOL=[]}
+/* les arêtes de frontière dans la région chargée : une par paire de tuiles, la vôtre d'abord */
+function frontieres(){const vu=new Map(),cle=p=>Math.round(p[0])+','+Math.round(p[1]);
+  for(const Z of ZN){const r=roiDe(Z.id);if(!r)continue;const P=Z.poly,n=P.length;
+    for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n],k=[cle(a),cle(b)].sort().join('|');
+      const nb=voisin(Z,k),o=nb&&roiDe(nb);if(o&&o.k===r.k)continue;
+      const e=vu.get(k);if(e&&(e.r.k==='moi'||r.k!=='moi'))continue;vu.set(k,{a,b,r,Z})}}
+  return[...vu.values()]}
+let IDX=null;
+function voisin(Z,k){if(!IDX){IDX=new Map();const cle=p=>Math.round(p[0])+','+Math.round(p[1]);
+    for(const Y of (typeof ZW!=='undefined'?ZW:ZN)){const P=Y.poly,n=P.length;for(let i=0;i<n;i++){const kk=[cle(P[i]),cle(P[(i+1)%n])].sort().join('|');
+      const L=IDX.get(kk);if(L)L.push(Y.id);else IDX.set(kk,[Y.id])}}}
+  const L=IDX.get(k)||[];for(const id of L)if(id!==Z.id)return id;return null}
+function signature(){let s='';for(const Z of ZN){const r=roiDe(Z.id);if(r)s+=Z.id+':'+r.k+';'}return s}
+function batir(){vider();const E=frontieres();PORTES=E.map(e=>({x:(e.a[0]+e.b[0])/2,z:(e.a[1]+e.b[1])/2,cx:e.Z.c[0],cz:e.Z.c[1],k:e.r.k}));if(!E.length)return;
+  const leger=QI===0,contreforts=[],murs=[],crens=[],tours=[],toits=[],bans=[],coins=new Map();
+  const tourEn=(x,z,r,h,R,porte)=>{tours.push([x,z,r,h,R]);toits.push([x,z,r*1.25,h,R]);if(!leger||porte)bans.push([x,z,r,h,R])};
+  for(const e of E){const ax=e.a[0],az=e.a[1],bx=e.b[0],bz=e.b[1],L=Math.hypot(bx-ax,bz-az);if(L<20)continue;
+    const ux=(bx-ax)/L,uz=(bz-az)/L,rot=Math.atan2(-uz,ux),mx=(ax+bx)/2,mz=(az+bz)/2;
+    /* tours aux sommets (une seule par sommet) */
+    for(const p of[e.a,e.b]){const k=Math.round(p[0])+','+Math.round(p[1]);if(!coins.has(k)){coins.set(k,1);tourEn(p[0],p[1],TR,TH,e.r)}}
+    /* deux pans de mur, de la tour du sommet à la tour de porte */
+    for(const[s0,s1]of[[TR*.7,L/2-PORTE/2-TP*.5],[L/2+PORTE/2+TP*.5,L-TR*.7]]){const l=s1-s0;if(l<2)continue;const cx=ax+ux*(s0+l/2),cz=az+uz*(s0+l/2);
+      murs.push([cx,cz,l,rot,e.r]);
+      const nc=Math.floor(l/26);for(let j=1;j<nc;j++){const t=s0+j*l/nc;contreforts.push([ax+ux*t,az+uz*t,rot,e.r])}SOL.push(sBox(null,cx,cz,l/2,EP/2+.6,Math.atan2(uz,ux),-3,H));
+      const n=Math.floor(l/PAS_C);for(let j=0;j<n;j++){const t=s0+(j+.5)*l/n;for(const side of leger?[1]:[1,-1])crens.push([ax+ux*t-uz*side*EP*.36,az+uz*t+ux*side*EP*.36,rot,e.r])}}
+    /* porte : deux tours et un linteau crénelé au-dessus du passage */
+    for(const sg of[-1,1]){const t=L/2+sg*(PORTE/2+TP*.2);tourEn(ax+ux*t,az+uz*t,TP,TPH,e.r,true);SOL.push(sCyl(null,ax+ux*t,az+uz*t,TP+.4,-3,TPH))}
+    murs.push([mx,mz,PORTE+TP,rot,e.r,H-1.6,2.4]);
+    for(const sg of[-1,0,1])crens.push([mx+ux*sg*PORTE*.3,mz+uz*sg*PORTE*.3,rot,e.r,H+.8])}
+  for(const c of coins.keys()){const[x,z]=c.split(',').map(Number);SOL.push(sCyl(null,x,z,TR+.4,-3,TH))}
+  for(const c of contreforts)murs.push([c[0],c[1],2.6,c[2],c[3],-2.5,H+3.6,EP+2.4,1]);
+  MS={mur:IM(GEO.mur,MAT.mur,murs.length),cren:IM(GEO.cren,MAT.cren,Math.max(1,crens.length)),tour:IM(GEO.tour,MAT.tour,tours.length),
+    toit:IM(GEO.toit,MAT.toit,toits.length,false),ban:IM(GEO.ban,MAT.ban,Math.max(1,bans.length),false)};
+  const pierre=(r,k)=>r.k==='moi'?(k?PIERRE2.moi:PIERRE.moi):(k?PIERRE2.riv:PIERRE.riv),col=r=>LIN(r.c);
+  murs.forEach((m,i)=>{const[x,z,l,rot,r,y0,h,ep,cf]=m;put(MS.mur,i,x,(y0===undefined?-2.5:y0),z,l,h||H+2.5,ep||EP,rot);tint(MS.mur,i,pierre(r,cf),.92+.16*hash(x,z))});
+  crens.forEach((c,i)=>{const[x,z,rot,r,y]=c;put(MS.cren,i,x,y||H,z,1,1,1,rot);tint(MS.cren,i,pierre(r,1))});
+  tours.forEach((t,i)=>{const[x,z,r,h,R]=t;put(MS.tour,i,x,-2.5,z,r,h+2.5,r,hash(x,z)*6);tint(MS.tour,i,pierre(R),.9+.15*hash(z,x))});
+  toits.forEach((t,i)=>{const[x,z,r,h,R]=t;put(MS.toit,i,x,h,z,r,r*1.5,r,hash(x,z)*6);tint(MS.toit,i,col(R),.75)});
+  bans.forEach((b,i)=>{const[x,z,r,h,R]=b;put(MS.ban,i,x,h+r*1.5+3.2,z,1,3.2,2.6,hash(x,z)*6.28);tint(MS.ban,i,col(R),1.1)});
+  if(!bans.length)put(MS.ban,0,0,-999,0,0,0,0);if(!crens.length)put(MS.cren,0,0,-999,0,0,0,0);
+  for(const k in MS)done(MS[k]);if(typeof CULL!=='undefined')CULL.dirty=true}
+function maj(){if(typeof S==='undefined'||!S.own||typeof ZN==='undefined')return;const s=signature()+'|'+QI;if(s===CLE)return;CLE=s;try{batir()}catch(e){console.warn('remparts',e)}}
+setInterval(()=>{if(typeof started!=='undefined'&&started)maj()},1000);
+window.rempartsMaj=()=>{CLE='';maj()};
+window.rempartsEtat=()=>({murs:MS?MS.mur.count:0,tours:MS?MS.tour.count:0,solides:SOL.length,portes:PORTES.slice()});
 })();
 /* ---------- Mémoire et plantages (21 nov. 2026, fil « Corriger les plantages fréquents du jeu ») ----------
    Sur Xbox, Edge donne peu de mémoire à un onglet, et la carte graphique partage cette mémoire. Quand elle déborde,

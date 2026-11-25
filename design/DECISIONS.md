@@ -19,6 +19,13 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 
 
+## 25 novembre 2026 (remparts et mondes générés)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Remparts dans le jeu | « C'est intéressant j'aime bien. Faudrait ajouter le rempart in game », puis « Graphiquement parlant » (25 nov., 00 h 35 UTC) : murs crénelés, tours et portes le long des frontières de chaque royaume, en 3D et sur la carte (2.47). Les règles du prototype « Relève ton rempart » (relever, greffer, garnison) ne sont pas dans le jeu | en vigueur (exception voulue au gel du 23 nov.) | « frontière tracée en rempart double » sur la carte (2.30) |
+| Mondes générés | « Il faut en même temps intégrer le moteur de génération de mondes », « Une nouvelle partie demandera le type de rosace royaumes ou aléatoire », « s'il n'y a pas suffisamment de tuiles pour finir de paver le plan, mets une zone d'ombre détruite » | à construire (exception au gel) | carte fixe de 925 zones jusqu'au 28 nov. (« 1 a », 20 nov.), pour les nouvelles parties ; garder la carte classique en secours : question posée |
+
 ## 25 novembre 2026 (factions)
 
 | Sujet | Décision | Statut | Remplace |
