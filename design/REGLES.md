@@ -193,6 +193,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Au niveau 0, chaque zone a sa propre couleur et son heure du jour ; le plateau de combat est en tesselles (boucle 4, 22 nov.).
 - Sols en marqueterie posée (plus de motifs en papier peint), caméra d'arrivée qui ne bute plus sur un décor de pôle, +7 étalonnés avec un plafond de couleur et un vrai noir (boucle 5, 23 nov., version 2.43 ; réglages seulement).
 - Le niveau 0 a un vrai noir et une vraie lumière ; DON045 a sa propre grammaire de sol (givre et gemmes), distincte de DON ; la Pierre est cernée d'une bordure de tesselles teintée par la zone (boucle 6, 24 nov., version 2.44 ; réglages seulement).
+- Boucles graphiques terminées (8 boucles, 19-26 nov.). La ressemblance entre zones (règle des 15 %) reste à corriger par une retouche du décor des zones, **après le 28 nov.** (décision du 27 nov., « 1a »).
 - Le monde est animé : vent dans la végétation, braises vers −7 et lucioles vers +7, créatures qui errent (décoratives) (2.8).
 - Exploration épurée par défaut : fiche de zone quelques secondes à l'entrée, aide qui s'efface, minicarte réduite ; RB ou Tab affiche l'interface complète (2.8).
 - **Annonces sobres (22 nov., 2.42)** : demande de l'utilisateur, « enlève les affiches lors des montées de zone et autre, ça prend trop d'espace ». Les annonces tiennent sur un petit billet sous la barre du haut ; pas de grand titre au milieu de l'écran ; en interface épurée la fiche de zone ne s'ouvre plus seule (RB l'affiche).
