@@ -13,11 +13,17 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Gameplay du monde, lot 2 : tours de guet (prix, portée, sans entretien), Comptoir des Citadelles (prix en tesselles, primes après combat, change tesselles contre mana), aménagement de chaque Donjon (2 dispositifs, bonus des voisines), épreuve des rivaux | 19 nov. | Les jouer ; les principes sont décidés, les chiffres sont ceux de l'équipe |
 | Gameplay du monde, lot 3 : caravanes (gains, risques de pillage), lois du catalogue de onze et leurs chiffres, prix des pactes par maison, forces des vagues du siège | 19-20 nov. | Les jouer ; les six réglages posés le 20 nov. sont confirmés (« Oui à tout »), les autres chiffres restent ceux de l'équipe |
 | Monde de 925 zones (347 Ressources, 249 Antres, 195 Assemblées, 90 Donjons, 44 Citadelles posés) au lieu des 986 de la liste | 20 nov. | Décidé « pour l'instant » ; à revoir après le 28 nov. (pavage) |
-| Minimum de 4 cartes actives au paquet de combat (désactivation des cartes) | 22 nov. | Le jouer ; 8 était prévu mais le paquet de départ n'a que 6 cartes |
+| Minimum de 4 cartes actives au paquet de combat (désactivation des cartes) | 22 nov. | Sans objet si les cartes sortent du jeu (direction du 27 nov.) |
 | 5 Citadelles épiques de victoire | 16 nov. | Arriver à la fin de partie |
 | Fin du monde après une victoire épique | 16 nov. | Arriver à la fin de partie |
 
 
+
+## 27 novembre 2026 (soir : le combat de cartes sort, cœur du jeu = gestion des tuiles)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Combat et cartes | Mots de l'utilisateur (27 nov., 17 h 17 à 17 h 42, Toronto) : « Le monde est bien. Pour le combat.... Il faut tout revoir je crois », « Il n'y a pas eu de fun lors de mes tests » ; dans le plan de refonte : « je me demande même si je veux encore un système de combats de carte.... Le monde est bon. La mosaïque génial. Je voudrais au final avoir un gameplay sur un beau plateau représentant les tuile et zone. Et le fun serait je crois la gestion des tuiles. L'interaction dans les zones pour changer la faction d'une tuile », place du combat : « Nope », rôle des cartes : « Plus de carte » ; puis « Je voudrais une belle interfaces. Pour jouer avec les tuile. Comme posée sur lutrin. Avec ses effets de verre. De magie... De synergie.... ». Lecture de Claude : plus de combat de cartes ni de cartes ; le cœur du jeu devient la gestion des tuiles et de leurs factions sur un plateau en mosaïque posé sur un lutrin (vitrail, magie, synergies visibles), en agissant dans les zones pour faire basculer une tuile de faction. Détails à trancher (7 questions) : https://claude.ai/artifact/KqiagaMogUDuc3czzBukNB | en vigueur (direction) ; le jeu ne change qu'après les étapes du plan et son OK | Plateau à 3 voies, champ en mosaïque de l'Arène, combat de cartes, paquet et cartes de palier |
 
 ## 27 novembre 2026 (décor des zones)
 
