@@ -19,6 +19,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 
 
+## 27 novembre 2026 (décor des zones)
+
+| Sujet | Décision | Statut | Version |
+|---|---|---|---|
+| Graphismes : ressemblance entre zones | Mots de l'utilisateur : « 1a ». Question posée le 26 nov. : la ressemblance entre zones (40 paires sur 84 au-dessus de 15 %) ne se corrige plus par des couleurs et demande de retoucher le décor des zones, ce qui sort du gel jusqu'au 28 ; a) attendre après le 28, b) faire une exception. Lecture du coordinateur : on attend ; la retouche du décor des zones se fera après le 28 nov., aucune exception au gel. | en vigueur | 2.50 (rien de changé) |
+
 ## 25 novembre 2026 (remparts et mondes générés)
 
 | Sujet | Décision | Statut | Remplace |
