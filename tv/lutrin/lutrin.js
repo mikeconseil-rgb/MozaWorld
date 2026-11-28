@@ -39,7 +39,6 @@ const JEU=(()=>{let s=null;try{s=JSON.parse(lire('mz-tv-1')||'null')}catch(e){}c
 const ROSACES=[...(JEU.monde?[['jeu','Votre monde']]:[]),['hasard','Au hasard'],['0','Les Cinq Soleils'],['1','La Rose de sang'],['2','La Grande Rosace'],['4','La Couronne de losanges'],['5','La Corolle du Sénat'],['mix','Cinq fleurs différentes']]
   .filter(r=>r[0]==='hasard'||r[0]==='jeu'||BANQUE.some(m=>m.rosace===r[0]));
 const TYPES={CIT:'Citadelle',DON:'Donjon',ANT:'Antre',MAR:'Assemblée',RES:'Ressource'};
-const TEINTES=['#e9dcc0','#d4dfcb','#e6cfc4','#cddbe2','#e6dfb5','#dccfe3','#d0e2da','#ead7b0'];
 /* icônes gravées, en unités (rayon 1) */
 const ICONE={
   CIT:'M-.55 .8V-.35H-.78V-.8H-.48V-.58H-.16V-.8H.16V-.58H.48V-.8H.78V-.35H.55V.8ZM-.18 .8V.35A.18 .18 0 0 1 .18 .35V.8',
@@ -94,26 +93,21 @@ let G={};
 function dessiner(){
   svg.innerHTML='';calque.innerHTML='';
   const defs=el('defs',{},svg);
-  TEINTES.forEach((ti,n)=>{const g=el('radialGradient',{id:'g-t'+n,cx:'.38',cy:'.32',r:'.85'},defs);
-    el('stop',{offset:'0','stop-color':mix(ti,'#ffffff',.55),'stop-opacity':'.42'},g);el('stop',{offset:'.6','stop-color':ti,'stop-opacity':'.62'},g);el('stop',{offset:'1','stop-color':mix(ti,'#2a1a0c',.55),'stop-opacity':'.88'},g)});
-  for(const k in FAC){const c=FAC[k].col,g=el('radialGradient',{id:'g-'+k,cx:'.4',cy:'.36',r:'.8'},defs);
-    // 28 nov. (« je n'aime pas l'effet des tuiles placées ») : la tuile prise reste du verre teinté, translucide, pas une pastille plate
-    el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.5),'stop-opacity':'.5'},g);el('stop',{offset:'.6','stop-color':c,'stop-opacity':'.68'},g);el('stop',{offset:'1','stop-color':mix(c,'#1a0c04',.4),'stop-opacity':'.86'},g)}
-  const parch='#f3e6c8';const vus=new Set();
-  T.forEach(t=>{if(t.mort)return;const [a,b]=t.choix,n=S.niv?S.niv[t.i]||0:0,cle=`g-n-${a}-${b}-${n>0?'p':n<0?'m':'z'}`;t.teinte=cle;if(vus.has(cle))return;vus.add(cle);
-    const g=el('linearGradient',{id:cle,x1:'0',y1:'0',x2:'1',y2:'1'},defs),ca=FAC[a].col,cb=FAC[b].col,pa=n>0?.32:.5,pb=n<0?.32:.5,cut=n>0?.62:n<0?.38:.5;
-    el('stop',{offset:'0','stop-color':mix(ca,parch,pa),'stop-opacity':'.72'},g);el('stop',{offset:(cut-.04).toFixed(2),'stop-color':mix(ca,parch,pa+.12),'stop-opacity':'.62'},g);
-    el('stop',{offset:(cut+.04).toFixed(2),'stop-color':mix(cb,parch,pb+.12),'stop-opacity':'.62'},g);el('stop',{offset:'1','stop-color':mix(cb,parch,pb),'stop-opacity':'.72'},g)});
-  const gm=el('radialGradient',{id:'g-mort',cx:'.45',cy:'.4',r:'.8'},defs);
-  el('stop',{offset:'0','stop-color':'#3e2552'},gm);el('stop',{offset:'1','stop-color':'#120817'},gm);
-  el('pattern',{id:'pat-grain',width:'512',height:'512',patternUnits:'userSpaceOnUse'},defs).appendChild(grain());
-  G.verres=el('g',{},svg);
-  el('rect',{class:'grain',x:BB.x0,y:BB.y0,width:BB.w,height:BB.h,fill:'url(#pat-grain)'},svg);
-  G.icones=el('g',{class:'icones'},svg);G.plomb=el('g',{},svg);G.fleurs=el('g',{},svg);G.sceaux=el('g',{},svg);
+  /* 28 nov. (« 1. Alvéoles dans le bois », « les alvéoles c'est bien ; mais les tuiles en elles-mêmes, je n'aime pas l'effet »,
+     « peut-être un léger effet 3D ») : une case libre est un creux sombre dans le bois ; une tuile prise y est posée en relief. */
+  const gc=el('linearGradient',{id:'g-creux',x1:'0',y1:'0',x2:'0',y2:'1'},defs);
+  el('stop',{offset:'0','stop-color':'#060201'},gc);el('stop',{offset:'.35','stop-color':'#120803'},gc);el('stop',{offset:'1','stop-color':'#24150a'},gc);
+  for(const k in FAC){const c=couleurPlaque(k),g=el('radialGradient',{id:'g-'+k,cx:'.36',cy:'.3',r:'.85'},defs);
+    el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.5)},g);el('stop',{offset:'.55','stop-color':c},g);el('stop',{offset:'1','stop-color':mix(c,'#000000',.4)},g);
+    // le bord émaillé : clair en haut à gauche, sombre en bas à droite (un biseau sans filtre)
+    const b=el('linearGradient',{id:'gb-'+k,x1:'.15',y1:'0',x2:'.85',y2:'1'},defs);
+    el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.75)},b);el('stop',{offset:'.45','stop-color':mix(c,'#ffffff',.2)},b);el('stop',{offset:'1','stop-color':mix(c,'#000000',.6)},b)}
+  G.verres=el('g',{},svg);G.plomb=el('g',{},svg);G.plaques=el('g',{class:'plaques'},svg);
+  G.icones=el('g',{class:'icones'},svg);G.fleurs=el('g',{},svg);G.sceaux=el('g',{},svg);
   // ce qui bouge ou s'anime va sur un calque à part : le vitrail (des centaines de tuiles) n'est plus redessiné à chaque image
   G.liens=el('g',{},calque);G.flots=el('g',{},calque);G.curseur=el('g',{},calque);G.etin=el('g',{},calque);G.figure=el('g',{},calque);
   T.forEach(t=>{
-    t.verre=el('polygon',{points:pts(t.p),'data-i':t.i,class:'verre'},G.verres);
+    t.verre=el('polygon',{points:pts(t.p),'data-i':t.i,class:'verre',fill:'url(#g-creux)'},G.verres);t.plK=null;t.forme=forme(t);
     if(!t.mort){const s=Math.min(46,t.r*.42);
       t.icone=el('path',{d:ICONE[t.info[1]]||ICONE.RES,class:'icone libre',transform:`translate(${t.c[0].toFixed(0)} ${t.c[1].toFixed(0)}) scale(${s.toFixed(1)})`},G.icones)}
     else el('path',{d:fissure(t),class:'fissure'},G.icones)});
@@ -209,12 +203,6 @@ function reprendre(){let P=null;try{P=JSON.parse(lire('lutrin-partie')||'null')}
   return true}
 function fissure(t){const c=t.c,r=t.r*.8;let d=`M${(c[0]-r).toFixed(0)} ${(c[1]-r*.2).toFixed(0)}`;
   for(let k=1;k<=4;k++)d+=`L${(c[0]-r+k*r/2).toFixed(0)} ${(c[1]+(k%2?r*.35:-r*.25)).toFixed(0)}`;return d}
-function grain(){ // texture de verre soufflé, faite une fois
-  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d'),im=x.createImageData(256,256);
-  for(let i=0;i<im.data.length;i+=4){const n=128+(Math.random()-.5)*90;im.data[i]=im.data[i+1]=im.data[i+2]=n;im.data[i+3]=255}
-  x.putImageData(im,0,0);x.globalAlpha=.18;for(let k=0;k<40;k++){x.strokeStyle=Math.random()<.5?'#fff':'#000';x.lineWidth=1+Math.random()*2;x.beginPath();
-    const y=Math.random()*256;x.moveTo(0,y);x.bezierCurveTo(85,y+Math.random()*30-15,170,y+Math.random()*30-15,256,y+Math.random()*20-10);x.stroke()}
-  const img=document.createElementNS(NS,'image');img.setAttribute('href',c.toDataURL());img.setAttribute('width','512');img.setAttribute('height','512');return img}
 
 /* ---------- caméra : zoom et déplacement ---------- */
 function taille(){const sc=document.getElementById('scene').getBoundingClientRect();
@@ -291,10 +279,32 @@ vue.addEventListener('dblclick',e=>e.preventDefault());
 /* ---------- affichage ---------- */
 function majTout(){T.forEach(t=>majTuile(t.i));majLiens();majCurseur();majBarre();majFiche()}
 function majTuile(i){const t=T[i],o=S.own[i];
-  if(t.mort){t.verre.setAttribute('fill','url(#g-mort)');t.verre.setAttribute('class','verre mort');sceau(t,o);return}
-  if(o==null||o<0){t.verre.setAttribute('fill',`url(#${t.teinte})`);t.verre.setAttribute('class','verre libre');t.icone.setAttribute('class','icone libre')}
-  else{t.verre.setAttribute('fill','url(#g-'+S.joueurs[o].k+')');t.verre.setAttribute('class','verre prise');t.icone.setAttribute('class','icone prise')}
+  if(t.mort){plaque(t,'Ombre');t.verre.setAttribute('class','verre mort');sceau(t,o);return}
+  if(o==null||o<0){plaque(t,null);t.verre.setAttribute('class','verre libre');t.icone.setAttribute('class','icone libre')}
+  else{plaque(t,S.joueurs[o].k);t.verre.setAttribute('class','verre prise');t.icone.setAttribute('class','icone prise')}
   sceau(t,o)}
+/* la tuile posée dans son alvéole (« 2. Émail brillant ») : céramique vernie, dégradé lisse et reflet blanc,
+   avec une petite tranche et une ombre portée pour le relief. Six éléments par tuile, sans filtre, pour rester fluide sur le Pixel. */
+const EPAIS=.06;
+function forme(t){const ins=f=>t.p.map(q=>[t.c[0]+(q[0]-t.c[0])*f,t.c[1]+(q[1]-t.c[1])*f]);
+  const P=ins(.87),ep=Math.max(4,Math.min(12,t.r*EPAIS)),f2=q=>q[0].toFixed(1)+' '+q[1].toFixed(1);let tr='';
+  P.forEach((a,k)=>{const b=P[(k+1)%P.length];let nx=b[1]-a[1],ny=a[0]-b[0];const L=Math.hypot(nx,ny)||1;ny/=L;nx/=L;
+    if(nx*((a[0]+b[0])/2-t.c[0])+ny*((a[1]+b[1])/2-t.c[1])<0)ny=-ny;
+    if(ny>-.05)tr+=`M${f2(a)}L${f2(b)}L${b[0].toFixed(1)} ${(b[1]+ep).toFixed(1)}L${a[0].toFixed(1)} ${(a[1]+ep).toFixed(1)}Z`});
+  /* le reflet suit les bords tournés vers la lumière (en haut à gauche), comme sur une céramique vernie */
+  const I=ins(.78),n=I.length;let rf='',on=false;
+  for(let k=0;k<=n;k++){const a=I[k%n],b=I[(k+1)%n];const mx=(a[0]+b[0])/2-t.c[0],my=(a[1]+b[1])/2-t.c[1],L=Math.hypot(mx,my)||1,l=(mx*-.55+my*-.83)/L;
+    if(l>.45&&k<n){rf+=(on?'L':'M')+f2(a)+'L'+f2(b);on=true}else on=false}
+  return{P:pts(P),tranche:tr,reflet:rf,rw:Math.max(3,Math.min(10,t.r*.06)).toFixed(1),
+    ombre:'M'+P.map(q=>(q[0]+ep*.5).toFixed(1)+' '+(q[1]+ep*1.6).toFixed(1)).join('L')+'Z'}}
+const couleurPlaque=k=>k==='Ombre'?'#3a2250':FAC[k].col;
+function plaque(t,k){if(t.plK===k)return;t.plK=k;if(t.pl){t.pl.remove();t.pl=null}if(!k)return;
+  const d=t.forme,c=couleurPlaque(k),g=el('g',{class:'plaque'},null);
+  el('path',{d:d.ombre,class:'pl-ombre'},g);el('path',{d:d.tranche,fill:mix(c,'#000000',.55)},g);
+  el('polygon',{points:d.P,fill:`url(#g-${k})`,class:'pl-bord',stroke:`url(#gb-${k})`},g);
+  if(d.reflet)el('path',{d:d.reflet,class:'pl-reflet','stroke-width':d.rw},g);
+  // garder l'ordre des tuiles (une tuile du bas recouvre l'ombre de celle du haut)
+  let suiv=null;for(let j=t.i+1;j<T.length&&!suiv;j++)if(T[j].pl)suiv=T[j].pl;G.plaques.insertBefore(g,suiv);t.pl=g}
 /* 28 nov. (« je veux voir mes tuiles ajoutées et la faction des tuiles ») : chaque tuile prise porte le sceau de sa faction,
    un losange de sa couleur ; les tuiles que vous avez ajoutées ont en plus un anneau d'or. */
 const estDepart=(t,o)=>t.roy!==undefined&&t.roy===o;
