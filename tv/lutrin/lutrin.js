@@ -13,12 +13,22 @@ const ZI=window.LUTRIN_ZONES||{};
 const BANQUE=(typeof MONDES_BANQUE!=='undefined'?MONDES_BANQUE:[]);
 const FAC={
   Feu:   {k:'Feu',   nom:'Les Braisiers',          col:'#e0643a',dev:'Conquérants et forgerons'},
-  Pierre:{k:'Pierre',nom:'L\'Ordre du Socle',      col:'#c9ae7c',dev:'Bâtisseurs et légistes'},
+  Pierre:{k:'Pierre',nom:'L\'Ordre du Socle',      col:'#c4407e',dev:'Bâtisseurs et légistes'},
   Vent:  {k:'Vent',  nom:'La Compagnie des Vents', col:'#b9a6f0',dev:'Nomades et éclaireurs'},
   Glace: {k:'Glace', nom:'La Veille Blanche',      col:'#8fd0f5',dev:'Gardiens des serments'},
   Eau:   {k:'Eau',   nom:'La Ligue des Marées',    col:'#2f8fd0',dev:'Marchands navigateurs'},
   Sève:  {k:'Sève',  nom:'Le Cercle des Racines',  col:'#62b544',dev:'Éleveurs de bêtes'}};
 const ROUE=['Feu','Pierre','Vent','Glace','Eau','Sève'];
+/* 28 nov. (« je veux voir aussi les factions par un code couleur ou icône ») : un sigle par faction, blanc sur sa couleur */
+const SIGLE={
+  Feu:   {f:'M0 -.85C.35 -.4 .6 -.15 .55 .25C.5 .65 .2 .85 0 .85C-.2 .85 -.5 .65 -.55 .25C-.6 -.1 -.35 -.3 -.2 -.55C-.1 -.25 0 -.2 .1 -.15C.15 -.4 .1 -.6 0 -.85Z'},
+  Pierre:{f:'M-.62 .72H.62V.36H-.62ZM-.46 .24H.46V-.12H-.46ZM-.3 -.24H.3V-.6H-.3Z'},
+  Vent:  {s:'M-.72 -.22H.3A.3 .3 0 1 0 .05 -.58M-.72 .18H.5A.3 .3 0 1 1 .28 .58'},
+  Glace: {s:'M0 -.8V.8M-.69 -.4L.69 .4M-.69 .4L.69 -.4M-.2 -.65L0 -.45L.2 -.65M-.2 .65L0 .45L.2 .65'},
+  Eau:   {s:'M-.75 -.25Q-.4 -.55 -.05 -.25T.75 -.25M-.75 .3Q-.4 0 -.05 .3T.75 .3'},
+  Sève:  {f:'M-.6 .65C-.72 -.1 -.1 -.72 .7 -.7C.72 .1 .1 .72 -.6 .65Z',s:'M-.55 .6L.3 -.3'}};
+const sigleSVG=(k,cls)=>{const g=SIGLE[k]||{};return`<svg class="${cls||'sigle'}" viewBox="-1.1 -1.1 2.2 2.2" aria-hidden="true"><circle r="1" fill="${FAC[k].col}"/>`+
+  (g.f?`<path d="${g.f}" transform="scale(.72)" fill="#fff8e8"/>`:'')+(g.s?`<path d="${g.s}" transform="scale(.72)" fill="none" stroke="${g.f?FAC[k].col:'#fff8e8'}" stroke-width="${g.f?.14:.2}" stroke-linecap="round" stroke-linejoin="round"/>`:'')+'</svg>'};
 const opposees=(a,b)=>{const i=ROUE.indexOf(a),j=ROUE.indexOf(b);return i>=0&&j>=0&&Math.abs(i-j)===3};
 /* la partie d'exploration (si elle existe) : son monde, et la zone où se trouvait le héros (figurine sur le plateau) */
 const lire=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
@@ -80,13 +90,14 @@ function dessiner(){
   TEINTES.forEach((ti,n)=>{const g=el('radialGradient',{id:'g-t'+n,cx:'.38',cy:'.32',r:'.85'},defs);
     el('stop',{offset:'0','stop-color':mix(ti,'#ffffff',.55),'stop-opacity':'.42'},g);el('stop',{offset:'.6','stop-color':ti,'stop-opacity':'.62'},g);el('stop',{offset:'1','stop-color':mix(ti,'#2a1a0c',.55),'stop-opacity':'.88'},g)});
   for(const k in FAC){const c=FAC[k].col,g=el('radialGradient',{id:'g-'+k,cx:'.4',cy:'.36',r:'.8'},defs);
-    el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.55),'stop-opacity':'.93'},g);el('stop',{offset:'.55','stop-color':c,'stop-opacity':'.9'},g);el('stop',{offset:'1','stop-color':mix(c,'#000000',.45),'stop-opacity':'.95'},g)}
+    // 28 nov. (« je n'aime pas l'effet des tuiles placées ») : la tuile prise reste du verre teinté, translucide, pas une pastille plate
+    el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.5),'stop-opacity':'.5'},g);el('stop',{offset:'.6','stop-color':c,'stop-opacity':'.68'},g);el('stop',{offset:'1','stop-color':mix(c,'#1a0c04',.4),'stop-opacity':'.86'},g)}
   const gm=el('radialGradient',{id:'g-mort',cx:'.45',cy:'.4',r:'.8'},defs);
   el('stop',{offset:'0','stop-color':'#3a2a20'},gm);el('stop',{offset:'1','stop-color':'#0e0806'},gm);
   el('pattern',{id:'pat-grain',width:'512',height:'512',patternUnits:'userSpaceOnUse'},defs).appendChild(grain());
   G.verres=el('g',{},svg);
   el('rect',{class:'grain',x:BB.x0,y:BB.y0,width:BB.w,height:BB.h,fill:'url(#pat-grain)'},svg);
-  G.icones=el('g',{class:'icones'},svg);G.plomb=el('g',{},svg);G.fleurs=el('g',{},svg);
+  G.icones=el('g',{class:'icones'},svg);G.plomb=el('g',{},svg);G.fleurs=el('g',{},svg);G.sceaux=el('g',{},svg);
   // ce qui bouge ou s'anime va sur un calque à part : le vitrail (des centaines de tuiles) n'est plus redessiné à chaque image
   G.liens=el('g',{},calque);G.flots=el('g',{},calque);G.curseur=el('g',{},calque);G.etin=el('g',{},calque);G.figure=el('g',{},calque);
   T.forEach(t=>{let h=0;for(const ch of t.id)h=(h*31+ch.charCodeAt(0))>>>0;t.teinte='g-t'+(h%TEINTES.length);
@@ -134,7 +145,11 @@ const FIGURE=`<g class="fig-ombre"><ellipse cx="6" cy="2" rx="44" ry="11"/></g>
  <g class="f-lunettes"><circle cx="-5.2" cy="-115" r="4.4"/><circle cx="5.2" cy="-115" r="4.4"/><path d="M-0.8 -115H0.8M-9.6 -115L-13 -116M9.6 -115L13 -116"/></g>
  <circle class="f-oeil" cx="-5" cy="-114.5" r="1.1"/><circle class="f-oeil" cx="5" cy="-114.5" r="1.1"/>
 </g>`;
-function trouverIci(){S.ici=-1;if(!JEU.save||!JEU.monde||S.monde!==JEU.monde)return;
+function trouverIci(){S.ici=-1;S.iciVrai=false;trouverIci0();if(S.ici>=0){S.iciVrai=true;return}
+  // pas encore de partie d'exploration sur ce monde : la figurine attend au cœur de votre fleur
+  const L=T.filter(t=>S.own[t.i]===0);if(!L.length)return;let x=0,y=0;L.forEach(t=>{x+=t.c[0];y+=t.c[1]});x/=L.length;y/=L.length;
+  let b=L[0],bd=1e18;L.forEach(t=>{const d=(t.c[0]-x)**2+(t.c[1]-y)**2;if(d<bd){bd=d;b=t}});S.ici=b.i}
+function trouverIci0(){if(!JEU.save||!JEU.monde||S.monde!==JEU.monde)return;
   if(JEU.ici){const t=T.find(t=>t.id===JEU.ici);if(t&&!t.mort){S.ici=t.i;return}}
   if(JEU.pos){const q=[JEU.pos[0]/2,JEU.pos[1]/2],r=S.portrait?[-q[1],q[0]]:q;const t=T.find(t=>dansPoly(t.p,r));if(t)S.ici=t.i}}
 function dansPoly(P,q){let d=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];
@@ -144,7 +159,7 @@ function poserFigurine(){trouverIci();G.figure.innerHTML='';if(S.ici<0)return;co
   G.fig=el('g',{class:'figurine'},G.figure);G.fig.innerHTML=FIGURE;placerFigurine()}
 function placerFigurine(){if(!G.fig||S.ici<0)return;const t=T[S.ici],px=cam.w/pxW;
   // assez grande pour se voir de loin (au moins 64 px à l'écran), sans dépasser la tuile de près
-  const k=Math.max(t.r*1.5/FIG_H,64*px/FIG_H);G.fig.setAttribute('transform',`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.35).toFixed(0)}) scale(${k.toFixed(3)})`)}
+  const k=Math.max(t.r*1.05/FIG_H,44*px/FIG_H);G.fig.setAttribute('transform',`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.35).toFixed(0)}) scale(${k.toFixed(3)})`)}
 function vueIci(anim){if(S.ici<0)return;const t=T[S.ici];viser(t.i,true);
   if(anim)viserCam(t.c[0],t.c[1],Math.max(2200,t.r*14));else{cam.cx=t.c[0];cam.cy=t.c[1];cam.w=Math.max(2200,t.r*14);appliquer()}}
 
@@ -175,7 +190,7 @@ function reprendre(){let P=null;try{P=JSON.parse(lire('lutrin-partie')||'null')}
   chargerMonde(P.monde,()=>{preparer();if(T.length!==P.own.length){oublier();menu();return}
     Object.assign(S,{monde:P.monde,own:P.own,joueurs:P.joueurs,tour:P.tour||0,tourNum:P.tourNum||1,duree:P.duree,sel:P.sel>=0?P.sel:-1,choixFac:P.choixFac||S.choixFac,nbRivaux:P.nbRivaux||S.nbRivaux,rosace:P.rosace||S.rosace,fini:false});
     dessiner();taille();voile.classList.add('cache');
-    if(S.ici>=0)vueIci(false);else vueFleur(0,false);
+    if(S.iciVrai)vueIci(false);else vueFleur(0,false);
     if(S.joueurs[S.tour]&&S.joueurs[S.tour].ia)setTimeout(jouerIA,700)});
   return true}
 function fissure(t){const c=t.c,r=t.r*.8;let d=`M${(c[0]-r).toFixed(0)} ${(c[1]-r*.2).toFixed(0)}`;
@@ -203,7 +218,7 @@ const MARGE=.25,rendu={cx:0,cy:0,w:0};let tFixe=0;
 function fixer(){clearTimeout(tFixe);rendu.cx=cam.cx;rendu.cy=cam.cy;rendu.w=cam.w;const h=cam.w*pxH/pxW,f=1+2*MARGE,W=cam.w*f,H=h*f;
   const vb=`${(cam.cx-W/2).toFixed(1)} ${(cam.cy-H/2).toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}`;
   for(const s_ of [svg,calque]){s_.setAttribute('viewBox',vb);s_.style.left=(-MARGE*pxW)+'px';s_.style.top=(-MARGE*pxH)+'px';s_.style.width=(pxW*f)+'px';s_.style.height=(pxH*f)+'px';s_.style.transform=''}
-  const l=cam.w/pxW>9;if(l!==loin){loin=l;svg.classList.toggle('loin',l)}placerFigurine()}
+  const l=cam.w/pxW>9;if(l!==loin){loin=l;svg.classList.toggle('loin',l)}placerFigurine();if(G.liens&&S.joueurs.length)majLiens()}
 function appliquer(){borner(cam);
   const z=document.getElementById('zoom-niveau');if(z)z.style.setProperty('--z',((wMax()-cam.w)/(wMax()-wMin())).toFixed(3));
   if(!rendu.w){fixer();return}
@@ -264,13 +279,35 @@ function majTout(){T.forEach(t=>majTuile(t.i));majLiens();majCurseur();majBarre(
 function majTuile(i){const t=T[i],o=S.own[i];
   if(t.mort){t.verre.setAttribute('fill','url(#g-mort)');t.verre.setAttribute('class','verre mort');return}
   if(o==null||o<0){t.verre.setAttribute('fill',`url(#${t.teinte})`);t.verre.setAttribute('class','verre libre');t.icone.setAttribute('class','icone libre')}
-  else{t.verre.setAttribute('fill','url(#g-'+S.joueurs[o].k+')');t.verre.setAttribute('class','verre prise');t.icone.setAttribute('class','icone prise')}}
-function majLiens(){G.liens.innerHTML='';const par={};let dT='';
-  for(const a of ARETES){const oa=S.own[a.a],ob=S.own[a.b];if(oa==null||ob==null||oa<0||ob<0)continue;
-    const d=`M${a.p1[0].toFixed(0)} ${a.p1[1].toFixed(0)}L${a.p2[0].toFixed(0)} ${a.p2[1].toFixed(0)}`;
-    if(oa===ob)par[oa]=(par[oa]||'')+d;else if(opposees(S.joueurs[oa].k,S.joueurs[ob].k))dT+=d}
-  for(const n in par){const c=FAC[S.joueurs[n].k].col;el('path',{d:par[n],class:'lien halo',stroke:c},G.liens);el('path',{d:par[n],class:'lien fil',stroke:mix(c,'#ffffff',.5)},G.liens)}
-  if(dT)el('path',{d:dT,class:'lien tension'},G.liens)}
+  else{t.verre.setAttribute('fill','url(#g-'+S.joueurs[o].k+')');t.verre.setAttribute('class','verre prise');t.icone.setAttribute('class','icone prise')}
+  sceau(t,o)}
+/* 28 nov. (« je veux voir mes tuiles ajoutées et la faction des tuiles ») : chaque tuile prise porte le sceau de sa faction,
+   un losange de sa couleur ; les tuiles que vous avez ajoutées ont en plus un anneau d'or. */
+const estDepart=(t,o)=>t.roy!==undefined&&t.roy===o;
+function sceau(t,o){if(t.sc){t.sc.remove();t.sc=null}if(o==null||o<0||t.mort)return;
+  const s=Math.max(12,Math.min(28,t.r*.24)),x=t.c[0],y=t.c[1]-Math.min(46,t.r*.42)-s*1.25,c=FAC[S.joueurs[o].k].col,ajout=!estDepart(t,o);
+  const g=el('g',{class:'sceau'+(ajout?' ajout':'')+(o===0?' mien':''),transform:`translate(${x.toFixed(0)} ${y.toFixed(0)})`},G.sceaux);
+  if(ajout&&o===0)el('circle',{r:(s*1.4).toFixed(1),class:'sceau-anneau'},g);
+  el('circle',{r:s.toFixed(1),fill:c,class:'sceau-gemme'},g);const k=S.joueurs[o].k,G2=SIGLE[k]||{},sc_=`scale(${(s*.72).toFixed(2)})`;
+  if(G2.f)el('path',{d:G2.f,transform:sc_,class:'sceau-plein'},g);
+  if(G2.s)el('path',{d:G2.s,transform:sc_,class:'sceau-trait',stroke:G2.f?c:'#fff8e8','stroke-width':G2.f?.14:.2},g);t.sc=g}
+function groupes(){const vu=new Set(),L=[];
+  T.forEach(t=>{const n=S.own[t.i];if(n==null||n<0||vu.has(t.i))return;const m=[];const st=[t.i];vu.add(t.i);
+    while(st.length){const i=st.pop();m.push(i);for(const v of T[i].v)if(S.own[v]===n&&!vu.has(v)){vu.add(v);st.push(v)}}L.push({n,m})});return L}
+function majLiens(){G.liens.innerHTML='';
+  /* 28 nov. (« si des tuiles de même faction se touchent, entourer la zone pour indiquer un bonus ») : chaque groupe d'au moins
+     deux tuiles qui se touchent est entouré de la lumière de sa faction ; à partir de trois, un médaillon donne sa taille (le bonus). */
+  const id=new Map();const L=groupes();L.forEach((g,k)=>g.m.forEach(i=>id.set(i,k)));
+  const tr={};for(const g of L)if(g.m.length>=2)tr[id.get(g.m[0])]='';
+  for(const a of ARETES){const ka=id.get(a.a),kb=id.get(a.b);if(ka===kb)continue;const d=`M${a.p1[0].toFixed(0)} ${a.p1[1].toFixed(0)}L${a.p2[0].toFixed(0)} ${a.p2[1].toFixed(0)}`;
+    if(ka!==undefined&&tr[ka]!==undefined)tr[ka]+=d;if(kb!==undefined&&tr[kb]!==undefined)tr[kb]+=d}
+  for(const k in tr){const g=L[k],c=FAC[S.joueurs[g.n].k].col;el('path',{d:tr[k],class:'groupe halo',stroke:c},G.liens);el('path',{d:tr[k],class:'groupe fil',stroke:mix(c,'#ffffff',.55)},G.liens)}
+  for(const g of L){if(g.m.length<3)continue;let x=0,y=0;g.m.forEach(i=>{x+=T[i].c[0];y+=T[i].c[1]});x/=g.m.length;y/=g.m.length;
+    let b=g.m[0],bd=1e18;g.m.forEach(i=>{if(i===S.ici&&g.m.length>1)return;const d=(T[i].c[0]-x)**2+(T[i].c[1]-y)**2;if(d<bd){bd=d;b=i}});
+    const t=T[b],c=FAC[S.joueurs[g.n].k].col,px=(rendu.w||cam.w)/pxW,r=Math.max(Math.min(60,t.r*.45),15*px);   // au moins 30 px à l'écran
+    const m=el('g',{class:'bonus',transform:`translate(${t.c[0].toFixed(0)} ${t.c[1].toFixed(0)})`},G.liens);
+    el('circle',{r:r,fill:mix(c,'#1a0c04',.35),class:'bonus-fond'},m);el('text',{class:'bonus-txt','font-size':(r*.95).toFixed(0),y:(r*.34).toFixed(0)},m).textContent='×'+g.m.length}
+}
 function majCurseur(){G.curseur.innerHTML='';if(S.sel<0)return;const t=T[S.sel],j=S.joueurs[S.tour];
   if(!S.fini&&j&&!j.ia&&S.own[S.sel]===-1)el('polygon',{points:pts(t.p),class:'apercu',fill:FAC[j.k].col},G.curseur);
   el('polygon',{points:pts(t.p),class:'curseur halo'},G.curseur);el('polygon',{points:pts(t.p),class:'curseur'},G.curseur)}
@@ -280,14 +317,14 @@ function majBarre(){
   if(!S.joueurs.length){tour.innerHTML='';sc.innerHTML='';return}
   const j=S.joueurs[S.tour],dur=S.duree?` · tour ${Math.min(S.tourNum,S.duree)}/${S.duree}`:` · tour ${S.tourNum}`;
   tour.innerHTML=S.fini?'<span>Partie finie</span>':`<span class="pastille" style="--c:${FAC[j.k].col}"></span><span>${j.ia?'<b>'+FAC[j.k].nom+'</b> <span class="pense">choisit…</span>':'<b>À vous</b>'+dur}</span>`;
-  sc.innerHTML=S.joueurs.map((p,n)=>`<span class="score${n===S.tour&&!S.fini?' actif':''}" style="--c:${FAC[p.k].col}" title="${FAC[p.k].nom}"><i></i>${compte(n)}</span>`).join('')}
+  sc.innerHTML=S.joueurs.map((p,n)=>`<span class="score${n===S.tour&&!S.fini?' actif':''}" style="--c:${FAC[p.k].col}" title="${FAC[p.k].nom}">${sigleSVG(p.k)}${compte(n)}</span>`).join('')}
 function majFiche(){
   const f=document.getElementById('fiche');const j=S.joueurs[S.tour],monTour=!S.fini&&j&&!j.ia;let h='';
   if(S.sel<0){h=`<div class="nom">Le lutrin</div><div class="quoi">Touchez une tuile libre pour la viser.</div><div class="etat">&nbsp;</div>`}
   else{const t=T[S.sel],o=S.own[S.sel],inf=t.info;
     const vois=t.v.map(v=>S.own[v]),libres=vois.filter(o=>o===-1).length,amies=vois.filter(o=>o===0).length;
-    const etat=t.mort?`<i style="--c:#3a2a20"></i>Zone d'ombre détruite : personne ne la prend`:o<0?`<i style="--c:#e9dcc0"></i>Libre · voisines : ${libres} libres${amies?', '+amies+' à vous':''}`:`<i style="--c:${FAC[S.joueurs[o].k].col}"></i>${o===0?'À vous':FAC[S.joueurs[o].k].nom}`;
-    const ici=S.sel===S.ici?' · <span class="ici-txt">vous étiez ici</span>':'';
+    const etat=t.mort?`<i style="--c:#3a2a20"></i>Zone d'ombre détruite : personne ne la prend`:o<0?`<i style="--c:#e9dcc0"></i>Libre · voisines : ${libres} libres${amies?', '+amies+' à vous':''}`:`${sigleSVG(S.joueurs[o].k)}${o===0?'À vous':FAC[S.joueurs[o].k].nom}${estDepart(T[S.sel],o)?'':' · tuile ajoutée'}`;
+    const ici=S.sel===S.ici?' · <span class="ici-txt">'+(S.iciVrai?'vous étiez ici':'vous êtes ici')+'</span>':'';
     h=`<div class="nom">${t.mort?'Zone d\'ombre détruite':inf[0]}</div><div class="quoi">${TYPES[inf[1]]||''}${inf[2]&&!t.mort?' · '+inf[2]:''}</div><div class="etat">${etat}${ici}</div>`}
   const allable=S.sel>=0&&!T[S.sel].mort&&S.joueurs.length;
   const peut=monTour&&S.sel>=0&&S.own[S.sel]===-1;
@@ -340,7 +377,7 @@ function menu(){S.fini=true;voile.classList.remove('fin');
   const choix=(cle,val,lab,act)=>`<button class="btn${act?' choisi':''}" data-${cle}="${val}">${lab}</button>`;
   voile.innerHTML=`<div class="carton"><h1>Le lutrin</h1><p>Chaque faction part de sa fleur. À tour de rôle, chacune prend une tuile libre. À la fin, la plus grande mosaïque gagne.</p>
   <h2>La rosace</h2><div class="rangee large">${ROSACES.map(r=>choix('r',r[0],r[1],r[0]===S.rosace)).join('')}</div>
-  <h2>Votre faction</h2><div class="medaillons">${ROUE.map(k=>`<button class="medaillon${k===S.choixFac?' choisi':''}" data-f="${k}" style="--c:${FAC[k].col}"><div class="gemme"></div><b>${FAC[k].nom}</b><small>${FAC[k].dev}</small></button>`).join('')}</div>
+  <h2>Votre faction</h2><div class="medaillons">${ROUE.map(k=>`<button class="medaillon${k===S.choixFac?' choisi':''}" data-f="${k}" style="--c:${FAC[k].col}">${sigleSVG(k,'sigle grand')}<b>${FAC[k].nom}</b><small>${FAC[k].dev}</small></button>`).join('')}</div>
   <div class="deux"><div><h2>Rivales</h2><div class="rangee">${[1,2,3,4].map(n=>choix('n',n,n,n===S.nbRivaux)).join('')}</div></div>
   <div><h2>Durée</h2><div class="rangee">${[[10,'10 tours'],[20,'20'],[0,'Sans fin']].map(d=>choix('d',d[0],d[1],d[0]===S.duree)).join('')}</div></div></div>
   <button class="btn principal" id="b-go"><span class="tch">A</span>Commencer</button>
@@ -361,12 +398,12 @@ function commencer(){const id=choisirMondeId();if(!id){alerte('Aucun monde dans 
     // la tuile visée au départ : une tuile libre au bord de votre fleur
     const bord=T.filter(t=>S.own[t.i]===-1&&t.v.some(v=>S.own[v]===0));S.sel=bord.length?bord[0].i:-1;
     dessiner();taille();vueTout(false);voile.classList.add('cache');sauver();
-    setTimeout(()=>{if(S.ici>=0)vueIci(true);else vueFleur(0,true)},450)})}
+    setTimeout(()=>{if(S.iciVrai)vueIci(true);else vueFleur(0,true)},450)})}
 function fin(){
   const cl=S.joueurs.map((p,n)=>({p,n,c:compte(n),g:plusGrand(n)})).sort((a,b)=>b.g-a.g||b.c-a.c);
   const gagne=cl[0].n===0,nm=FAC[cl[0].p.k].nom;
   voile.innerHTML=`<div class="carton"><h1>${gagne?'Victoire':'Partie finie'}</h1><p>${gagne?'Votre mosaïque est la plus grande.':nm+(nm.startsWith('Les ')?' tiennent':' tient')+' la plus grande mosaïque.'}</p>
-  <ol class="classement">${cl.map(x=>`<li style="--c:${FAC[x.p.k].col}"><i></i><span>${x.n===0?'Vous · ':''}${FAC[x.p.k].nom}</span><small>${x.c} tuiles</small>&nbsp;<em>${x.g}</em></li>`).join('')}</ol>
+  <ol class="classement">${cl.map(x=>`<li style="--c:${FAC[x.p.k].col}">${sigleSVG(x.p.k)}<span>${x.n===0?'Vous · ':''}${FAC[x.p.k].nom}</span><small>${x.c} tuiles</small>&nbsp;<em>${x.g}</em></li>`).join('')}</ol>
   <div class="aide">Le grand chiffre : le plus grand groupe de tuiles qui se touchent.</div>
   <button class="btn principal" id="b-encore"><span class="tch">A</span>Rejouer</button></div>`;
   voile.classList.add('fin');voile.classList.remove('cache');voile.querySelector('#b-encore').onclick=()=>{audio();menu()};

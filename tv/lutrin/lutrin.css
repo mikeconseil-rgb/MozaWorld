@@ -194,3 +194,27 @@ body.manette .btn .tch{display:inline-block}
 .portail-nom{font-family:var(--titre);font-size:30px;color:#2a1606;text-shadow:0 0 16px #fff;animation:portailNom 1.1s ease-out both;text-align:center;padding:0 20px}
 @keyframes portailNom{0%{opacity:0;letter-spacing:12px}60%{opacity:1;letter-spacing:1px}}
 @media (orientation:portrait){#fiche .btn.petit.aller{padding:0 10px;font-size:17px}#fiche .btn.principal{font-size:19px;white-space:nowrap;padding:0 10px}}
+
+.verre.prise{stroke:none}
+/* groupes de même faction (bonus) et sceaux de faction */
+.groupe{fill:none;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.groupe.halo{stroke-width:24;opacity:.42}
+.groupe.fil{stroke-width:6;opacity:1}
+svg.loin ~ #calque .groupe.halo{stroke-width:40}
+.bonus{pointer-events:none}
+.bonus-fond{stroke:#ffe6a6;stroke-width:4}
+.bonus-txt{fill:#fff6dc;text-anchor:middle;font-family:var(--titre);font-weight:600}
+.sceau{pointer-events:none}
+.sceau-gemme{stroke:#fff6dc;stroke-width:2.2}
+.sceau.ajout.mien .sceau-gemme{stroke:#ffd76a;stroke-width:3.2}
+.sceau-anneau{fill:none;stroke:#ffd76a;stroke-width:3;opacity:.95}
+.sceau-reflet{fill:#fff;opacity:.55}
+svg.loin .sceau-reflet{display:none}
+@media (orientation:portrait){.score{padding:2px 6px 2px 3px;min-width:0;font-size:14px}#scores{gap:4px}}
+.sigle{width:16px;height:16px;flex:none;vertical-align:-3px;margin-right:4px;filter:drop-shadow(0 0 4px var(--c,#0000))}
+.sigle.grand{display:block;width:44px;height:44px;margin:0 auto 6px;filter:drop-shadow(0 0 10px #0008)}
+.score .sigle{margin-right:2px}
+.sceau-gemme{stroke:#fff6dc;stroke-width:2.2}
+.sceau-plein{fill:#fff8e8}
+.sceau-trait{fill:none;stroke-linecap:round;stroke-linejoin:round}
+@media (orientation:landscape) and (max-height:500px){.sigle.grand{width:30px;height:30px}}
