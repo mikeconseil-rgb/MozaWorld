@@ -97,18 +97,20 @@ function dessiner(){
      « peut-être un léger effet 3D ») : une case libre est un creux sombre dans le bois ; une tuile prise y est posée en relief. */
   const gc=el('linearGradient',{id:'g-creux',x1:'0',y1:'0',x2:'0',y2:'1'},defs);
   el('stop',{offset:'0','stop-color':'#060201'},gc);el('stop',{offset:'.35','stop-color':'#120803'},gc);el('stop',{offset:'1','stop-color':'#24150a'},gc);
-  for(const k in FAC){const c=couleurPlaque(k),g=el('radialGradient',{id:'g-'+k,cx:'.36',cy:'.3',r:'.85'},defs);
+  for(const k of [...Object.keys(FAC),'Neutre']){const c=couleurPlaque(k),g=el('radialGradient',{id:'g-'+k,cx:'.36',cy:'.3',r:'.85'},defs);
     el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.5)},g);el('stop',{offset:'.55','stop-color':c},g);el('stop',{offset:'1','stop-color':mix(c,'#000000',.4)},g)}
   defs.insertAdjacentHTML('beforeend','<pattern id="craq" width="90" height="90" patternUnits="userSpaceOnUse"><path d="M0 20L25 28L40 5M25 28L30 55L0 62M30 55L62 48L90 70M62 48L70 15L90 22M70 15L52 0M30 55L38 90M62 48L66 90" stroke="#1a0c04" stroke-width="1.3" fill="none"/></pattern>');
-  G.verres=el('g',{},svg);G.plomb=el('g',{},svg);G.plaques=el('g',{class:'plaques'},svg);
-  G.icones=el('g',{class:'icones'},svg);G.fleurs=el('g',{},svg);G.sceaux=el('g',{},svg);
+  G.verres=el('g',{},svg);G.plomb=el('g',{},svg);G.plaques=el('g',{class:'plaques'},svg);G.plat=el('g',{class:'plat'},svg);
+  G.icones=el('g',{class:'icones'},svg);G.fleurs=el('g',{},svg);G.sceaux=el('g',{},svg);G.details=el('g',{class:'details'},svg);
   // ce qui bouge ou s'anime va sur un calque à part : le vitrail (des centaines de tuiles) n'est plus redessiné à chaque image
   G.liens=el('g',{},calque);G.flots=el('g',{},calque);G.curseur=el('g',{},calque);G.etin=el('g',{},calque);G.figure=el('g',{},calque);
   T.forEach(t=>{
     t.verre=el('polygon',{points:pts(t.p),'data-i':t.i,class:'verre',fill:'url(#g-creux)'},G.verres);t.plK=null;t.forme=forme(t);
     if(!t.mort){const s=Math.min(46,t.r*.42);
       t.icone=el('path',{d:ICONE[t.info[1]]||ICONE.RES,class:'icone libre',transform:`translate(${t.c[0].toFixed(0)} ${t.c[1].toFixed(0)}) scale(${s.toFixed(1)})`},G.icones)}
-    else el('path',{d:fissure(t),class:'fissure'},G.icones)});
+    else el('path',{d:fissure(t),class:'fissure'},G.icones);
+    // vue rapprochée : le nom de la zone sous son icône
+    if(!t.mort&&t.r>100){const fs=Math.min(30,t.r*.15);el('text',{class:'nom-zone',x:t.c[0].toFixed(0),y:(t.c[1]+t.r*.72).toFixed(0),'font-size':fs.toFixed(1)},G.details).textContent=t.info[0]}});
   // les plombs : un seul tracé pour tout le vitrail, bien plus léger qu'un polygone par tuile
   let dP='';ARETES.forEach(a=>{dP+=`M${a.p1[0].toFixed(0)} ${a.p1[1].toFixed(0)}L${a.p2[0].toFixed(0)} ${a.p2[1].toFixed(0)}`});
   let dB='';const vu=new Set(ARETES.map(a=>a.a<a.b?a.a+'_'+a.b:a.b+'_'+a.a));
@@ -210,7 +212,7 @@ const wMax=()=>BB?Math.max(BB.w,BB.h*pxW/pxH)*1.08:4000;
 const wMin=()=>700;
 function borner(c){c.w=Math.max(wMin(),Math.min(wMax(),c.w));if(!BB)return;const h=c.w*pxH/pxW,mx=Math.max(0,(BB.w-c.w)/2+c.w*.35),my=Math.max(0,(BB.h-h)/2+h*.35);
   c.cx=Math.max(BB.cx-mx,Math.min(BB.cx+mx,c.cx));c.cy=Math.max(BB.cy-my,Math.min(BB.cy+my,c.cy))}
-let loin=null;
+let loin=null,pres=null;
 /* Fluidité (28 nov., « Ça lag ») : pendant un geste, on ne touche plus au viewBox (le navigateur redessinerait tout le vitrail
    à chaque image). Le dessin est fait une fois, un peu plus grand que l'écran (MARGE de chaque côté), puis simplement déplacé et
    agrandi par la carte graphique (transform). Il est refait net dès que le geste s'arrête, ou s'il faut montrer un bord pas encore dessiné. */
@@ -218,7 +220,8 @@ const MARGE=.25,rendu={cx:0,cy:0,w:0};let tFixe=0;
 function fixer(){clearTimeout(tFixe);rendu.cx=cam.cx;rendu.cy=cam.cy;rendu.w=cam.w;const h=cam.w*pxH/pxW,f=1+2*MARGE,W=cam.w*f,H=h*f;
   const vb=`${(cam.cx-W/2).toFixed(1)} ${(cam.cy-H/2).toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}`;
   for(const s_ of [svg,calque]){s_.setAttribute('viewBox',vb);s_.style.left=(-MARGE*pxW)+'px';s_.style.top=(-MARGE*pxH)+'px';s_.style.width=(pxW*f)+'px';s_.style.height=(pxH*f)+'px';s_.style.transform=''}
-  const l=cam.w/pxW>9;if(l!==loin){loin=l;svg.classList.toggle('loin',l)}placerFigurine();if(G.liens&&S.joueurs.length)majLiens()}
+  const l=cam.w/pxW>9;if(l!==loin){loin=l;svg.classList.toggle('loin',l)}
+  const pr=cam.w/pxW<2.1;if(pr!==pres){pres=pr;svg.classList.toggle('pres',pr)}placerFigurine();if(G.liens&&S.joueurs.length)majLiens()}
 function appliquer(){borner(cam);
   const z=document.getElementById('zoom-niveau');if(z)z.style.setProperty('--z',((wMax()-cam.w)/(wMax()-wMin())).toFixed(3));
   if(!rendu.w){fixer();return}
@@ -281,9 +284,18 @@ vue.addEventListener('dblclick',e=>e.preventDefault());
    l'émail garde la faction de la zone, le cadre et le sceau disent le royaume. */
 /* pour le test (28 nov.) : « toutes les zones niveau 3, + ou − au hasard », puis « une zone sur 6 » au niveau 0 (neutre) */
 const tirerNiv=t=>t.mort?0:Math.random()<1/6?0:(Math.random()<.5?3:-3);
-function facZone(t,o){const n=S.niv?S.niv[t.i]||0:0;if(n>0)return t.choix[0];if(n<0)return t.choix[1];return o!=null&&o>=0?S.joueurs[o].k:null}
+function facZone(t,o){const n=S.niv?S.niv[t.i]||0:0;if(n>0)return t.choix[0];if(n<0)return t.choix[1];return 'Neutre'}   // prise ou non, la faction de la zone ne change pas
 function majTout(){T.forEach(t=>majTuile(t.i));majLiens();majCurseur();majBarre();majFiche()}
-function majTuile(i){const t=T[i],o=S.own[i];
+/* 28 nov. (« les derniers niveaux de zoom, le plus petit et le plus grand, ont un layout différent. Au niveau maximum on garde ça plat
+   et on veut voir le statut des royaumes. Au plus petit, voir les mini figurines et plus de détails sur les états des zones ») :
+   de loin, chaque tuile prise est un aplat à la couleur du royaume qui la tient ; de près, un pion du royaume et le nom de la zone. */
+const PION='M-.34 0H.34Q.36-.1.24-.14Q.14-.2.12-.42H.2Q.22-.5.12-.52A.21.21 0 1 0-.12-.52Q-.22-.5-.2-.42H-.12Q-.14-.2-.24-.14Q-.36-.1-.34 0Z';
+function majRoyaume(t,o){const k=t.mort?'Ombre':o!=null&&o>=0?S.joueurs[o].k:null;if(t.platK===k)return;t.platK=k;
+  if(t.plat){t.plat.remove();t.plat=null}if(t.pion){t.pion.remove();t.pion=null}if(!k)return;
+  t.plat=el('polygon',{points:pts(t.p),fill:k==='Ombre'?'#2a1638':FAC[k].col},G.plat);
+  if(k!=='Ombre'){const s=Math.min(60,t.r*.36),c=FAC[k].col;
+    t.pion=el('path',{d:PION,class:'pion',fill:c,stroke:mix(c,'#000000',.6),transform:`translate(${(t.c[0]+t.r*.5).toFixed(0)} ${(t.c[1]+t.r*.5).toFixed(0)}) scale(${s.toFixed(1)})`},G.details)}}
+function majTuile(i){const t=T[i],o=S.own[i];majRoyaume(t,o);
   if(t.mort){plaque(t,'Ombre');t.verre.setAttribute('class','verre mort');sceau(t,o);return}
   if(o==null||o<0){plaque(t,null);t.verre.setAttribute('class','verre libre');t.icone.setAttribute('class','icone libre')}
   else{plaque(t,facZone(t,o),S.joueurs[o].k);t.verre.setAttribute('class','verre prise');t.icone.setAttribute('class','icone prise')}
@@ -306,7 +318,7 @@ function forme(t){const ins=f=>t.p.map(q=>[t.c[0]+(q[0]-t.c[0])*f,t.c[1]+(q[1]-t
     if((mx*LUM[0]+my*LUM[1])/L>.4){rf+=(on?'L':'M')+(on?'':f2(a)+'L')+f2(b);on=true}else on=false}
   d.reflet=rf;d.rw=Math.max(3,Math.min(9,t.r*.05)).toFixed(1);d.P=pts(P);d.I=pts(I);
   d.ombre='M'+P.map(q=>(q[0]+ep*.5).toFixed(1)+' '+(q[1]+ep*1.5).toFixed(1)).join('L')+'Z';return d}
-const couleurPlaque=k=>k==='Ombre'?'#3a2250':FAC[k].col;
+const couleurPlaque=k=>k==='Ombre'?'#3a2250':k==='Neutre'?'#b9ab8c':FAC[k].col;
 const TEINTE_PL={};
 function teintePl(k){if(TEINTE_PL[k])return TEINTE_PL[k];const c=couleurPlaque(k);
   return TEINTE_PL[k]={clair:mix(c,'#ffffff',.45),moyen:mix(c,'#000000',.08),sombre:mix(c,'#000000',.45),tranche:mix(c,'#000000',.62),bord:mix(c,'#000000',.65)}}
@@ -338,31 +350,46 @@ function sceau(t,o){if(t.sc){t.sc.remove();t.sc=null}if(t.i===S.ici)return;   /*
       el('rect',{x:(-s*1.25).toFixed(1),y:(-s*.75).toFixed(1),width:(s*2.5).toFixed(1),height:(s*1.5).toFixed(1),rx:(s*.5).toFixed(1),fill:mix(cn,'#1a0c04',.35),class:'niveau-fond'},b);
       el('text',{class:'niveau-txt','font-size':(s*1.15).toFixed(1),y:(s*.4).toFixed(1)},b).textContent=(n>0?'+':'−')+Math.abs(n)}
     t.sc=g;return}
-  const s=s0,x=t.c[0],y=y0,c=FAC[S.joueurs[o].k].col,ajout=!estDepart(t,o);
-  const g=el('g',{class:'sceau'+(ajout?' ajout':'')+(o===0?' mien':''),transform:`translate(${x.toFixed(0)} ${y.toFixed(0)})`},G.sceaux);
-  if(ajout&&o===0)el('circle',{r:(s*1.4).toFixed(1),class:'sceau-anneau'},g);
-  el('circle',{r:s.toFixed(1),fill:c,class:'sceau-gemme'},g);const k=S.joueurs[o].k,G2=SIGLE[k]||{},sc_=`scale(${(s*.72).toFixed(2)})`;
-  if(G2.f)el('path',{d:G2.f,transform:sc_,class:'sceau-plein'},g);
-  if(G2.s)el('path',{d:G2.s,transform:sc_,class:'sceau-trait',stroke:G2.f?c:'#fff8e8','stroke-width':G2.f?.14:.2},g);t.sc=g}
-function groupes(){const vu=new Set(),L=[];
-  T.forEach(t=>{const n=S.own[t.i];if(n==null||n<0||vu.has(t.i))return;const m=[];const st=[t.i];vu.add(t.i);
-    while(st.length){const i=st.pop();m.push(i);for(const v of T[i].v)if(S.own[v]===n&&!vu.has(v)){vu.add(v);st.push(v)}}L.push({n,m})});return L}
-function majLiens(){G.liens.innerHTML='';
-  /* 28 nov. (« si des tuiles de même faction se touchent, entourer la zone pour indiquer un bonus ») : chaque groupe d'au moins
-     deux tuiles qui se touchent est entouré de la lumière de sa faction ; à partir de trois, un médaillon donne sa taille (le bonus). */
-  const id=new Map();const L=groupes();L.forEach((g,k)=>g.m.forEach(i=>id.set(i,k)));
-  const tr={};for(const g of L)if(g.m.length>=2)tr[id.get(g.m[0])]='';
+  /* tuile prise : le sceau reste celui de la faction de la zone (elle ne change pas de faction) ; le royaume qui la tient
+     se lit au cadre de la tuile, à l'anneau de sa couleur autour du sceau, et au liseré de ses groupes */
+  const s=s0,x=t.c[0],y=y0,kr=S.joueurs[o].k,ajout=!estDepart(t,o),fz=facZone(t,o);
+  const g=el('g',{class:'sceau'+(ajout?' ajout':'')+(o===0?' mien':'')},G.sceaux);
+  if(fz==='Neutre'){puce(g,t.choix[0],x-s*.95,y,s*.8);puce(g,t.choix[1],x+s*.95,y,s*.8)}
+  else{el('circle',{cx:x.toFixed(0),cy:y.toFixed(0),r:(s*1.32).toFixed(1),class:'sceau-royaume',stroke:FAC[kr].col},g);
+    if(ajout&&o===0)el('circle',{cx:x.toFixed(0),cy:y.toFixed(0),r:(s*1.62).toFixed(1),class:'sceau-anneau'},g);
+    puce(g,fz,x,y,s)}
+  t.sc=g}
+function groupes(cle){cle=cle||(i=>{const n=S.own[i];return n==null||n<0?null:n});const vu=new Set(),L=[];
+  T.forEach(t=>{const n=cle(t.i);if(n==null||vu.has(t.i))return;const m=[];const st=[t.i];vu.add(t.i);
+    while(st.length){const i=st.pop();m.push(i);for(const v of T[i].v)if(!vu.has(v)&&cle(v)===n){vu.add(v);st.push(v)}}L.push({n,m})});return L}
+function contour(L,min){const id=new Map();L.forEach((g,k)=>{if(g.m.length>=min)g.m.forEach(i=>id.set(i,k))});const tr={};
   for(const a of ARETES){const ka=id.get(a.a),kb=id.get(a.b);if(ka===kb)continue;const d=`M${a.p1[0].toFixed(0)} ${a.p1[1].toFixed(0)}L${a.p2[0].toFixed(0)} ${a.p2[1].toFixed(0)}`;
-    if(ka!==undefined&&tr[ka]!==undefined)tr[ka]+=d;if(kb!==undefined&&tr[kb]!==undefined)tr[kb]+=d}
-  for(const k in tr){const g=L[k],c=FAC[S.joueurs[g.n].k].col;el('path',{d:tr[k],class:'groupe halo',stroke:c},G.liens);el('path',{d:tr[k],class:'groupe fil',stroke:mix(c,'#ffffff',.55)},G.liens)}
-  for(const g of L){if(g.m.length<3)continue;let x=0,y=0;g.m.forEach(i=>{x+=T[i].c[0];y+=T[i].c[1]});x/=g.m.length;y/=g.m.length;
-    let b=g.m[0],bd=1e18;g.m.forEach(i=>{if(i===S.ici&&g.m.length>1)return;const d=(T[i].c[0]-x)**2+(T[i].c[1]-y)**2;if(d<bd){bd=d;b=i}});
-    const t=T[b],c=FAC[S.joueurs[g.n].k].col,px=(rendu.w||cam.w)/pxW,r=Math.max(Math.min(60,t.r*.45),15*px);   // au moins 30 px à l'écran
-    const m=el('g',{class:'bonus',transform:`translate(${t.c[0].toFixed(0)} ${t.c[1].toFixed(0)})`},G.liens);
-    el('circle',{r:r,fill:mix(c,'#1a0c04',.35),class:'bonus-fond'},m);el('text',{class:'bonus-txt','font-size':(r*.95).toFixed(0),y:(r*.34).toFixed(0)},m).textContent='×'+g.m.length}
+    if(ka!==undefined)tr[ka]=(tr[ka]||'')+d;if(kb!==undefined)tr[kb]=(tr[kb]||'')+d}
+  // bord du monde
+  return tr}
+function majLiens(){G.liens.innerHTML='';
+  /* le royaume : un fin liseré à sa couleur autour de ses tuiles qui se touchent */
+  const R=groupes(),tr=contour(R,2);
+  for(const k in tr){const c=FAC[S.joueurs[R[k].n].k].col;el('path',{d:tr[k],class:'groupe fil',stroke:mix(c,'#ffffff',.25)},G.liens)}
+  /* 28 nov. (« je voudrais un effet qui montre quand 3 zones de même faction se touchent ou plus ») : la synergie. Trois tuiles ou plus
+     d'un même royaume et d'une même faction qui se touchent s'illuminent ensemble : halo pulsant à la couleur de la faction,
+     étincelles qui courent le long du bord, et un médaillon au sigle de la faction avec leur nombre. */
+  const F=groupes(i=>{const o=S.own[i];if(o==null||o<0||T[i].mort)return null;const f=facZone(T[i],o);return f==='Neutre'?null:o+'|'+f}),ts=contour(F,3);
+  for(const k in ts){const f=F[k].n.split('|')[1],c=FAC[f].col;
+    el('path',{d:ts[k],class:'synergie halo',stroke:c},G.liens);el('path',{d:ts[k],class:'synergie fil',stroke:mix(c,'#ffffff',.6)},G.liens);
+    el('path',{d:ts[k],class:'synergie etincelle'},G.liens)}
+  for(const k in ts){const g=F[k],f=g.n.split('|')[1];let x=0,y=0;g.m.forEach(i=>{x+=T[i].c[0];y+=T[i].c[1]});x/=g.m.length;y/=g.m.length;
+    let b=g.m[0],bd=1e18;g.m.forEach(i=>{if(i===S.ici)return;const d=(T[i].c[0]-x)**2+(T[i].c[1]-y)**2;if(d<bd){bd=d;b=i}});
+    const t=T[b],c=FAC[f].col,px=(rendu.w||cam.w)/pxW,r=Math.max(Math.min(60,t.r*.45),17*px);   // au moins 34 px à l'écran
+    const m=el('g',{class:'bonus',transform:`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.15).toFixed(0)})`},G.liens);
+    el('circle',{r:(r*1.25).toFixed(1),fill:c,class:'bonus-aura'},m);
+    el('circle',{r:r.toFixed(1),fill:mix(c,'#1a0c04',.3),class:'bonus-fond'},m);
+    const G2=SIGLE[f]||{},sc_=`translate(0 ${(-r*.28).toFixed(1)}) scale(${(r*.42).toFixed(2)})`;
+    if(G2.f)el('path',{d:G2.f,transform:sc_,fill:'#fff8e8'},m);if(G2.s)el('path',{d:G2.s,transform:sc_,fill:'none',stroke:'#fff8e8','stroke-width':.2,'stroke-linecap':'round'},m);
+    el('text',{class:'bonus-txt','font-size':(r*.62).toFixed(0),y:(r*.62).toFixed(0)},m).textContent='×'+g.m.length}
 }
 function majCurseur(){G.curseur.innerHTML='';if(S.sel<0)return;const t=T[S.sel],j=S.joueurs[S.tour];
-  if(!S.fini&&j&&!j.ia&&S.own[S.sel]===-1)el('polygon',{points:pts(t.p),class:'apercu',fill:FAC[facZone(t,S.tour)].col},G.curseur);
+  if(!S.fini&&j&&!j.ia&&S.own[S.sel]===-1)el('polygon',{points:pts(t.p),class:'apercu',fill:couleurPlaque(facZone(t,S.tour))},G.curseur);
   el('polygon',{points:pts(t.p),class:'curseur halo'},G.curseur);el('polygon',{points:pts(t.p),class:'curseur'},G.curseur)}
 const compte=n=>{let c=0;for(const o of S.own)if(o===n)c++;return c};
 function majBarre(){
@@ -381,7 +408,7 @@ function majFiche(){
     const etat=t.mort?`${sigleSVG('Ombre')}L'Ombre, le monde sauvage : personne ne la prend`
       :o<0?(n?`${sigleSVG(fz)}${FAC[fz].nom}${niv}${pz?' ('+pz+')':''} · libre`
         :`Neutre · + ${sigleSVG(ca)}${FAC[ca].nom}${t.poles[0]?' ('+t.poles[0]+')':''} · − ${sigleSVG(cb)}${FAC[cb].nom}${t.poles[1]?' ('+t.poles[1]+')':''}`)
-      :`${sigleSVG(fz)}${FAC[fz].nom}${niv} · royaume : ${o===0?'à vous':sigleSVG(roy)+FAC[roy].nom}${estDepart(T[S.sel],o)?'':' · tuile ajoutée'}`;
+      :`${fz==='Neutre'?`Neutre · + ${sigleSVG(ca)}${FAC[ca].nom} · − ${sigleSVG(cb)}${FAC[cb].nom}`:sigleSVG(fz)+FAC[fz].nom+niv} · royaume : ${o===0?'à vous':sigleSVG(roy)+FAC[roy].nom}${estDepart(T[S.sel],o)?'':' · tuile ajoutée'}`;
     const ici=S.sel===S.ici?' · <span class="ici-txt">'+(S.iciVrai?'vous étiez ici':'vous êtes ici')+'</span>':'';
     h=`<div class="nom">${t.mort?'Zone d\'ombre (l\'Ombre)':inf[0]}</div><div class="quoi">${TYPES[inf[1]]||''}${inf[2]&&!t.mort?' · '+inf[2]:''}</div><div class="etat">${etat}${ici}</div>`}
   const allable=S.sel>=0&&!T[S.sel].mort&&S.joueurs.length;
