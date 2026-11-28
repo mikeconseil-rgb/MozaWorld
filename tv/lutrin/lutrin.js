@@ -70,10 +70,11 @@ function preparer(){
   M.tuiles.forEach((d,i)=>{const p=d.p.map(tr);let x=0,y=0;p.forEach(q=>{x+=q[0];y+=q[1]});const c=[x/p.length,y/p.length];
     let r=1e9;for(let k=0;k<p.length;k++)r=Math.min(r,distSeg(c,p[k],p[(k+1)%p.length]));
     const inf=ZI[d.id]||ZI[d.id.replace(/\d+$/,'')]||['Zone',d.m||'RES','',''];
-    /* 28 nov. (« le statut de faction de la zone : soit neutre, avec les deux choix possibles de faction, soit la faction, soit l'Ombre ») :
-       une zone neutre peut rejoindre la faction de son mana (pôle +) ou une faction alliée, voisine sur la roue (pôle −), fixée par zone. */
-    const mana=FAC[inf[3]]&&inf[3]!=='Ombre'?inf[3]:ROUE[h(d.id)%6],im=ROUE.indexOf(mana),alliee=ROUE[(im+(h(d.id+'a')%2?1:5))%6];
-    T.push({i,id:d.id,p,c,r,v:[],roy:d.r,mort:!!d.m,info:inf,choix:[mana,alliee]})});
+    /* 28 nov. (« le statut de faction de la zone : soit neutre, avec les deux choix possibles de faction, soit la faction, soit l'Ombre »,
+       « chaque zone doit avoir une faction pour son plus et une pour son moins », « une faction opposée mais qui tire avec le background ») :
+       pôle + = la faction de son mana ; pôle − = une faction non alliée choisie d'après le fond de la zone (tv/tools/lutrin-zones.js). */
+    const mana=FAC[inf[3]]&&inf[3]!=='Ombre'?inf[3]:ROUE[h(d.id)%6],im=ROUE.indexOf(mana),moins=FAC[inf[4]]&&inf[4]!==mana?inf[4]:ROUE[(im+3)%6];
+    T.push({i,id:d.id,p,c,r,v:[],roy:d.r,mort:!!d.m,info:inf,choix:[mana,moins],poles:[inf[5]||'',inf[6]||'']})});
   const key=q=>Math.round(q[0])+','+Math.round(q[1]),E={};
   T.forEach(t=>{for(let k=0;k<t.p.length;k++){const a=t.p[k],b=t.p[(k+1)%t.p.length],ka=key(a),kb=key(b),e=ka<kb?ka+'|'+kb:kb+'|'+ka;(E[e]=E[e]||[]).push({i:t.i,a,b})}});
   for(const e in E){const l=E[e];if(l.length===2&&l[0].i!==l[1].i){ARETES.push({a:l[0].i,b:l[1].i,p1:l[0].a,p2:l[0].b});T[l[0].i].v.push(l[1].i);T[l[1].i].v.push(l[0].i)}}
@@ -349,7 +350,7 @@ function majFiche(){
   else{const t=T[S.sel],o=S.own[S.sel],inf=t.info;
     const vois=t.v.map(v=>S.own[v]),libres=vois.filter(o=>o===-1).length,amies=vois.filter(o=>o===0).length;
     const n=S.niv?S.niv[t.i]||0:0,[ca,cb]=t.choix||[];
-    const etat=t.mort?`${sigleSVG('Ombre')}L'Ombre, le monde sauvage : personne ne la prend`:o<0?`Neutre${n?' · niveau '+(n>0?'+':'−')+Math.abs(n):''} : ${sigleSVG(ca)}${FAC[ca].nom}${n>0?' (penche)':''} ou ${sigleSVG(cb)}${FAC[cb].nom}${n<0?' (penche)':''}`:`${sigleSVG(S.joueurs[o].k)}${o===0?'À vous':FAC[S.joueurs[o].k].nom}${estDepart(T[S.sel],o)?'':' · tuile ajoutée'}`;
+    const etat=t.mort?`${sigleSVG('Ombre')}L'Ombre, le monde sauvage : personne ne la prend`:o<0?`Neutre${n?' '+(n>0?'+':'−')+Math.abs(n):''} · + ${sigleSVG(ca)}${FAC[ca].nom}${t.poles[0]?' ('+t.poles[0]+')':''} · − ${sigleSVG(cb)}${FAC[cb].nom}${t.poles[1]?' ('+t.poles[1]+')':''}`:`${sigleSVG(S.joueurs[o].k)}${o===0?'À vous':FAC[S.joueurs[o].k].nom}${estDepart(T[S.sel],o)?'':' · tuile ajoutée'}`;
     const ici=S.sel===S.ici?' · <span class="ici-txt">'+(S.iciVrai?'vous étiez ici':'vous êtes ici')+'</span>':'';
     h=`<div class="nom">${t.mort?'Zone d\'ombre (l\'Ombre)':inf[0]}</div><div class="quoi">${TYPES[inf[1]]||''}${inf[2]&&!t.mort?' · '+inf[2]:''}</div><div class="etat">${etat}${ici}</div>`}
   const allable=S.sel>=0&&!T[S.sel].mort&&S.joueurs.length;
