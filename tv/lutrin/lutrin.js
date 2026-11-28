@@ -98,10 +98,8 @@ function dessiner(){
   const gc=el('linearGradient',{id:'g-creux',x1:'0',y1:'0',x2:'0',y2:'1'},defs);
   el('stop',{offset:'0','stop-color':'#060201'},gc);el('stop',{offset:'.35','stop-color':'#120803'},gc);el('stop',{offset:'1','stop-color':'#24150a'},gc);
   for(const k in FAC){const c=couleurPlaque(k),g=el('radialGradient',{id:'g-'+k,cx:'.36',cy:'.3',r:'.85'},defs);
-    el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.5)},g);el('stop',{offset:'.55','stop-color':c},g);el('stop',{offset:'1','stop-color':mix(c,'#000000',.4)},g);
-    // le bord émaillé : clair en haut à gauche, sombre en bas à droite (un biseau sans filtre)
-    const b=el('linearGradient',{id:'gb-'+k,x1:'.15',y1:'0',x2:'.85',y2:'1'},defs);
-    el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.75)},b);el('stop',{offset:'.45','stop-color':mix(c,'#ffffff',.2)},b);el('stop',{offset:'1','stop-color':mix(c,'#000000',.6)},b)}
+    el('stop',{offset:'0','stop-color':mix(c,'#ffffff',.5)},g);el('stop',{offset:'.55','stop-color':c},g);el('stop',{offset:'1','stop-color':mix(c,'#000000',.4)},g)}
+  defs.insertAdjacentHTML('beforeend','<pattern id="craq" width="90" height="90" patternUnits="userSpaceOnUse"><path d="M0 20L25 28L40 5M25 28L30 55L0 62M30 55L62 48L90 70M62 48L70 15L90 22M70 15L52 0M30 55L38 90M62 48L66 90" stroke="#1a0c04" stroke-width="1.3" fill="none"/></pattern>');
   G.verres=el('g',{},svg);G.plomb=el('g',{},svg);G.plaques=el('g',{class:'plaques'},svg);
   G.icones=el('g',{class:'icones'},svg);G.fleurs=el('g',{},svg);G.sceaux=el('g',{},svg);
   // ce qui bouge ou s'anime va sur un calque à part : le vitrail (des centaines de tuiles) n'est plus redessiné à chaque image
@@ -277,32 +275,48 @@ vue.addEventListener('wheel',e=>{e.preventDefault();zoomEn(Math.pow(1.0018,e.del
 vue.addEventListener('dblclick',e=>e.preventDefault());
 
 /* ---------- affichage ---------- */
+/* 28 nov. (« je vois des zones qui ne sont pas neutres, niveau 0 ; malgré cela je vois les deux choix possibles ») :
+   une zone à + penche déjà vers sa faction +, une zone à − vers sa faction − ; seule une zone au niveau 0 est neutre et montre ses deux choix.
+   « Quand je prends une tuile, garder la couleur de sa faction tout en gardant clair le royaume qui la possède » :
+   l'émail garde la faction de la zone, le cadre et le sceau disent le royaume. */
+function facZone(t,o){const n=S.niv?S.niv[t.i]||0:0;if(n>0)return t.choix[0];if(n<0)return t.choix[1];return o!=null&&o>=0?S.joueurs[o].k:null}
 function majTout(){T.forEach(t=>majTuile(t.i));majLiens();majCurseur();majBarre();majFiche()}
 function majTuile(i){const t=T[i],o=S.own[i];
   if(t.mort){plaque(t,'Ombre');t.verre.setAttribute('class','verre mort');sceau(t,o);return}
   if(o==null||o<0){plaque(t,null);t.verre.setAttribute('class','verre libre');t.icone.setAttribute('class','icone libre')}
-  else{plaque(t,S.joueurs[o].k);t.verre.setAttribute('class','verre prise');t.icone.setAttribute('class','icone prise')}
+  else{plaque(t,facZone(t,o),S.joueurs[o].k);t.verre.setAttribute('class','verre prise');t.icone.setAttribute('class','icone prise')}
   sceau(t,o)}
-/* la tuile posée dans son alvéole (« 2. Émail brillant ») : céramique vernie, dégradé lisse et reflet blanc,
-   avec une petite tranche et une ombre portée pour le relief. Six éléments par tuile, sans filtre, pour rester fluide sur le Pixel. */
-const EPAIS=.06;
+/* la tuile posée dans son alvéole (28 nov., « 1 avec un léger effet deux ») : émail épais biseauté, avec un léger craquelé de raku.
+   Dessus émaillé, biseau éclairé d'en haut à gauche (faces groupées en trois teintes), épaisse tranche, ombre portée,
+   bande de lumière ; le cadre extérieur prend la couleur du royaume qui tient la tuile. Pas de filtre, pour le Pixel. */
+const LUM=[-.55,-.83];
 function forme(t){const ins=f=>t.p.map(q=>[t.c[0]+(q[0]-t.c[0])*f,t.c[1]+(q[1]-t.c[1])*f]);
-  const P=ins(.87),ep=Math.max(4,Math.min(12,t.r*EPAIS)),f2=q=>q[0].toFixed(1)+' '+q[1].toFixed(1);let tr='';
-  P.forEach((a,k)=>{const b=P[(k+1)%P.length];let nx=b[1]-a[1],ny=a[0]-b[0];const L=Math.hypot(nx,ny)||1;ny/=L;nx/=L;
-    if(nx*((a[0]+b[0])/2-t.c[0])+ny*((a[1]+b[1])/2-t.c[1])<0)ny=-ny;
-    if(ny>-.05)tr+=`M${f2(a)}L${f2(b)}L${b[0].toFixed(1)} ${(b[1]+ep).toFixed(1)}L${a[0].toFixed(1)} ${(a[1]+ep).toFixed(1)}Z`});
-  /* le reflet suit les bords tournés vers la lumière (en haut à gauche), comme sur une céramique vernie */
-  const I=ins(.78),n=I.length;let rf='',on=false;
-  for(let k=0;k<=n;k++){const a=I[k%n],b=I[(k+1)%n];const mx=(a[0]+b[0])/2-t.c[0],my=(a[1]+b[1])/2-t.c[1],L=Math.hypot(mx,my)||1,l=(mx*-.55+my*-.83)/L;
-    if(l>.45&&k<n){rf+=(on?'L':'M')+f2(a)+'L'+f2(b);on=true}else on=false}
-  return{P:pts(P),tranche:tr,reflet:rf,rw:Math.max(3,Math.min(10,t.r*.06)).toFixed(1),
-    ombre:'M'+P.map(q=>(q[0]+ep*.5).toFixed(1)+' '+(q[1]+ep*1.6).toFixed(1)).join('L')+'Z'}}
+  const P=ins(.87),I=ins(.74),ep=Math.max(6,Math.min(18,t.r*.1)),f2=q=>q[0].toFixed(1)+' '+q[1].toFixed(1);
+  const d={clair:'',moyen:'',sombre:'',tranche:''};
+  P.forEach((a,k)=>{const b=P[(k+1)%P.length];let nx=b[1]-a[1],ny=a[0]-b[0];const L=Math.hypot(nx,ny)||1;nx/=L;ny/=L;
+    if(nx*((a[0]+b[0])/2-t.c[0])+ny*((a[1]+b[1])/2-t.c[1])<0){nx=-nx;ny=-ny}
+    const l=nx*LUM[0]+ny*LUM[1],a2=I[k],b2=I[(k+1)%I.length];
+    d[l>.3?'clair':l<-.3?'sombre':'moyen']+=`M${f2(a)}L${f2(b)}L${f2(b2)}L${f2(a2)}Z`;
+    if(ny>-.05)d.tranche+=`M${f2(a)}L${f2(b)}L${b[0].toFixed(1)} ${(b[1]+ep).toFixed(1)}L${a[0].toFixed(1)} ${(a[1]+ep).toFixed(1)}Z`});
+  // bande de lumière sur le haut du dessus
+  const B=ins(.64),n=B.length;let rf='',on=false;
+  for(let k=0;k<n;k++){const a=B[k],b=B[(k+1)%n];const mx=(a[0]+b[0])/2-t.c[0],my=(a[1]+b[1])/2-t.c[1],L=Math.hypot(mx,my)||1;
+    if((mx*LUM[0]+my*LUM[1])/L>.4){rf+=(on?'L':'M')+(on?'':f2(a)+'L')+f2(b);on=true}else on=false}
+  d.reflet=rf;d.rw=Math.max(3,Math.min(9,t.r*.05)).toFixed(1);d.P=pts(P);d.I=pts(I);
+  d.ombre='M'+P.map(q=>(q[0]+ep*.5).toFixed(1)+' '+(q[1]+ep*1.5).toFixed(1)).join('L')+'Z';return d}
 const couleurPlaque=k=>k==='Ombre'?'#3a2250':FAC[k].col;
-function plaque(t,k){if(t.plK===k)return;t.plK=k;if(t.pl){t.pl.remove();t.pl=null}if(!k)return;
-  const d=t.forme,c=couleurPlaque(k),g=el('g',{class:'plaque'},null);
-  el('path',{d:d.ombre,class:'pl-ombre'},g);el('path',{d:d.tranche,fill:mix(c,'#000000',.55)},g);
-  el('polygon',{points:d.P,fill:`url(#g-${k})`,class:'pl-bord',stroke:`url(#gb-${k})`},g);
+const TEINTE_PL={};
+function teintePl(k){if(TEINTE_PL[k])return TEINTE_PL[k];const c=couleurPlaque(k);
+  return TEINTE_PL[k]={clair:mix(c,'#ffffff',.45),moyen:mix(c,'#000000',.08),sombre:mix(c,'#000000',.45),tranche:mix(c,'#000000',.62),bord:mix(c,'#000000',.65)}}
+function plaque(t,k,roy){const cle=k&&k+'|'+(roy||'');if(t.plK===cle)return;t.plK=cle;if(t.pl){t.pl.remove();t.pl=null}if(!k)return;
+  const d=t.forme,c=teintePl(k),g=el('g',{class:'plaque'},null);
+  el('path',{d:d.ombre,class:'pl-ombre'},g);el('path',{d:d.tranche,fill:c.tranche},g);
+  el('path',{d:d.clair+d.moyen+d.sombre,fill:c.moyen},g);el('path',{d:d.clair,fill:c.clair},g);el('path',{d:d.sombre,fill:c.sombre},g);
+  el('polygon',{points:d.I,fill:`url(#g-${k})`},g);
+  el('polygon',{points:d.I,class:'pl-craquele'},g);                    // le léger craquelé de raku, sur le dessus seulement
   if(d.reflet)el('path',{d:d.reflet,class:'pl-reflet','stroke-width':d.rw},g);
+  el('polygon',{points:d.P,class:'pl-bord',stroke:c.bord},g);
+  if(roy)el('polygon',{points:d.P,class:'pl-royaume',stroke:FAC[roy].col},g);   // le cadre à la couleur du royaume qui la tient
   // garder l'ordre des tuiles (une tuile du bas recouvre l'ombre de celle du haut)
   let suiv=null;for(let j=t.i+1;j<T.length&&!suiv;j++)if(T[j].pl)suiv=T[j].pl;G.plaques.insertBefore(g,suiv);t.pl=g}
 /* 28 nov. (« je veux voir mes tuiles ajoutées et la faction des tuiles ») : chaque tuile prise porte le sceau de sa faction,
@@ -314,9 +328,10 @@ function puce(g,k,x,y,s,cls){const c=FAC[k].col,G2=SIGLE[k]||{},q=el('g',{class:
 function sceau(t,o){if(t.sc){t.sc.remove();t.sc=null}if(t.i===S.ici)return;   /* sur la tuile de la figurine, c'est elle qui fait le sceau */
   const s0=Math.max(12,Math.min(28,t.r*.24)),y0=t.c[1]-Math.min(46,t.r*.42)-s0*1.25;
   if(t.mort){const g=el('g',{class:'sceau ombre'},G.sceaux);puce(g,'Ombre',t.c[0],t.c[1],Math.max(14,Math.min(34,t.r*.3)));t.sc=g;return}
-  if(o==null||o<0){/* neutre : ses deux factions possibles, et son niveau (+ vers la première, − vers la seconde) */
+  if(o==null||o<0){/* libre : au niveau 0, neutre avec ses deux factions possibles ; sinon la seule faction vers laquelle elle penche, et son niveau */
     const s=s0*.8,n=S.niv?S.niv[t.i]||0:0,g=el('g',{class:'sceau neutre'},G.sceaux);
-    puce(g,t.choix[0],t.c[0]-s*1.05,y0,s,n>0?'penche':n<0?'loin':'');puce(g,t.choix[1],t.c[0]+s*1.05,y0,s,n<0?'penche':n>0?'loin':'');
+    if(!n){puce(g,t.choix[0],t.c[0]-s*1.05,y0,s);puce(g,t.choix[1],t.c[0]+s*1.05,y0,s)}
+    else puce(g,t.choix[n>0?0:1],t.c[0],y0,s*1.15,'penche');
     if(n){const cn=FAC[t.choix[n>0?0:1]].col,s=s0*1.05,b=el('g',{class:'niveau',transform:`translate(${t.c[0].toFixed(0)} ${(t.c[1]+Math.min(46,t.r*.42)+s*1.3).toFixed(0)})`},g);
       el('rect',{x:(-s*1.25).toFixed(1),y:(-s*.75).toFixed(1),width:(s*2.5).toFixed(1),height:(s*1.5).toFixed(1),rx:(s*.5).toFixed(1),fill:mix(cn,'#1a0c04',.35),class:'niveau-fond'},b);
       el('text',{class:'niveau-txt','font-size':(s*1.15).toFixed(1),y:(s*.4).toFixed(1)},b).textContent=(n>0?'+':'−')+Math.abs(n)}
@@ -345,7 +360,7 @@ function majLiens(){G.liens.innerHTML='';
     el('circle',{r:r,fill:mix(c,'#1a0c04',.35),class:'bonus-fond'},m);el('text',{class:'bonus-txt','font-size':(r*.95).toFixed(0),y:(r*.34).toFixed(0)},m).textContent='×'+g.m.length}
 }
 function majCurseur(){G.curseur.innerHTML='';if(S.sel<0)return;const t=T[S.sel],j=S.joueurs[S.tour];
-  if(!S.fini&&j&&!j.ia&&S.own[S.sel]===-1)el('polygon',{points:pts(t.p),class:'apercu',fill:FAC[j.k].col},G.curseur);
+  if(!S.fini&&j&&!j.ia&&S.own[S.sel]===-1)el('polygon',{points:pts(t.p),class:'apercu',fill:FAC[facZone(t,S.tour)].col},G.curseur);
   el('polygon',{points:pts(t.p),class:'curseur halo'},G.curseur);el('polygon',{points:pts(t.p),class:'curseur'},G.curseur)}
 const compte=n=>{let c=0;for(const o of S.own)if(o===n)c++;return c};
 function majBarre(){
@@ -360,7 +375,11 @@ function majFiche(){
   else{const t=T[S.sel],o=S.own[S.sel],inf=t.info;
     const vois=t.v.map(v=>S.own[v]),libres=vois.filter(o=>o===-1).length,amies=vois.filter(o=>o===0).length;
     const n=S.niv?S.niv[t.i]||0:0,[ca,cb]=t.choix||[];
-    const etat=t.mort?`${sigleSVG('Ombre')}L'Ombre, le monde sauvage : personne ne la prend`:o<0?`Neutre${n?' '+(n>0?'+':'−')+Math.abs(n):''} · + ${sigleSVG(ca)}${FAC[ca].nom}${t.poles[0]?' ('+t.poles[0]+')':''} · − ${sigleSVG(cb)}${FAC[cb].nom}${t.poles[1]?' ('+t.poles[1]+')':''}`:`${sigleSVG(S.joueurs[o].k)}${o===0?'À vous':FAC[S.joueurs[o].k].nom}${estDepart(T[S.sel],o)?'':' · tuile ajoutée'}`;
+    const fz=facZone(t,o),pz=n>0?t.poles[0]:n<0?t.poles[1]:'',niv=n?' '+(n>0?'+':'−')+Math.abs(n):'',roy=o>=0?S.joueurs[o].k:null;
+    const etat=t.mort?`${sigleSVG('Ombre')}L'Ombre, le monde sauvage : personne ne la prend`
+      :o<0?(n?`${sigleSVG(fz)}${FAC[fz].nom}${niv}${pz?' ('+pz+')':''} · libre`
+        :`Neutre · + ${sigleSVG(ca)}${FAC[ca].nom}${t.poles[0]?' ('+t.poles[0]+')':''} · − ${sigleSVG(cb)}${FAC[cb].nom}${t.poles[1]?' ('+t.poles[1]+')':''}`)
+      :`${sigleSVG(fz)}${FAC[fz].nom}${niv} · royaume : ${o===0?'à vous':sigleSVG(roy)+FAC[roy].nom}${estDepart(T[S.sel],o)?'':' · tuile ajoutée'}`;
     const ici=S.sel===S.ici?' · <span class="ici-txt">'+(S.iciVrai?'vous étiez ici':'vous êtes ici')+'</span>':'';
     h=`<div class="nom">${t.mort?'Zone d\'ombre (l\'Ombre)':inf[0]}</div><div class="quoi">${TYPES[inf[1]]||''}${inf[2]&&!t.mort?' · '+inf[2]:''}</div><div class="etat">${etat}${ici}</div>`}
   const allable=S.sel>=0&&!T[S.sel].mort&&S.joueurs.length;
