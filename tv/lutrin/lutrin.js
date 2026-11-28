@@ -20,8 +20,12 @@ const FAC={
   Sève:  {k:'Sève',  nom:'Le Cercle des Racines',  col:'#62b544',dev:'Éleveurs de bêtes'}};
 const ROUE=['Feu','Pierre','Vent','Glace','Eau','Sève'];
 const opposees=(a,b)=>{const i=ROUE.indexOf(a),j=ROUE.indexOf(b);return i>=0&&j>=0&&Math.abs(i-j)===3};
-const ROSACES=[['hasard','Au hasard'],['0','Les Cinq Soleils'],['1','La Rose de sang'],['2','La Grande Rosace'],['4','La Couronne de losanges'],['5','La Corolle du Sénat'],['mix','Cinq fleurs différentes']]
-  .filter(r=>r[0]==='hasard'||BANQUE.some(m=>m.rosace===r[0]));
+/* la partie d'exploration (si elle existe) : son monde, et la zone où se trouvait le héros (figurine sur le plateau) */
+const lire=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const JEU=(()=>{let s=null;try{s=JSON.parse(lire('mz-tv-1')||'null')}catch(e){}const m=lire('mz-monde');
+  return{save:!!(s&&s.lv),pos:s&&s.pos,monde:m&&BANQUE.some(b=>b.id===m)?m:null,ici:lire('mz-lutrin-ici')}})();
+const ROSACES=[...(JEU.monde?[['jeu','Votre monde']]:[]),['hasard','Au hasard'],['0','Les Cinq Soleils'],['1','La Rose de sang'],['2','La Grande Rosace'],['4','La Couronne de losanges'],['5','La Corolle du Sénat'],['mix','Cinq fleurs différentes']]
+  .filter(r=>r[0]==='hasard'||r[0]==='jeu'||BANQUE.some(m=>m.rosace===r[0]));
 const TYPES={CIT:'Citadelle',DON:'Donjon',ANT:'Antre',MAR:'Assemblée',RES:'Ressource'};
 const TEINTES=['#e9dcc0','#d4dfcb','#e6cfc4','#cddbe2','#e6dfb5','#dccfe3','#d0e2da','#ead7b0'];
 /* icônes gravées, en unités (rayon 1) */
@@ -33,7 +37,7 @@ const ICONE={
   RES:'M0 -.86L.62 -.2L0 .86L-.62 -.2ZM-.62 -.2H.62M0 -.86L-.2 -.2L0 .86L.2 -.2Z'};
 
 /* ---------- état ---------- */
-const S={joueurs:[],own:[],tour:0,tourNum:1,sel:-1,fini:true,choixFac:'Feu',nbRivaux:3,duree:20,rosace:'hasard',son:true,portrait:null,monde:null};
+const S={joueurs:[],own:[],tour:0,tourNum:1,sel:-1,fini:true,choixFac:'Feu',nbRivaux:3,duree:20,rosace:JEU.monde?'jeu':'hasard',ici:-1,son:true,portrait:null,monde:null};
 const T=[];      // tuiles : {i, id, p, c, r (rayon intérieur), v (voisines), roy (fleur), mort, info}
 const ARETES=[]; // arêtes partagées : {a, b, p1, p2}
 let BB=null;     // boîte du monde
@@ -45,7 +49,7 @@ function chargerMonde(id,suite){
   if(window.MONDE_GEN&&window.MONDE_GEN.id===id){suite();return}
   window.MONDE_GEN=null;const s=document.createElement('script');s.src='mondes/'+id+'.js';
   s.onload=()=>suite();s.onerror=()=>{alerte('Monde introuvable : '+id)};document.head.appendChild(s)}
-function choisirMondeId(){const L=BANQUE.filter(m=>S.rosace==='hasard'||m.rosace===S.rosace);const B=L.length?L:BANQUE;
+function choisirMondeId(){if(S.rosace==='jeu'&&JEU.monde)return JEU.monde;const L=BANQUE.filter(m=>S.rosace==='hasard'||m.rosace===S.rosace);const B=L.length?L:BANQUE;
   return B.length?B[Math.floor(Math.random()*B.length)].id:null}
 function preparer(){
   const M=window.MONDE_GEN,portrait=innerHeight>innerWidth;S.portrait=portrait;
@@ -82,7 +86,7 @@ function dessiner(){
   el('pattern',{id:'pat-grain',width:'512',height:'512',patternUnits:'userSpaceOnUse'},defs).appendChild(grain());
   G.verres=el('g',{},svg);G.flots=el('g',{},svg);
   el('rect',{class:'grain',x:BB.x0,y:BB.y0,width:BB.w,height:BB.h,fill:'url(#pat-grain)'},svg);
-  G.icones=el('g',{class:'icones'},svg);G.liens=el('g',{},svg);G.plomb=el('g',{},svg);G.fleurs=el('g',{},svg);G.curseur=el('g',{},svg);G.etin=el('g',{},svg);
+  G.icones=el('g',{class:'icones'},svg);G.liens=el('g',{},svg);G.plomb=el('g',{},svg);G.fleurs=el('g',{},svg);G.curseur=el('g',{},svg);G.etin=el('g',{},svg);G.figure=el('g',{},svg);
   T.forEach(t=>{let h=0;for(const ch of t.id)h=(h*31+ch.charCodeAt(0))>>>0;t.teinte='g-t'+(h%TEINTES.length);
     t.verre=el('polygon',{points:pts(t.p),'data-i':t.i,class:'verre'},G.verres);
     if(!t.mort){const s=Math.min(46,t.r*.42);
@@ -98,7 +102,80 @@ function dessiner(){
   // les fleurs des royaumes : un filet d'or sur leur bord
   let dF='';ARETES.forEach(a=>{const ra=T[a.a].roy,rb=T[a.b].roy;if(ra!==rb&&(ra!==undefined||rb!==undefined))dF+=`M${a.p1[0].toFixed(0)} ${a.p1[1].toFixed(0)}L${a.p2[0].toFixed(0)} ${a.p2[1].toFixed(0)}`});
   el('path',{d:dF,class:'fleur-or halo'},G.fleurs);el('path',{d:dF,class:'fleur-or'},G.fleurs);
-  majTout()}
+  poserFigurine();majTout()}
+
+/* ---------- la figurine : vous, là où vous étiez dans l'exploration ----------
+   À votre image, comme le héros du jeu (2.51) : longs cheveux bruns à raie au milieu, lunettes rondes, barbe grise au menton,
+   combinaison rouge à boutons ; votre chienne noir et blanc au bandana rouge est assise à côté. */
+const FIG_H=150;   // hauteur de la figurine, en unités locales (pieds en 0)
+const FIGURE=`<g class="fig-ombre"><ellipse cx="6" cy="2" rx="44" ry="11"/></g>
+<g class="fig-bob">
+ <ellipse class="fig-socle" cx="0" cy="-2" rx="34" ry="9"/><ellipse class="fig-socle-haut" cx="0" cy="-5" rx="30" ry="7"/>
+ <g class="fig-chien" transform="translate(30 -6)">
+  <path class="c-noir" d="M-8 0Q-12 -14 -6 -24Q2 -30 8 -22Q12 -12 10 0Z"/><path class="c-blanc" d="M-2 0Q-4 -12 1 -18Q6 -12 5 0Z"/>
+  <path class="c-noir" d="M-6 -24Q-8 -36 2 -38Q12 -38 12 -30Q12 -24 4 -23Z"/><path class="c-blanc" d="M5 -33Q14 -33 15 -28Q12 -25 6 -26Z"/>
+  <path class="c-noir" d="M-4 -36L-10 -28L-5 -27Z"/><circle class="c-oeil" cx="5" cy="-32" r="1.3"/><circle class="c-nez" cx="15" cy="-29" r="1.6"/>
+  <path class="c-bandana" d="M-6 -24L8 -22L2 -15Z"/><path class="c-blanc" d="M10 -2Q16 -4 16 0Z"/></g>
+ <path class="f-botte" d="M-15 -4H-3V-12H-14ZM3 -4H15L14 -12H3Z"/>
+ <path class="f-rouge" d="M-14 -12L-12 -52H-1L-3 -12ZM3 -12L1 -52H12L14 -12Z"/>
+ <path class="f-rouge" d="M-21 -50L-23 -92Q0 -100 23 -92L21 -50Z"/>
+ <path class="f-rouge" d="M-23 -91L-32 -60L-25 -57L-17 -84ZM23 -91L32 -60L25 -57L17 -84Z"/>
+ <circle class="f-peau" cx="-29" cy="-56" r="4.5"/><circle class="f-peau" cx="29" cy="-56" r="4.5"/>
+ <path class="f-col" d="M-8 -95L0 -86L8 -95"/>
+ <g class="f-bouton"><circle cx="0" cy="-80" r="1.8"/><circle cx="0" cy="-70" r="1.8"/><circle cx="0" cy="-60" r="1.8"/></g>
+ <path class="f-cheveux" d="M-15 -118Q-21 -98 -19 -84Q-12 -88 -9 -96H9Q12 -88 19 -84Q21 -98 15 -118Z"/>
+ <rect class="f-peau" x="-5" y="-100" width="10" height="8"/>
+ <ellipse class="f-peau" cx="0" cy="-115" rx="13" ry="15"/>
+ <path class="f-cheveux" d="M-14 -114Q-15 -133 0 -132Q15 -133 14 -114Q11 -126 1 -127L0 -122L-1 -127Q-11 -126 -14 -114Z"/>
+ <path class="f-barbe" d="M-10 -108Q-9 -96 0 -94Q9 -96 10 -108Q5 -104 0 -105Q-5 -104 -10 -108Z"/>
+ <path class="f-moust" d="M-5 -106Q0 -108 5 -106Q0 -104.5 -5 -106Z"/>
+ <g class="f-lunettes"><circle cx="-5.2" cy="-115" r="4.4"/><circle cx="5.2" cy="-115" r="4.4"/><path d="M-0.8 -115H0.8M-9.6 -115L-13 -116M9.6 -115L13 -116"/></g>
+ <circle class="f-oeil" cx="-5" cy="-114.5" r="1.1"/><circle class="f-oeil" cx="5" cy="-114.5" r="1.1"/>
+</g>`;
+function trouverIci(){S.ici=-1;if(!JEU.save||!JEU.monde||S.monde!==JEU.monde)return;
+  if(JEU.ici){const t=T.find(t=>t.id===JEU.ici);if(t&&!t.mort){S.ici=t.i;return}}
+  if(JEU.pos){const q=[JEU.pos[0]/2,JEU.pos[1]/2],r=S.portrait?[-q[1],q[0]]:q;const t=T.find(t=>dansPoly(t.p,r));if(t)S.ici=t.i}}
+function dansPoly(P,q){let d=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];
+  if((a[1]>q[1])!==(b[1]>q[1])&&q[0]<(b[0]-a[0])*(q[1]-a[1])/(b[1]-a[1])+a[0])d=!d}return d}
+function poserFigurine(){trouverIci();G.figure.innerHTML='';if(S.ici<0)return;const t=T[S.ici];
+  el('polygon',{points:pts(t.p),class:'ici-halo'},G.figure);el('polygon',{points:pts(t.p),class:'ici-bord'},G.figure);
+  G.fig=el('g',{class:'figurine'},G.figure);G.fig.innerHTML=FIGURE;placerFigurine()}
+function placerFigurine(){if(!G.fig||S.ici<0)return;const t=T[S.ici],px=cam.w/pxW;
+  // assez grande pour se voir de loin (au moins 64 px à l'écran), sans dépasser la tuile de près
+  const k=Math.max(t.r*1.5/FIG_H,64*px/FIG_H);G.fig.setAttribute('transform',`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.35).toFixed(0)}) scale(${k.toFixed(3)})`)}
+function vueIci(anim){if(S.ici<0)return;const t=T[S.ici];viser(t.i,true);
+  if(anim)viserCam(t.c[0],t.c[1],Math.max(2200,t.r*14));else{cam.cx=t.c[0];cam.cy=t.c[1];cam.w=Math.max(2200,t.r*14);appliquer()}}
+
+/* ---------- se téléporter dans la zone : le jeu d'exploration s'ouvre devant sa Pierre d'éveil ---------- */
+function aller(i){const t=T[i];if(!t||t.mort||!S.joueurs.length)return;
+  if(JEU.save&&S.monde!==JEU.monde){
+    voile.classList.remove('fin');
+    voile.innerHTML=`<div class="carton"><h1>Autre monde</h1><p>${JEU.monde?'Ce plateau n\'est pas le monde de votre partie : la zone n\'y est pas au même endroit.':'Votre partie se joue sur la carte classique, pas sur une rosace.'}</p>
+      ${JEU.monde?'<button class="btn principal" id="b-votre"><span class="tch">A</span>Jouer sur votre monde</button>':''}<button class="btn" id="b-rester" style="width:100%;margin-top:10px">Rester ici</button></div>`;
+    voile.classList.remove('cache');const r=voile.querySelector('#b-rester');r.onclick=()=>{voile.classList.add('cache');focusMenu(null)};
+    const v=voile.querySelector('#b-votre');if(v)v.onclick=()=>{S.rosace='jeu';commencer()};focusMenu(v||r);return}
+  sauver();
+  try{if(!JEU.save)localStorage.setItem('mz-monde',S.monde);localStorage.setItem('mz-aller',t.id);localStorage.removeItem('mz-aller-v')}catch(e){}
+  son('aller');viser(i,true);viserCam(t.c[0],t.c[1],Math.max(1400,t.r*6));
+  const c=S.own[i]>=0?FAC[S.joueurs[S.own[i]].k].col:'#fff1c4';
+  for(let k=0;k<3;k++)setTimeout(()=>{const o=el('polygon',{points:pts(t.p),class:'onde',stroke:c},G.etin);
+    o.animate([{transform:'scale(1)',opacity:.9},{transform:'scale(2.4)',opacity:0}],{duration:900,easing:'ease-out'}).onfinish=()=>o.remove()},k*180);
+  etincelles(t,c);
+  const p=document.createElement('div');p.id='portail';p.innerHTML=`<div class="portail-nom">${t.info[0]}</div>`;document.body.appendChild(p);
+  setTimeout(()=>{location.href='index.html'},1100)}
+
+/* ---------- la partie du lutrin reste en mémoire (pour revenir après l'exploration) ---------- */
+function sauver(){if(!S.joueurs.length||S.fini)return;try{localStorage.setItem('lutrin-partie',JSON.stringify({monde:S.monde,own:S.own,joueurs:S.joueurs,tour:S.tour,tourNum:S.tourNum,duree:S.duree,sel:S.sel,choixFac:S.choixFac,nbRivaux:S.nbRivaux,rosace:S.rosace}))}catch(e){}}
+function oublier(){try{localStorage.removeItem('lutrin-partie')}catch(e){}}
+function reprendre(){let P=null;try{P=JSON.parse(lire('lutrin-partie')||'null')}catch(e){}
+  if(!P||!P.monde||!Array.isArray(P.own)||!Array.isArray(P.joueurs))return false;
+  voile.innerHTML='<div class="carton"><h1>…</h1><p>Le maître verrier remet la rosace en place.</p></div>';voile.classList.remove('cache');
+  chargerMonde(P.monde,()=>{preparer();if(T.length!==P.own.length){oublier();menu();return}
+    Object.assign(S,{monde:P.monde,own:P.own,joueurs:P.joueurs,tour:P.tour||0,tourNum:P.tourNum||1,duree:P.duree,sel:P.sel>=0?P.sel:-1,choixFac:P.choixFac||S.choixFac,nbRivaux:P.nbRivaux||S.nbRivaux,rosace:P.rosace||S.rosace,fini:false});
+    dessiner();taille();voile.classList.add('cache');
+    if(S.ici>=0)vueIci(false);else vueFleur(0,false);
+    if(S.joueurs[S.tour]&&S.joueurs[S.tour].ia)setTimeout(jouerIA,700)});
+  return true}
 function fissure(t){const c=t.c,r=t.r*.8;let d=`M${(c[0]-r).toFixed(0)} ${(c[1]-r*.2).toFixed(0)}`;
   for(let k=1;k<=4;k++)d+=`L${(c[0]-r+k*r/2).toFixed(0)} ${(c[1]+(k%2?r*.35:-r*.25)).toFixed(0)}`;return d}
 function grain(){ // texture de verre soufflé, faite une fois
@@ -119,7 +196,7 @@ function borner(c){c.w=Math.max(wMin(),Math.min(wMax(),c.w));if(!BB)return;const
 let loin=null;
 function appliquer(){borner(cam);const h=cam.w*pxH/pxW;svg.setAttribute('viewBox',`${(cam.cx-cam.w/2).toFixed(1)} ${(cam.cy-h/2).toFixed(1)} ${cam.w.toFixed(1)} ${h.toFixed(1)}`);
   const l=cam.w/pxW>9;if(l!==loin){loin=l;svg.classList.toggle('loin',l)}
-  const z=document.getElementById('zoom-niveau');if(z)z.style.setProperty('--z',((wMax()-cam.w)/(wMax()-wMin())).toFixed(3))}
+  const z=document.getElementById('zoom-niveau');if(z)z.style.setProperty('--z',((wMax()-cam.w)/(wMax()-wMin())).toFixed(3));placerFigurine()}
 function viserCam(cx,cy,w){cible.cx=cx;cible.cy=cy;cible.w=w;borner(cible);cible.actif=true;elan.vx=elan.vy=0}
 const elan={vx:0,vy:0};
 function boucle(){
@@ -193,14 +270,17 @@ function majFiche(){
   else{const t=T[S.sel],o=S.own[S.sel],inf=t.info;
     const vois=t.v.map(v=>S.own[v]),libres=vois.filter(o=>o===-1).length,amies=vois.filter(o=>o===0).length;
     const etat=t.mort?`<i style="--c:#3a2a20"></i>Zone d'ombre détruite : personne ne la prend`:o<0?`<i style="--c:#e9dcc0"></i>Libre · voisines : ${libres} libres${amies?', '+amies+' à vous':''}`:`<i style="--c:${FAC[S.joueurs[o].k].col}"></i>${o===0?'À vous':FAC[S.joueurs[o].k].nom}`;
-    h=`<div class="nom">${t.mort?'Zone d\'ombre détruite':inf[0]}</div><div class="quoi">${TYPES[inf[1]]||''}${inf[2]&&!t.mort?' · '+inf[2]:''}</div><div class="etat">${etat}</div>`}
+    const ici=S.sel===S.ici?' · <span class="ici-txt">vous étiez ici</span>':'';
+    h=`<div class="nom">${t.mort?'Zone d\'ombre détruite':inf[0]}</div><div class="quoi">${TYPES[inf[1]]||''}${inf[2]&&!t.mort?' · '+inf[2]:''}</div><div class="etat">${etat}${ici}</div>`}
+  const allable=S.sel>=0&&!T[S.sel].mort&&S.joueurs.length;
   const peut=monTour&&S.sel>=0&&S.own[S.sel]===-1;
   h+=`<div class="actions"><button class="btn principal" id="b-prendre" ${peut?'':'disabled'}><span class="tch">A</span>${monTour?'Prendre cette tuile':'Patientez…'}</button>
-    <div class="ligne"><button class="btn petit" id="b-menu" aria-label="Nouvelle partie"><span class="tch">≡</span>↻</button>
+    <div class="ligne"><button class="btn petit aller" id="b-aller" ${allable?'':'disabled'} aria-label="Se téléporter dans la zone"><span class="tch">Y</span>✧ Y aller</button><button class="btn petit" id="b-menu" aria-label="Nouvelle partie"><span class="tch">≡</span>↻</button>
     <button class="btn petit" id="b-son" aria-label="Son">${S.son?'♪':'♪̸'}</button></div></div>`;
   f.innerHTML=h;
   f.querySelector('#b-prendre').onclick=()=>prendreSel();
   f.querySelector('#b-menu').onclick=()=>menu();
+  f.querySelector('#b-aller').onclick=()=>{audio();aller(S.sel)};
   f.querySelector('#b-son').onclick=()=>{S.son=!S.son;try{localStorage.setItem('lutrin-son',S.son?'1':'0')}catch(e){}majFiche()}}
 
 /* ---------- jeu ---------- */
@@ -222,8 +302,8 @@ function prendre(i,n){
   setTimeout(()=>{majTuile(i);majLiens()},180);
   son('prise',n);if(!S.joueurs[n].ia&&navigator.vibrate)try{navigator.vibrate(18)}catch(e){}
   S.tour=(S.tour+1)%S.joueurs.length;if(S.tour===0)S.tourNum++;
-  if(!S.own.some(o=>o===-1)||(S.duree&&S.tourNum>S.duree)){S.fini=true;majBarre();majFiche();setTimeout(fin,1300);return}
-  majBarre();majFiche();majCurseur();
+  if(!S.own.some(o=>o===-1)||(S.duree&&S.tourNum>S.duree)){S.fini=true;oublier();majBarre();majFiche();setTimeout(fin,1300);return}
+  majBarre();majFiche();majCurseur();sauver();
   if(S.joueurs[S.tour].ia)setTimeout(jouerIA,520+Math.random()*300)}
 function etincelles(t,c){const n=Math.round(Math.min(22,6+t.r/(cam.w/pxW)));for(let k=0;k<n;k++){const a=Math.random()*Math.PI*2,d=t.r*(.6+Math.random()*1.4),s=t.r*(.05+Math.random()*.08);
   const e=el('circle',{cx:t.c[0],cy:t.c[1],r:s,fill:k%3?mix(c,'#ffffff',.6):'#fff6d8',class:'etin'},G.etin);
@@ -255,6 +335,7 @@ function menu(){S.fini=true;voile.classList.remove('fin');
   focusMenu(voile.querySelector('#b-go'))}
 function commencer(){const id=choisirMondeId();if(!id){alerte('Aucun monde dans la banque.');return}
   voile.innerHTML='<div class="carton"><h1>…</h1><p>Le maître verrier assemble la rosace.</p></div>';
+  oublier();
   chargerMonde(id,()=>{S.monde=id;preparer();
     const autres=ROUE.filter(k=>k!==S.choixFac).sort(()=>Math.random()-.5);
     S.joueurs=[{k:S.choixFac,ia:false}].concat(autres.slice(0,S.nbRivaux).map(k=>({k,ia:true})));
@@ -262,8 +343,8 @@ function commencer(){const id=choisirMondeId();if(!id){alerte('Aucun monde dans 
     S.tour=0;S.tourNum=1;S.fini=false;
     // la tuile visée au départ : une tuile libre au bord de votre fleur
     const bord=T.filter(t=>S.own[t.i]===-1&&t.v.some(v=>S.own[v]===0));S.sel=bord.length?bord[0].i:-1;
-    dessiner();taille();vueTout(false);voile.classList.add('cache');
-    setTimeout(()=>vueFleur(0,true),450)})}
+    dessiner();taille();vueTout(false);voile.classList.add('cache');sauver();
+    setTimeout(()=>{if(S.ici>=0)vueIci(true);else vueFleur(0,true)},450)})}
 function fin(){
   const cl=S.joueurs.map((p,n)=>({p,n,c:compte(n),g:plusGrand(n)})).sort((a,b)=>b.g-a.g||b.c-a.c);
   const gagne=cl[0].n===0,nm=FAC[cl[0].p.k].nom;
@@ -294,6 +375,7 @@ function son(q,n){if(!S.son||!AC)return;const t=AC.currentTime;
   if(q==='tic')note(1760,t,.08,.025,'triangle');
   else if(q==='prise'){const b=330*Math.pow(2,GAMME[(n||0)%GAMME.length]/12),v=S.joueurs[n]&&S.joueurs[n].ia?.045:.09;
     note(b*2,t,1.2,v);note(b*3,t+.06,1,v*.6);note(b*4.02,t+.12,.8,v*.35)}
+  else if(q==='aller'){[0,7,12,19,24].forEach((s,k)=>note(523*Math.pow(2,s/12),t+k*.07,1.1,.06))}
   else if(q==='fin'){[0,4,7,12].forEach((s,k)=>note(392*Math.pow(2,s/12),t+k*.14,1.4,.07))}}
 
 /* ---------- manette et clavier (en bonus) ---------- */
@@ -323,13 +405,14 @@ function manette(){const gp=[...(navigator.getGamepads?navigator.getGamepads():[
   const appui=i=>{const p=b(i),r=p&&!prec[i];prec[i]=p;return r};
   if(appui(0)){document.body.classList.add('manette');valider()}
   if(appui(2)&&BB){if(cam.w>wMax()*.8)vueFleur(0,true);else vueTout(true)}
-  if(appui(9)||appui(3))menu()}
+  if(appui(3)&&voile.classList.contains('cache')&&S.sel>=0)aller(S.sel);
+  if(appui(9))menu()}
 addEventListener('pointerdown',()=>{document.body.classList.remove('manette');if(focus)focus.classList.remove('focus')},true);
 
 /* ---------- départ ---------- */
 try{S.son=localStorage.getItem('lutrin-son')!=='0'}catch(e){}
 let att;addEventListener('resize',()=>{clearTimeout(att);att=setTimeout(()=>{if(!BB)return;const p=innerHeight>innerWidth;
   if(p!==S.portrait){const o=S.own.slice();preparer();S.own=o;dessiner();taille();vueFleur(0,false)}else taille()},120)});
-boutonsZoom();menu();requestAnimationFrame(boucle);
-window.LUTRIN={S,T,cam,prendre,jouerIA,commencer,zoomEn,vueTout,vueFleur};
+boutonsZoom();if(!reprendre())menu();requestAnimationFrame(boucle);
+window.LUTRIN={S,T,cam,prendre,jouerIA,commencer,zoomEn,vueTout,vueFleur,aller,vueIci,JEU};
 })();

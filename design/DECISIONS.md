@@ -24,6 +24,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
 | Lutrin | Mots de l'utilisateur (28 nov.) : « C'est bien mais je veux les cartes générer avec les rosaces », puis « Ajoute un zoom convaincu ». Le lutrin joue sur un monde généré en rosace (au choix ou au hasard) ; chaque faction part de sa fleur ; zoom au doigt (pincer, glisser avec élan) et boutons + − ◎. | en vigueur | Région fixe de la carte d'origine (lutrin v1, PR 159) |
+| Lutrin et exploration | Mots de l'utilisateur (28 nov.) : « Depuis l'arène je veux pouvoir me téléporter dans une zone. Ensuite revenir via le menu. Sur la carte du lutrins indiqué avec une figure a mon image la zone où j'étais ». « Y aller » sur une tuile du lutrin ouvre l'exploration devant la Pierre d'éveil de la zone ; menu pause → « Le lutrin » pour revenir ; figurine à son image (héros 2.51 et sa chienne) sur la dernière zone visitée. | en vigueur | — |
 
 ## 27 novembre 2026 au soir (personnage à l'image du joueur, 2.51)
 
