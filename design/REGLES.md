@@ -11,6 +11,7 @@ Légende : **(provisoire)** = accepté « pour l'instant », à revoir. **(pas e
 - Monde ouvert découpé en zones selon une mosaïque Girih qui pave tout le plan, sans trou. Le monde est tiré au hasard.
 - La version jouée est une page web (dossier `tv/`), dans Edge sur Xbox Series S, à la manette, ou au clavier sur PC ; aussi jouable au doigt sur téléphone en paysage (Pixel 9 Pro, Chrome ; 2.34). C'est le jeu pour l'instant ; Unreal Engine 5 sur PC (RTX 2070) reste la dernière étape, sans date.
 - Jeu solo d'abord. Vue à la troisième personne. Français seule langue. Budget : gratuit seulement ; tout achat se demande au cas par cas.
+- **Se déplacer à pied (28 nov., 2.51)** : marche 9 m/s, course 18 m/s **(provisoire)** ; le relief est un obstacle : on ne marche pas sur une pente de plus de 45°, ni en montant ni en descendant (il faut sauter pour descendre une falaise), et au-delà de 52° on glisse vers le bas **(provisoire)**. Chaque zone garde un sentier de sa Pierre d'éveil jusqu'à son bord, où la pente ne bloque pas, comme les chemins de dalles des routes ouvertes. Toits, rampes et marches des bâtiments restent praticables. Une monture et des ailes viendront plus tard **(pas encore dans le jeu)**.
 - L'adversaire principal est le monde sauvage. Les rivaux joués par l'ordinateur sont secondaires (18-19 nov., dans le jeu : quatre maisons, voir section 8).
 
 ## 2. Les cinq types de tuile

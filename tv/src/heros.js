@@ -49,7 +49,7 @@ function creerHeros(){const g=new THREE.Group(),S_=(geo,col,o)=>{const m=new THR
   return g}
 /* v : vitesse au sol (m/s), sol : au sol ou non, vy : vitesse verticale */
 function animHeros(h,dt,v,sol,vy,t){const R=h.userData.R,U=h.userData;if(!R)return;
-  const k=clamp(v/14,0,1),run=clamp((v-15)/10,0,1);
+  const k=clamp(v/8,0,1),run=clamp((v-10)/7,0,1);   /* 2.51 : foulée calée sur la marche plus lente (9 m/s, course 18) */
   U.ph+=dt*(v>.3?(3.2+v*.42):0);const s=Math.sin(U.ph),c=Math.cos(U.ph);
   if(!sol)U.air=Math.min(1,U.air+dt*6);else{if(U.air>.5)U.land=1;U.air=Math.max(0,U.air-dt*8)}
   U.land=Math.max(0,U.land-dt*5);
