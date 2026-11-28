@@ -6754,7 +6754,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.53';
+const MZ_VERSION='2.54';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -8757,6 +8757,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Carte du monde',ic:'◈',d:'Vue ou C',go:()=>{toMonde();if(typeof ouvrirCarte==='function')ouvrirCarte()}},
+    ...(typeof allerLutrin==='function'?[{l:'Le lutrin',ic:'⬡',d:'le plateau des tuiles',go:allerLutrin}]:[]),
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Sauvegarder',ic:'▣',d:'20 emplacements',go:()=>openSauver(0)},
     {l:'Charger une partie',ic:'▤',go:openCharger},
@@ -11454,4 +11455,23 @@ const m=document.getElementById('menu'),sur=document.getElementById('menu-sur');
 if(m&&sur){const maj=()=>m.classList.toggle('pause-heros',/^Pause/.test(sur.textContent||''));
   new MutationObserver(maj).observe(sur,{childList:true,characterData:true,subtree:true});maj()}
 })();
+/* MozaWorld 2.54 : le pont entre le lutrin et l'exploration (28 nov., demande de l'utilisateur : « Depuis l'arène je veux pouvoir
+   me téléporter dans une zone. Ensuite revenir via le menu. Sur la carte du lutrin indiqué avec une figure à mon image la zone où j'étais »).
+   - Le lutrin écrit l'id de la zone visée dans localStorage (mz-aller) puis ouvre le jeu. Ici, au démarrage : on reprend la partie
+     (ou on en commence une, dans le monde du lutrin), on voyage vers la région de la zone si elle est loin, puis le héros apparaît
+     devant sa Pierre d'éveil.
+   - Menu pause → « Le lutrin » : on enregistre la partie et la zone où l'on est (mz-lutrin-ici), puis on ouvre le lutrin. */
+function allerLutrin(){try{if(started){S.pos=[P.x,P.z,P.yaw];const z=zoneAt(P.x,P.z);if(z)localStorage.setItem('mz-lutrin-ici',z.id)}save()}catch(_){}
+  if(typeof libererGPU==='function')libererGPU();setTimeout(()=>{location.href='lutrin.html'},80)}
+(()=>{let id=null;try{id=localStorage.getItem('mz-aller')}catch(_){}if(!id)return;
+  const fini=()=>{try{localStorage.removeItem('mz-aller');localStorage.removeItem('mz-aller-v')}catch(_){}};
+  const W=typeof ZWB!=='undefined'&&ZWB[id];if(!W||(W.d&&W.d.ombre)){fini();return}
+  if(!started){if(hasSave)startGame(false);else{startGame(true);if(!started)return}}   /* partie neuve loin de sa région : elle voyage d'abord */
+  const Z=ZB[id];
+  if(Z&&!Z.logique&&SPOTS[id]){fini();tp(id);recaler(true);if(typeof CULL!=='undefined')CULL.dirty=true;
+    setTimeout(()=>toast('Téléporté depuis le lutrin',zI(id).nom,'Menu → « Le lutrin » pour revenir au plateau.'),400);return}
+  let v=0;try{v=+(localStorage.getItem('mz-aller-v')||0)}catch(_){}
+  if(v>=1){fini();return}   /* déjà voyagé une fois sans trouver la zone : on n'insiste pas */
+  try{localStorage.setItem('mz-aller-v','1')}catch(_){}
+  voyagerRegion(W.c,'jeu')})();
 </script></body></html>

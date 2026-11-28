@@ -247,6 +247,7 @@ function openMenu(f){mode='menu';document.body.classList.add('jeu-ouvert');
     back:toMonde,opts:[
     {l:'Reprendre',ic:'◆',go:toMonde},
     {l:'Carte du monde',ic:'◈',d:'Vue ou C',go:()=>{toMonde();if(typeof ouvrirCarte==='function')ouvrirCarte()}},
+    ...(typeof allerLutrin==='function'?[{l:'Le lutrin',ic:'⬡',d:'le plateau des tuiles',go:allerLutrin}]:[]),
     {l:'Voyager vers une zone',ic:'✧',go:openVoyage},
     {l:'Sauvegarder',ic:'▣',d:'20 emplacements',go:()=>openSauver(0)},
     {l:'Charger une partie',ic:'▤',go:openCharger},
