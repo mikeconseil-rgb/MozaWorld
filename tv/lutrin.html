@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MozaWorld · Le lutrin</title>
+<link rel="stylesheet" href="lutrin/lutrin.css">
+</head>
+<body>
+<!-- Arène du plateau (27 nov. 2026, demande de l'utilisateur) : « un mode arène avec seulement le plateau. Pour commencer chaque joueur
+     choisit une tuile libre et la sélectionne. Fin du tour. Elle est à nous. Le but : avoir une interface et des tuiles super jolies
+     et une interface agréable à utiliser. » Page à part : elle n'écrit rien dans la sauvegarde du jeu. -->
+<header id="barre">
+  <div class="titre">Le lutrin</div>
+  <div id="tour"></div>
+  <div id="scores"></div>
+</header>
+<main id="scene">
+  <div id="lutrin">
+    <div id="cadre"><svg id="plateau" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plateau de tuiles en vitrail"></svg></div>
+    <div id="rebord"></div>
+  </div>
+</main>
+<footer id="fiche"></footer>
+<div id="voile" class="cache"></div>
+<script src="src/mondes-banque.js"></script>
+<script src="lutrin/zones.js"></script>
+<script src="lutrin/lutrin.js"></script>
+</body>
+</html>

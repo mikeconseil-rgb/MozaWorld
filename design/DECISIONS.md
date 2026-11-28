@@ -19,13 +19,28 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 
 
-## 28 novembre 2026 (exploration : marche et pentes, 2.51)
+## 28 novembre 2026 (exploration : marche et pentes, 2.52)
 
 | Sujet | Décision | Statut | Remplace |
 |---|---|---|---|
 | Vitesse à pied | « le monde est chouette mais il faudra ralentir le déplacement a pied ». Chiffres choisis par Claude : marche 9 m/s, course 18 m/s (manette et clavier). | provisoire (chiffres à régler après test) | marche 16 (17 à la manette), course 31 (17 nov., « plus rapide ») |
 | Pentes | « il faudrait éviter que je puisse monter toutes les pentes apique ». Chiffres choisis par Claude : on ne marche plus sur une pente de plus de 45°, ni en montant ni en descendant (pour descendre une falaise, il faut sauter) ; au-delà de 52° le héros posé glisse vers le bas. Chaque zone a un sentier taillé de sa Pierre d'éveil jusqu'à son bord, où la pente ne bloque pas (sinon 7 Pierres au fond de canyons devenaient inaccessibles) ; les chemins de dalles des routes ouvertes aussi. Toits, rampes et marches des bâtiments ne changent pas. | provisoire (chiffres à régler après test) | — |
 | Déplacement plus tard | « On ajoutera des compétences de déplacement comme une monture et des ailes plus tard ». La marche lente et les pentes bloquantes sont la base ; les réglages sont réunis dans `DEPL` (`tv/src/main.js`) pour que ces compétences les relèvent. | en vigueur (compétences pas encore dans le jeu) | — |
+
+## 28 novembre 2026 (le lutrin sur les mondes en rosace)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Lutrin | Mots de l'utilisateur (28 nov.) : « C'est bien mais je veux les cartes générer avec les rosaces », puis « Ajoute un zoom convaincu ». Le lutrin joue sur un monde généré en rosace (au choix ou au hasard) ; chaque faction part de sa fleur ; zoom au doigt (pincer, glisser avec élan) et boutons + − ◎. | en vigueur | Région fixe de la carte d'origine (lutrin v1, PR 159) |
+
+## 27 novembre 2026 au soir (personnage à l'image du joueur, 2.51)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Héros | Le héros d'exploration ressemble au joueur, d'après ses photos : longs cheveux bruns, lunettes rondes, barbe grise au menton. Le chapeau pointu et la lanterne visible sont enlevés (« 3 b ») | en vigueur | le voyageur au chapeau pointu (17 nov.) |
+| Tenue du héros | Combinaison rouge à boutons, tête nue (carte de choix) ; la tenue randonneur au chapeau de paille reste dans le code (`HEROS_TENUE='rando'`) | en vigueur | |
+| Chienne | Sa chienne noir et blanc (liste et museau mouchetés, queue à bout blanc, bandana rouge) l'accompagne en exploration (« 4 oui ») ; elle part se promener de son bord, renifle, revient, repart (« elle doit partir de son bord, se promener, puis revenir et repartir ») ; elle sera sa monture plus tard | en vigueur | |
+| Portrait | Un portrait peint du joueur pour les menus, en plus du héros 3D (« 2 a et b ») ; sa photo peut passer par un outil gratuit en ligne pour ça | à faire | |
 
 ## 28 novembre 2026 (nuit : réponses aux questions du nouveau cœur du jeu)
 

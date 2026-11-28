@@ -84,6 +84,7 @@ function contrePar(Z){let b=null,pw=0;for(const X of ZN){if(CONTRE[X.id]!==Z.id|
 
 /* ---------- Héros ---------- */
 const hero=creerHeros();scene.add(hero);hero.scale.setScalar(1/1.3);   /* 2.0 : héros à l'échelle 1/1,3 ; personnage articulé dans heros.js */
+const chien=creerChien();scene.add(chien);   /* 28 nov. : le chien du joueur le suit (heros.js) ; sa future monture */
 const P={x:-65,y:5,z:89,vy:0,g:false,yaw:Math.atan2(.59,-.81),pitch:.3,dist:11.5,face:0,walked:0,run:0};
 const SPOTS={CIT:[-65,89,Math.atan2(.59,-.81)]};
 {const sp=(Z,u,v)=>{const p=Z.w(u,v),q=Z.w(u+10,v);return[p[0],p[1],Math.atan2(q[0]-p[0],q[1]-p[1])]};
@@ -434,7 +435,7 @@ ANT(eff){const need=3+eff,arcW=Math.max(16,70-7*eff)*D2R;let a=0,sp=1.5+.32*eff,
 /* Ressource : cueillir des gerbes lumineuses dans le monde, à pied, avant la fin du temps */
 RES(eff){const Z=RES,K=4+eff,a=Z.alt,orbs=[],ok=atteignable(P.x,P.z,140);let time=38+K*8-eff*2;
   for(let tries=0;orbs.length<K&&tries<4000;tries++){const ang=Math.random()*TAU,d=18+Math.random()*(40+eff*6),x=a.x+Math.cos(ang)*d,z=a.z+Math.sin(ang)*d;
-    if(zoneAt(x,z)!==Z)continue;const q=Z.loc(x,z);if(!Z.inside(q[0],q[1],10))continue;const s=stand(x,z,1e3);if(s.g<-5)continue;if(tries<3000&&!ok(x,z))continue;   /* 2.51 : pas de gerbe au sommet d'une falaise (sauf faute de place) */
+    if(zoneAt(x,z)!==Z)continue;const q=Z.loc(x,z);if(!Z.inside(q[0],q[1],10))continue;const s=stand(x,z,1e3);if(s.g<-5)continue;if(tries<3000&&!ok(x,z))continue;   /* 2.52 : pas de gerbe au sommet d'une falaise (sauf faute de place) */
     if(orbs.some(o=>Math.hypot(o.x-x,o.z-z)<9))continue;orbs.push({x,z,y:s.g+1.3})}
   orbs.forEach((o,i)=>{const m=gerbes[i];m.visible=true;m.position.set(o.x,o.y,o.z);o.m=m});
   return{monde:true,orbs,consigne:'Marchez jusqu\'aux gerbes lumineuses. Suivez la flèche, tenez ▲ pour courir.',
@@ -453,7 +454,7 @@ function step(){if(AX&&soundOn)perc(AX.currentTime,'c',.35)}
 function sauter(){if(P.g){P.vy=11.5;P.g=false;P.saut2=1;sfxSaut(0)}else if(P.saut2){P.vy=10.5;P.saut2=0;hero.userData.flip=1;sfxSaut(1)}}
 function sfxSaut(n){if(AX&&soundOn)try{note(AX.currentTime,n?660:440,SIN,.12,.05)}catch(_){}}
 /* ---------- Déplacement : ▲▼ avancer/reculer, ◀▶ tourner ---------- */
-/* 2.51 (28 nov., retour de test) : marche plus lente, et le relief redevient un obstacle.
+/* 2.52 (28 nov., retour de test) : marche plus lente, et le relief redevient un obstacle.
    Réglages à un seul endroit, pour les futures compétences de déplacement (monture, ailes) qui pourront les relever.
    marche, course : m/s (avant : 16 et 31 ; manette 17 et 31) ; recul : part de la marche en reculant ;
    penteMax : pente la plus raide qu'on gravit à pied (tangente : 1 = 45°) ; glisse : au-delà, le héros posé glisse vers le bas ;
@@ -500,7 +501,7 @@ function move(dt){const t=performance.now();
   if(dx||dz){
     const tryMove=(nx,nz)=>{if(!zoneAt(nx,nz))return false;for(const Z of ZN)if(Math.hypot(Z.alt.x-nx,Z.alt.z-nz)<(Z.alt.col||2.6))return false;const s=stand(nx,nz,P.y+.05);if(s.blocked)return false;if(s.g<=ground(nx,nz)+.05&&tropRaide(P.x,P.z,nx,nz,P.y))return false;P.x=nx;P.z=nz;return true};
     if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=Math.hypot(dx,dz)*.55}
-  /* 2.51 : posé sur une pente trop raide (relief nu), le héros glisse vers le bas */
+  /* 2.52 : posé sur une pente trop raide (relief nu), le héros glisse vers le bas */
   if(P.g&&live&&P.y<=ground(P.x,P.z)+.1){const pn=penteSol(P.x,P.z);if(pn[2]>DEPL.glisse&&!surSentier(P.x,P.z)){const k=DEPL.vGlisse*dt/pn[2],nx=P.x-pn[0]*k,nz=P.z-pn[1]*k;
     if(zoneAt(nx,nz)&&!stand(nx,nz,P.y+.05).blocked){P.x=nx;P.z=nz}}}
   const s=stand(P.x,P.z,P.y+.05);
@@ -624,7 +625,7 @@ function loop(t){requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000
   const Z=zoneAt(P.x,P.z);if(Z&&Z!==curZ&&mode==='monde'&&started&&Z.plus&&dReg(Z.c)>REG_IN&&!navigator.webdriver){   /* bancs d'essai automatisés (Playwright) : pas de voyage, la région reste fixe */
   curZ=Z;voyagerRegion(Z.c,'jeu')}
   else if(Z&&Z!==curZ){curZ=Z;hudKey='';if(mode==='monde'&&started)toast(TYPE[Z.id].kind+' · niveau '+(sgn(S.lv[Z.id])||'0'),Z.info.nom,palTxt(Z,S.lv[Z.id]))}hud();invite();
-  stepAtmo(mode==='mue'&&mue?mue.Z:curZ,dt,T,P.x,P.y,P.z);hero.userData.pl.intensity=curZ===ANT?.12:.55;
+  stepAtmo(mode==='mue'&&mue?mue.Z:curZ,dt,T,P.x,P.y,P.z);hero.userData.pl.intensity=curZ===ANT?.12:.55;if(started)suivreChien(chien,P,dt,(x,z)=>stand(x,z,P.y+3).g,(x,z)=>!!zoneAt(x,z)&&!stand(x,z,P.y+3).blocked);
   if(AX&&curZ===DON&&DON.lv<=-4&&P.walked-stepAcc>2.4){stepAcc=P.walked;perc(AX.currentTime,'t',1.2)}
   let hi=0;for(const q of secrets){const ok=!q.found&&q.cond(q.Z.lv);q.m.visible=ok;if(!ok)continue;const p=q.pos();q.m.position.set(p[0],p[1]+Math.sin(T*2+p[0])*.18,p[2]);q.m.rotation.y=T*1.3;
     secHalo.P[hi*3]=p[0];secHalo.P[hi*3+1]=p[1];secHalo.P[hi*3+2]=p[2];const b=.5+.2*Math.sin(T*3);secHalo.C[hi*3]=2.2*b;secHalo.C[hi*3+1]=1.5*b;secHalo.C[hi*3+2]=.5*b;hi++;
