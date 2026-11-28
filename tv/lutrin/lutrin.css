@@ -42,7 +42,9 @@ button{font:inherit;color:inherit}
 #cadre::before{left:-4px;top:-4px;border-right:0;border-bottom:0}
 #cadre::after{right:-4px;bottom:-4px;border-left:0;border-top:0}
 #vue{position:relative;overflow:hidden;border-radius:6px;touch-action:none;
-  background:radial-gradient(ellipse 70% 65% at 50% 45%,#ffe9b8 0%,#f0bd6a 38%,#a8642a 75%,#4a2810 100%)}
+  /* 28 nov. : le plateau est un bois sombre où les cases sont creusées en alvéoles */
+  background:repeating-linear-gradient(93deg,transparent 0 11px,#1f0f0633 11px 13px,transparent 13px 29px,#00000026 29px 30px),
+    radial-gradient(ellipse 80% 70% at 50% 40%,#4a2a14 0%,#3a2010 55%,#24120a 100%)}
 #vue::after{content:"";position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 40px #2a1306;pointer-events:none}
 #plateau,#calque{position:absolute;display:block;transform-origin:0 0;will-change:transform;touch-action:none}
 #calque{pointer-events:none}
@@ -52,16 +54,22 @@ button{font:inherit;color:inherit}
 /* ---------- les tuiles en vitrail ---------- */
 .verre{cursor:pointer}
 .verre.mort{cursor:default}
-.fissure{fill:none;stroke:#0d0906;stroke-width:3;stroke-linecap:round;opacity:.8;pointer-events:none}
+.fissure{fill:none;stroke:#b48bd0;stroke-width:3;stroke-linecap:round;opacity:.45;pointer-events:none}
+.plaques{pointer-events:none}
+.pl-ombre{fill:#000;opacity:.5}
+.pl-bord{stroke-width:5;stroke-linejoin:round}
+.pl-reflet{fill:none;stroke:#fff;stroke-opacity:.42;stroke-linecap:round;stroke-linejoin:round}
+svg.loin .pl-reflet{display:none}
+svg.loin .pl-ombre{display:none}
 .fleur-or{fill:none;stroke:#f1cf7a;stroke-width:10;stroke-linejoin:round;pointer-events:none}
 .fleur-or.halo{stroke:#ffe6a6;stroke-width:34;opacity:.28}
 svg.loin .icones,svg.loin .plomb-crete,svg.loin .reflet{display:none}
-svg.loin .plomb{stroke-width:14}
-.plomb{fill:none;stroke:var(--plomb);stroke-width:9;stroke-linejoin:round;pointer-events:none}
-.plomb-crete{fill:none;stroke:#7a5e3a;stroke-opacity:.55;stroke-width:1.4;stroke-linejoin:round;pointer-events:none}
+svg.loin .plomb{stroke-width:18}
+.plomb{fill:none;stroke:#3a2010;stroke-width:12;stroke-linejoin:round;pointer-events:none}
+.plomb-crete{fill:none;stroke:#7a4e28;stroke-opacity:.9;stroke-width:3;stroke-linejoin:round;pointer-events:none}
 .reflet{fill:none;stroke:#fff3d6;stroke-opacity:.34;stroke-width:1.6;stroke-linejoin:round;pointer-events:none}
 .icone{fill:none;stroke-width:.13;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transition:stroke .4s,opacity .4s}
-.icone.libre{stroke:#3b2412;opacity:.55}
+.icone.libre{stroke:#a07a50;opacity:.5}
 .icone.prise{stroke:#fff8e6;opacity:.9}
 .lien{fill:none;stroke-linecap:round;pointer-events:none}
 .lien.halo{stroke-width:20;opacity:.45;animation:pouls 2.8s ease-in-out infinite}
@@ -71,7 +79,6 @@ svg.loin .plomb{stroke-width:14}
 @keyframes tension{to{stroke-dashoffset:-19}}
 .balayage{pointer-events:none;mix-blend-mode:screen;animation:balaye 9s ease-in-out infinite}
 @keyframes balaye{0%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}
-.grain{pointer-events:none;opacity:.16}
 .apercu{pointer-events:none;opacity:.45;animation:apercu 1.4s ease-in-out infinite}
 @keyframes apercu{50%{opacity:.7}}
 .poussiere{fill:#fff4cf;pointer-events:none;filter:blur(1.5px)}
