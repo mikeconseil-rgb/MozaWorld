@@ -27,12 +27,13 @@ function cullScene(){if(CULL.dirty)cullPrep();
 const TCH=40;
 function terrainCarreaux(){const g=terrain.geometry,A=g.attributes,src=g.index.array;
   for(let cj=0;cj<GH-1;cj+=TCH)for(let ci=0;ci<GW-1;ci+=TCH){const ie=Math.min(GW-1,ci+TCH),je=Math.min(GH-1,cj+TCH);
-    const idx=[];let any=false;
-    for(let j=cj;j<je;j++)for(let i=ci;i<ie;i++){const q=(j*(GW-1)+i)*6;for(let k=0;k<6;k++)idx.push(src[q+k])}
+    let any=false;
     const x0=X0+ci*CELL,x1=X0+ie*CELL,z0=Z0+cj*CELL,z1=Z0+je*CELL;
-    for(let j=cj;j<=je&&!any;j+=2)for(let i=ci;i<=ie;i+=2){const x=X0+i*CELL,z=Z0+j*CELL;if(zoneAt(x,z)||ZN.some(Q=>dPoly(Q.poly,x,z)<60)){any=true;break}}
+    for(let j=cj;j<=je&&!any;j+=2)for(let i=ci;i<=ie;i+=2){const x=X0+i*CELL,z=Z0+j*CELL;if(zoneAt(x,z)||zDist(x,z,60)<60){any=true;break}}
     if(!any)continue;   /* carreau loin de toute zone : du roc dans le vide, jamais vu */
-    const cg=new THREE.BufferGeometry();for(const n in A)cg.setAttribute(n,A[n]);cg.setIndex(new THREE.BufferAttribute(new Uint32Array(idx),1));
+    const cg=new THREE.BufferGeometry();for(const n in A)cg.setAttribute(n,A[n]);/* 2.54.1 : index copié par rangées dans un tableau typé (au lieu de millions de push) */
+    const w=(ie-ci)*6,idx=new Uint32Array((je-cj)*w);for(let j=cj,o=0;j<je;j++,o+=w){const q=(j*(GW-1)+ci)*6;idx.set(src.subarray(q,q+w),o)}
+    cg.setIndex(new THREE.BufferAttribute(idx,1));
     const m=new THREE.Mesh(cg,terrain.material);m.receiveShadow=true;m.castShadow=true;m.frustumCulled=false;scene.add(m);
     CULL.list.push({o:m,c:new THREE.Vector3((x0+x1)/2,10,(z0+z1)/2),r:Math.hypot(x1-x0,z1-z0,200)/2,fixe:true})}
   terrain.visible=false;CULL.carreaux=true;

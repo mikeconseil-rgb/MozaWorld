@@ -6,6 +6,13 @@
 >
 > Ce fichier est un journal de versions, **pas dans l'ordre** : chaque section décrit le jeu à sa date. Sont remplacés par des sections plus récentes : le Marché (Givrecloche est une Assemblée), les 8 puis 10 cartes de départ (5 communes toutes différentes), les 2 mana par tour (capacité de dépense de 1, 2, 3… et réserves par type), les Gerbes (les Ressources ne donnent plus de carte), tout ce qui parle d'APK. Les règles en vigueur du combat sont dans `design/cartes-2.2/regles-avancees.md`.
 
+## Version 2.54.1 (28 novembre) : chargement rapide et plantages des mondes générés
+
+Signalé le 28 au matin : l'accueil met des minutes à charger, la Xbox plante à l'ouverture du menu dans la première zone, et le lutrin semble « planter la mémoire ».
+- **Cause** (`src/core.js`) : depuis la 2.49, dans un monde généré (celui du lutrin et des nouvelles parties), les 16 zones « de la 2.0 » étaient toujours forcées dans la région de départ, alors qu'elles y sont éparpillées à 5-9 km. La grille du sol couvrait donc 17 km × 17 km : **13,9 millions de sommets au lieu de 0,9**, 1,36 Go de mémoire JavaScript (plus le double sur la carte graphique). Mesuré ici : 33 s de chargement ; sur Xbox, des minutes puis plantage.
+- **Correction** : ces 16 zones ne sont forcées que dans le monde de base. Monde généré : 0,88 million de sommets, 167 Mo, 8 s ici.
+- **Démarrage plus léger, à résultat identique** (empreinte du sol vérifiée égale avant/après) : boîte englobante par zone dans `zoneAt` et nouvelle `zDist` (distance plafonnée : au-delà de 45 m la falaise est déjà au plancher), bruits tn1/tn3 calculés seulement dans les zones, index des carreaux du sol copié par rangées (`src/fluidite.js`). Monde de base : 13 s → 10 s ici.
+
 ## Version 2.50 (25 novembre) : boucle graphique 7
 
 Première boucle avec le critique durci et le contre-expert à l'aveugle. Un seul réglage accepté : en combat, la carte agrandie ne masque plus le plateau ni la barre d'aide. Refusés (la ressemblance entre zones montait) : séparation des zones par la couleur, ombres du relief retirées ; branches boucle-7-1b et boucle-7-2b gardées pour la boucle 8.

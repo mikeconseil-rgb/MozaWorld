@@ -55,7 +55,8 @@ const ZW=ZN.slice();
 const REG_ORIG=dReg([0,0])<1;let iPlus=0;
 for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=iPlus++<16;const poly=d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]);
   const c=[0,0];for(const p of poly){c[0]+=p[0]/poly.length;c[1]+=p[1]/poly.length}
-  if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
+  if(dReg(c)<REG_R||(REG_ORIG&&ancienne&&!(typeof MONDE!=='undefined'&&MONDE))){   /* 2.54.1 : dans un monde généré, ces 16 zones sont éparpillées à 5-9 km : les forcer dans la région gonflait le sol de 1 à 14 millions de sommets (chargement de plusieurs minutes, 1,4 Go, plantages sur Xbox) */
+    const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
 /* Décision du 20 nov. (1 a) : d'ici le 28, hordes, rivaux, pacte, siège, caravanes et lois ne jouent que dans la région de départ.
@@ -63,7 +64,11 @@ const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
 const mondeIci=()=>typeof MONDE!=='undefined'&&MONDE?dReg(DEP_C())<1:REG_ORIG;   /* 2.49 : dans un monde généré, « ici » = la région de votre fleur */
 /* 2.27.2 : nom et fiche d'une zone, même hors de la région chargée (ZB ne contient que la région) */
 const zI=id=>{let Z=null;try{Z=ZB[id]}catch(_){}Z=Z||ZWB[id];return(Z&&Z.info)||{nom:String(id),sur:"",pm:"Pénurie",pp:"Abondance",pal:["","","","",""]}};
-const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
+/* 2.54.1 : boîte englobante de chaque zone, pour écarter vite les zones lointaines (le sol d'un million de sommets en dépendait au démarrage) */
+const zBB=Z=>Z._bb||(Z._bb=(()=>{let a=1e9,b=-1e9,c=1e9,d=-1e9;for(const p of Z.poly){if(p[0]<a)a=p[0];if(p[0]>b)b=p[0];if(p[1]<c)c=p[1];if(p[1]>d)d=p[1]}return[a,b,c,d]})());
+const zoneAt=(x,z)=>{for(let n=0;n<ZN.length;n++){const Z=ZN[n],B=Z._bb||zBB(Z);if(x<B[0]||x>B[1]||z<B[2]||z>B[3])continue;if(inPoly(Z.poly,x,z))return Z}return null};
+/* distance au bord de zone le plus proche, plafonnée à cap (les zones dont la boîte est plus loin que cap sont sautées) */
+const zDist=(x,z,cap)=>{let d=cap;for(let n=0;n<ZN.length;n++){const Q=ZN[n],B=Q._bb||zBB(Q),ex=Math.max(B[0]-x,0,x-B[1]),ez=Math.max(B[2]-z,0,z-B[3]);if(ex>=d||ez>=d||ex*ex+ez*ez>=d*d)continue;const e=dPoly(Q.poly,x,z);if(e<d)d=e}return d};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
 
@@ -173,9 +178,9 @@ let terrain;
 function buildTerrain(){
   const rock=LIN(0x241c1a),rock2=LIN(0x0e0b0c);
   for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const k=j*GW+i,x=X0+i*CELL,z=Z0+j*CELL;tP[k*3]=x;tP[k*3+2]=z;
-    const Z=zoneAt(x,z);tn1[k]=N1(x,z);tn2[k]=N2(x,z);tn3[k]=N3(x,z);
+    const Z=zoneAt(x,z);tn2[k]=N2(x,z);if(Z){tn1[k]=N1(x,z);tn3[k]=N3(x,z)}/* 2.54.1 : hors zone, seul tn2 sert */
     if(Z){Z.verts.push(k);tEf[k]=sst(0,16,dPoly(Z.poly,x,z))}
-    else{let d=1e9;for(const Q of ZN)d=Math.min(d,dPoly(Q.poly,x,z));
+    else{/* au-delà de 45 m du bord, la falaise est déjà au plancher (-90) et à la couleur finale : on plafonne la distance, résultat identique */const d=zDist(x,z,45);
       const h=-Math.pow(d,1.25)*1.7-(tn2[k]-.3)*Math.min(d,8)*1.5;tP[k*3+1]=Math.max(h,-90);
       const t=sst(0,45,d),s=.75+.5*hash(Math.floor(tP[k*3+1]/2.5),3);tC[k*3]=lerp(rock[0],rock2[0],t)*s;tC[k*3+1]=lerp(rock[1],rock2[1],t)*s;tC[k*3+2]=lerp(rock[2],rock2[2],t)*s}}
   const idx=new Uint32Array((GW-1)*(GH-1)*6);let q=0;
