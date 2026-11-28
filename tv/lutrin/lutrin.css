@@ -211,11 +211,17 @@ body.manette .btn .tch{display:inline-block}
 svg.loin ~ #calque .groupe.fil{stroke-width:10}
 /* la synergie : 3 tuiles ou plus d'une même faction qui se touchent */
 .synergie{fill:none;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
-.synergie.halo{stroke-width:34;opacity:.5;animation:synergie 1.8s ease-in-out infinite}
-.synergie.fil{stroke-width:7}
-.synergie.etincelle{stroke:#fffbe8;stroke-width:5;stroke-dasharray:4 46;animation:etincelle 2.4s linear infinite}
-@keyframes synergie{50%{opacity:.85}}
-@keyframes etincelle{to{stroke-dashoffset:-200}}
+.synergie.voile{opacity:.3;animation:synergie-voile 1.8s ease-in-out infinite}
+@keyframes synergie-voile{50%{opacity:.5}}
+.synergie.ombre{stroke:#000;opacity:.55}
+.synergie.halo{opacity:.6;animation:synergie 1.8s ease-in-out infinite}
+.synergie.fil{opacity:1}
+.synergie.etincelle{stroke:#fffbe8;animation:etincelle 2.4s linear infinite}
+.synergie.rayon-halo{opacity:.55}
+.synergie.rayon{opacity:.95}
+.synergie.noeud{stroke-width:3}
+@keyframes synergie{50%{opacity:1}}
+@keyframes etincelle{to{stroke-dashoffset:-400}}
 .bonus-aura{opacity:.45;animation:synergie-aura 1.8s ease-in-out infinite}
 @keyframes synergie-aura{50%{opacity:.8}}
 .sceau-royaume{fill:#120803;stroke-width:5}
