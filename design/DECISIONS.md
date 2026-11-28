@@ -19,6 +19,20 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 
 
+## 28 novembre 2026 (exploration : marche et pentes, 2.52)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Vitesse à pied | « le monde est chouette mais il faudra ralentir le déplacement a pied ». Chiffres choisis par Claude : marche 9 m/s, course 18 m/s (manette et clavier). | provisoire (chiffres à régler après test) | marche 16 (17 à la manette), course 31 (17 nov., « plus rapide ») |
+| Pentes | « il faudrait éviter que je puisse monter toutes les pentes apique ». Chiffres choisis par Claude : on ne marche plus sur une pente de plus de 45°, ni en montant ni en descendant (pour descendre une falaise, il faut sauter) ; au-delà de 52° le héros posé glisse vers le bas. Chaque zone a un sentier taillé de sa Pierre d'éveil jusqu'à son bord, où la pente ne bloque pas (sinon 7 Pierres au fond de canyons devenaient inaccessibles) ; les chemins de dalles des routes ouvertes aussi. Toits, rampes et marches des bâtiments ne changent pas. | provisoire (chiffres à régler après test) | — |
+| Déplacement plus tard | « On ajoutera des compétences de déplacement comme une monture et des ailes plus tard ». La marche lente et les pentes bloquantes sont la base ; les réglages sont réunis dans `DEPL` (`tv/src/main.js`) pour que ces compétences les relèvent. | en vigueur (compétences pas encore dans le jeu) | — |
+
+## 28 novembre 2026 (le lutrin sur les mondes en rosace)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Lutrin | Mots de l'utilisateur (28 nov.) : « C'est bien mais je veux les cartes générer avec les rosaces », puis « Ajoute un zoom convaincu ». Le lutrin joue sur un monde généré en rosace (au choix ou au hasard) ; chaque faction part de sa fleur ; zoom au doigt (pincer, glisser avec élan) et boutons + − ◎. | en vigueur | Région fixe de la carte d'origine (lutrin v1, PR 159) |
+
 ## 27 novembre 2026 au soir (personnage à l'image du joueur, 2.51)
 
 | Sujet | Décision | Statut | Remplace |
