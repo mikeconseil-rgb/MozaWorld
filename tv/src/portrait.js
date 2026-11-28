@@ -1,4 +1,4 @@
-/* MozaWorld 2.52 : le portrait peint du joueur (28 nov.), dans l'écran d'accueil et le menu pause.
+/* MozaWorld 2.53 : le portrait peint du joueur (28 nov.), dans l'écran d'accueil et le menu pause.
    Portrait fait par le joueur avec Gemini à partir de son selfie : lui en combinaison rouge, avec sa chienne au bandana rouge.
    Il est posé comme une gravure épinglée à gauche de la page, qui s'élargit pour lui faire place ; il se cache dans les sous-menus
    (paquet, grimoire, sauvegardes…) et sur un écran trop étroit (téléphone en hauteur), pour ne rien couvrir. */
