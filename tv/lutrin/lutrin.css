@@ -218,3 +218,16 @@ svg.loin .sceau-reflet{display:none}
 .sceau-plein{fill:#fff8e8}
 .sceau-trait{fill:none;stroke-linecap:round;stroke-linejoin:round}
 @media (orientation:landscape) and (max-height:500px){.sigle.grand{width:30px;height:30px}}
+
+/* figurine monochrome, à la couleur de votre faction (jeton) */
+.figurine .f-rouge,.figurine .f-botte,.figurine .f-peau,.figurine .f-cheveux,.figurine .f-barbe,.figurine .c-noir,.figurine .c-bandana,.figurine .fig-socle{fill:var(--fc);stroke:var(--fc-sombre)}
+.figurine .f-cheveux,.figurine .c-noir,.figurine .f-botte{fill:color-mix(in srgb,var(--fc) 70%,#000)}
+.figurine .f-barbe,.figurine .c-blanc,.figurine .fig-socle-haut{fill:var(--fc-clair);stroke:var(--fc-sombre)}
+.figurine .f-moust,.figurine .f-oeil,.figurine .c-nez,.figurine .c-oeil{fill:var(--fc-sombre)}
+.figurine .f-col{stroke:var(--fc-sombre)}
+.figurine .f-bouton circle{fill:var(--fc-clair);stroke:var(--fc-sombre)}
+.figurine .f-lunettes{fill:#ffffff22;stroke:var(--fc-sombre)}
+.ici-halo{stroke-width:16}
+.figurine{filter:drop-shadow(0 0 1.5px #fff8e8) drop-shadow(0 0 1.5px #fff8e8) drop-shadow(0 3px 3px #0009)}
+.figurine .fig-bob{animation:none}
+.figurine *{stroke-width:2.6}
