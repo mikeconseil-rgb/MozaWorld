@@ -367,38 +367,52 @@ function contour(L,min){const id=new Map();L.forEach((g,k)=>{if(g.m.length>=min)
     if(ka!==undefined)tr[ka]=(tr[ka]||'')+d;if(kb!==undefined)tr[kb]=(tr[kb]||'')+d}
   // bord du monde
   return tr}
+/* ---------- les effets de groupe ----------
+   28 nov. (« prends en compte qu'il faudra avoir plusieurs effets de ce type ») : chaque effet de groupe est une entrée de EFFETS.
+   Chacun a son calque, sa « signature » visuelle et un rang ; les signatures se partagent des canaux distincts pour pouvoir
+   se superposer sans se confondre :
+     - voile : remplit les tuiles du groupe (un seul effet à la fois l'utilise : le plus haut rang)
+     - rayons : relie les centres des tuiles (constellation)
+     - contour : borde le groupe ; chaque effet a son propre décalage (anneau intérieur/extérieur) et son motif de trait
+     - médaillon : empilé au-dessus du groupe, un par effet, dans l'ordre des rangs (pas de chevauchement)
+   Pour ajouter un effet : une entrée { id, rang, min, cle(i) → valeur commune ou null, couleur(v), sigle(v), canaux:{...} }. */
+const EFFETS=[
+  {id:'faction',nom:'Synergie de faction',rang:1,min:3,
+   cle:i=>{const o=S.own[i];if(o==null||o<0||T[i].mort)return null;const f=facZone(T[i],o);return f==='Neutre'?null:o+'|'+f},
+   couleur:v=>FAC[v.split('|')[1]].col,sigle:v=>v.split('|')[1],
+   canaux:{voile:true,rayons:true,contour:{decal:0,motif:'plein',etincelles:true}}}
+  // d'autres effets viendront ici (canaux libres : contour décalé vers l'extérieur ou en pointillés, médaillon suivant de la pile)
+];
 function majLiens(){G.liens.innerHTML='';
   /* le royaume : un fin liseré à sa couleur autour de ses tuiles qui se touchent */
   const R=groupes(),tr=contour(R,2);
   for(const k in tr){const c=FAC[S.joueurs[R[k].n].k].col;el('path',{d:tr[k],class:'groupe fil',stroke:mix(c,'#ffffff',.25)},G.liens)}
-  /* 28 nov. (« je voudrais un effet qui montre quand 3 zones de même faction se touchent ou plus ») : la synergie. Trois tuiles ou plus
-     d'un même royaume et d'une même faction qui se touchent s'illuminent ensemble : halo pulsant à la couleur de la faction,
-     étincelles qui courent le long du bord, et un médaillon au sigle de la faction avec leur nombre. */
-  const F=groupes(i=>{const o=S.own[i];if(o==null||o<0||T[i].mort)return null;const f=facZone(T[i],o);return f==='Neutre'?null:o+'|'+f}),ts=contour(F,3);
-  /* 28 nov. (« accentue l'effet de groupe de faction ») : le groupe s'emplit de la lumière de sa faction, ses tuiles sont reliées
-     par des rayons (une constellation), et le contour garde une épaisseur lisible à l'écran à tous les zooms */
-  const px=(rendu.w||cam.w)/pxW,f2=q=>q[0].toFixed(0)+' '+q[1].toFixed(0);
-  for(const k in ts){const g=F[k],f=g.n.split('|')[1],c=FAC[f].col,clair=mix(c,'#ffffff',.65),dans=new Set(g.m);
-    let voile='',ray='';g.m.forEach(i=>{const t=T[i];voile+='M'+t.p.map(f2).join('L')+'Z';
-      for(const v of t.v)if(v>i&&dans.has(v))ray+=`M${f2(t.c)}L${f2(T[v].c)}`});
-    el('path',{d:voile,class:'synergie voile',fill:c},G.liens);
-    el('path',{d:ts[k],class:'synergie ombre','stroke-width':Math.max(22,9*px).toFixed(1)},G.liens);
-    el('path',{d:ts[k],class:'synergie halo',stroke:c,'stroke-width':Math.max(46,20*px).toFixed(1)},G.liens);
-    el('path',{d:ts[k],class:'synergie fil',stroke:clair,'stroke-width':Math.max(9,4*px).toFixed(1)},G.liens);
-    el('path',{d:ts[k],class:'synergie etincelle','stroke-width':Math.max(6,3*px).toFixed(1),'stroke-dasharray':`${(5*px).toFixed(0)} ${(40*px).toFixed(0)}`},G.liens);
-    el('path',{d:ray,class:'synergie rayon-halo',stroke:c,'stroke-width':Math.max(20,9*px).toFixed(1)},G.liens);
-    el('path',{d:ray,class:'synergie rayon',stroke:clair,'stroke-width':Math.max(5,2.2*px).toFixed(1)},G.liens);
-    g.m.forEach(i=>el('circle',{cx:T[i].c[0].toFixed(0),cy:T[i].c[1].toFixed(0),r:Math.max(9,4.5*px).toFixed(1),class:'synergie noeud',fill:clair,stroke:c},G.liens))}
-  for(const k in ts){const g=F[k],f=g.n.split('|')[1];let x=0,y=0;g.m.forEach(i=>{x+=T[i].c[0];y+=T[i].c[1]});x/=g.m.length;y/=g.m.length;
-    let b=g.m[0],bd=1e18;g.m.forEach(i=>{if(i===S.ici)return;const d=(T[i].c[0]-x)**2+(T[i].c[1]-y)**2;if(d<bd){bd=d;b=i}});
-    const t=T[b],c=FAC[f].col,r=Math.max(Math.min(70,t.r*.5),22*px);   // au moins 44 px à l'écran
-    const m=el('g',{class:'bonus',transform:`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.15).toFixed(0)})`},G.liens);
-    el('circle',{r:(r*1.25).toFixed(1),fill:c,class:'bonus-aura'},m);
-    el('circle',{r:r.toFixed(1),fill:mix(c,'#1a0c04',.3),class:'bonus-fond'},m);
-    const G2=SIGLE[f]||{},sc_=`translate(0 ${(-r*.28).toFixed(1)}) scale(${(r*.42).toFixed(2)})`;
-    if(G2.f)el('path',{d:G2.f,transform:sc_,fill:'#fff8e8'},m);if(G2.s)el('path',{d:G2.s,transform:sc_,fill:'none',stroke:'#fff8e8','stroke-width':.2,'stroke-linecap':'round'},m);
-    el('text',{class:'bonus-txt','font-size':(r*.62).toFixed(0),y:(r*.62).toFixed(0)},m).textContent='×'+g.m.length}
-}
+  const px=(rendu.w||cam.w)/pxW,pile=new Map(),voileFait=new Set();
+  [...EFFETS].sort((a,b)=>b.rang-a.rang).forEach(E=>{const L=groupes(E.cle),ts=contour(L,E.min),cal=el('g',{class:'effet effet-'+E.id},G.liens);
+    for(const k in ts)dessinerEffet(E,L[k],ts[k],cal,px,voileFait,pile)})}
+/* 28 nov. (« un effet qui montre quand 3 zones de même faction se touchent ou plus », puis « accentue l'effet de groupe de faction ») :
+   voile de lumière, constellation de rayons, contour épais lisible à tous les zooms, étincelles, médaillon au sigle et « ×N ». */
+function dessinerEffet(E,g,trace,cal,px,voileFait,pile){const C=E.canaux,c=E.couleur(g.n),clair=mix(c,'#ffffff',.65),dans=new Set(g.m),f2=q=>q[0].toFixed(0)+' '+q[1].toFixed(0);
+  if(C.voile&&!g.m.some(i=>voileFait.has(i))){let v='';g.m.forEach(i=>{voileFait.add(i);v+='M'+T[i].p.map(f2).join('L')+'Z'});el('path',{d:v,class:'synergie voile',fill:c},cal)}
+  if(C.contour){const d=C.contour.decal||0,w=x=>Math.max(x[0],x[1]*px)+d*px;const pointille=C.contour.motif==='pointille'?{'stroke-dasharray':`${(14*px).toFixed(0)} ${(10*px).toFixed(0)}`}:{};
+    el('path',{d:trace,class:'synergie ombre','stroke-width':w([22,9]).toFixed(1)},cal);
+    el('path',Object.assign({d:trace,class:'synergie halo',stroke:c,'stroke-width':w([46,20]).toFixed(1)},pointille),cal);
+    el('path',Object.assign({d:trace,class:'synergie fil',stroke:clair,'stroke-width':Math.max(9,4*px).toFixed(1)},pointille),cal);
+    if(C.contour.etincelles)el('path',{d:trace,class:'synergie etincelle','stroke-width':Math.max(6,3*px).toFixed(1),'stroke-dasharray':`${(5*px).toFixed(0)} ${(40*px).toFixed(0)}`},cal)}
+  if(C.rayons){let ray='';g.m.forEach(i=>{for(const v of T[i].v)if(v>i&&dans.has(v))ray+=`M${f2(T[i].c)}L${f2(T[v].c)}`});
+    el('path',{d:ray,class:'synergie rayon-halo',stroke:c,'stroke-width':Math.max(20,9*px).toFixed(1)},cal);
+    el('path',{d:ray,class:'synergie rayon',stroke:clair,'stroke-width':Math.max(5,2.2*px).toFixed(1)},cal);
+    g.m.forEach(i=>el('circle',{cx:T[i].c[0].toFixed(0),cy:T[i].c[1].toFixed(0),r:Math.max(9,4.5*px).toFixed(1),class:'synergie noeud',fill:clair,stroke:c},cal))}
+  // médaillon : sur la tuile la plus centrale du groupe, empilé au-dessus des médaillons d'autres effets sur la même tuile
+  let x=0,y=0;g.m.forEach(i=>{x+=T[i].c[0];y+=T[i].c[1]});x/=g.m.length;y/=g.m.length;
+  let b=g.m[0],bd=1e18;g.m.forEach(i=>{if(i===S.ici)return;const d=(T[i].c[0]-x)**2+(T[i].c[1]-y)**2;if(d<bd){bd=d;b=i}});
+  const t=T[b],r=Math.max(Math.min(70,t.r*.5),22*px),n=pile.get(b)||0;pile.set(b,n+1);   // au moins 44 px à l'écran
+  const m=el('g',{class:'bonus',transform:`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.15-n*r*2.3).toFixed(0)})`},cal);
+  el('circle',{r:(r*1.25).toFixed(1),fill:c,class:'bonus-aura'},m);
+  el('circle',{r:r.toFixed(1),fill:mix(c,'#1a0c04',.3),class:'bonus-fond'},m);
+  const k=E.sigle(g.n),G2=SIGLE[k]||{},sc_=`translate(0 ${(-r*.28).toFixed(1)}) scale(${(r*.42).toFixed(2)})`;
+  if(G2.f)el('path',{d:G2.f,transform:sc_,fill:'#fff8e8'},m);if(G2.s)el('path',{d:G2.s,transform:sc_,fill:'none',stroke:'#fff8e8','stroke-width':.2,'stroke-linecap':'round'},m);
+  el('text',{class:'bonus-txt','font-size':(r*.62).toFixed(0),y:(r*.62).toFixed(0)},m).textContent='×'+g.m.length}
 function majCurseur(){G.curseur.innerHTML='';if(S.sel<0)return;const t=T[S.sel],j=S.joueurs[S.tour];
   if(!S.fini&&j&&!j.ia&&S.own[S.sel]===-1)el('polygon',{points:pts(t.p),class:'apercu',fill:couleurPlaque(facZone(t,S.tour))},G.curseur);
   el('polygon',{points:pts(t.p),class:'curseur halo'},G.curseur);el('polygon',{points:pts(t.p),class:'curseur'},G.curseur)}
