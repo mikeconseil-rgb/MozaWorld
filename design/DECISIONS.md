@@ -19,6 +19,12 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 
 
+## 28 novembre 2026 (le lutrin sur les mondes en rosace)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Lutrin | Mots de l'utilisateur (28 nov.) : « C'est bien mais je veux les cartes générer avec les rosaces », puis « Ajoute un zoom convaincu ». Le lutrin joue sur un monde généré en rosace (au choix ou au hasard) ; chaque faction part de sa fleur ; zoom au doigt (pincer, glisser avec élan) et boutons + − ◎. | en vigueur | Région fixe de la carte d'origine (lutrin v1, PR 159) |
+
 ## 27 novembre 2026 au soir (personnage à l'image du joueur, 2.51)
 
 | Sujet | Décision | Statut | Remplace |

@@ -41,16 +41,20 @@ button{font:inherit;color:inherit}
   background:radial-gradient(circle,#f3d58a 0 3px,transparent 4px)}
 #cadre::before{left:-4px;top:-4px;border-right:0;border-bottom:0}
 #cadre::after{right:-4px;bottom:-4px;border-left:0;border-top:0}
-#plateau{display:block;border-radius:6px;
+#plateau{display:block;touch-action:none;border-radius:6px;
   background:radial-gradient(ellipse 70% 65% at 50% 45%,#ffe9b8 0%,#f0bd6a 38%,#a8642a 75%,#4a2810 100%);
   box-shadow:inset 0 0 40px #2a1306}
 #rebord{position:absolute;left:-2%;right:-2%;bottom:-18px;height:20px;border-radius:0 0 10px 10px;transform:translateZ(14px) rotateX(-60deg);transform-origin:top;
   background:linear-gradient(#6b3f1d,#2e180a);box-shadow:0 14px 24px #000a}
 
 /* ---------- les tuiles en vitrail ---------- */
-.verre{cursor:pointer;transition:filter .25s}
-.verre.libre:hover{filter:brightness(1.18)}
-.verre.prise{filter:saturate(1.15)}
+.verre{cursor:pointer}
+.verre.mort{cursor:default}
+.fissure{fill:none;stroke:#0d0906;stroke-width:3;stroke-linecap:round;opacity:.8;pointer-events:none}
+.fleur-or{fill:none;stroke:#f1cf7a;stroke-width:10;stroke-linejoin:round;pointer-events:none}
+.fleur-or.halo{stroke:#ffe6a6;stroke-width:34;opacity:.28}
+svg.loin .icones,svg.loin .plomb-crete,svg.loin .reflet{display:none}
+svg.loin .plomb{stroke-width:14}
 .plomb{fill:none;stroke:var(--plomb);stroke-width:9;stroke-linejoin:round;pointer-events:none}
 .plomb-crete{fill:none;stroke:#7a5e3a;stroke-opacity:.55;stroke-width:1.4;stroke-linejoin:round;pointer-events:none}
 .reflet{fill:none;stroke:#fff3d6;stroke-opacity:.34;stroke-width:1.6;stroke-linejoin:round;pointer-events:none}
@@ -124,6 +128,10 @@ body.manette .btn .tch{display:inline-block}
 .medaillon.choisi{border-color:var(--c);background:color-mix(in srgb,var(--c) 20%,transparent);box-shadow:0 0 0 2px var(--c),0 0 20px color-mix(in srgb,var(--c) 50%,transparent)}
 .rangee{display:flex;justify-content:center;gap:8px}
 .rangee .btn{min-width:52px}
+.rangee.large{flex-wrap:wrap}
+.rangee.large .btn{font-size:17px;min-height:46px;padding:0 12px}
+.deux{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+@media (max-width:420px){.deux{grid-template-columns:1fr}}
 .rangee .btn.choisi{border-color:var(--or);color:var(--or);box-shadow:0 0 0 2px var(--or)}
 .carton .btn.principal{width:100%;margin-top:16px}
 .classement{list-style:none;margin:8px 0 0;padding:0;text-align:left}
@@ -139,3 +147,12 @@ body.manette .btn .tch{display:inline-block}
   .medaillon{min-height:0;padding:6px 4px}.medaillon b{font-size:14px}.rangee .btn{min-height:44px}.medaillon .gemme{width:30px;height:30px}.medaillon small{display:none}
   .carton .btn.principal{margin-top:10px}
 }
+
+/* ---------- zoom ---------- */
+#zoom{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:4}
+#zoom .rond{width:46px;height:46px;border-radius:50%;border:1px solid #7a5a2a;background:radial-gradient(circle at 40% 35%,#4a2e16,#1a0e06);
+  font-family:var(--titre);font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px #000a}
+#zoom .rond:active{transform:scale(.92)}
+#zoom-niveau{position:relative;width:6px;height:70px;border-radius:3px;background:#0008;box-shadow:inset 0 0 0 1px #6a4a22}
+#zoom-niveau i{position:absolute;left:0;right:0;bottom:0;height:calc(var(--z,0)*100%);border-radius:3px;background:linear-gradient(#f7dc95,#b78431);box-shadow:0 0 8px #e8c26a88;transition:height .15s}
+@media (orientation:landscape) and (max-height:500px){#zoom-niveau{height:40px}#zoom .rond{width:42px;height:42px}}
