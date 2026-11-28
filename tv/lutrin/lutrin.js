@@ -156,10 +156,12 @@ function dansPoly(P,q){let d=false;for(let i=0,j=P.length-1;i<P.length;j=i++){co
   if((a[1]>q[1])!==(b[1]>q[1])&&q[0]<(b[0]-a[0])*(q[1]-a[1])/(b[1]-a[1])+a[0])d=!d}return d}
 function poserFigurine(){trouverIci();G.figure.innerHTML='';if(S.ici<0)return;const t=T[S.ici];
   el('polygon',{points:pts(t.p),class:'ici-halo'},G.figure);el('polygon',{points:pts(t.p),class:'ici-bord'},G.figure);
-  G.fig=el('g',{class:'figurine'},G.figure);G.fig.innerHTML=FIGURE;placerFigurine()}
+  // 28 nov. (« la figurine trop grosse ; on la voudrait monochrome, par couleur de la faction ») : un jeton d'une seule teinte
+  const c=S.joueurs[0]?FAC[S.joueurs[0].k].col:'#e8c26a';
+  G.fig=el('g',{class:'figurine',style:`--fc:${mix(c,'#000000',.18)};--fc-clair:${mix(c,'#ffffff',.5)};--fc-sombre:${mix(c,'#000000',.72)}`},G.figure);G.fig.innerHTML=FIGURE;placerFigurine()}
 function placerFigurine(){if(!G.fig||S.ici<0)return;const t=T[S.ici],px=cam.w/pxW;
   // assez grande pour se voir de loin (au moins 64 px à l'écran), sans dépasser la tuile de près
-  const k=Math.max(t.r*1.05/FIG_H,44*px/FIG_H);G.fig.setAttribute('transform',`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.35).toFixed(0)}) scale(${k.toFixed(3)})`)}
+  const k=Math.max(t.r*.62/FIG_H,30*px/FIG_H);G.fig.setAttribute('transform',`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.35).toFixed(0)}) scale(${k.toFixed(3)})`)}
 function vueIci(anim){if(S.ici<0)return;const t=T[S.ici];viser(t.i,true);
   if(anim)viserCam(t.c[0],t.c[1],Math.max(2200,t.r*14));else{cam.cx=t.c[0];cam.cy=t.c[1];cam.w=Math.max(2200,t.r*14);appliquer()}}
 
@@ -284,7 +286,7 @@ function majTuile(i){const t=T[i],o=S.own[i];
 /* 28 nov. (« je veux voir mes tuiles ajoutées et la faction des tuiles ») : chaque tuile prise porte le sceau de sa faction,
    un losange de sa couleur ; les tuiles que vous avez ajoutées ont en plus un anneau d'or. */
 const estDepart=(t,o)=>t.roy!==undefined&&t.roy===o;
-function sceau(t,o){if(t.sc){t.sc.remove();t.sc=null}if(o==null||o<0||t.mort)return;
+function sceau(t,o){if(t.sc){t.sc.remove();t.sc=null}if(o==null||o<0||t.mort||t.i===S.ici)return;   /* sur la tuile de la figurine, c'est elle qui fait le sceau */
   const s=Math.max(12,Math.min(28,t.r*.24)),x=t.c[0],y=t.c[1]-Math.min(46,t.r*.42)-s*1.25,c=FAC[S.joueurs[o].k].col,ajout=!estDepart(t,o);
   const g=el('g',{class:'sceau'+(ajout?' ajout':'')+(o===0?' mien':''),transform:`translate(${x.toFixed(0)} ${y.toFixed(0)})`},G.sceaux);
   if(ajout&&o===0)el('circle',{r:(s*1.4).toFixed(1),class:'sceau-anneau'},g);
