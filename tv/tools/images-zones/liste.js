@@ -50,7 +50,7 @@ const MOTS={bonnet:'a knitted wool cap',mitre:'a tall embroidered mitre',registr
     const scene=txt(z.pal[2]||z.pal[3]||z.pal[1]||'').replace(/^.*tirée au sort\..*$/,'');
     const prompt=`Dark fantasy concept art painting, epic painterly style, dramatic cinematic lighting, wide establishing view of a place seen from a vantage point, strong depth, atmospheric perspective, rich textures, highly detailed, full-bleed illustration. `+
       `Place: ${txt(z.nom)}, ${TYPE[id.slice(0,3)]||'a strange place'}. Setting: ${biome}${cult?', with '+cult+' architecture and motifs':''}.${scene?' Scene: '+scene:''} `+
-      `Mood between ${txt(z.pm)} and ${txt(z.pp)}: quiet, weathered, lived-in, a few tiny figures for scale. Color palette: ${MANA[z.mana]||MANA.Pierre}. Pure full-bleed wordless image, nothing written anywhere, no signs, no decorative frame.`;
+      `Mood between ${txt(z.pm)} and ${txt(z.pp)}: quiet, weathered, lived-in, a few tiny figures for scale. Color palette: ${MANA[z.mana]||MANA.Pierre}. Pure full-bleed wordless image, nothing written anywhere, no title, no caption, no lettering, no signs, no border, no corner ornaments.`;
     liste.push({k:id,fichier:id,genre:'zone',nom:z.nom,zone:z.nom,rang:ordre(id),prompt})}
   const vus=new Set();let n=0;
   for(const q of brut.persos){if(PAS_UN_PERSONNAGE.test(q.nom))continue;const z=Z[q.zone];if(!z)continue;const fichier=q.zone+'-'+slug(q.nom);if(vus.has(fichier))continue;vus.add(fichier);
