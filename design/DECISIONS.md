@@ -19,6 +19,18 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 
 
 
+## 28 novembre 2026 (nuit : réponses aux questions du nouveau cœur du jeu)
+
+| Sujet | Décision | Statut | Remplace |
+|---|---|---|---|
+| Arène | Mots de l'utilisateur (27 nov., note dans le plan) : « Fait un repo pour le mode arène pour un futur projet ». Lecture de Claude : l'Arène sera copiée dans un dépôt à part (à créer par l'utilisateur) ; elle reste dans ce dépôt d'ici là. | en vigueur | — |
+| Place du joueur | « 1 a » : vous menez une faction et la faites grandir. | en vigueur | — |
+| Rythme | Notes du 27 nov. (« On garde la promenade : Oui », lutrin = « une version du menu de la carte du monde ») : promenade en temps réel, plateau qui avance par cycles ; le lutrin est une version du menu de la carte du monde. | en vigueur | — |
+| Cycles des factions | « 4. Je verrais une évolution par cycle. Toute les factions joues. Puis prochain cycle.... », puis « En même temps en ordre d'avance style diplomatie devrait aussi être regardé ». Lecture de Claude : à chaque cycle, chaque faction (la vôtre, les rivales, l'Ombre) fait son coup sur le plateau ; le prototype compare le tour par faction et les ordres simultanés façon Diplomatie. | en vigueur (forme à choisir au prototype) | Combats contre hordes et rivaux |
+| Risque | « 5. Je te laisse voir si c'est encore pertinent ». Choix de Claude : le risque est de perdre des tuiles reprises par les autres factions ; plus de héros mortel ni de blessures. | provisoire (à vérifier au prototype) | Blessures et mort du héros (le jeu actuel les garde jusqu'à la bascule) |
+| But | « 6 faire gagner ça faction avec pourquoi pas un mode infinie... » : faire gagner sa faction ; un mode sans fin en option. | en vigueur | — |
+| Bascule d'une tuile | Note « Exactement » à « faire basculer des tuiles par ce qu'on fait dans la zone ». Lecture de Claude : 2c (action dans la zone, aidée par l'encerclement), à confirmer. | provisoire | — |
+
 ## 27 novembre 2026 (soir : le combat de cartes sort, cœur du jeu = gestion des tuiles)
 
 | Sujet | Décision | Statut | Remplace |
