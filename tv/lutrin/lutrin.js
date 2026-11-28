@@ -194,7 +194,7 @@ function reprendre(){let P=null;try{P=JSON.parse(lire('lutrin-partie')||'null')}
   if(!P||!P.monde||!Array.isArray(P.own)||!Array.isArray(P.joueurs))return false;
   voile.innerHTML='<div class="carton"><h1>…</h1><p>Le maître verrier remet la rosace en place.</p></div>';voile.classList.remove('cache');
   chargerMonde(P.monde,()=>{preparer();if(T.length!==P.own.length){oublier();menu();return}
-    Object.assign(S,{monde:P.monde,own:P.own,niv:Array.isArray(P.niv)&&P.niv.length===T.length?P.niv:T.map(t=>t.mort?0:(Math.random()<.5?3:-3)),joueurs:P.joueurs,tour:P.tour||0,tourNum:P.tourNum||1,duree:P.duree,sel:P.sel>=0?P.sel:-1,choixFac:P.choixFac||S.choixFac,nbRivaux:P.nbRivaux||S.nbRivaux,rosace:P.rosace||S.rosace,fini:false});
+    Object.assign(S,{monde:P.monde,own:P.own,niv:Array.isArray(P.niv)&&P.niv.length===T.length?P.niv:T.map(tirerNiv),joueurs:P.joueurs,tour:P.tour||0,tourNum:P.tourNum||1,duree:P.duree,sel:P.sel>=0?P.sel:-1,choixFac:P.choixFac||S.choixFac,nbRivaux:P.nbRivaux||S.nbRivaux,rosace:P.rosace||S.rosace,fini:false});
     dessiner();taille();voile.classList.add('cache');
     if(S.iciVrai)vueIci(false);else vueFleur(0,false);
     if(S.joueurs[S.tour]&&S.joueurs[S.tour].ia)setTimeout(jouerIA,700)});
@@ -279,6 +279,8 @@ vue.addEventListener('dblclick',e=>e.preventDefault());
    une zone à + penche déjà vers sa faction +, une zone à − vers sa faction − ; seule une zone au niveau 0 est neutre et montre ses deux choix.
    « Quand je prends une tuile, garder la couleur de sa faction tout en gardant clair le royaume qui la possède » :
    l'émail garde la faction de la zone, le cadre et le sceau disent le royaume. */
+/* pour le test (28 nov.) : « toutes les zones niveau 3, + ou − au hasard », puis « une zone sur 6 » au niveau 0 (neutre) */
+const tirerNiv=t=>t.mort?0:Math.random()<1/6?0:(Math.random()<.5?3:-3);
 function facZone(t,o){const n=S.niv?S.niv[t.i]||0:0;if(n>0)return t.choix[0];if(n<0)return t.choix[1];return o!=null&&o>=0?S.joueurs[o].k:null}
 function majTout(){T.forEach(t=>majTuile(t.i));majLiens();majCurseur();majBarre();majFiche()}
 function majTuile(i){const t=T[i],o=S.own[i];
@@ -451,7 +453,7 @@ function commencer(){const id=choisirMondeId();if(!id){alerte('Aucun monde dans 
     S.joueurs=[{k:S.choixFac,ia:false}].concat(autres.slice(0,S.nbRivaux).map(k=>({k,ia:true})));
     S.own=T.map(t=>t.mort?-2:(t.roy!==undefined&&t.roy<S.joueurs.length?t.roy:-1));
     // 28 nov. (« pour le test, toutes les zones sont niveau 3, + ou − au hasard »)
-    S.niv=T.map(t=>t.mort?0:(Math.random()<.5?3:-3));
+    S.niv=T.map(tirerNiv);
     S.tour=0;S.tourNum=1;S.fini=false;
     // la tuile visée au départ : une tuile libre au bord de votre fleur
     const bord=T.filter(t=>S.own[t.i]===-1&&t.v.some(v=>S.own[v]===0));S.sel=bord.length?bord[0].i:-1;
