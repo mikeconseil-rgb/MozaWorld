@@ -434,9 +434,9 @@ ANT(eff){const need=3+eff,arcW=Math.max(16,70-7*eff)*D2R;let a=0,sp=1.5+.32*eff,
       jx.fillStyle=gr;jx.beginPath();jx.arc(x,y,46,0,TAU);jx.fill();
       jx.fillStyle='#efe7d6';jx.font='600 44px Cormorant Garamond,serif';jx.textAlign='center';jx.textBaseline='middle';jx.fillText(hit+' / '+need,0,0);jx.restore()}}},
 /* Ressource : cueillir des gerbes lumineuses dans le monde, à pied, avant la fin du temps */
-RES(eff){const Z=RES,K=4+eff,a=Z.alt,orbs=[];let time=38+K*8-eff*2;
+RES(eff){const Z=RES,K=4+eff,a=Z.alt,orbs=[],ok=atteignable(P.x,P.z,140);let time=38+K*8-eff*2;
   for(let tries=0;orbs.length<K&&tries<4000;tries++){const ang=Math.random()*TAU,d=18+Math.random()*(40+eff*6),x=a.x+Math.cos(ang)*d,z=a.z+Math.sin(ang)*d;
-    if(zoneAt(x,z)!==Z)continue;const q=Z.loc(x,z);if(!Z.inside(q[0],q[1],10))continue;const s=stand(x,z,1e3);if(s.g<-5)continue;
+    if(zoneAt(x,z)!==Z)continue;const q=Z.loc(x,z);if(!Z.inside(q[0],q[1],10))continue;const s=stand(x,z,1e3);if(s.g<-5)continue;if(tries<3000&&!ok(x,z))continue;   /* 2.52 : pas de gerbe au sommet d'une falaise (sauf faute de place) */
     if(orbs.some(o=>Math.hypot(o.x-x,o.z-z)<9))continue;orbs.push({x,z,y:s.g+1.3})}
   orbs.forEach((o,i)=>{const m=gerbes[i];m.visible=true;m.position.set(o.x,o.y,o.z);o.m=m});
   return{monde:true,orbs,consigne:'Marchez jusqu\'aux gerbes lumineuses. Suivez la flèche, tenez ▲ pour courir.',
@@ -455,6 +455,38 @@ function step(){if(AX&&soundOn)perc(AX.currentTime,'c',.35)}
 function sauter(){if(P.g){P.vy=11.5;P.g=false;P.saut2=1;sfxSaut(0)}else if(P.saut2){P.vy=10.5;P.saut2=0;hero.userData.flip=1;sfxSaut(1)}}
 function sfxSaut(n){if(AX&&soundOn)try{note(AX.currentTime,n?660:440,SIN,.12,.05)}catch(_){}}
 /* ---------- Déplacement : ▲▼ avancer/reculer, ◀▶ tourner ---------- */
+/* 2.52 (28 nov., retour de test) : marche plus lente, et le relief redevient un obstacle.
+   Réglages à un seul endroit, pour les futures compétences de déplacement (monture, ailes) qui pourront les relever.
+   marche, course : m/s (avant : 16 et 31 ; manette 17 et 31) ; recul : part de la marche en reculant ;
+   penteMax : pente la plus raide qu'on gravit à pied (tangente : 1 = 45°) ; glisse : au-delà, le héros posé glisse vers le bas ;
+   vGlisse : vitesse de glissade (m/s). */
+const DEPL={marche:9,course:18,recul:.6,penteMax:1,glisse:1.3,vGlisse:7};
+/* pente du relief (sans les bâtiments ni les rampes) : gradient [gx,gz] et sa norme */
+function penteSol(x,z){const e=.75,gx=(ground(x+e,z)-ground(x-e,z))/(2*e),gz=(ground(x,z+e)-ground(x,z-e))/(2*e);return[gx,gz,Math.hypot(gx,gz)]}
+/* sentier de la Pierre : un passage taillé, en ligne droite, de la Pierre d'éveil jusqu'au bord le plus proche de la zone (et 4 m au-delà),
+   où la règle de pente ne joue pas. Sans lui, une Pierre au fond d'un canyon serait hors d'atteinte, ou un piège. */
+function sentierZ(Z){if(Z._sent!==undefined)return Z._sent;let s=null;
+  if(Z.alt&&Z.poly){let bx=0,bz=0,bd=1e9;const ax=Z.alt.x,az=Z.alt.z;
+    for(let i=0;i<Z.poly.length;i++){const A=Z.poly[i],B=Z.poly[(i+1)%Z.poly.length],dx=B[0]-A[0],dz=B[1]-A[1],t=clamp(((ax-A[0])*dx+(az-A[1])*dz)/(dx*dx+dz*dz||1),.15,.85),
+      x=A[0]+dx*t,z=A[1]+dz*t,d=Math.hypot(x-ax,z-az);if(d<bd){bd=d;bx=x;bz=z}}
+    const L=Math.max(bd,1);s={x1:ax,z1:az,x2:bx+(bx-ax)/L*4,z2:bz+(bz-az)/L*4}}
+  return Z._sent=s}
+function surSegment(S_,x,z,w){const dx=S_.x2-S_.x1,dz=S_.z2-S_.z1,t=clamp(((x-S_.x1)*dx+(z-S_.z1)*dz)/(dx*dx+dz*dz||1),0,1);return Math.hypot(x-S_.x1-dx*t,z-S_.z1-dz*t)<w}
+function surSentier(x,z){const Z=zoneAt(x,z);if(Z){const s=sentierZ(Z);if(s&&surSegment(s,x,z,2.6))return true}
+  return typeof surChemin==='function'&&surChemin(x,z)}   /* les chemins de dalles des routes ouvertes comptent aussi */
+/* vrai si le pas (x,z) → (nx,nz) mène sur une pente trop raide, le héros marchant sur le relief (pas sur un toit, une rampe ou en plein vol).
+   Dans les deux sens : on ne monte pas une falaise, et on ne la descend pas à pied non plus (il faut sauter), pour ne jamais rester coincé en bas.
+   On peut toujours aller vers moins raide que là où l'on est. */
+function tropRaide(x,z,nx,nz,feet){if(feet-ground(nx,nz)>4)return false;const p1=penteSol(nx,nz)[2];if(p1<=DEPL.penteMax)return false;
+  if(p1<penteSol(x,z)[2]-.02)return false;return!surSentier(nx,nz)}
+/* cases atteignables à pied depuis (x0,z0), dans un rayon R (grille de 2 m, même règle) : sert à poser les objectifs des épreuves, et aux tests */
+function atteignable(x0,z0,R){const c=2,n=Math.ceil(R/c),W=2*n+1,vu=new Uint8Array(W*W),f=[n*W+n];vu[n*W+n]=1;
+  const pos=i=>[x0+(i%W-n)*c,z0+(((i/W)|0)-n)*c];
+  while(f.length){const i=f.pop(),a=pos(i),pa=penteSol(a[0],a[1])[2];
+    for(const[dx,dz]of[[1,0],[-1,0],[0,1],[0,-1]]){const u=i%W+dx,v=((i/W)|0)+dz;if(u<0||v<0||u>=W||v>=W)continue;const j=v*W+u;if(vu[j])continue;
+      const b=pos(j);if(!zoneAt(b[0],b[1])||Math.hypot(b[0]-x0,b[1]-z0)>R)continue;const pb=penteSol(b[0],b[1])[2];
+      if(pb>DEPL.penteMax&&pb>=pa-.02&&!surSentier(b[0],b[1]))continue;vu[j]=1;f.push(j)}}
+  return(x,z)=>{const u=Math.round((x-x0)/c)+n,v=Math.round((z-z0)/c)+n;return u>=0&&v>=0&&u<W&&v<W&&!!vu[v*W+u]}}
 function move(dt){const t=performance.now();
   /* Plus rapide (retour du 17 nov.) : marche 14, course 27 au bout de 0,35 s ; virage qui s'accélère quand on tient ◀ ▶ */
   if(mode!=='monde')P.auto=0;
@@ -462,14 +494,17 @@ function move(dt){const t=performance.now();
   const tr=r?Math.min(1,(t-Math.max(heldT.left||0,heldT.right||0))/450):0;
   if(mode==='monde'||(mode==='epreuve'&&E&&E.monde)){P.yaw-=r*dt*(1.7+1.5*tr);P.run=f>0&&(P.auto||t-heldT.up>350)?1:0}else{P.run=0}
   const live=(mode==='monde'||(mode==='epreuve'&&E&&E.monde));const ff=live?f:0;
-  P.sp=(P.sp||0)+((ff?(P.run?31:16)*(ff<0?.6:1):0)-(P.sp||0))*Math.min(1,dt*6);
+  P.sp=(P.sp||0)+((ff?(P.run?DEPL.course:DEPL.marche)*(ff<0?DEPL.recul:1):0)-(P.sp||0))*Math.min(1,dt*6);
   const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw),sp=P.sp;
   const pm=live?padMarche(dt):null;let dx=0,dz=0;
   if(pm){P.sp=pm.sp;dx=Math.sin(pm.m)*pm.sp*dt;dz=Math.cos(pm.m)*pm.sp*dt;P.face=pm.m}
   else if(ff){dx=fx*ff*sp*dt;dz=fz*ff*sp*dt;P.face=P.yaw}
   if(dx||dz){
-    const tryMove=(nx,nz)=>{if(!zoneAt(nx,nz))return false;for(const Z of ZN)if(Math.hypot(Z.alt.x-nx,Z.alt.z-nz)<(Z.alt.col||2.6))return false;const s=stand(nx,nz,P.y+.05);if(s.blocked)return false;P.x=nx;P.z=nz;return true};
+    const tryMove=(nx,nz)=>{if(!zoneAt(nx,nz))return false;for(const Z of ZN)if(Math.hypot(Z.alt.x-nx,Z.alt.z-nz)<(Z.alt.col||2.6))return false;const s=stand(nx,nz,P.y+.05);if(s.blocked)return false;if(s.g<=ground(nx,nz)+.05&&tropRaide(P.x,P.z,nx,nz,P.y))return false;P.x=nx;P.z=nz;return true};
     if(!tryMove(P.x+dx,P.z+dz))if(!tryMove(P.x+dx,P.z))tryMove(P.x,P.z+dz);if(P.g)P.walked+=Math.hypot(dx,dz)*.55}
+  /* 2.52 : posé sur une pente trop raide (relief nu), le héros glisse vers le bas */
+  if(P.g&&live&&P.y<=ground(P.x,P.z)+.1){const pn=penteSol(P.x,P.z);if(pn[2]>DEPL.glisse&&!surSentier(P.x,P.z)){const k=DEPL.vGlisse*dt/pn[2],nx=P.x-pn[0]*k,nz=P.z-pn[1]*k;
+    if(zoneAt(nx,nz)&&!stand(nx,nz,P.y+.05).blocked){P.x=nx;P.z=nz}}}
   const s=stand(P.x,P.z,P.y+.05);
   if(P.g){if(s.g<P.y-.85){P.g=false}else{P.y=s.g;if(s.on&&s.on.dx!==undefined){const nx=P.x+s.on.dx,nz=P.z+s.on.dz;if(zoneAt(nx,nz)){P.x=nx;P.z=nz}}}}
   if(!P.g){P.vy-=24*dt;P.y+=P.vy*dt;if(P.y<=s.g&&P.vy<=0){P.y=s.g;P.vy=0;P.g=true;P.saut2=0}}

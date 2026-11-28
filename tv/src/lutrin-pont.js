@@ -1,4 +1,4 @@
-/* MozaWorld 2.52 : le pont entre le lutrin et l'exploration (28 nov., demande de l'utilisateur : « Depuis l'arène je veux pouvoir
+/* MozaWorld 2.54 : le pont entre le lutrin et l'exploration (28 nov., demande de l'utilisateur : « Depuis l'arène je veux pouvoir
    me téléporter dans une zone. Ensuite revenir via le menu. Sur la carte du lutrin indiqué avec une figure à mon image la zone où j'étais »).
    - Le lutrin écrit l'id de la zone visée dans localStorage (mz-aller) puis ouvre le jeu. Ici, au démarrage : on reprend la partie
      (ou on en commence une, dans le monde du lutrin), on voyage vers la région de la zone si elle est loin, puis le héros apparaît
