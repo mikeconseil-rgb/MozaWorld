@@ -73,3 +73,12 @@ Critique graphique 2.44 : en combat, le texte des cartes faisait 10 px à 720p e
 - Téléphone (`body.tactile`, hauteur sous 600 px) : la carte choisie fait 88 % de la hauteur, texte à 16 px. Si la main dépasse le bas de l'écran, `ajuster()` mesure le dépassement (`--kdy`) et la carte remonte d'autant.
 - Les sélecteurs sont en `#combat … !important` parce que `cartes-relook.js` est chargé après et force ses tailles.
 - Mesure : `tv/tools/test-fumee.js` ne couvre pas la lisibilité ; vérifier à 1280 × 720 que `.ct` de la carte choisie ne déborde pas (`scrollHeight <= clientHeight`).
+
+## Septième passe : peintures des zones et portraits (28 novembre 2026)
+
+Décision de l'utilisateur du 28 novembre : les cartes de combat quittent le jeu. Le quota gratuit du soir (environ 8 images Hugging Face) sert désormais à peindre les **zones** dans le même format que les cartes (WebP 480×320), plus les **portraits** des personnages des zones (WebP 384×384) pour les futures quêtes. Ces images servent plus tard : rien n'est branché dans le jeu.
+
+- `tv/tools/images-zones/liste.js` : lit le jeu (ZW, FICHES, QUETES, SCENARIOS) et écrit `zones.json`, un prompt par image. Paysage tiré du palier neutre de la fiche de la zone, du biome, de la culture et du mana. Ordre : les 33 zones vues en premier, puis Citadelles, Donjons, Assemblées, Antres, Ressources ; un portrait toutes les trois images tant qu'il reste des personnages nommés (26 au départ : PNJ de Kobor et personnages des scénarios).
+- `tv/tools/images-zones/generer.py --max 8` : peint ce qui manque. Sorties : `tv/img/zones/<ID>.webp` et `tv/img/zones/portraits/<ID>-<nom>.webp`.
+- `tv/tools/images-zones/ecartees.txt` (à créer au besoin) : une clé par ligne, pour les images où le modèle écrit du texte ; elles sont sautées.
+- Les images de cartes déjà faites (58 peintures, 449 décors) restent dans `tv/img/cartes/` ; leur production est arrêtée.
