@@ -555,5 +555,5 @@ try{S.son=localStorage.getItem('lutrin-son')!=='0'}catch(e){}
 let att;addEventListener('resize',()=>{clearTimeout(att);att=setTimeout(()=>{if(!BB)return;const p=innerHeight>innerWidth;
   if(p!==S.portrait){const o=S.own.slice();preparer();S.own=o;dessiner();taille();vueFleur(0,false)}else taille()},120)});
 boutonsZoom();if(!reprendre())menu();requestAnimationFrame(boucle);
-window.LUTRIN={S,T,cam,prendre,jouerIA,commencer,zoomEn,vueTout,vueFleur,aller,vueIci,JEU};
+window.LUTRIN={S,T,cam,majTout,prendre,jouerIA,commencer,zoomEn,vueTout,vueFleur,aller,vueIci,JEU};
 })();
