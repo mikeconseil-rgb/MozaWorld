@@ -471,7 +471,8 @@ const ZW=ZN.slice();
 const REG_ORIG=dReg([0,0])<1;let iPlus=0;
 for(const d of (typeof CARTE_PLUS!=='undefined'?CARTE_PLUS:[])){const ancienne=iPlus++<16;const poly=d.poly.map(p=>[p[0]*SC/2,p[1]*SC/2]);
   const c=[0,0];for(const p of poly){c[0]+=p[0]/poly.length;c[1]+=p[1]/poly.length}
-  if(dReg(c)<REG_R||(REG_ORIG&&ancienne)){const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
+  if(dReg(c)<REG_R||(REG_ORIG&&ancienne&&!(typeof MONDE!=='undefined'&&MONDE))){   /* 2.54.1 : dans un monde généré, ces 16 zones sont éparpillées à 5-9 km : les forcer dans la région gonflait le sol de 1 à 14 millions de sommets (chargement de plusieurs minutes, 1,4 Go, plantages sur Xbox) */
+    const Z=zone(d.id,poly);Z.mod=d.mod;Z.d=d;Z.plus=true;Z.reg=true;ZW.push(Z)}
   else ZW.push({id:d.id,mod:d.mod,d,plus:true,logique:true,poly,c,lv:0,lvT:0})}
 const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
 /* Décision du 20 nov. (1 a) : d'ici le 28, hordes, rivaux, pacte, siège, caravanes et lois ne jouent que dans la région de départ.
@@ -479,7 +480,11 @@ const ZWB=Object.fromEntries(ZW.map(Z=>[Z.id,Z]));
 const mondeIci=()=>typeof MONDE!=='undefined'&&MONDE?dReg(DEP_C())<1:REG_ORIG;   /* 2.49 : dans un monde généré, « ici » = la région de votre fleur */
 /* 2.27.2 : nom et fiche d'une zone, même hors de la région chargée (ZB ne contient que la région) */
 const zI=id=>{let Z=null;try{Z=ZB[id]}catch(_){}Z=Z||ZWB[id];return(Z&&Z.info)||{nom:String(id),sur:"",pm:"Pénurie",pp:"Abondance",pal:["","","","",""]}};
-const zoneAt=(x,z)=>{for(const Z of ZN)if(inPoly(Z.poly,x,z))return Z;return null};
+/* 2.54.1 : boîte englobante de chaque zone, pour écarter vite les zones lointaines (le sol d'un million de sommets en dépendait au démarrage) */
+const zBB=Z=>Z._bb||(Z._bb=(()=>{let a=1e9,b=-1e9,c=1e9,d=-1e9;for(const p of Z.poly){if(p[0]<a)a=p[0];if(p[0]>b)b=p[0];if(p[1]<c)c=p[1];if(p[1]>d)d=p[1]}return[a,b,c,d]})());
+const zoneAt=(x,z)=>{for(let n=0;n<ZN.length;n++){const Z=ZN[n],B=Z._bb||zBB(Z);if(x<B[0]||x>B[1]||z<B[2]||z>B[3])continue;if(inPoly(Z.poly,x,z))return Z}return null};
+/* distance au bord de zone le plus proche, plafonnée à cap (les zones dont la boîte est plus loin que cap sont sautées) */
+const zDist=(x,z,cap)=>{let d=cap;for(let n=0;n<ZN.length;n++){const Q=ZN[n],B=Q._bb||zBB(Q),ex=Math.max(B[0]-x,0,x-B[1]),ez=Math.max(B[2]-z,0,z-B[3]);if(ex>=d||ez>=d||ex*ex+ez*ez>=d*d)continue;const e=dPoly(Q.poly,x,z);if(e<d)d=e}return d};
 function groundZ(Z,x,z,lv){const d=dPoly(Z.poly,x,z),q=Z.loc(x,z);return Z.h(q[0],q[1],lv===undefined?Z.lv:lv,N1(x,z),N2(x,z),N3(x,z),x,z)*sst(0,16,d)}
 const ground=(x,z)=>{const Z=zoneAt(x,z);return Z?groundZ(Z,x,z):-30};
 
@@ -589,9 +594,9 @@ let terrain;
 function buildTerrain(){
   const rock=LIN(0x241c1a),rock2=LIN(0x0e0b0c);
   for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const k=j*GW+i,x=X0+i*CELL,z=Z0+j*CELL;tP[k*3]=x;tP[k*3+2]=z;
-    const Z=zoneAt(x,z);tn1[k]=N1(x,z);tn2[k]=N2(x,z);tn3[k]=N3(x,z);
+    const Z=zoneAt(x,z);tn2[k]=N2(x,z);if(Z){tn1[k]=N1(x,z);tn3[k]=N3(x,z)}/* 2.54.1 : hors zone, seul tn2 sert */
     if(Z){Z.verts.push(k);tEf[k]=sst(0,16,dPoly(Z.poly,x,z))}
-    else{let d=1e9;for(const Q of ZN)d=Math.min(d,dPoly(Q.poly,x,z));
+    else{/* au-delà de 45 m du bord, la falaise est déjà au plancher (-90) et à la couleur finale : on plafonne la distance, résultat identique */const d=zDist(x,z,45);
       const h=-Math.pow(d,1.25)*1.7-(tn2[k]-.3)*Math.min(d,8)*1.5;tP[k*3+1]=Math.max(h,-90);
       const t=sst(0,45,d),s=.75+.5*hash(Math.floor(tP[k*3+1]/2.5),3);tC[k*3]=lerp(rock[0],rock2[0],t)*s;tC[k*3+1]=lerp(rock[1],rock2[1],t)*s;tC[k*3+2]=lerp(rock[2],rock2[2],t)*s}}
   const idx=new Uint32Array((GW-1)*(GH-1)*6);let q=0;
@@ -6754,7 +6759,7 @@ if(hm)new MutationObserver(()=>{if(typeof CB==='undefined'||!CB||!CB.main)return
    Une seule feuille qui habille tout : cadres à filets d'or et coins ornés, titres soulignés d'un fleuron, menus en lignes
    de manuscrit (médaillon pour l'icône, liseré lumineux sur le choix), bandeau en tableau, combat et mue mis en scène.
    Les cartes elles-mêmes (.kcarte, .cc) restent au fil du visuel des cartes : rien ici ne change leur taille. */
-const MZ_VERSION='2.54';
+const MZ_VERSION='2.54.1';
 (()=>{
   /* coin orné : filet en équerre, petit losange et volute ; tourné pour les quatre coins */
   const coin=r=>`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='rotate(${r} 17 17)' fill='none' stroke='%23e8c77f' stroke-width='1.2'><path d='M2 30V6a4 4 0 0 1 4-4h24'/><path d='M6 26V9a3 3 0 0 1 3-3h17' stroke-opacity='.45'/><path d='M2 12q6 0 6-6' stroke-opacity='.7'/></g><g transform='rotate(${r} 17 17)'><path d='M5 5l2.2-2.2L9.4 5 7.2 7.2z' fill='%23e8c77f'/></g></svg>`).replace(/%2523/g,'%23')}")`;
@@ -7224,12 +7229,13 @@ function cullScene(){if(CULL.dirty)cullPrep();
 const TCH=40;
 function terrainCarreaux(){const g=terrain.geometry,A=g.attributes,src=g.index.array;
   for(let cj=0;cj<GH-1;cj+=TCH)for(let ci=0;ci<GW-1;ci+=TCH){const ie=Math.min(GW-1,ci+TCH),je=Math.min(GH-1,cj+TCH);
-    const idx=[];let any=false;
-    for(let j=cj;j<je;j++)for(let i=ci;i<ie;i++){const q=(j*(GW-1)+i)*6;for(let k=0;k<6;k++)idx.push(src[q+k])}
+    let any=false;
     const x0=X0+ci*CELL,x1=X0+ie*CELL,z0=Z0+cj*CELL,z1=Z0+je*CELL;
-    for(let j=cj;j<=je&&!any;j+=2)for(let i=ci;i<=ie;i+=2){const x=X0+i*CELL,z=Z0+j*CELL;if(zoneAt(x,z)||ZN.some(Q=>dPoly(Q.poly,x,z)<60)){any=true;break}}
+    for(let j=cj;j<=je&&!any;j+=2)for(let i=ci;i<=ie;i+=2){const x=X0+i*CELL,z=Z0+j*CELL;if(zoneAt(x,z)||zDist(x,z,60)<60){any=true;break}}
     if(!any)continue;   /* carreau loin de toute zone : du roc dans le vide, jamais vu */
-    const cg=new THREE.BufferGeometry();for(const n in A)cg.setAttribute(n,A[n]);cg.setIndex(new THREE.BufferAttribute(new Uint32Array(idx),1));
+    const cg=new THREE.BufferGeometry();for(const n in A)cg.setAttribute(n,A[n]);/* 2.54.1 : index copié par rangées dans un tableau typé (au lieu de millions de push) */
+    const w=(ie-ci)*6,idx=new Uint32Array((je-cj)*w);for(let j=cj,o=0;j<je;j++,o+=w){const q=(j*(GW-1)+ci)*6;idx.set(src.subarray(q,q+w),o)}
+    cg.setIndex(new THREE.BufferAttribute(idx,1));
     const m=new THREE.Mesh(cg,terrain.material);m.receiveShadow=true;m.castShadow=true;m.frustumCulled=false;scene.add(m);
     CULL.list.push({o:m,c:new THREE.Vector3((x0+x1)/2,10,(z0+z1)/2),r:Math.hypot(x1-x0,z1-z0,200)/2,fixe:true})}
   terrain.visible=false;CULL.carreaux=true;
