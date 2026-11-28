@@ -375,12 +375,23 @@ function majLiens(){G.liens.innerHTML='';
      d'un même royaume et d'une même faction qui se touchent s'illuminent ensemble : halo pulsant à la couleur de la faction,
      étincelles qui courent le long du bord, et un médaillon au sigle de la faction avec leur nombre. */
   const F=groupes(i=>{const o=S.own[i];if(o==null||o<0||T[i].mort)return null;const f=facZone(T[i],o);return f==='Neutre'?null:o+'|'+f}),ts=contour(F,3);
-  for(const k in ts){const f=F[k].n.split('|')[1],c=FAC[f].col;
-    el('path',{d:ts[k],class:'synergie halo',stroke:c},G.liens);el('path',{d:ts[k],class:'synergie fil',stroke:mix(c,'#ffffff',.6)},G.liens);
-    el('path',{d:ts[k],class:'synergie etincelle'},G.liens)}
+  /* 28 nov. (« accentue l'effet de groupe de faction ») : le groupe s'emplit de la lumière de sa faction, ses tuiles sont reliées
+     par des rayons (une constellation), et le contour garde une épaisseur lisible à l'écran à tous les zooms */
+  const px=(rendu.w||cam.w)/pxW,f2=q=>q[0].toFixed(0)+' '+q[1].toFixed(0);
+  for(const k in ts){const g=F[k],f=g.n.split('|')[1],c=FAC[f].col,clair=mix(c,'#ffffff',.65),dans=new Set(g.m);
+    let voile='',ray='';g.m.forEach(i=>{const t=T[i];voile+='M'+t.p.map(f2).join('L')+'Z';
+      for(const v of t.v)if(v>i&&dans.has(v))ray+=`M${f2(t.c)}L${f2(T[v].c)}`});
+    el('path',{d:voile,class:'synergie voile',fill:c},G.liens);
+    el('path',{d:ts[k],class:'synergie ombre','stroke-width':Math.max(22,9*px).toFixed(1)},G.liens);
+    el('path',{d:ts[k],class:'synergie halo',stroke:c,'stroke-width':Math.max(46,20*px).toFixed(1)},G.liens);
+    el('path',{d:ts[k],class:'synergie fil',stroke:clair,'stroke-width':Math.max(9,4*px).toFixed(1)},G.liens);
+    el('path',{d:ts[k],class:'synergie etincelle','stroke-width':Math.max(6,3*px).toFixed(1),'stroke-dasharray':`${(5*px).toFixed(0)} ${(40*px).toFixed(0)}`},G.liens);
+    el('path',{d:ray,class:'synergie rayon-halo',stroke:c,'stroke-width':Math.max(20,9*px).toFixed(1)},G.liens);
+    el('path',{d:ray,class:'synergie rayon',stroke:clair,'stroke-width':Math.max(5,2.2*px).toFixed(1)},G.liens);
+    g.m.forEach(i=>el('circle',{cx:T[i].c[0].toFixed(0),cy:T[i].c[1].toFixed(0),r:Math.max(9,4.5*px).toFixed(1),class:'synergie noeud',fill:clair,stroke:c},G.liens))}
   for(const k in ts){const g=F[k],f=g.n.split('|')[1];let x=0,y=0;g.m.forEach(i=>{x+=T[i].c[0];y+=T[i].c[1]});x/=g.m.length;y/=g.m.length;
     let b=g.m[0],bd=1e18;g.m.forEach(i=>{if(i===S.ici)return;const d=(T[i].c[0]-x)**2+(T[i].c[1]-y)**2;if(d<bd){bd=d;b=i}});
-    const t=T[b],c=FAC[f].col,px=(rendu.w||cam.w)/pxW,r=Math.max(Math.min(60,t.r*.45),17*px);   // au moins 34 px à l'écran
+    const t=T[b],c=FAC[f].col,r=Math.max(Math.min(70,t.r*.5),22*px);   // au moins 44 px à l'écran
     const m=el('g',{class:'bonus',transform:`translate(${t.c[0].toFixed(0)} ${(t.c[1]+t.r*.15).toFixed(0)})`},G.liens);
     el('circle',{r:(r*1.25).toFixed(1),fill:c,class:'bonus-aura'},m);
     el('circle',{r:r.toFixed(1),fill:mix(c,'#1a0c04',.3),class:'bonus-fond'},m);
