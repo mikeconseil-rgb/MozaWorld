@@ -231,3 +231,11 @@ svg.loin .sceau-reflet{display:none}
 .figurine{filter:drop-shadow(0 0 1.5px #fff8e8) drop-shadow(0 0 1.5px #fff8e8) drop-shadow(0 3px 3px #0009)}
 .figurine .fig-bob{animation:none}
 .figurine *{stroke-width:2.6}
+/* statut de faction des zones : neutre (deux factions possibles), tenue, ou l'Ombre */
+.sceau.neutre .loin{opacity:.55}
+.sceau.neutre .penche .sceau-gemme{stroke:#ffe6a6;stroke-width:3}
+.niveau-fond{stroke:#fff1c4;stroke-width:1.6;opacity:.92}
+.niveau-txt{fill:#fff6dc;text-anchor:middle;font-family:var(--titre);font-weight:600}
+.sceau.ombre .sceau-gemme{stroke:#d9c2ee;stroke-width:2.4}
+svg.loin .sceau.neutre,svg.loin .niveau{display:none}
+#fiche .etat .sigle{margin:0 3px 0 2px}
