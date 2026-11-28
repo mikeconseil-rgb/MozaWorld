@@ -41,9 +41,11 @@ button{font:inherit;color:inherit}
   background:radial-gradient(circle,#f3d58a 0 3px,transparent 4px)}
 #cadre::before{left:-4px;top:-4px;border-right:0;border-bottom:0}
 #cadre::after{right:-4px;bottom:-4px;border-left:0;border-top:0}
-#plateau{display:block;touch-action:none;border-radius:6px;
-  background:radial-gradient(ellipse 70% 65% at 50% 45%,#ffe9b8 0%,#f0bd6a 38%,#a8642a 75%,#4a2810 100%);
-  box-shadow:inset 0 0 40px #2a1306}
+#vue{position:relative;overflow:hidden;border-radius:6px;touch-action:none;
+  background:radial-gradient(ellipse 70% 65% at 50% 45%,#ffe9b8 0%,#f0bd6a 38%,#a8642a 75%,#4a2810 100%)}
+#vue::after{content:"";position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 40px #2a1306;pointer-events:none}
+#plateau,#calque{position:absolute;display:block;transform-origin:0 0;will-change:transform;touch-action:none}
+#calque{pointer-events:none}
 #rebord{position:absolute;left:-2%;right:-2%;bottom:-18px;height:20px;border-radius:0 0 10px 10px;transform:translateZ(14px) rotateX(-60deg);transform-origin:top;
   background:linear-gradient(#6b3f1d,#2e180a);box-shadow:0 14px 24px #000a}
 
@@ -69,11 +71,11 @@ svg.loin .plomb{stroke-width:14}
 @keyframes tension{to{stroke-dashoffset:-19}}
 .balayage{pointer-events:none;mix-blend-mode:screen;animation:balaye 9s ease-in-out infinite}
 @keyframes balaye{0%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}
-.grain{pointer-events:none;mix-blend-mode:overlay;opacity:.3}
+.grain{pointer-events:none;opacity:.16}
 .apercu{pointer-events:none;opacity:.45;animation:apercu 1.4s ease-in-out infinite}
 @keyframes apercu{50%{opacity:.7}}
 .poussiere{fill:#fff4cf;pointer-events:none;filter:blur(1.5px)}
-.curseur{fill:none;stroke:var(--or);stroke-width:6;stroke-dasharray:18 10;pointer-events:none;animation:fourmis 1.2s linear infinite;filter:drop-shadow(0 0 6px #ffd98a)}
+.curseur{fill:none;stroke:var(--or);stroke-width:6;stroke-dasharray:18 10;pointer-events:none;animation:fourmis 1.2s linear infinite}
 .curseur.halo{stroke:#fff1c4;stroke-width:16;stroke-dasharray:none;opacity:.35;animation:pouls 1.6s ease-in-out infinite;filter:none}
 @keyframes fourmis{to{stroke-dashoffset:-28}}
 .flot{pointer-events:none;transform-box:fill-box;transform-origin:center}
