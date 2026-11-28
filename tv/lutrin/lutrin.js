@@ -72,10 +72,10 @@ const mix=(h,w,t)=>{const A=parseInt(h.slice(1),16),B=parseInt(w.slice(1),16),f=
 const el=(n,a,par)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(par)par.appendChild(e);return e};
 
 /* ---------- dessin ---------- */
-const svg=document.getElementById('plateau');
+const svg=document.getElementById('plateau'),calque=document.getElementById('calque'),vue=document.getElementById('vue');
 let G={};
 function dessiner(){
-  svg.innerHTML='';
+  svg.innerHTML='';calque.innerHTML='';
   const defs=el('defs',{},svg);
   TEINTES.forEach((ti,n)=>{const g=el('radialGradient',{id:'g-t'+n,cx:'.38',cy:'.32',r:'.85'},defs);
     el('stop',{offset:'0','stop-color':mix(ti,'#ffffff',.55),'stop-opacity':'.42'},g);el('stop',{offset:'.6','stop-color':ti,'stop-opacity':'.62'},g);el('stop',{offset:'1','stop-color':mix(ti,'#2a1a0c',.55),'stop-opacity':'.88'},g)});
@@ -84,9 +84,11 @@ function dessiner(){
   const gm=el('radialGradient',{id:'g-mort',cx:'.45',cy:'.4',r:'.8'},defs);
   el('stop',{offset:'0','stop-color':'#3a2a20'},gm);el('stop',{offset:'1','stop-color':'#0e0806'},gm);
   el('pattern',{id:'pat-grain',width:'512',height:'512',patternUnits:'userSpaceOnUse'},defs).appendChild(grain());
-  G.verres=el('g',{},svg);G.flots=el('g',{},svg);
+  G.verres=el('g',{},svg);
   el('rect',{class:'grain',x:BB.x0,y:BB.y0,width:BB.w,height:BB.h,fill:'url(#pat-grain)'},svg);
-  G.icones=el('g',{class:'icones'},svg);G.liens=el('g',{},svg);G.plomb=el('g',{},svg);G.fleurs=el('g',{},svg);G.curseur=el('g',{},svg);G.etin=el('g',{},svg);G.figure=el('g',{},svg);
+  G.icones=el('g',{class:'icones'},svg);G.plomb=el('g',{},svg);G.fleurs=el('g',{},svg);
+  // ce qui bouge ou s'anime va sur un calque à part : le vitrail (des centaines de tuiles) n'est plus redessiné à chaque image
+  G.liens=el('g',{},calque);G.flots=el('g',{},calque);G.curseur=el('g',{},calque);G.etin=el('g',{},calque);G.figure=el('g',{},calque);
   T.forEach(t=>{let h=0;for(const ch of t.id)h=(h*31+ch.charCodeAt(0))>>>0;t.teinte='g-t'+(h%TEINTES.length);
     t.verre=el('polygon',{points:pts(t.p),'data-i':t.i,class:'verre'},G.verres);
     if(!t.mort){const s=Math.min(46,t.r*.42);
@@ -187,16 +189,31 @@ function grain(){ // texture de verre soufflé, faite une fois
 
 /* ---------- caméra : zoom et déplacement ---------- */
 function taille(){const sc=document.getElementById('scene').getBoundingClientRect();
-  pxW=Math.max(100,sc.width-24);pxH=Math.max(100,sc.height-28);svg.style.width=pxW+'px';svg.style.height=pxH+'px';
+  pxW=Math.max(100,sc.width-24);pxH=Math.max(100,sc.height-28);vue.style.width=pxW+'px';vue.style.height=pxH+'px';rendu.w=0;
   document.documentElement.style.setProperty('--pente',S.portrait?'8deg':'12deg');appliquer()}
 const wMax=()=>BB?Math.max(BB.w,BB.h*pxW/pxH)*1.08:4000;
 const wMin=()=>700;
 function borner(c){c.w=Math.max(wMin(),Math.min(wMax(),c.w));if(!BB)return;const h=c.w*pxH/pxW,mx=Math.max(0,(BB.w-c.w)/2+c.w*.35),my=Math.max(0,(BB.h-h)/2+h*.35);
   c.cx=Math.max(BB.cx-mx,Math.min(BB.cx+mx,c.cx));c.cy=Math.max(BB.cy-my,Math.min(BB.cy+my,c.cy))}
 let loin=null;
-function appliquer(){borner(cam);const h=cam.w*pxH/pxW;svg.setAttribute('viewBox',`${(cam.cx-cam.w/2).toFixed(1)} ${(cam.cy-h/2).toFixed(1)} ${cam.w.toFixed(1)} ${h.toFixed(1)}`);
-  const l=cam.w/pxW>9;if(l!==loin){loin=l;svg.classList.toggle('loin',l)}
-  const z=document.getElementById('zoom-niveau');if(z)z.style.setProperty('--z',((wMax()-cam.w)/(wMax()-wMin())).toFixed(3));placerFigurine()}
+/* Fluidité (28 nov., « Ça lag ») : pendant un geste, on ne touche plus au viewBox (le navigateur redessinerait tout le vitrail
+   à chaque image). Le dessin est fait une fois, un peu plus grand que l'écran (MARGE de chaque côté), puis simplement déplacé et
+   agrandi par la carte graphique (transform). Il est refait net dès que le geste s'arrête, ou s'il faut montrer un bord pas encore dessiné. */
+const MARGE=.25,rendu={cx:0,cy:0,w:0};let tFixe=0;
+function fixer(){clearTimeout(tFixe);rendu.cx=cam.cx;rendu.cy=cam.cy;rendu.w=cam.w;const h=cam.w*pxH/pxW,f=1+2*MARGE,W=cam.w*f,H=h*f;
+  const vb=`${(cam.cx-W/2).toFixed(1)} ${(cam.cy-H/2).toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}`;
+  for(const s_ of [svg,calque]){s_.setAttribute('viewBox',vb);s_.style.left=(-MARGE*pxW)+'px';s_.style.top=(-MARGE*pxH)+'px';s_.style.width=(pxW*f)+'px';s_.style.height=(pxH*f)+'px';s_.style.transform=''}
+  const l=cam.w/pxW>9;if(l!==loin){loin=l;svg.classList.toggle('loin',l)}placerFigurine()}
+function appliquer(){borner(cam);
+  const z=document.getElementById('zoom-niveau');if(z)z.style.setProperty('--z',((wMax()-cam.w)/(wMax()-wMin())).toFixed(3));
+  if(!rendu.w){fixer();return}
+  const f=1+2*MARGE,s=rendu.w/cam.w,k=pxW/cam.w,hr=rendu.w*pxH/pxW,hc=cam.w*pxH/pxW;
+  const tx=MARGE*pxW+((rendu.cx-rendu.w*f/2)-(cam.cx-cam.w/2))*k,ty=MARGE*pxH+((rendu.cy-hr*f/2)-(cam.cy-hc/2))*k;
+  const x0=-MARGE*pxW+tx,y0=-MARGE*pxH+ty;
+  // un bord non dessiné deviendrait visible, ou le zoom a trop changé (flou) : on redessine tout de suite
+  if(x0>0||y0>0||x0+s*pxW*f<pxW||y0+s*pxH*f<pxH||s<.55||s>1.9){fixer();return}
+  const tr=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${s.toFixed(4)})`;svg.style.transform=tr;calque.style.transform=tr;
+  clearTimeout(tFixe);tFixe=setTimeout(()=>{if(!doigts.size&&!cible.actif)fixer();else tFixe=setTimeout(fixer,160)},140)}
 function viserCam(cx,cy,w){cible.cx=cx;cible.cy=cy;cible.w=w;borner(cible);cible.actif=true;elan.vx=elan.vy=0}
 const elan={vx:0,vy:0};
 function boucle(){
@@ -204,8 +221,8 @@ function boucle(){
     if(Math.abs(cible.cx-cam.cx)<1&&Math.abs(cible.cy-cam.cy)<1&&Math.abs(cible.w/cam.w-1)<.002){cam.cx=cible.cx;cam.cy=cible.cy;cam.w=cible.w;cible.actif=false}appliquer()}
   else if(Math.abs(elan.vx)+Math.abs(elan.vy)>.02&&!doigts.size){const u=cam.w/pxW;cam.cx-=elan.vx*16*u;cam.cy-=elan.vy*16*u;elan.vx*=.92;elan.vy*=.92;appliquer()}
   manette();requestAnimationFrame(boucle)}
-function ecranVersMonde(x,y){const r=svg.getBoundingClientRect(),h=cam.w*pxH/pxW;return[cam.cx-cam.w/2+(x-r.left)/r.width*cam.w,cam.cy-h/2+(y-r.top)/r.height*h]}
-function zoomEn(f,x,y,anim){const r=svg.getBoundingClientRect();if(x==null){x=r.left+r.width/2;y=r.top+r.height/2}
+function ecranVersMonde(x,y){const r=vue.getBoundingClientRect(),h=cam.w*pxH/pxW;return[cam.cx-cam.w/2+(x-r.left)/r.width*cam.w,cam.cy-h/2+(y-r.top)/r.height*h]}
+function zoomEn(f,x,y,anim){const r=vue.getBoundingClientRect();if(x==null){x=r.left+r.width/2;y=r.top+r.height/2}
   const m=ecranVersMonde(x,y),w=Math.max(wMin(),Math.min(wMax(),cam.w*f)),fx=(x-r.left)/r.width-.5,fy=(y-r.top)/r.height-.5;
   const cx=m[0]-fx*w,cy=m[1]-fy*w*pxH/pxW;
   if(anim)viserCam(cx,cy,w);else{cam.cx=cx;cam.cy=cy;cam.w=w;cible.actif=false;appliquer()}}
@@ -218,13 +235,13 @@ function suivre(i){const t=T[i],h=cam.w*pxH/pxW,dx=t.c[0]-cam.cx,dy=t.c[1]-cam.c
 
 /* gestes : un doigt glisse, deux doigts pincent ; un toucher bref vise une tuile */
 const doigts=new Map();let geste=null,dernier=null;
-svg.addEventListener('pointerdown',e=>{audio();svg.setPointerCapture(e.pointerId);doigts.set(e.pointerId,{x:e.clientX,y:e.clientY,t:performance.now()});
+vue.addEventListener('pointerdown',e=>{audio();vue.setPointerCapture(e.pointerId);doigts.set(e.pointerId,{x:e.clientX,y:e.clientY,t:performance.now()});
   cible.actif=false;elan.vx=elan.vy=0;
   if(doigts.size===1)geste={type:'tap',x0:e.clientX,y0:e.clientY,cx:cam.cx,cy:cam.cy,t0:performance.now(),bouge:false};
   else if(doigts.size===2){const [a,b]=[...doigts.values()];geste={type:'pince',d0:Math.hypot(a.x-b.x,a.y-b.y),w0:cam.w,m0:ecranVersMonde((a.x+b.x)/2,(a.y+b.y)/2)}}
   e.preventDefault()});
-svg.addEventListener('pointermove',e=>{const d=doigts.get(e.pointerId);if(!d||!geste)return;const px=d.x,py=d.y,pt=d.t;d.x=e.clientX;d.y=e.clientY;d.t=performance.now();
-  const r=svg.getBoundingClientRect();
+vue.addEventListener('pointermove',e=>{const d=doigts.get(e.pointerId);if(!d||!geste)return;const px=d.x,py=d.y,pt=d.t;d.x=e.clientX;d.y=e.clientY;d.t=performance.now();
+  const r=vue.getBoundingClientRect();
   if(geste.type==='pince'&&doigts.size>=2){const [a,b]=[...doigts.values()],dist=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
     cam.w=Math.max(wMin(),Math.min(wMax(),geste.w0*geste.d0/Math.max(20,dist)));const h=cam.w*pxH/pxW;
     cam.cx=geste.m0[0]-((mx-r.left)/r.width-.5)*cam.w;cam.cy=geste.m0[1]-((my-r.top)/r.height-.5)*h;appliquer();return}
@@ -238,9 +255,9 @@ function lacher(e){const d=doigts.get(e.pointerId);if(!d)return;doigts.delete(e.
     if(cibleEl)toucher(+cibleEl.dataset.i,e.clientX,e.clientY)}
   if(geste&&geste.type==='pince'&&doigts.size===1){const [a]=[...doigts.values()];geste={type:'tap',x0:a.x,y0:a.y,cx:cam.cx,cy:cam.cy,t0:0,bouge:true}}
   else if(!doigts.size){if(geste&&geste.type==='pince')elan.vx=elan.vy=0;geste=null}}
-svg.addEventListener('pointerup',lacher);svg.addEventListener('pointercancel',lacher);
-svg.addEventListener('wheel',e=>{e.preventDefault();zoomEn(Math.pow(1.0018,e.deltaY),e.clientX,e.clientY,false)},{passive:false});
-svg.addEventListener('dblclick',e=>e.preventDefault());
+vue.addEventListener('pointerup',lacher);vue.addEventListener('pointercancel',lacher);
+vue.addEventListener('wheel',e=>{e.preventDefault();zoomEn(Math.pow(1.0018,e.deltaY),e.clientX,e.clientY,false)},{passive:false});
+vue.addEventListener('dblclick',e=>e.preventDefault());
 
 /* ---------- affichage ---------- */
 function majTout(){T.forEach(t=>majTuile(t.i));majLiens();majCurseur();majBarre();majFiche()}
