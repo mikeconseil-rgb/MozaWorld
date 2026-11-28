@@ -26,7 +26,7 @@ Une ligne par décision de l'utilisateur, la plus récente en haut. Statuts : **
 | Héros | Le héros d'exploration ressemble au joueur, d'après ses photos : longs cheveux bruns, lunettes rondes, barbe grise au menton. Le chapeau pointu et la lanterne visible sont enlevés (« 3 b ») | en vigueur | le voyageur au chapeau pointu (17 nov.) |
 | Tenue du héros | Combinaison rouge à boutons, tête nue (carte de choix) ; la tenue randonneur au chapeau de paille reste dans le code (`HEROS_TENUE='rando'`) | en vigueur | |
 | Chienne | Sa chienne noir et blanc (liste et museau mouchetés, queue à bout blanc, bandana rouge) l'accompagne en exploration (« 4 oui ») ; elle part se promener de son bord, renifle, revient, repart (« elle doit partir de son bord, se promener, puis revenir et repartir ») ; elle sera sa monture plus tard | en vigueur | |
-| Portrait | Un portrait peint du joueur pour les menus, en plus du héros 3D (« 2 a et b ») ; sa photo peut passer par un outil gratuit en ligne pour ça | à faire | |
+| Portrait | Un portrait peint du joueur et de sa chienne pour les menus, en plus du héros 3D (« 2 a et b ») ; fait par le joueur avec Gemini, posé dans l'écran d'accueil et la page principale du menu pause (2.52) | en vigueur | |
 
 ## 28 novembre 2026 (nuit : réponses aux questions du nouveau cœur du jeu)
 
